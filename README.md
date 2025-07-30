@@ -37,17 +37,17 @@
   <table>
     <tr>
       <td align="center">
-        <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot1.png" alt="Main Interface" width="260">
+        <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot1.png" alt="" width="260">
         <br>
         <em>Main Interface</em>
       </td>
       <td align="center">
-        <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot2.png" alt="Always-On-Top Mode" width="260">
+        <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot2.png" alt="" width="260">
         <br>
         <em>Always-On-Top Mode</em>
       </td>
       <td align="center">
-        <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot3.png" alt="Feature Showcase" width="260">
+        <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot3.png" alt="" width="260">
         <br>
         <em>Feature Showcase</em>
       </td>
