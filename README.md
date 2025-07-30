@@ -31,6 +31,30 @@
   <img src="https://i.imgur.com/your-gif-url.gif" alt="GeminiDesk Demo">
 </p>
 
+## 📸 Screenshots
+
+<p align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot1.png" alt="Main Interface" width="260">
+        <br>
+        <em>Main Interface</em>
+      </td>
+      <td align="center">
+        <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot2.png" alt="Always-On-Top Mode" width="260">
+        <br>
+        <em>Always-On-Top Mode</em>
+      </td>
+      <td align="center">
+        <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot3.png" alt="Feature Showcase" width="260">
+        <br>
+        <em>Feature Showcase</em>
+      </td>
+    </tr>
+  </table>
+</p>
+
 ---
 
 ## ✨ Why GeminiDesk?
@@ -40,8 +64,8 @@ GeminiDesk isn't just a web wrapper; it's a carefully crafted desktop experience
 * **📌 Always-On-Top Mode**: Keep Gemini visible over all your other windows. Perfect for referencing, coding, or multitasking without losing context.
 
 * **⚡ Instant Access with Global Hotkeys**: Summon or dismiss GeminiDesk instantly from anywhere on your computer.
-    * **`Ctrl + G`**: Toggle the app's visibility. It's there when you need it, gone when you don't.
-    * **`Ctrl + Q`**: Instantly and completely close the application.
+    * **`Alt + G`**: Toggle the app's visibility. It's there when you need it, gone when you don't.
+    * **`Alt + Q`**: Instantly and completely close the application.
 
 * **🎨 Clean & Minimalist UI**: A beautiful, borderless design with a custom draggable header puts the focus squarely on the AI conversation, eliminating browser clutter.
 
