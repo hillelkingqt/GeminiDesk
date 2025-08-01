@@ -48,6 +48,26 @@
         <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot3.png" alt="Onboarding Screen" width="260">
         <br>
       </td>
+            <td align="center">
+        <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot4.png" alt="Onboarding Screen" width="260">
+        <br>
+      </td>
+            <td align="center">
+        <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot5.png" alt="Onboarding Screen" width="260">
+        <br>
+      </td>
+            <td align="center">
+        <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot6.png" alt="Onboarding Screen" width="260">
+        <br>
+      </td>
+            <td align="center">
+        <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot7.png" alt="Onboarding Screen" width="260">
+        <br>
+      </td>
+            <td align="center">
+        <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot8.png" alt="Onboarding Screen" width="260">
+        <br>
+      </td>
     </tr>
   </table>
 </p>
