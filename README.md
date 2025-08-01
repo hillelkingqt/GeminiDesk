@@ -5,9 +5,9 @@
 <h1 align="center">GeminiDesk</h1>
 
 <p align="center">
-  <strong>A powerful, sleek, and feature-rich desktop client for Google's Gemini.</strong>
+  <strong>A feature-packed, sleek, and powerful desktop client for Google's Gemini.</strong>
   <br />
-  Designed for productivity and seamless integration with your workflow.
+  Packed with power-user features designed for maximum productivity and seamless workflow integration.
 </p>
 
 <p align="center">
@@ -24,7 +24,7 @@
 </p>
 
 <p align="center">
-  <em>GeminiDesk provides the best way to access Google's AI, right on your desktop. No more browser tabs—just pure, focused productivity.</em>
+  <em>GeminiDesk elevates Google's AI from a browser tab into a native desktop powerhouse. No more browser clutter—just pure, focused productivity.</em>
 </p>
 
 <p align="center">
@@ -37,19 +37,19 @@
   <table>
     <tr>
       <td align="center">
-        <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot1.png" alt="" width="260">
+        <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot1.png" alt="Main Chat Interface" width="260">
         <br>
-        <em></em>
+        <em>Main Chat Interface</em>
       </td>
       <td align="center">
-        <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot2.png" alt="" width="260">
+        <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot2.png" alt="Settings Window" width="260">
         <br>
-        <em></em>
+        <em>Powerful Settings Panel</em>
       </td>
       <td align="center">
-        <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot3.png" alt="" width="260">
+        <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot3.png" alt="Onboarding Screen" width="260">
         <br>
-        <em></em>
+        <em>Helpful Onboarding Screen</em>
       </td>
     </tr>
   </table>
@@ -57,23 +57,43 @@
 
 ---
 
-## ✨ Why GeminiDesk?
+## ✨ Features
 
-GeminiDesk isn't just a web wrapper; it's a carefully crafted desktop experience designed to make you more efficient. It elevates Google Gemini from a browser tab into a powerful, native desktop application.
+GeminiDesk is more than just a web wrapper. It's a carefully crafted desktop experience loaded with features to supercharge your workflow.
 
-* **📌 Always-On-Top Mode**: Keep Gemini visible over all your other windows. Perfect for referencing, coding, or multitasking without losing context.
+* **📌 Always-On-Top Mode**: Keep Gemini visible over all other windows. Perfect for referencing, coding, or multitasking without losing context.
 
-* **⚡ Instant Access with Global Hotkeys**: Summon or dismiss GeminiDesk instantly from anywhere on your computer.
-    * **`Alt + G`**: Toggle the app's visibility. It's there when you need it, gone when you don't.
-    * **`Alt + Q`**: Instantly and completely close the application.
+* **📸 Screenshot to Chat**: Instantly capture any part of your screen. The image is copied to your clipboard and automatically pasted into the chat, ready to be analyzed by Gemini.
 
-* **🎨 Clean & Minimalist UI**: A beautiful, borderless design with a custom draggable header puts the focus squarely on the AI conversation, eliminating browser clutter.
+* **⚡ On-the-Fly Model Switching**: Use global hotkeys to start a new chat with the exact Gemini model you need, instantly. No more manual switching.
 
-* **🔒 Persistent Login**: Sign in to your Google account once, and GeminiDesk keeps you logged in across sessions. No more repetitive logins.
+* **⚙️ Full Customization**: Open the settings panel (`⚙️`) to tailor GeminiDesk to your needs.
+    * Toggle "Run on Startup" and "Always on Top".
+    * Customize every global keyboard shortcut to match your workflow.
+    * Manually check for updates or reset the app to its default settings.
 
-* **🚀 Launch on Startup**: During installation, you can choose to have GeminiDesk launch automatically when your computer starts, so it's always ready for you.
+* **🧠 Dynamic Header**: The custom draggable header bar displays the title of your current conversation, helping you keep track of different chats.
 
-* **💼 Lightweight & Focused**: Enjoy a dedicated environment for Gemini without the memory and CPU overhead of a full web browser with countless open tabs.
+* **🚀 Smart Updates**: The app checks for new versions once a day in the background. If an update is found, it notifies you with a simple dialog—no automatic downloads. You get a direct link to the latest GitHub release.
+
+* **🎤 Persistent Microphone Permissions**: Grant microphone access once, and the app remembers your choice for seamless voice-to-text input.
+
+* **🔒 Persistent Login**: Sign in to your Google account once, and GeminiDesk keeps you logged in across sessions.
+
+* **💼 Lightweight & Focused**: Enjoy a dedicated environment for Gemini without the memory and CPU overhead of a full web browser.
+
+### ⌨️ Keyboard Shortcuts
+
+Access GeminiDesk's core features from anywhere in your OS with these default global hotkeys (fully customizable in Settings):
+
+| Shortcut                | Action                                  |
+| ----------------------- | --------------------------------------- |
+| `Alt` + `G`             | Toggle App Visibility (Show / Hide)     |
+| `Alt` + `Q`             | Quit Application                        |
+| `Ctrl` + `Alt` + `S`    | **Capture Screenshot** to Clipboard & Chat |
+| `Alt` + `Shift` + `F` | **New Chat** with **Flash** Model       |
+| `Alt` + `Shift` + `P` | **New Chat** with **Pro** Model         |
+| `Alt` + `I`             | Show Instructions/Onboarding Screen     |
 
 ---
 
@@ -83,9 +103,9 @@ Getting started with GeminiDesk is simple.
 
 1.  Navigate to the [**Latest Release**](https://github.com/hillelkingqt/GeminiDesk/releases/latest) page.
 2.  Download the `GeminiApp-Setup-x.x.x.exe` file.
-3.  Run the installer and follow the on-screen instructions. You'll be asked if you want to run the app at startup.
+3.  Run the installer and follow the on-screen instructions. You can choose to run the app at startup during installation.
 
-That's it! GeminiDesk is now installed and ready to use from your Start Menu or Desktop.
+That's it! GeminiDesk is now installed and ready to use.
 
 ---
 
