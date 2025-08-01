@@ -39,17 +39,14 @@
       <td align="center">
         <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot1.png" alt="Main Chat Interface" width="260">
         <br>
-        <em>Main Chat Interface</em>
       </td>
       <td align="center">
         <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot2.png" alt="Settings Window" width="260">
         <br>
-        <em>Powerful Settings Panel</em>
       </td>
       <td align="center">
         <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/screenshots/screenshot3.png" alt="Onboarding Screen" width="260">
         <br>
-        <em>Helpful Onboarding Screen</em>
       </td>
     </tr>
   </table>
@@ -91,8 +88,8 @@ Access GeminiDesk's core features from anywhere in your OS with these default gl
 | `Alt` + `G`             | Toggle App Visibility (Show / Hide)     |
 | `Alt` + `Q`             | Quit Application                        |
 | `Ctrl` + `Alt` + `S`    | **Capture Screenshot** to Clipboard & Chat |
-| `Alt` + `Shift` + `F` | **New Chat** with **Flash** Model       |
-| `Alt` + `Shift` + `P` | **New Chat** with **Pro** Model         |
+| `Alt`  + `F` | **New Chat** with **Flash** Model       |
+| `Alt` + `P` | **New Chat** with **Pro** Model         |
 | `Alt` + `I`             | Show Instructions/Onboarding Screen     |
 
 ---
@@ -121,7 +118,7 @@ Interested in contributing or running the development version?
 
 1.  **Clone the repository:**
     ```sh
-    git clone [https://github.com/hillelkingqt/GeminiDesk.git](https://github.com/hillelkingqt/GeminiDesk.git)
+    git clone https://github.com/hillelkingqt/GeminiDesk.git
     cd GeminiDesk
     ```
 
