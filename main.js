@@ -445,19 +445,26 @@ function registerShortcuts() {
     globalShortcut.unregisterAll();
 
 const cfg = settings.shortcuts;
-const hotkeys = {
-  showHide:      isMac ? 'Command+G'            : cfg.showHide,
-  quit:          isMac ? 'Command+Q'            : cfg.quit,
-  showInstructions: isMac ? 'Command+I'         : cfg.showInstructions,
-  screenshot:    isMac ? 'Command+Shift+5'      : cfg.screenshot,
-  newChatPro:    isMac ? 'Command+P'            : cfg.newChatPro,
-  newChatFlash:  isMac ? 'Command+F'            : cfg.newChatFlash,
-  newWindow:     isMac ? 'Command+N'            : cfg.newWindow,
-  search:        isMac ? 'Command+S'            : cfg.search,
-};
-const shortcuts = isMac
-  ? hotkeys
-  : cfg;
+let shortcuts;
+
+if (isMac) {
+    // Start with sensible macOS defaults
+    const macDefaults = {
+        showHide: 'Command+G',
+        quit: 'Command+Q',
+        showInstructions: 'Command+I',
+        screenshot: 'Command+Shift+5',
+        newChatPro: 'Command+P',
+        newChatFlash: 'Command+F',
+        newWindow: 'Command+N',
+        search: 'Command+S',
+    };
+    // Merge user's settings over the defaults. User settings take precedence.
+    shortcuts = { ...macDefaults, ...cfg };
+} else {
+    // For other OS, just use the user's settings
+    shortcuts = cfg;
+}
 
 let lastFocusedWindow = null;
 
