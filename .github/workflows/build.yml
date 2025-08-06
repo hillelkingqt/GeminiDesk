@@ -71,7 +71,7 @@ jobs:
   release:
     needs: [build-mac, build-win]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
     steps:
       - name: Download macOS DMG artifact
         uses: actions/download-artifact@v3
