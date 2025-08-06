@@ -36,6 +36,7 @@ const defaultSettings = {
   autoStart: false,
   alwaysOnTop: true,
   lastShownNotificationId: null, 
+  lastMessageData: null,
   autoCheckNotifications: true,
   enableCanvasResizing: true,
   shortcuts: {
@@ -46,7 +47,8 @@ const defaultSettings = {
     newChatPro: 'Alt+P',
     newChatFlash: 'Alt+F',
     newWindow: 'Alt+N',
-    search: 'Alt+S'
+    search: 'Alt+S',
+    refresh: 'Alt+R'
   },
 lastUpdateCheck: 0,
 microphoneGranted: null,
@@ -74,6 +76,16 @@ function scheduleDailyUpdateCheck() {
   
   // And then check again every 6 hours to see if a day has passed
   setInterval(checkForUpdates, 6 * 60 * 60 * 1000); 
+}
+function reloadFocusedView() {
+    const focusedWindow = BrowserWindow.getFocusedWindow();
+    if (focusedWindow && !focusedWindow.isDestroyed()) {
+        const view = focusedWindow.getBrowserView();
+        if (view && view.webContents && !view.webContents.isDestroyed()) {
+            console.log(`Reloading view for window ID: ${focusedWindow.id}`);
+            view.webContents.reload();
+        }
+    }
 }
 function createNewChatWithModel(modelType) {
   // Get the currently active window and view
@@ -268,16 +280,15 @@ function getSettings() {
   }
   return defaultSettings;
 }
-function createNotificationWindow(messageData) {
+function createNotificationWindow() {
   if (notificationWin) {
     notificationWin.focus();
     return;
   }
 
-  // הגדלנו את החלון לגודל נוח יותר
   notificationWin = new BrowserWindow({
-    width: 550, // <-- הוגדל מ-450
-    height: 450, // <-- הוגדל מ-350
+    width: 550, 
+    height: 450,
     frame: false,
     alwaysOnTop: true,
     show: false,
@@ -292,44 +303,98 @@ function createNotificationWindow(messageData) {
 
   notificationWin.once('ready-to-show', () => {
     notificationWin.show();
-    notificationWin.webContents.send('notification-data', messageData);
   });
 
   notificationWin.on('closed', () => {
     notificationWin = null;
   });
 }
-async function checkForNotifications(event = null) {
+function sendToNotificationWindow(data) {
+  if (!notificationWin || notificationWin.isDestroyed()) return;
+  const wc = notificationWin.webContents;
+  const send = () => wc.send('notification-data', data);
+  if (wc.isLoadingMainFrame()) {
+    wc.once('did-finish-load', send);
+  } else {
+    send();
+  }
+}
+
+async function checkForNotifications(isManualCheck = false) {
+  // If this is a manual check (button click), make sure the window exists.
+  if (isManualCheck) {
+    createNotificationWindow();
+    if (!notificationWin) return;
+  }
+
+  // Ensure we only send to the renderer AFTER the notification window is ready.
+  const sendToNotificationWindow = (data) => {
+    if (!notificationWin || notificationWin.isDestroyed()) return;
+    const wc = notificationWin.webContents;
+    const send = () => wc.send('notification-data', data);
+    if (wc.isLoadingMainFrame()) {
+      wc.once('did-finish-load', send);
+    } else {
+      send();
+    }
+  };
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
   try {
-    const response = await fetch('https://geminidesk.hillelben14.workers.dev/latest-message');
-    
-    if (response.ok) {
-      const messageData = await response.json();
-      
-      if (messageData && messageData.id && messageData.id !== settings.lastShownNotificationId) {
+    // Avoid cached responses so "no new message" vs. "new message" is always fresh.
+    const response = await fetch('https://latex-r70v.onrender.com/latest-message', {
+      cache: 'no-cache',
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    // Treat 404 as "no messages on server", anything else non-OK as an error.
+    if (!response.ok && response.status !== 404) {
+      throw new Error(`Server error: ${response.status}`);
+    }
+
+    const messageData = response.status === 404 ? {} : await response.json();
+
+    // If the server returned a message with an id
+    if (messageData && messageData.id) {
+      if (messageData.id !== settings.lastShownNotificationId) {
+        // --- New notification found ---
         console.log(`New notification found: ID ${messageData.id}`);
-        settings.lastShownNotificationId = messageData.id; 
+        settings.lastShownNotificationId = messageData.id;
+        settings.lastMessageData = messageData;
         saveSettings(settings);
-        createNotificationWindow(messageData);
-        // אם הבדיקה ידנית, שלח סטטוס הצלחה
-        if (event) {
-          event.sender.send('notification-check-status', { status: 'found' });
-        }
-      } else {
-        // אם הבדיקה ידנית ולא נמצא כלום, שלח סטטוס "לא נמצא"
-        if (event) {
-          event.sender.send('notification-check-status', { status: 'not-found' });
-        }
+
+        if (!notificationWin) createNotificationWindow();
+        sendToNotificationWindow({ status: 'found', content: messageData });
+      } else if (isManualCheck) {
+        // --- Same message as last time; no new notifications ---
+        sendToNotificationWindow({ status: 'no-new-message' });
+      }
+    } else {
+      // --- No message exists on the server (deleted/none) ---
+      console.log('No message found on server. Clearing local cache.');
+      settings.lastShownNotificationId = null;
+      settings.lastMessageData = null;
+      saveSettings(settings);
+
+      if (isManualCheck) {
+        sendToNotificationWindow({ status: 'no-messages-ever' });
       }
     }
   } catch (error) {
+    clearTimeout(timeoutId);
     console.error('Failed to check for notifications:', error.message);
-    // אם הבדיקה ידנית והייתה שגיאה, שלח סטטוס שגיאה
-    if (event) {
-      event.sender.send('notification-check-status', { status: 'error', message: error.message });
+    if (isManualCheck && notificationWin) {
+      const errorMessage = (error.name === 'AbortError')
+        ? 'The request timed out.'
+        : error.message;
+      sendToNotificationWindow({ status: 'error', message: errorMessage });
     }
   }
 }
+
 let notificationIntervalId = null;
 
 function scheduleNotificationCheck() {
@@ -578,7 +643,11 @@ function proceedWithScreenshot() {
             triggerSearch();
         });
     }
-
+    if (shortcuts.refresh) {
+        globalShortcut.register(shortcuts.refresh, () => {
+            reloadFocusedView();
+        });
+    }
     if (shortcuts.newWindow) {
         globalShortcut.register(shortcuts.newWindow, () => {
             createWindow();
@@ -907,13 +976,48 @@ ipcMain.on('toggle-full-screen', (event) => {
         }
     }
 });
+
+/**
+ * Sends an error report to the server.
+ * @param {Error} error The error object to report.
+ */
+async function reportErrorToServer(error) {
+    if (!error) return;
+    console.error('Reporting error to server:', error);
+    try {
+        await fetch('https://latex-r70v.onrender.com/error', { // ודא שזו כתובת ה-worker שלך
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                version: app.getVersion(),
+                error: error.message,
+                stack: error.stack,
+                platform: process.platform
+            })
+        });
+    } catch (fetchError) {
+        console.error('Could not send error report:', fetchError.message);
+    }
+}
 // ================================================================= //
 // App Lifecycle
 // ================================================================= //
 
 app.whenReady().then(() => {
   createWindow();
-
+const sendPing = async () => {
+    try {
+        await fetch('https://latex-r70v.onrender.com/ping-stats', { // ודא שזו כתובת ה-worker שלך
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ version: app.getVersion() })
+        });
+        console.log('Analytics ping sent successfully.');
+    } catch (error) {
+        console.error('Failed to send analytics ping:', error.message);
+    }
+};
+sendPing(); 
   // --- 1. טיפול בבקשות הרשאה (כמו מיקרופון) ---
   const ses = session.defaultSession;
   ses.setPermissionRequestHandler((webContents, permission, callback) => {
@@ -999,8 +1103,8 @@ app.on('window-all-closed', () => {
 ipcMain.on('check-for-updates', () => {
   openUpdateWindowAndCheck();
 });
-ipcMain.on('manual-check-for-notifications', (event) => {
-  checkForNotifications(event);
+ipcMain.on('manual-check-for-notifications', () => {
+  checkForNotifications(true); // true = isManualCheck
 });
 // === Update process management with feedback to the settings window ===
 const sendUpdateStatus = (status, data = {}) => {
@@ -1156,6 +1260,41 @@ ipcMain.on('close-notification-window', () => {
 ipcMain.on('close-download-window', () => {
   if (downloadWin) {
     downloadWin.close();
+  }
+});
+ipcMain.on('request-last-notification', async (event) => {
+  const senderWebContents = event.sender;
+  if (!senderWebContents || senderWebContents.isDestroyed()) return;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+  try {
+    const response = await fetch('https://latex-r70v.onrender.com/latest-message', {
+      cache: 'no-cache', // <-- הוספנו את זה
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    
+    //... (שאר הקוד נשאר זהה)
+    if (!response.ok && response.status !== 404) throw new Error(`Server error: ${response.status}`);
+    const messageData = response.status === 404 ? {} : await response.json();
+    
+    if (messageData && messageData.id) {
+      settings.lastShownNotificationId = messageData.id; 
+      settings.lastMessageData = messageData;
+      saveSettings(settings);
+      senderWebContents.send('notification-data', { status: 'found', content: messageData });
+    } else {
+      senderWebContents.send('notification-data', { status: 'no-messages-ever' });
+    }
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.error('Failed to fetch last notification:', error.message);
+    let errorMessage = error.name === 'AbortError' ? 'The request timed out.' : error.message;
+    if (!senderWebContents.isDestroyed()) {
+      senderWebContents.send('notification-data', { status: 'error', message: errorMessage });
+    }
   }
 });
 ipcMain.on('install-update-now', () => {
