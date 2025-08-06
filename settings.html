@@ -205,88 +205,8 @@
     </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    // Check if electronAPI exists (for Electron environment)
-    if (!window.electronAPI) { 
-        console.warn('electronAPI not available - running in browser mode');
-        // Initialize with default values for testing
-        initializeBrowserMode();
-        return; 
-    }
-    
-    const electronAPI = window.electronAPI;
-
-    // --- Sync UI with settings ---
-    const syncUi = (settings) => {
-        try {
-            document.getElementById('setting-autoStart').checked = settings.autoStart || false;
-            document.getElementById('setting-alwaysOnTop').checked = settings.alwaysOnTop || false;
-            document.getElementById('setting-autoCheckNotifications').checked = settings.autoCheckNotifications || false;
-            document.getElementById('setting-enableCanvasResizing').checked = settings.enableCanvasResizing || false;
-            
-            // Update shortcut buttons
-            document.querySelectorAll('.record-button').forEach(button => {
-                const key = button.dataset.key;
-                if(settings.shortcuts && settings.shortcuts[key]) {
-                    button.textContent = settings.shortcuts[key];
-                } else {
-                    button.textContent = 'Click to record';
-                }
-            });
-        } catch (error) {
-            console.error('Error syncing UI:', error);
-        }
-    };
-
-    // Initialize settings
-    electronAPI.getSettings().then(syncUi).catch(error => {
-        console.error('Error getting settings:', error);
-    });
-    
-    electronAPI.onSettingsUpdated(syncUi);
-
-    // --- General Event Listeners ---
-    document.getElementById('close-button').addEventListener('click', () => {
-        if (window.close) {
-            window.close();
-        } else {
-            electronAPI.closeWindow();
-        }
-    });
-    
-    document.getElementById('reset-button').addEventListener('click', () => {
-        electronAPI.showConfirmReset();
-    });
-    
-    // --- Toggle Switches ---
-    document.getElementById('setting-autoStart').addEventListener('change', (e) => {
-        electronAPI.updateSetting('autoStart', e.target.checked);
-    });
-    
-    document.getElementById('setting-alwaysOnTop').addEventListener('change', (e) => {
-        electronAPI.updateSetting('alwaysOnTop', e.target.checked);
-    });
-    
-    document.getElementById('setting-autoCheckNotifications').addEventListener('change', (e) => {
-        electronAPI.updateSetting('autoCheckNotifications', e.target.checked);
-    });
-    
-    document.getElementById('setting-enableCanvasResizing').addEventListener('change', (e) => {
-        electronAPI.updateSetting('enableCanvasResizing', e.target.checked);
-    });
-
-    // --- Manual Action Buttons ---
-    document.getElementById('manual-check-for-updates-button').addEventListener('click', () => {
-        electronAPI.checkForUpdates();
-    });
-
-    document.getElementById('check-for-notifications-button').addEventListener('click', () => {
-        electronAPI.manualCheckForNotifications();
-    });
-
-    // --- Shortcut Recording Logic ---
+    // --- Refactored Shortcut Recording Logic (Global) ---
     let isRecording = false;
-    
     const startRecording = (button) => {
         if (isRecording) return;
         
@@ -314,13 +234,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.shiftKey) pressedKeys.add('Shift');
             if (e.metaKey) pressedKeys.add('Super');
             
-            // Add the actual key (avoid adding modifier keys twice)
+            // Add the actual key
             if (!['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) {
                 const keyCode = e.code.replace('Key', '').replace('Digit', '');
                 pressedKeys.add(keyCode);
             }
             
-            // Update button text with current combination
             button.textContent = Array.from(pressedKeys).join('+');
         };
         
@@ -328,7 +247,6 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             e.stopPropagation();
             
-            // Cancel recording on Escape
             if (e.key === 'Escape') {
                 button.textContent = originalText;
                 cleanup();
@@ -337,133 +255,14 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const finalShortcut = Array.from(pressedKeys).join('+');
             
-            // Only save if we have a valid combination (more than just modifier keys)
             if (pressedKeys.size > 1 && finalShortcut !== 'Control+Alt+Shift') {
                 button.textContent = finalShortcut;
-                electronAPI.updateSetting(`shortcuts.${button.dataset.key}`, finalShortcut);
-            } else {
-                button.textContent = originalText;
-            }
-            
-            cleanup();
-        };
-        
-        // Add event listeners
-        document.addEventListener('keydown', keydownHandler, true);
-        document.addEventListener('keyup', keyupHandler, true);
-    };
-
-    // Add click handlers to all record buttons
-    document.querySelectorAll('.record-button').forEach(button => {
-        button.addEventListener('click', () => startRecording(button));
-    });
-});
-
-// Initialize browser mode for testing without Electron
-function initializeBrowserMode() {
-    console.log('Initializing browser mode');
-    
-    // Mock settings for testing
-    const mockSettings = {
-        autoStart: false,
-        alwaysOnTop: false,
-        autoCheckNotifications: true,
-        enableCanvasResizing: true,
-        shortcuts: {
-            showHide: 'Control+Space',
-            newWindow: 'Control+N',
-            quit: 'Control+Q',
-            showInstructions: 'F1',
-            refresh: 'F5',
-            search: 'Control+F',
-            screenshot: 'Control+Shift+S',
-            newChatPro: 'Control+Shift+P',
-            newChatFlash: 'Control+Shift+F'
-        }
-    };
-    
-    // Update UI with mock settings
-    document.getElementById('setting-autoStart').checked = mockSettings.autoStart;
-    document.getElementById('setting-alwaysOnTop').checked = mockSettings.alwaysOnTop;
-    document.getElementById('setting-autoCheckNotifications').checked = mockSettings.autoCheckNotifications;
-    document.getElementById('setting-enableCanvasResizing').checked = mockSettings.enableCanvasResizing;
-    
-    document.querySelectorAll('.record-button').forEach(button => {
-        const key = button.dataset.key;
-        if(mockSettings.shortcuts[key]) {
-            button.textContent = mockSettings.shortcuts[key];
-        }
-    });
-    
-    // Add mock event handlers
-    document.getElementById('close-button').addEventListener('click', () => {
-        alert('Close button clicked (browser mode)');
-    });
-    
-    document.getElementById('reset-button').addEventListener('click', () => {
-        alert('Reset button clicked (browser mode)');
-    });
-    
-    document.getElementById('manual-check-for-updates-button').addEventListener('click', () => {
-        alert('Check for updates clicked (browser mode)');
-    });
-    
-    document.getElementById('check-for-notifications-button').addEventListener('click', () => {
-        alert('Check notifications clicked (browser mode)');
-    });
-    
-    // Add shortcut recording for browser mode
-    let isRecording = false;
-    
-    const startRecording = (button) => {
-        if (isRecording) return;
-        
-        isRecording = true;
-        const originalText = button.textContent;
-        const pressedKeys = new Set();
-        
-        button.textContent = 'Recording...';
-        button.classList.add('is-recording');
-        
-        const cleanup = () => {
-            document.removeEventListener('keydown', keydownHandler, true);
-            document.removeEventListener('keyup', keyupHandler, true);
-            button.classList.remove('is-recording');
-            isRecording = false;
-        };
-        
-        const keydownHandler = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            if (e.ctrlKey) pressedKeys.add('Control');
-            if (e.altKey) pressedKeys.add('Alt');
-            if (e.shiftKey) pressedKeys.add('Shift');
-            if (e.metaKey) pressedKeys.add('Super');
-            
-            if (!['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) {
-                const keyCode = e.code.replace('Key', '').replace('Digit', '');
-                pressedKeys.add(keyCode);
-            }
-            
-            button.textContent = Array.from(pressedKeys).join('+');
-        };
-        
-        const keyupHandler = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            if (e.key === 'Escape') {
-                button.textContent = originalText;
-                cleanup();
-                return;
-            }
-            
-            const finalShortcut = Array.from(pressedKeys).join('+');
-            
-            if (pressedKeys.size > 1) {
-                button.textContent = finalShortcut;
-                console.log(`Shortcut recorded for ${button.dataset.key}: ${finalShortcut}`);
+                // Use electronAPI if available, otherwise log for browser mode
+                if (window.electronAPI) {
+                    window.electronAPI.updateSetting(`shortcuts.${button.dataset.key}`, finalShortcut);
+                } else {
+                    console.log(`Shortcut recorded for ${button.dataset.key}: ${finalShortcut}`);
+                }
             } else {
                 button.textContent = originalText;
             }
@@ -475,10 +274,74 @@ function initializeBrowserMode() {
         document.addEventListener('keyup', keyupHandler, true);
     };
 
-    document.querySelectorAll('.record-button').forEach(button => {
-        button.addEventListener('click', () => startRecording(button));
+    // --- Main Logic ---
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.electronAPI) {
+            initializeElectronMode(window.electronAPI);
+        } else {
+            console.warn('electronAPI not available - running in browser mode');
+            initializeBrowserMode();
+        }
     });
-}
+
+    // --- Electron-Specific Initialization ---
+    function initializeElectronMode(electronAPI) {
+        // --- Sync UI with settings ---
+        const syncUi = (settings) => {
+            try {
+                document.getElementById('setting-autoStart').checked = settings.autoStart || false;
+                document.getElementById('setting-alwaysOnTop').checked = settings.alwaysOnTop || false;
+                document.getElementById('setting-autoCheckNotifications').checked = settings.autoCheckNotifications || false;
+                document.getElementById('setting-enableCanvasResizing').checked = settings.enableCanvasResizing || false;
+
+                document.querySelectorAll('.record-button').forEach(button => {
+                    const key = button.dataset.key;
+                    button.textContent = (settings.shortcuts && settings.shortcuts[key]) ? settings.shortcuts[key] : 'Click to record';
+                });
+            } catch (error) {
+                console.error('Error syncing UI:', error);
+            }
+        };
+
+        electronAPI.getSettings().then(syncUi);
+        electronAPI.onSettingsUpdated(syncUi);
+
+        // --- Event Listeners ---
+        document.getElementById('close-button').addEventListener('click', () => electronAPI.closeWindow ? electronAPI.closeWindow() : window.close());
+        document.getElementById('reset-button').addEventListener('click', () => electronAPI.showConfirmReset());
+        document.getElementById('setting-autoStart').addEventListener('change', (e) => electronAPI.updateSetting('autoStart', e.target.checked));
+        document.getElementById('setting-alwaysOnTop').addEventListener('change', (e) => electronAPI.updateSetting('alwaysOnTop', e.target.checked));
+        document.getElementById('setting-autoCheckNotifications').addEventListener('change', (e) => electronAPI.updateSetting('autoCheckNotifications', e.target.checked));
+        document.getElementById('setting-enableCanvasResizing').addEventListener('change', (e) => electronAPI.updateSetting('enableCanvasResizing', e.target.checked));
+        document.getElementById('manual-check-for-updates-button').addEventListener('click', () => electronAPI.checkForUpdates());
+        document.getElementById('check-for-notifications-button').addEventListener('click', () => electronAPI.manualCheckForNotifications());
+        document.querySelectorAll('.record-button').forEach(button => button.addEventListener('click', () => startRecording(button)));
+    }
+
+    // --- Browser-Mode Initialization (for testing) ---
+    function initializeBrowserMode() {
+        const mockSettings = {
+            autoStart: false, alwaysOnTop: true, autoCheckNotifications: true, enableCanvasResizing: true,
+            shortcuts: { showHide: 'Alt+G', newWindow: 'Alt+N', quit: 'Alt+Q', showInstructions: 'Alt+I', refresh: 'Alt+R', search: 'Alt+S', screenshot: 'Control+Alt+S', newChatPro: 'Alt+P', newChatFlash: 'Alt+F' }
+        };
+        
+        // --- Sync UI ---
+        document.getElementById('setting-autoStart').checked = mockSettings.autoStart;
+        document.getElementById('setting-alwaysOnTop').checked = mockSettings.alwaysOnTop;
+        document.getElementById('setting-autoCheckNotifications').checked = mockSettings.autoCheckNotifications;
+        document.getElementById('setting-enableCanvasResizing').checked = mockSettings.enableCanvasResizing;
+        document.querySelectorAll('.record-button').forEach(button => {
+            const key = button.dataset.key;
+            button.textContent = mockSettings.shortcuts[key] || 'Click to record';
+        });
+
+        // --- Mock Event Listeners ---
+        document.getElementById('close-button').addEventListener('click', () => alert('Close clicked'));
+        document.getElementById('reset-button').addEventListener('click', () => alert('Reset clicked'));
+        document.getElementById('manual-check-for-updates-button').addEventListener('click', () => alert('Check for updates clicked'));
+        document.getElementById('check-for-notifications-button').addEventListener('click', () => alert('Check notifications clicked'));
+        document.querySelectorAll('.record-button').forEach(button => button.addEventListener('click', () => startRecording(button)));
+    }
 </script>
 </body>
 </html>
