@@ -31,16 +31,16 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run build -- --mac --publish never
 
-      - name: Upload macOS DMG
+      - name: Upload macOS DMG artifact content
         uses: actions/upload-artifact@v4
         with:
-          name: GeminiDesk-mac-dmg
+          name: GeminiDesk-mac-dmg-content
           path: dist/*.dmg
 
-      - name: Upload macOS ZIP
+      - name: Upload macOS ZIP artifact content
         uses: actions/upload-artifact@v4
         with:
-          name: GeminiDesk-mac-zip
+          name: GeminiDesk-mac-zip-content
           path: dist/*.zip
 
   build-win:
@@ -62,10 +62,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run build -- --win --publish never
 
-      - name: Upload Windows EXE
+      - name: Upload Windows EXE artifact content
         uses: actions/upload-artifact@v4
         with:
-          name: GeminiDesk-win-exe
+          name: GeminiDesk-win-exe-content
           path: dist/*.exe
 
   release:
@@ -78,7 +78,7 @@ jobs:
         with:
           path: artifacts
 
-      - name: List downloaded files
+      - name: List downloaded files for debugging
         run: ls -R artifacts
 
       - name: Create GitHub Release (draft)
@@ -91,23 +91,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload macOS DMG to release
+      - name: Upload ALL content from macOS DMG artifact
         run: |
-          dmg_path=$(find artifacts/GeminiDesk-mac-dmg -name '*.dmg' -type f)
-          gh release upload ${{ github.ref_name }} "$dmg_path" --clobber
+          # The glob '*' tells it to take everything inside the directory
+          gh release upload ${{ github.ref_name }} artifacts/GeminiDesk-mac-dmg-content/* --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload macOS ZIP to release
+      - name: Upload ALL content from macOS ZIP artifact
         run: |
-          zip_path=$(find artifacts/GeminiDesk-mac-zip -name '*.zip' -type f)
-          gh release upload ${{ github.ref_name }} "$zip_path" --clobber
+          gh release upload ${{ github.ref_name }} artifacts/GeminiDesk-mac-zip-content/* --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload Windows EXE to release
+      - name: Upload ALL content from Windows EXE artifact
         run: |
-          exe_path=$(find artifacts/GeminiDesk-win-exe -name '*.exe' -type f)
-          gh release upload ${{ github.ref_name }} "$exe_path" --clobber
+          gh release upload ${{ github.ref_name }} artifacts/GeminiDesk-win-exe-content/* --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
