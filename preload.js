@@ -81,5 +81,6 @@ window.addEventListener('load', () => {
 
 contextBridge.exposeInMainWorld('notificationAPI', {
     closeWindow: () => ipcRenderer.send('close-notification-window'),
+    requestLastNotification: () => ipcRenderer.send('request-last-notification'),      // ← ADD THIS
     onReceiveNotification: (callback) => ipcRenderer.on('notification-data', (event, ...args) => callback(...args)),
 });
