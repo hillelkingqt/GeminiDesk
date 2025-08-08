@@ -36,16 +36,20 @@ contextBridge.exposeInMainWorld('updateAPI', {
 });
 let lastTitle = '';
 setInterval(() => {
-    // Checks the title from the DOM of the Gemini page
-    const titleElement = document.querySelector('.conversation.selected .conversation-title');
-    let currentTitle = 'New Chat'; // Default value if there is no open chat or title
-    if (titleElement) {
-        currentTitle = titleElement.textContent.trim();
-    }
-    
-    if (currentTitle !== lastTitle) {
-        lastTitle = currentTitle;
-        ipcRenderer.send('update-title', currentTitle);
+    try {
+        // Checks the title from the DOM of the Gemini page
+        const titleElement = document.querySelector('.conversation.selected .conversation-title');
+        let currentTitle = 'New Chat'; // Default value if there is no open chat or title
+        if (titleElement) {
+            currentTitle = titleElement.textContent.trim();
+        }
+
+        if (currentTitle !== lastTitle) {
+            lastTitle = currentTitle;
+            ipcRenderer.send('update-title', currentTitle);
+        }
+    } catch (error) {
+        console.error("Error scraping title:", error);
     }
 }, 1000); // Checks every second
 
