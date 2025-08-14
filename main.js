@@ -42,6 +42,7 @@ const defaultSettings = {
   shortcuts: {
     showHide: 'Alt+G',
     quit: 'Alt+Q',
+    closeWindow: 'Alt+W',
     showInstructions: 'Alt+I',
     screenshot: 'Control+Alt+S',
     newChatPro: 'Alt+P',
@@ -448,6 +449,7 @@ const cfg = settings.shortcuts;
 const hotkeys = {
   showHide:      isMac ? 'Command+G'            : cfg.showHide,
   quit:          isMac ? 'Command+Q'            : cfg.quit,
+  closeWindow:   isMac ? 'Command+W'            : cfg.closeWindow,
   showInstructions: isMac ? 'Command+I'         : cfg.showInstructions,
   screenshot:    isMac ? 'Command+Shift+5'      : cfg.screenshot,
   newChatPro:    isMac ? 'Command+P'            : cfg.newChatPro,
@@ -505,12 +507,19 @@ if (shortcuts.showHide) {
         globalShortcut.register(shortcuts.newChatFlash, () => createNewChatWithModel('Flash'));
     }
 
-    if (shortcuts.quit) {
-        globalShortcut.register(shortcuts.quit, () => {
+    if (shortcuts.closeWindow) {
+        globalShortcut.register(shortcuts.closeWindow, () => {
             const focusedWindow = BrowserWindow.getFocusedWindow();
             if (focusedWindow) {
                 focusedWindow.close();
             }
+        });
+    }
+
+    if (shortcuts.quit) {
+        globalShortcut.register(shortcuts.quit, () => {
+            isQuitting = true;
+            app.quit();
         });
     }
 
@@ -1097,7 +1106,9 @@ app.on('will-quit', () => {
 });
 
 app.on('window-all-closed', () => {
-  app.quit();
+  if (isQuitting) {
+    app.quit();
+  }
 });
 
 ipcMain.on('check-for-updates', () => {

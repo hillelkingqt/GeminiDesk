@@ -164,6 +164,10 @@
                 <button class="record-button" data-key="newWindow">Click to record</button>
             </div>
             <div class="setting-item">
+                <div class="setting-label"><strong>Close Window</strong><span>Closes the current window but keeps the app running.</span></div>
+                <button class="record-button" data-key="closeWindow">Click to record</button>
+            </div>
+            <div class="setting-item">
                 <div class="setting-label"><strong>Quit Application</strong><span>Close the application.</span></div>
                 <button class="record-button" data-key="quit">Click to record</button>
             </div>
@@ -372,6 +376,7 @@ function initializeBrowserMode() {
         shortcuts: {
             showHide: 'Control+Space',
             newWindow: 'Control+N',
+            closeWindow: 'Control+W',
             quit: 'Control+Q',
             showInstructions: 'F1',
             refresh: 'F5',
