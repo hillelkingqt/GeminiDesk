@@ -8,7 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
 const { clipboard, nativeImage } = require('electron');
-const https = require('https'); // לביצוע בקשת API ל-GitHub
+const https = require('https'); // To make a GitHub API request
 const Store = require('electron-store');
 const os = require('os');
 const crypto = require('crypto');
@@ -35,21 +35,21 @@ const launcherPath = isMac
 const autoLauncher = new AutoLaunch({
   name: 'GeminiApp',
   path: launcherPath,
-  isHidden: true,    // על macOS מוסיף את האפליקציה ל־Login Items בנסתר
+  isHidden: true,    // On macOS, adds the app to Login Items as hidden
 });
 let isUserTogglingHide = false;
 function forceOnTop(win) {
   if (!win || win.isDestroyed()) return;
 
-  // שמור את מצב alwaysOnTop לפי ההגדרה שלך
+  // Save the alwaysOnTop state according to your setting
   const shouldBeOnTop = !!settings.alwaysOnTop;
 
-  // ב-Windows מספיק true; ב-macOS אפשר לשלב וורקספייסים
+  // On Windows, true is sufficient; on macOS, you can combine workspaces
   if (process.platform === 'darwin') {
     win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   }
 
-  // העלה לראש, הצג ותן פוקוס גם ל-BrowserView
+  // Bring to front, show, and focus the BrowserView as well
   win.setAlwaysOnTop(shouldBeOnTop /*, 'screen-saver' */);
   win.show();
   if (typeof win.moveTop === 'function') win.moveTop();
@@ -78,10 +78,10 @@ const defaultSettings = {
   enableCanvasResizing: true,
   shortcutsGlobal: true,
   shortcuts: {
-    showHide: isMac ? 'Command+G' : 'Alt+G', // ← דוגמה לתיקון
+    showHide: isMac ? 'Command+G' : 'Alt+G', // <- Example of a fix
     quit: isMac ? 'Command+Q' : 'Control+W',
     showInstructions: isMac ? 'Command+I' : 'Alt+I',
-    screenshot: isMac ? 'Command+Alt+S' : 'Control+Alt+S', // אין מקביל מדויק ב-Mac, עדיף להשאיר ל-Mac
+    screenshot: isMac ? 'Command+Alt+S' : 'Control+Alt+S', // No direct equivalent on Mac, better to leave for Mac
     newChatPro: isMac ? 'Command+P' : 'Alt+P',
     newChatFlash: isMac ? 'Command+F' : 'Alt+F',
     newWindow: isMac ? 'Command+N' : 'Alt+N',
@@ -104,11 +104,11 @@ function scheduleDailyUpdateCheck() {
     }
   };
 
-  // בדיקה מיד עם ההפעלה
+  // Check immediately upon startup
   checkForUpdates();
   
-  // בדיקה חוזרת כל חצי שעה
-  setInterval(checkForUpdates, 30 * 60 * 1000); // 30 דקות במילישניות
+  // Recurring check every half hour
+  setInterval(checkForUpdates, 30 * 60 * 1000); // 30 minutes in milliseconds
 }
 
 function reloadFocusedView() {
@@ -432,13 +432,13 @@ async function checkForNotifications(isManualCheck = false) {
 let notificationIntervalId = null;
 
 function scheduleNotificationCheck() {
-  // נקה את האינטרוול הקודם אם קיים
+  // Clear the previous interval if it exists
   if (notificationIntervalId) {
     clearInterval(notificationIntervalId);
     notificationIntervalId = null;
   }
 
-  // אם המשתמש רוצה בדיקה אוטומטית, הגדר אותה מחדש
+  // If the user wants an automatic check, set it up again
   if (settings.autoCheckNotifications) {
     const halfHourInMs = 30 * 60 * 1000; 
     notificationIntervalId = setInterval(checkForNotifications, halfHourInMs);
@@ -773,7 +773,7 @@ function createWindow() {
         height: originalSize.height,
         skipTaskbar: true,
         frame: false,
-        backgroundColor: '#1E1E1E', // <--- הוסף את השורה הזו
+        backgroundColor: '#1E1E1E', // <--- Add this line
         alwaysOnTop: settings.alwaysOnTop,
         fullscreenable: false,
         focusable: true,
@@ -842,16 +842,16 @@ function createWindow() {
     if (!settings.onboardingShown) {
         newWin.loadFile('onboarding.html');
     } else if (settings.defaultMode === 'ask') {
-        // טען את מסך הבחירה
+        // Load the choice screen
         newWin.loadFile('choice.html');
         
-        // הגדר גודל מיוחד וקטן יותר למסך הבחירה כפי שביקשת
+        // Set a special, smaller size for the choice screen as requested
         const choiceSize = { width: 500, height: 450 };
-        newWin.setResizable(false); // ננעל את הגודל זמנית
+        newWin.setResizable(false); // Temporarily lock the size
         newWin.setBounds(choiceSize);
         newWin.center();
     } else {
-        // טען ישירות את האפליקציה שהמשתמש בחר כברירת מחדל
+        // Load the app the user chose as default directly
         loadGemini(settings.defaultMode, newWin);
     }
 }
@@ -864,7 +864,7 @@ function loadGemini(mode, targetWin) {
     const url = mode === 'aistudio' ? AISTUDIO_URL : GEMINI_URL;
     
     let loginWin = null;
-    const createAndManageLoginWindow = async (loginUrl) => { // הוספנו async
+    const createAndManageLoginWindow = async (loginUrl) => { // Added async
         if (loginWin && !loginWin.isDestroyed()) {
             loginWin.focus();
             return;
@@ -884,20 +884,20 @@ function loadGemini(mode, targetWin) {
             }
         });
 
-        // --- התיקון המרכזי מתחיל כאן ---
-        // נקה את כל נתוני הסשן של חלון ההתחברות לפני כל שימוש
-        // כדי להבטיח התחברות "נקייה" בכל פעם.
+        // --- The main fix starts here ---
+        // Clear all session data for the login window before each use
+        // to ensure a "clean" login every time.
         try {
             await loginWin.webContents.session.clearStorageData({
                 storages: ['cookies', 'localstorage'],
-                // נקה נתונים עבור כל הדומיינים של גוגל כדי להיות בטוחים
+                // Clear data for all Google domains to be sure
                 origins: ['https://accounts.google.com', 'https://google.com'] 
             });
             console.log('Login window session cleared for a fresh login attempt.');
         } catch (error) {
             console.error('Failed to clear login window session storage:', error);
         }
-        // --- סוף התיקון ---
+        // --- End of fix ---
 
         loginSaver.attachToView(loginWin);
         loginWin.loadURL(loginUrl);
@@ -937,14 +937,14 @@ try {
         sameSite: cookie.sameSite
     };
 
-    // --- התיקון המרכזי מתחיל כאן ---
-    // אם זו *לא* עוגיית __Host-, הגדר את הדומיין כרגיל
+    // --- The main fix starts here ---
+    // If it's *not* a __Host- cookie, set the domain as usual
     if (!cookie.name.startsWith('__Host-')) {
         newCookie.domain = cookie.domain;
     }
-    // אם זו *כן* עוגיית __Host-, אל תגדיר דומיין כלל. 
-    // Electron יגדיר אותו אוטומטית לפי ה-URL, ויעמוד בכללים.
-    // --- סוף התיקון ---
+    // If it *is* a __Host- cookie, don't set the domain at all.
+    // Electron will set it automatically based on the URL, complying with the rules.
+    // --- End of fix ---
 
     await mainSession.cookies.set(newCookie);
     successfulTransfers++;
@@ -977,7 +977,7 @@ try {
         });
     };
 
-    // --- הגדרת החלון הראשי (נשאר כפי שהיה) ---
+    // --- Main window setup (remains as it was) ---
     const existingView = targetWin.getBrowserView();
     if (existingView) {
         existingView.webContents.loadURL(url);
@@ -988,14 +988,14 @@ try {
 
     const newView = new BrowserView({
         webPreferences: {
-            partition: SESSION_PARTITION, // הוא חייב להישאר עם partition כדי לשמור את הסשן
+            partition: SESSION_PARTITION, // It must remain with a partition to save the session
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
             nativeWindowOpen: true
         }
     });
 
-    // יירוט ניתובים ופופ-אפים שקורא לפונקציה שיוצרת את החלון החיצוני
+    // Intercept routes and pop-ups that call the function that creates the external window
     newView.webContents.setWindowOpenHandler(({ url: popupUrl }) => {
         const isGoogleLogin = /^https:\/\/accounts\.google\.com\//.test(popupUrl);
         if (isGoogleLogin) {
@@ -1009,22 +1009,22 @@ try {
         const isGoogleAccountUrl = /^https:\/\/accounts\.google\.com\//.test(navigationUrl);
 
         if (isGoogleAccountUrl) {
-            // ירט תמיד את הניווט כדי שנוכל לטפל בו בעצמנו
+            // Always intercept the navigation so we can handle it ourselves
             event.preventDefault();
 
-            // בדוק אם זו כתובת התנתקות (היא בדרך כלל מכילה 'Logout')
+            // Check if it's a sign-out URL (it usually contains 'Logout')
             const isSignOutUrl = navigationUrl.includes('/Logout');
 
             if (isSignOutUrl) {
-                // --- טיפול בהתנתקות ---
+                // --- Sign-out handling ---
                 console.log('Sign-out detected. Clearing main application session...');
                 try {
                     const mainSession = session.fromPartition(SESSION_PARTITION);
-                    // נקה את כל העוגיות והאחסון של הסשן הראשי
+                    // Clear all cookies and storage of the main session
                     await mainSession.clearStorageData({ storages: ['cookies', 'localstorage'] });
                     console.log('Main session cleared. Reloading the view to show logged-out state.');
 
-                    // רענן את התצוגה כדי להציג את מסך ההתחברות של Gemini
+                    // Refresh the view to show Gemini's login screen
                     if (newView && !newView.webContents.isDestroyed()) {
                         newView.webContents.reload();
                     }
@@ -1032,8 +1032,8 @@ try {
                     console.error('Failed to clear main session on sign-out:', error);
                 }
             } else {
-                // --- טיפול בהתחברות או הוספת חשבון ---
-                // זה המצב הרגיל של פתיחת חלון חיצוני
+                // --- Login or add account handling ---
+                // This is the normal case of opening an external window
                 console.log('Sign-in or Add Account detected. Opening isolated login window.');
                 await createAndManageLoginWindow(navigationUrl);
             }
@@ -1042,7 +1042,7 @@ try {
         }
     });
     
-    // שאר הקוד של הפונקציה
+    // Rest of the function's code
     newView.webContents.on('found-in-page', (event, result) => {
         if (event.sender && !event.sender.isDestroyed()) {
             event.sender.send('find-in-page-result', result);
@@ -1245,26 +1245,26 @@ function handleFileOpen(filePath) {
             // This mimics the "Copy" action in the file explorer.
             // Note: This works reliably on Windows. macOS/Linux support can vary.
 if (process.platform === 'win32') {
-  // 1. בונים את מבנה ה-DROPFILES (20 בתים)  
+  // 1. Build the DROPFILES structure (20 bytes)
   const dropFilesStruct = Buffer.alloc(20);
-  // pFiles = 20 (היסט השורה הראשונה שבה מתחיל רשימת השמות)
+  // pFiles = 20 (offset where the file list begins)
   dropFilesStruct.writeUInt32LE(20, 0);
   // fWide = 1 (UTF-16)
   dropFilesStruct.writeUInt32LE(1, 16);
 
-  // 2. כותבים את השם (Unicode, null-terminated)
+  // 2. Write the name (Unicode, null-terminated)
   const utf16Path = filePath + '\0';
   const pathBuffer = Buffer.from(utf16Path, 'ucs2');
   
-  // 3. מסיימים ב-double-null כדי לסמן סוף הרשימה
+  // 3. End with a double-null to mark the end of the list
   const terminator = Buffer.from('\0\0', 'ucs2');
 
-  // 4. מאחדים הכל ויוצקים ל-clipboard
+  // 4. Concatenate everything and pour it into the clipboard
   const dropBuffer = Buffer.concat([dropFilesStruct, pathBuffer, terminator]);
   clipboard.writeBuffer('CF_HDROP', dropBuffer);
 
 } else {
-  // macOS/Linux או כ fallback: רק טקסט
+  // macOS/Linux or as a fallback: just text
   clipboard.write({ text: filePath });
 }
 
@@ -1298,8 +1298,8 @@ if (process.platform === 'win32') {
 ipcMain.on('select-app-mode', (event, mode) => {
     const senderWindow = BrowserWindow.fromWebContents(event.sender);
     if (senderWindow && !senderWindow.isDestroyed()) {
-        // --- שחזור גודל החלון המקורי ---
-        senderWindow.setResizable(true); // אפשר שינוי גודל מחדש
+        // --- Restore original window size ---
+        senderWindow.setResizable(true); // Allow resizing again
         senderWindow.setBounds(originalSize);
         senderWindow.center();
         // ------------------------------------
@@ -1312,14 +1312,14 @@ ipcMain.on('toggle-full-screen', (event) => {
     if (win && !win.isDestroyed()) {
         if (win.isMaximized()) {
             win.unmaximize();
-            // החזר את מצב "תמיד למעלה" המקורי מההגדרות
+            // Restore the original "always on top" state from settings
             win.setAlwaysOnTop(settings.alwaysOnTop, 'screen-saver');
-            win.focus(); // ודא שהחלון נשאר בפוקוס
+            win.focus(); // Ensure the window remains focused
         } else {
-            // כבה זמנית את "תמיד למעלה" לפני ההגדלה
+            // Temporarily disable "always on top" before maximizing
             win.setAlwaysOnTop(false);
             win.maximize();
-            win.focus(); // ודא שהחלון נשאר בפוקוס
+            win.focus(); // Ensure the window remains focused
         }
     }
 });
@@ -1332,7 +1332,7 @@ async function reportErrorToServer(error) {
     if (!error) return;
     console.error('Reporting error to server:', error);
     try {
-        await fetch('https://latex-v25b.onrender.com/error', { // ודא שזו כתובת ה-worker שלך
+        await fetch('https://latex-v25b.onrender.com/error', { // Make sure this is your worker's address
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1355,7 +1355,7 @@ function broadcastThemeChange(newTheme) {
         ? (nativeTheme.shouldUseDarkColors ? 'dark' : 'light')
         : newTheme;
 
-    // השתמש בפונקציה הזו כדי לשלוח את העדכון גם לחלון הראשי וגם ל-BrowserView
+    // Use this function to send the update to both the main window and the BrowserView
     broadcastToAllWebContents('theme-updated', themeToSend);
 }
 function syncThemeWithWebsite(theme) {
@@ -1398,7 +1398,7 @@ app.whenReady().then(() => {
 gemSession.setUserAgent(REAL_CHROME_UA);
 const sendPing = async () => {
     try {
-        await fetch('https://latex-v25b.onrender.com/ping-stats', { // ודא שזו כתובת ה-worker שלך
+        await fetch('https://latex-v25b.onrender.com/ping-stats', { // Make sure this is your worker's address
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ version: app.getVersion() })
@@ -1409,58 +1409,58 @@ const sendPing = async () => {
     }
 };
 sendPing(); 
-  // --- 1. טיפול בבקשות הרשאה (כמו מיקרופון) ---
+  // --- 1. Handling permission requests (like microphone) ---
   const ses = session.defaultSession;
   ses.setPermissionRequestHandler((webContents, permission, callback) => {
-    // בדוק אם הבקשה היא עבור 'media' (כולל מיקרופון)
+    // Check if the request is for 'media' (includes microphone)
     if (permission === 'media') {
-      // אשר את ההרשאה אוטומטית בכל פעם
+      // Automatically grant permission each time
       callback(true);
     } else {
-      // סרב לכל בקשת הרשאה אחרת מטעמי אבטחה
+      // Deny any other permission request for security reasons
       callback(false);
     }
   });
 
-  // --- 2. פתרון לבאג צילום מסך ב-Windows שגורם לחלונות להיעלם ---
+  // --- 2. Solution for the screenshot bug on Windows that causes windows to disappear ---
   const preventWindowHiding = () => {
     const allWindows = BrowserWindow.getAllWindows();
     allWindows.forEach(win => {
       if (win && !win.isDestroyed() && win.isVisible()) {
-        // הגדר זמנית את החלון ל"תמיד למעלה" כדי למנוע ממנו להסתתר
+        // Temporarily set the window to "always on top" to prevent it from hiding
         win.setAlwaysOnTop(true);
         setTimeout(() => {
           if (win && !win.isDestroyed()) {
-            // החזר את הגדרת "תמיד למעלה" המקורית מההגדרות
+            // Restore the original "always on top" setting from the settings
             win.setAlwaysOnTop(settings.alwaysOnTop, 'screen-saver');
           }
-        }, 3000); // שחזר את המצב אחרי 3 שניות
+        }, 3000); // Restore the state after 3 seconds
       }
     });
   };
 
-  // --- 3. רישום קיצורי דרך והגדרות הפעלה ---
+  // --- 3. Registering shortcuts and startup settings ---
   registerShortcuts();
   if (settings.autoStart) {
     setAutoLaunch(true);
   }
 
-  // --- 4. הגדרות מערכת העדכונים האוטומטית ---
+  // --- 4. Automatic update system settings ---
   autoUpdater.autoDownload = false;
-  autoUpdater.forceDevUpdateConfig = true; // טוב לבדיקות, יכול להישאר
+  autoUpdater.forceDevUpdateConfig = true; // Good for testing, can remain
   if (app.isPackaged) {
   }
   
-  // --- 5. הפעלת מערכת הנוטיפיקציות מהשרת ---
-  checkForNotifications(); // בצע בדיקה ראשונית אחת מיד עם הפעלת האפליקציה
+  // --- 5. Activating the notification system from the server ---
+  checkForNotifications(); // Perform an initial check immediately upon app startup
   scheduleNotificationCheck();
-  // --- 6. טיפול בפתיחת קובץ דרך "Open With" ---
+  // --- 6. Handling opening a file via "Open With" ---
   if (filePathToProcess) {
     const primaryWindow = BrowserWindow.getAllWindows()[0];
     if (primaryWindow) {
       const primaryView = primaryWindow.getBrowserView();
       if (primaryView) {
-        // המתן עד שהתוכן של Gemini ייטען במלואו לפני הדבקת הקובץ
+        // Wait until Gemini's content is fully loaded before pasting the file
         primaryView.webContents.once('did-finish-load', () => {
           setTimeout(() => {
             handleFileOpen(filePathToProcess);
@@ -1485,7 +1485,7 @@ app.on('before-quit', async () => {
     if (s && s.cookies && typeof s.cookies.flushStore === 'function') {
       await s.cookies.flushStore();
     } else if (s && typeof s.flushStorageData === 'function') {
-      // גרסאות Electron ישנות יותר
+      // Older Electron versions
       await s.flushStorageData();
     }
   } catch (e) {
@@ -1527,10 +1527,10 @@ function openUpdateWindowAndCheck() {
 
     updateWin.once('ready-to-show', async () => {
         updateWin.show();
-        // שלב 1: שלח לחלון הודעה שאנחנו מתחילים לבדוק
+        // Step 1: Send a message to the window that we are starting to check
         updateWin.webContents.send('update-info', { status: 'checking' });
         try {
-            // שלב 2: רק עכשיו, התחל את תהליך הבדיקה ברקע
+            // Step 2: Only now, start the check process in the background
             await autoUpdater.checkForUpdates();
         } catch (error) {
             console.error('Manual update check failed:', error.message);
@@ -1553,9 +1553,9 @@ autoUpdater.on('checking-for-update', () => {
 
 autoUpdater.on('update-available', async (info) => {
     if (!updateWin) {
-        // אם החלון לא נפתח ידנית, פתח אותו עכשיו (למקרה של בדיקה אוטומטית)
+        // If the window was not opened manually, open it now (for automatic checks)
         openUpdateWindowAndCheck();
-        return; // הפונקציה תקרא לעצמה שוב אחרי שהחלון יהיה מוכן
+        return; // The function will call itself again after the window is ready
     }
 
     try {
@@ -1585,15 +1585,15 @@ autoUpdater.on('update-available', async (info) => {
     } catch (importError) { if (updateWin) { updateWin.webContents.send('update-info', { status: 'error', message: 'Failed to load modules.' }); } }
 });
 
-// החלף את המאזין הקיים של 'update-not-available' בזה:
+// Replace the existing 'update-not-available' listener with this one:
 autoUpdater.on('update-not-available', (info) => {
     if (updateWin) {
         updateWin.webContents.send('update-info', { status: 'up-to-date' });
     }
-    sendUpdateStatus('up-to-date'); // שלח גם להגדרות, ליתר ביטחון
+    sendUpdateStatus('up-to-date'); // Also send to settings, just in case
 });
 
-// החלף את המאזין הקיים של 'error' בזה:
+// Replace the existing 'error' listener with this one:
 autoUpdater.on('error', (err) => {
     if (updateWin) {
         updateWin.webContents.send('update-info', { status: 'error', message: err.message });
@@ -1616,7 +1616,7 @@ autoUpdater.on('update-downloaded', () => {
 ipcMain.on('open-download-page', () => {
   const repoUrl = `https://github.com/hillelkingqt/GeminiDesk/releases/latest`;
   shell.openExternal(repoUrl);
-  // סגור את חלון העדכון לאחר פתיחת הדפדפן
+  // Close the update window after opening the browser
   if (updateWin) {
     updateWin.close();
   }
@@ -1673,12 +1673,12 @@ ipcMain.on('request-last-notification', async (event) => {
 
   try {
     const response = await fetch('https://latex-v25b.onrender.com/latest-message', {
-      cache: 'no-cache', // <-- הוספנו את זה
+      cache: 'no-cache', // <-- We added this
       signal: controller.signal
     });
     clearTimeout(timeoutId);
     
-    //... (שאר הקוד נשאר זהה)
+    //... (rest of the code remains the same)
     if (!response.ok && response.status !== 404) throw new Error(`Server error: ${response.status}`);
     const messageData = response.status === 404 ? {} : await response.json();
     
@@ -1829,7 +1829,7 @@ ipcMain.on('update-setting', (event, key, value) => {
         setAutoLaunch(value);
     }
     if (key === 'autoCheckNotifications') {
-    scheduleNotificationCheck(); // עדכן את הטיימר
+    scheduleNotificationCheck(); // Update the timer
     }
     if (key.startsWith('shortcuts.') || key === 'shortcutsGlobal') {
         registerShortcuts(); // This function will now use the updated settings

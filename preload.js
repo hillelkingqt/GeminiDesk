@@ -58,7 +58,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
 findInPage: (text, forward) => ipcRenderer.send('find-in-page', text, forward),
     stopFindInPage: (action) => ipcRenderer.send('stop-find-in-page', action),
-  toggleFullScreen: () => ipcRenderer.send('toggle-full-screen'), // <--- הוסף שורה זו
+  toggleFullScreen: () => ipcRenderer.send('toggle-full-screen'), // <--- Add this line
   completeOnboarding: () => ipcRenderer.send('onboarding-complete'),
   getSettings: () => ipcRenderer.invoke('get-settings'),
   updateSetting: (key, value) => ipcRenderer.send('update-setting', key, value),
@@ -102,7 +102,7 @@ setInterval(() => {
         if (titleElement) {
             currentTitle = titleElement.textContent.trim();
         } else {
-            // document.title מכיל תמיד "| Google AI Studio" בסוף — נסיר אותו
+            // document.title always contains "| Google AI Studio" at the end — we'll remove it
             currentTitle = (document.title || 'AI Studio').replace(/\s*\|\s*Google AI Studio$/i, '').trim();
         }
     } else {
@@ -116,8 +116,8 @@ setInterval(() => {
     }
 }, 1000);
 
-// --- קוד מאוחד לניהול אוטומטי של הממשק ---
-// --- לוגיקה עבור שינוי גודל החלון (Canvas) ---
+// --- Unified code for automatic UI management ---
+// --- Logic for window resizing (Canvas) ---
 let isImmersivePanelCurrentlyVisible = false;
 
 function checkForPanelAndNotify() {
@@ -129,19 +129,19 @@ function checkForPanelAndNotify() {
     }
 }
 
-// --- הגדרת ה-MutationObserver ---
+// --- Setting up the MutationObserver ---
 const observer = new MutationObserver(() => {
-    // הרץ את פונקציית הבדיקה בכל שינוי בדף
+    // Run the check function on every page change
     checkForPanelAndNotify();
 });
 
-// התחלת המעקב אחרי שהדף נטען
+// Start tracking after the page loads
 window.addEventListener('load', () => {
     observer.observe(document.body, {
         childList: true,
         subtree: true
     });
-    // בצע בדיקה ראשונית אחת מיד עם טעינת הדף
+    // Perform an initial check immediately upon page load
     checkForPanelAndNotify();
 });
 // In preload.js, add this at the end
@@ -156,28 +156,28 @@ contextBridge.exposeInMainWorld('notificationAPI', {
 let findBar = null;
 let findInput = null;
 
-// האזנה לתוצאות מהתהליך הראשי
+// Listen for results from the main process
 ipcRenderer.on('find-in-page-result', (event, result) => {
     if (!findBar || !findInput) return;
 
     const countSpan = findBar.querySelector('.find-count');
     
-    // אם אין תוצאות, ננער את התיבה ונציג הודעה
+    // If there are no results, shake the box and show a message
     if (result.matches === 0 && findInput.value !== "") {
         countSpan.textContent = 'Not Found';
         findBar.classList.add('shake');
         setTimeout(() => findBar.classList.remove('shake'), 400);
     } 
-    // אם יש תוצאות, נציג את המונה
+    // If there are results, show the counter
     else if (result.matches > 0) {
         countSpan.textContent = `${result.activeMatchOrdinal} / ${result.matches}`;
     } 
-    // אם התיבה ריקה, ננקה את המונה
+    // If the box is empty, clear the counter
     else {
         countSpan.textContent = '';
     }
 
-    // 🔥 החזר את הפוקוס לתיבת החיפוש תמיד אחרי חיפוש, כדי לאפשר Enter חוזר
+    // 🔥 Always return focus to the search box after a search, to allow repeated Enter presses
     setTimeout(() => findInput.focus(), 0);
 });
 
@@ -192,7 +192,7 @@ function createFindBar() {
     }
     const isDark = getResolvedTheme() === 'dark';
 
-    // --- אייקונים מעודנים יותר ---
+    // --- More refined icons ---
     const svgIcon = (path) => {
         const svgNS = "http://www.w3.org/2000/svg";
         const svg = document.createElementNS(svgNS, "svg");
@@ -210,7 +210,7 @@ function createFindBar() {
     const nextIconPath = "M9.7 16.3l4.6-4.6-4.6-4.6L11.1 5.7l6 6-6 6-1.4-1.4z";
     const closeIconPath = "M18.3 5.71L12 12.01 5.7 5.71 4.29 7.12 10.59 13.42 4.29 19.72 5.7 21.13 12 14.83l6.3 6.3 1.41-1.41L13.41 13.42l6.3-6.3-1.41-1.41z";
 
-    // --- הוספת אנימציות וסגנונות CSS לדף ---
+    // --- Adding animations and CSS styles to the page ---
     const styleSheet = document.createElement("style");
     styleSheet.innerText = `
         @keyframes findBarFadeIn {
@@ -233,7 +233,7 @@ function createFindBar() {
     `;
     document.head.appendChild(styleSheet);
 
-    // --- בניית אלמנטי ה-UI ---
+    // --- Building the UI elements ---
     findBar = document.createElement('div');
     findBar.className = 'find-bar-wrapper';
     findBar.style.cssText = `
@@ -286,7 +286,7 @@ function createFindBar() {
     findBar.append(findInput, countSpan, prevButton, nextButton, closeButton);
     document.body.appendChild(findBar);
 
-    // --- לוגיקת האירועים הפשוטה והסופית ---
+    // --- The simple and final event logic ---
 
     findInput.addEventListener('input', (e) => {
         if (e.target.value === '') {
@@ -327,7 +327,7 @@ function createFindBar() {
 
 }
 
-// --- נקודת הכניסה ---
+// --- Entry point ---
 ipcRenderer.on('show-find-bar', () => {
     createFindBar();
 });
