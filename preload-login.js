@@ -14,4 +14,4 @@ if (navigator.brave) {
         get: () => undefined,
         set: () => {}
     });
-}ש
+}
