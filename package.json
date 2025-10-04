@@ -1,6 +1,6 @@
 {
   "name": "gemini-desk",
-  "version": "6.0.0",
+  "version": "6.1.0",
   "description": "Gemini Desktop Wrapper",
   "author": {
     "name": "Hillel BH",
@@ -106,10 +106,28 @@
     },
     "linux": {
       "target": [
-        "AppImage"
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
       ],
       "category": "Utility",
-      "icon": "icon1.png"
+      "icon": "icon1.png",
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "synopsis": "Unofficial desktop app for Google Gemini AI",
+      "description": "A native desktop wrapper for Google Gemini AI with advanced features like screenshot capture, file drag-and-drop, multi-window support, and global hotkeys.",
+      "desktop": {
+        "entry": {
+          "Name": "GeminiDesk",
+          "Comment": "Desktop client for Google Gemini AI",
+          "Keywords": "AI;Assistant;Gemini;Google;Chat;Productivity;",
+          "StartupWMClass": "GeminiDesk"
+        }
+      }
     },
     "icon": "icon1.png"
   }
