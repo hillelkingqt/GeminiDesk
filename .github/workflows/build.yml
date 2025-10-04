@@ -70,8 +70,41 @@ jobs:
             dist/latest*.yml
             dist/*.blockmap
 
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnss3-dev libatk-bridge2.0-dev libdrm2-dev libxcomposite-dev libxdamage-dev libxrandr-dev libgbm-dev libxss-dev libasound2-dev
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build Linux (AppImage, deb + updater files)
+        run: npm run build -- --linux --publish never
+
+      - name: Upload linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          if-no-files-found: error
+          path: |
+            dist/*.AppImage
+            dist/*.deb
+            dist/*linux*.yml
+            dist/*.blockmap
+
   release:
-    needs: [build-mac, build-win]
+    needs: [build-mac, build-win, build-linux]
     runs-on: ubuntu-latest
     steps:
       - name: Download mac artifacts
@@ -86,6 +119,12 @@ jobs:
           name: win
           path: rel/windows
 
+      - name: Download linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux
+          path: rel/linux
+
       # יצירת דרפט עם שם רנדומלי geminidesk-<run id>
       - name: Create draft release & upload all files
         uses: softprops/action-gh-release@v2
@@ -96,5 +135,6 @@ jobs:
           files: |
             rel/macos/**
             rel/windows/**
+            rel/linux/**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

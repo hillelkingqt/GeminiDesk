@@ -22,6 +22,7 @@
   </a>
   <img src="https://img.shields.io/badge/platform-Windows-0078D6?style=for-the-badge&logo=windows" alt="Platform: Windows">
   <img src="https://img.shields.io/badge/platform-macOS-lightgrey?style=for-the-badge&logo=apple" alt="Platform: macOS">
+  <img src="https://img.shields.io/badge/platform-Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black" alt="Platform: Linux">
 </p>
 
 <p align="center">
@@ -123,9 +124,31 @@ Access the magic from anywhere in your OS. (Remember, you can change ALL of thes
 
 Getting this slab of awesome onto your machine is laughably simple.
 
+### Windows & macOS
 1.  Brave the digital seas and navigate to the [**Latest Release**](https://github.com/hillelkingqt/GeminiDesk/releases/latest) page.
-2.  Download the correct installer for your operating system (`.exe` for Windows, `.dmg` for macOS).
+2.  Download the correct installer for your operating system:
+    - **Windows**: `GeminiDesk-Setup-X.X.X.exe`
+    - **macOS**: `GeminiDesk-X.X.X-arm64.dmg` (Apple Silicon) or `GeminiDesk-X.X.X-x64.dmg` (Intel)
 3.  Run the installer and follow the on-screen prompts. Click 'Next' like you mean it.
+
+### Linux
+Linux users get multiple installation options:
+
+#### Option 1: AppImage (Universal)
+1.  Download `GeminiDesk-X.X.X-x64.AppImage` from the [**Latest Release**](https://github.com/hillelkingqt/GeminiDesk/releases/latest) page.
+2.  Make it executable: `chmod +x GeminiDesk-*.AppImage`
+3.  Run it: `./GeminiDesk-*.AppImage`
+
+No installation required! The AppImage is portable and includes everything needed.
+
+#### Option 2: Debian/Ubuntu (.deb)
+1.  Download `GeminiDesk-X.X.X-amd64.deb` from the releases page.
+2.  Install: `sudo dpkg -i GeminiDesk-*.deb`
+3.  If dependencies are missing: `sudo apt-get install -f`
+
+#### Option 3: Red Hat/Fedora/SUSE (.rpm)
+1.  Download `GeminiDesk-X.X.X-x86_64.rpm` from the releases page.
+2.  Install: `sudo rpm -i GeminiDesk-*.rpm` or `sudo dnf install GeminiDesk-*.rpm`
 
 That's it! The Gemini Desk App is now ready for action.
 
@@ -179,6 +202,18 @@ Want to peek under the hood or forge your own version? We admire your courage.
     The final artifact will be forged in the `dist/` directory.
     ```sh
     npm run build
+    ```
+    
+    **Platform-specific builds:**
+    ```sh
+    # Windows only
+    npm run build -- --win
+    
+    # macOS only
+    npm run build -- --mac
+    
+    # Linux only (creates AppImage, deb, and rpm)
+    npm run build -- --linux
     ```
 
 ---
