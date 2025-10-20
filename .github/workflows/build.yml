@@ -4,6 +4,7 @@ on:
   push:
     branches: [ main ]
     tags:     [ 'v*.*.*' ]
+  workflow_dispatch: # הוסף את זה
 
 permissions:
   contents: write
@@ -13,8 +14,8 @@ env:
   NODE_VERSION: 20
 
 jobs:
-  build-mac:
-    runs-on: macos-latest
+  build-linux:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,21 +26,20 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install deps
-        run: npm ci
+        run: npm install
 
       # --publish never כדי לא לפרסם, אבל עדיין יווצרו קבצי ה-updater
-      - name: Build macOS (DMG + ZIP + updater files)
-        run: npm run build -- --mac --publish never
+      - name: Build Linux (AppImage, deb + updater files)
+        run: npm run build -- --linux deb AppImage --publish never
 
-      - name: Upload mac artifacts
+      - name: Upload linux artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: mac
+          name: linux
           if-no-files-found: error
           path: |
-            dist/*.dmg
-            dist/*.zip
-            dist/*mac*.yml
+            dist/*.AppImage
+            dist/*.deb
             dist/latest*.yml
             dist/*.blockmap
 
@@ -55,7 +55,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install deps
-        run: npm ci
+        run: npm install
 
       - name: Build Windows (EXE + updater files)
         run: npm run build -- --win --publish never
@@ -71,14 +71,14 @@ jobs:
             dist/*.blockmap
 
   release:
-    needs: [build-mac, build-win]
+    needs: [build-win, build-linux]
     runs-on: ubuntu-latest
     steps:
-      - name: Download mac artifacts
+      - name: Download linux artifacts
         uses: actions/download-artifact@v4
         with:
-          name: mac
-          path: rel/macos
+          name: linux
+          path: rel/linux
 
       - name: Download win artifacts
         uses: actions/download-artifact@v4
@@ -94,7 +94,7 @@ jobs:
           name: geminidesk-${{ github.run_id }}-${{ github.run_attempt }}
           tag_name: geminidesk-${{ github.run_id }}-${{ github.run_attempt }}
           files: |
-            rel/macos/**
             rel/windows/**
+            rel/linux/**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
