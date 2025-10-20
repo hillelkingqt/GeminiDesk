@@ -226,6 +226,15 @@
             height: 20px;
             vertical-align: middle;
         }
+        /* Hide English-only features by default */
+        .english-only-feature {
+            display: none;
+        }
+
+        /* Show English-only features when language is English */
+        html[lang="en"] .english-only-feature {
+            display: flex;
+        }
 
         /* --- Custom Language Selector --- */
 .language-selector {
@@ -467,7 +476,7 @@
                 <div class="language-selector">
                     <button id="language-selector-button" class="language-selector-button">
                         <span>English</span>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
                     </button>
                     <div id="language-dropdown" class="language-dropdown">
                         <div class="language-search">
@@ -509,10 +518,11 @@
                 <div class="setting-label"><strong data-i18n="showCloseButton-label">Show Close Button</strong><span data-i18n="showCloseButton-desc">Add a close button to each window.</span></div>
                 <label class="toggle-switch"><input type="checkbox" id="setting-showCloseButton"><span class="slider"></span></label>
             </div>
-            <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="showExportButton-label">Show Export Button</strong><span data-i18n="showExportButton-desc">Add an export chat button to each window, exp.</span></div>
+            <div class="setting-item english-only-feature" id="export-button-setting">
+                <div class="setting-label"><strong data-i18n="showExportButton-label">Show Export Button (English only)</strong><span data-i18n="showExportButton-desc">Add an export chat button to each window.</span></div>
                 <label class="toggle-switch"><input type="checkbox" id="setting-showExportButton"><span class="slider"></span></label>
             </div>
+
             <div class="setting-item">
                 <div class="setting-label"><strong data-i18n="defaultMode-label">Default Mode</strong><span data-i18n="defaultMode-desc">Choose what opens by default.</span></div>
                 <div id="default-mode-options" class="option-group">
@@ -644,11 +654,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         currentLanguage = lang;
         document.documentElement.setAttribute('lang', lang);
-        
+
         // Set direction based on language
         const isRTL = rtlLanguages.includes(lang);
         document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
-        
+
+        // Show/hide English-only features
+        const englishOnlyFeatures = document.querySelectorAll('.english-only-feature');
+        if (lang === 'en') {
+            englishOnlyFeatures.forEach(feature => feature.style.display = 'flex');
+        } else {
+            englishOnlyFeatures.forEach(feature => feature.style.display = 'none');
+        }
+
         updateLangSelectorUI(lang);
     };
 

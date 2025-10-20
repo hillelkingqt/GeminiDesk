@@ -34,70 +34,49 @@
 
 GeminiDesk is more than a wrapper. It's a command center, loaded with features that will make you wonder how you ever lived without them.
 
-### 🌐 International & Accessible
-*   **Multi-Language Support:** GeminiDesk speaks your language! The entire UI is translated into over 20 languages, with automatic language detection and full right-to-left (RTL) support for languages like Hebrew and Arabic. You can also select your language manually.
+* **📸 Screenshot to Chat: See It, Snip It, Solve It!**
+    Instantly snip any part of your screen with a hotkey. The image is magically beamed into your chat, ready for Gemini's brilliant analysis. It's like having a conversation with your screen!
 
-### 🧠 Core AI & Workflow Features
-*   **📸 Screenshot to Chat:** Instantly snip any part of your screen with a hotkey. The image is magically beamed into your chat, ready for Gemini's brilliant analysis.
-*   **📁 Universal File Drop:** Drag and drop images, PDFs, text files—almost any file—directly into the app. It's instantly ready for upload.
-*   **⚡️ Instant Model Switching:** Use dedicated hotkeys to instantly fire up a new chat with either the lightning-fast **Flash** model or the powerhouse **Pro** model.
-*   **🔎 Instant Chat Search:** Lost a brilliant idea in the chat abyss? Hit the search hotkey to immediately focus the search bar and unearth your past conversations.
-*   **🤝 "Open With" Integration:** Set GeminiDesk as the default application for images or text files. Opening a file with the app will instantly load it into the chat.
+* **📁 Universal File Drop: Your Files' New Best Friend**
+    Drag and drop images, PDFs, text files—heck, almost any file—directly into the app. It's instantly ready for upload. The friction? Gone. The future? Now.
 
-### ⚙️ Powerful Window & Session Management
-*   **🔄 Session & Window Restoration:** Never lose your place again! Enable a setting to remember all your open windows and their positions. Upon restart, all chats are fully restored.
-*   **✨ Multi-Window Mania:** Who said you can only have one conversation at a time? Open multiple windows and conquer multiple topics simultaneously.
-*   **📌 Always-On-Top Mode:** Keep Gemini watching over your shoulder while you work. Perfect for coding, writing, or just feeling less alone.
-*   **🖼️ Canvas Mode:** Instantly expand the window to a larger, more comfortable size, perfect for deep dives and extensive conversations.
-*   **🖥️ Fullscreen & Custom Header:** Go big with a dedicated fullscreen mode. The sleek, draggable header bar can even show your current chat's title.
+* **⚡️ Instant Model Switching: Flash or Pro? Decide in a Flash.**
+    Why click through menus like a peasant? Use dedicated hotkeys to instantly fire up a new chat with either the lightning-fast **Flash** model or the powerhouse **Pro** model. Your workflow just got a nitrous boost.
 
-### 🎨 Unmatched Customization
-*   **⌨️ Your Keys, Your Kingdom:** Don't like our default hotkeys? No problem! Dive into the settings and remap every single shortcut to fit your unique workflow.
-*   **🎨 Your App, Your Style:** Choose between a sleek **Dark** mode, a clean **Light** mode, or let the app **sync with your OS**.
-*   **🛠️ Draggable Toolbar Buttons:** Reorder the main toolbar buttons (e.g., "New Chat," "Settings") just by dragging them. A "Reset Order" button is also available.
-*   **⚙️ Fine-Tune Your UI:**
-    *   Show or hide the app in the **taskbar**.
-    *   Add a dedicated **close button (X)** to each chat window.
-    *   Show or hide the current conversation's **title** in the header.
-    *   Add a dedicated button to **export chats as PDFs**.
+* **🔎 Find That Chat... Instantly!**
+    Lost a brilliant idea in the chat abyss? Hit the search hotkey to immediately focus the search bar and unearth your past conversations. Your brain will thank you.
 
-### 🚀 Quality of Life & Stability
-*   **🔔 Enhanced Notification System:** The notification viewer now displays multiple server messages in a clean, navigable carousel.
-*   **🚀 Run on Startup:** Have GeminiDesk greet you the moment your computer boots up.
-*   **🧠 The Little Things That Matter:** We've ironed out all the wrinkles. **Persistent Login** (with improved, more reliable session handling), **Automatic Mic Permissions**, and **Smart, Non-Intrusive Updates**. It just works.
+* **✨ Multi-Window Mania**
+    Who said you can only have one conversation at a time? Open multiple windows and conquer multiple topics simultaneously. It’s organized chaos at its finest.
 
+* **🎨 Your App, Your Style: Full Theme Control**
+    Choose between a sleek **Dark** mode, a clean **Light** mode, or let the app **sync with your OS**. Your eyes will thank you.
+
+* **🖼️ Expand Your Mind with Canvas Mode**
+    Need more space? Activate Canvas Mode to instantly expand the window to a larger, more comfortable size, perfect for deep dives and extensive conversations.
+
+* **🔔 Stay in the Know with System Notifications**
+    Receive important announcements and updates directly through a clean, native notification system. No more checking GitHub for news.
+
+* **🤝 "Open With" Integration**
+    Set GeminiDesk as the default application for images or text files. Opening a file with the app will instantly load it into the chat, ready for action.
+
+* **📌 Always-On-Top Mode: Your Unwavering AI Companion**
+    Keep Gemini watching over your shoulder (in a non-creepy way) while you work. Perfect for coding, writing, or just feeling less alone in the universe.
+
+* **⌨️ Your Keys, Your Kingdom: Total Shortcut Customization**
+    Don't like our default hotkeys? No problem! Dive into the settings and remap every single shortcut to fit your unique, beautiful, and probably weird workflow.
+
+* **🚀 Run on Startup**
+    Have GeminiDesk greet you the moment your computer boots up. Because your AI assistant should be as ready to work as you are (or more so).
+
+* **🖥️ Fullscreen & Custom Header**
+    Go big with a dedicated fullscreen mode. The sleek, draggable header bar even shows your current chat's title, so you always know what you're working on.
+
+* **🧠 The Little Things That Matter**
+    We've ironed out all the wrinkles. **Persistent Login** (sign in once!), **Automatic Mic Permissions** (no more nagging pop-ups!), and **Smart, Non-Intrusive Updates**. It just works.
 
 ---
-
-## 📸 Screenshots 📸
-
-<table width="100%">
-  <tr>
-    <td align="center" valign="top">
-      <img src="screenshots/Screenshot1.png" alt="Main interface showing a clean layout in dark mode, with UI elements in a non-English language, demonstrating localization." width="95%">
-    </td>
-    <td align="center" valign="top">
-      <img src="screenshots/screenshot2.png" alt="Settings panel with numerous options for hotkeys, appearance, and behavior." width="95%">
-    </td>
-  </tr>
-  <tr>
-    <td align="center" valign="top">
-      <img src="screenshots/screenshot3.png" alt="Hotkey customization screen allowing users to remap all keyboard shortcuts." width="95%">
-    </td>
-    <td align="center" valign="top">
-      <img src="screenshots/screenshot4.png" alt="Demonstration of the main toolbar buttons being reordered via drag-and-drop." width="95%">
-    </td>
-  </tr>
-  <tr>
-    <td align="center" valign="top">
-      <img src="screenshots/screenshot5.png" alt="A screenshot being captured and appearing within the chat input box, ready to be sent." width="95%">
-    </td>
-    <td align="center" valign="top">
-      <img src="screenshots/screenshot6.png" alt="A file being dragged over the application window, which highlights to indicate it's ready to accept the file." width="95%">
-    </td>
-  </tr>
-  <tr>
-</table>
 
 ## ⌨️ The Secret Handshakes (Default Shortcuts)
 

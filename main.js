@@ -1,480 +1,140 @@
-const { app, BrowserWindow, BrowserView, globalShortcut, ipcMain, dialog, screen, shell, session, nativeTheme } = require('electron');
-app.disableHardwareAcceleration();
-const { fork } = require('child_process');
-const REAL_CHROME_UA =
-  `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${process.versions.chrome} Safari/537.36`;
-const STABLE_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
-const translations = require('./translations.js');
-const { autoUpdater } = require('electron-updater');
-const AutoLaunch = require('auto-launch');
+const { app, BrowserWindow, BrowserView, globalShortcut, ipcMain, dialog, screen, shell, session, nativeTheme, clipboard, nativeImage } = require('electron');
+const https = require('https');
+const PDFDocument = require('pdfkit');
+
 const path = require('path');
 const fs = require('fs');
-const { spawn } = require('child_process');
-const { clipboard, nativeImage } = require('electron');
-const https = require('https'); // לביצוע בקשת API ל-GitHub
+const { spawn, fork } = require('child_process');
 const Store = require('electron-store');
 const os = require('os');
 const crypto = require('crypto');
 const fetch = require('node-fetch');
-let confirmWin = null;
+const { autoUpdater } = require('electron-updater');
+const AutoLaunch = require('auto-launch');
+const translations = require('./translations.js');
+
+// ================================================================= //
+// Global Constants and Configuration
+// ================================================================= //
+
+app.disableHardwareAcceleration();
+
+const REAL_CHROME_UA = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${process.versions.chrome} Safari/537.36`;
+const STABLE_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+const SESSION_PARTITION = 'persist:gemini-session';
+const GEMINI_URL = 'https://gemini.google.com/app';
+const AISTUDIO_URL = 'https://aistudio.google.com/';
+
+const isMac = process.platform === 'darwin';
+const execPath = process.execPath;
+const launcherPath = isMac ? path.resolve(execPath, '..', '..', '..') : execPath;
+
+const margin = 20;
+const originalSize = { width: 500, height: 650 };
+const canvasSize = { width: 1400, height: 800 };
+
+// Allow third-party/partitioned cookies used by Google Sign-In
+app.commandLine.appendSwitch('enable-features', 'ThirdPartyStoragePartitioning');
+
+// ================================================================= //
+// Global Variables
+// ================================================================= //
+
 let isQuitting = false;
+let isUserTogglingHide = false;
+let lastFocusedWindow = null;
+let settingsWin = null;
+let confirmWin = null;
 let updateWin = null;
 let downloadWin = null;
 let notificationWin = null;
 let personalMessageWin = null;
 let lastFetchedMessageId = null;
-let lastFocusedWindow = null;
-const execPath = process.execPath;
-// Allow third-party/partitioned cookies used by Google Sign-In
-app.commandLine.appendSwitch('enable-features', 'ThirdPartyStoragePartitioning');
+let filePathToProcess = null;
+let notificationIntervalId = null;
 
-const SESSION_PARTITION = 'persist:gemini-session';
-
-const isMac = process.platform === 'darwin';
-const launcherPath = isMac
-  ? path.resolve(execPath, '..', '..', '..')
-  : execPath;
-
-const autoLauncher = new AutoLaunch({
-  name: 'GeminiApp',
-  path: launcherPath,
-  isHidden: true,    // על macOS מוסיף את האפליקציה ל־Login Items בנסתר
-});
-let isUserTogglingHide = false;
-function forceOnTop(win) {
-  if (!win || win.isDestroyed()) return;
-
-  // שמור את מצב alwaysOnTop לפי ההגדרה שלך
-  const shouldBeOnTop = !!settings.alwaysOnTop;
-
-  // ב-Windows מספיק true; ב-macOS אפשר לשלב וורקספייסים
-  if (process.platform === 'darwin') {
-    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-  }
-
-  // העלה לראש, הצג ותן פוקוס גם ל-BrowserView
-  win.setAlwaysOnTop(shouldBeOnTop /*, 'screen-saver' */);
-  win.show();
-  if (typeof win.moveTop === 'function') win.moveTop();
-  win.focus();
-
-  const view = win.getBrowserView();
-  if (view && !view.webContents.isDestroyed()) {
-    view.webContents.focus();
-  }
-}
-
+const detachedViews = new Map();
 
 // ================================================================= //
 // Settings Management
 // ================================================================= //
+
 const settingsPath = path.join(app.getPath('userData'), 'settings.json');
-let settingsWin = null;
+
 const defaultSettings = {
-  onboardingShown: false,
-  defaultMode: 'ask',
-  autoStart: false,
-  alwaysOnTop: true,
-  lastShownNotificationId: null,
-  lastMessageData: null,
-  autoCheckNotifications: true,
-  enableCanvasResizing: true,
-  shortcutsGlobal: true,
-  showChatTitle: true,
-  language: 'en',
-  showCloseButton: false,
-  showExportButton: false,
-  draggableButtonsEnabled: true,
-  buttonOrder: [],
-  restoreWindows: false,
-  savedWindows: [],
-  shortcuts: {
-    showHide: isMac ? 'Command+G' : 'Alt+G', // ← דוגמה לתיקון
-    quit: isMac ? 'Command+Q' : 'Control+W',
-    showInstructions: isMac ? 'Command+I' : 'Alt+I',
-    screenshot: isMac ? 'Command+Alt+S' : 'Control+Alt+S', // אין מקביל מדויק ב-Mac, עדיף להשאיר ל-Mac
-    newChatPro: isMac ? 'Command+P' : 'Alt+P',
-    newChatFlash: isMac ? 'Command+F' : 'Alt+F',
-    newWindow: isMac ? 'Command+N' : 'Alt+N',
-    search: isMac ? 'Command+S' : 'Alt+S',
-    refresh: isMac ? 'Command+R' : 'Alt+R',
-     findInPage: isMac ? 'Command+F' : 'Control+F', 
-    closeWindow: isMac ? 'Command+W' : 'Alt+Q'
-  },
-lastUpdateCheck: 0,
-microphoneGranted: null,
-  theme: 'system'
+    onboardingShown: false,
+    defaultMode: 'ask',
+    autoStart: true,
+    alwaysOnTop: true,
+    lastShownNotificationId: null,
+    lastMessageData: null,
+    autoCheckNotifications: true,
+    enableCanvasResizing: true,
+    shortcutsGlobal: true,
+    showChatTitle: true,
+    language: 'en',
+    showCloseButton: false,
+    showExportButton: false,
+    draggableButtonsEnabled: true,
+    buttonOrder: [],
+    restoreWindows: false,
+    savedWindows: [],
+    shortcuts: {
+        showHide: isMac ? 'Command+G' : 'Alt+G',
+        quit: isMac ? 'Command+Q' : 'Control+W',
+        showInstructions: isMac ? 'Command+I' : 'Alt+I',
+        screenshot: isMac ? 'Command+Alt+S' : 'Control+Alt+S',
+        newChatPro: isMac ? 'Command+P' : 'Alt+P',
+        newChatFlash: isMac ? 'Command+F' : 'Alt+F',
+        newWindow: isMac ? 'Command+N' : 'Alt+N',
+        search: isMac ? 'Command+S' : 'Alt+S',
+        refresh: isMac ? 'Command+R' : 'Alt+R',
+        findInPage: isMac ? 'Command+F' : 'Control+F',
+        closeWindow: isMac ? 'Command+W' : 'Alt+Q'
+    },
+    lastUpdateCheck: 0,
+    microphoneGranted: null,
+    theme: 'system',
+    showInTaskbar: false
 };
-function scheduleDailyUpdateCheck() {
-  const checkForUpdates = async () => {
-    console.log('Checking for updates...');
-    try {
-      await autoUpdater.checkForUpdates();
-    } catch (error) {
-      console.error('Background update check failed. This is not critical and will be ignored:', error.message);
-    }
-  };
-
-  // בדיקה מיד עם ההפעלה
-  checkForUpdates();
-  
-  // בדיקה חוזרת כל חצי שעה
-  setInterval(checkForUpdates, 30 * 60 * 1000); // 30 דקות במילישניות
-}
-
-function reloadFocusedView() {
-    const focusedWindow = BrowserWindow.getFocusedWindow();
-    if (focusedWindow && !focusedWindow.isDestroyed()) {
-        const view = focusedWindow.getBrowserView();
-        if (view && view.webContents && !view.webContents.isDestroyed()) {
-            console.log(`Reloading view for window ID: ${focusedWindow.id}`);
-            view.webContents.reload();
-        }
-    }
-}
-function createNewChatWithModel(modelType) {
-  // Get the currently active window and view
-  const focusedWindow = BrowserWindow.getFocusedWindow();
-  if (!focusedWindow) return;
-  const targetView = focusedWindow.getBrowserView();
-  if (!targetView) return;
-
-  if (!focusedWindow.isVisible()) focusedWindow.show();
-  if (focusedWindow.isMinimized()) focusedWindow.restore();
-  focusedWindow.focus();
-
-  const modelIndex = modelType.toLowerCase() === 'flash' ? 0 : 1;
-
-  const script = `
-    (async function() {
-      console.log('--- GeminiDesk: Starting script v7 ---');
-      
-      // Helper function to wait for an element to be ready (exists and is not disabled)
-      const waitForElement = (selector, timeout = 3000) => {
-        console.log(\`Waiting for an active element: \${selector}\`);
-        return new Promise((resolve, reject) => {
-          const timer = setInterval(() => {
-            const element = document.querySelector(selector);
-            if (element && !element.disabled) {
-              clearInterval(timer);
-              console.log(\`Found active element: \${selector}\`);
-              resolve(element);
-            }
-          }, 100);
-          setTimeout(() => {
-            clearInterval(timer);
-            console.warn('GeminiDesk Warn: Timeout. Could not find an active element for:', selector);
-            reject(new Error('Element not found or disabled: ' + selector));
-          }, timeout);
-        });
-      };
-
-      // Helper function to simulate a realistic user click
-      const simulateClick = (element) => {
-        console.log('Simulating a click on:', element);
-        const mousedownEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window });
-        const mouseupEvent = new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window });
-        const clickEvent = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
-        element.dispatchEvent(mousedownEvent);
-        element.dispatchEvent(mouseupEvent);
-        element.dispatchEvent(clickEvent);
-      };
-
-      try {
-        let modelSwitcher;
-        try {
-          // Attempt #1: Directly open the model menu (the fast method)
-          console.log('GeminiDesk: Attempt #1 - Direct model menu opening.');
-          modelSwitcher = await waitForElement('[data-test-id="bard-mode-menu-button"]');
-        } catch (e) {
-          // Attempt #2 (Fallback): If the direct method fails, click "New Chat" to reset the UI
-          console.log('GeminiDesk: Attempt #1 failed. Falling back to plan B - clicking "New Chat".');
-          const newChatButton = await waitForElement('[data-test-id="new-chat-button"] button', 5000);
-          simulateClick(newChatButton);
-          console.log('GeminiDesk: Clicked "New Chat", waiting for UI to stabilize...');
-          await new Promise(resolve => setTimeout(resolve, 500)); // A longer wait after UI reset
-          modelSwitcher = await waitForElement('[data-test-id="bard-mode-menu-button"]', 5000);
-        }
-        
-        simulateClick(modelSwitcher);
-        console.log('GeminiDesk: Clicked model switcher dropdown.');
-
-        // Final step: Select the model from the list by its position
-        const menuPanel = await waitForElement('mat-bottom-sheet-container, .mat-mdc-menu-panel', 5000);
-        console.log('GeminiDesk: Found model panel. Selecting by index...');
-        
-        const modelIndexToSelect = ${modelIndex};
-        console.log(\`Target index: \${modelIndexToSelect}\`);
-        
-        const items = menuPanel.querySelectorAll('button.mat-mdc-menu-item.bard-mode-list-button');
-        console.log(\`Found \${items.length} models in the menu.\`);
-        
-        if (items.length > modelIndexToSelect) {
-          const targetButton = items[modelIndexToSelect];
-          console.log('Target button:', targetButton.textContent.trim());
-          await new Promise(resolve => setTimeout(resolve, 150));
-          simulateClick(targetButton);
-          console.log('GeminiDesk: Success! Clicked model at index:', modelIndexToSelect);
-        } else {
-          console.error(\`GeminiDesk Error: Could not find a model at index \${modelIndexToSelect}\`);
-          document.body.click(); // Attempt to close the menu
-        }
-
-      } catch (error) {
-        console.error('GeminiDesk Error: The entire process failed.', error);
-      }
-      console.log('--- GeminiDesk: Script v7 finished ---');
-    })();
-  `;
-
-  targetView.webContents.executeJavaScript(script).catch(console.error);
-}
-
-function triggerSearch() {
-  const focusedWindow = BrowserWindow.getFocusedWindow();
-  if (!focusedWindow) return;
-  const targetView = focusedWindow.getBrowserView();
-  if (!targetView) return;
-
-  if (!focusedWindow.isVisible()) focusedWindow.show();
-  if (focusedWindow.isMinimized()) focusedWindow.restore();
-  focusedWindow.focus();
-
-  const script = `
-    (async function() {
-      console.log('--- GeminiDesk: Triggering Search ---');
-
-      // Helper function to wait for an element to be ready
-      const waitForElement = (selector, timeout = 3000) => {
-        console.log(\`Waiting for element: \${selector}\`);
-        return new Promise((resolve, reject) => {
-          let timeoutHandle = null;
-          const interval = setInterval(() => {
-            const element = document.querySelector(selector);
-            if (element) {
-              if (timeoutHandle) clearTimeout(timeoutHandle);
-              clearInterval(interval);
-              console.log(\`Found element: \${selector}\`);
-              resolve(element);
-            }
-          }, 100);
-          timeoutHandle = setTimeout(() => {
-            clearInterval(interval);
-            console.error(\`GeminiDesk Error: Timeout waiting for \${selector}\`);
-            reject(new Error('Timeout for selector: ' + selector));
-          }, timeout);
-        });
-      };
-      
-      // Helper function to simulate a realistic user click
-      const simulateClick = (element) => {
-        if (!element) {
-            console.error('SimulateClick called on a null element.');
-            return;
-        }
-        console.log('Simulating click on:', element);
-        const events = ['mousedown', 'mouseup', 'click'];
-        events.forEach(type => {
-            const event = new MouseEvent(type, { bubbles: true, cancelable: true, view: window });
-            element.dispatchEvent(event);
-        });
-      };
-
-      try {
-        // Step 1: Click the Main Menu button to open the sidebar
-        const menuButton = document.querySelector('button[aria-label="Main menu"]');
-        if (menuButton) {
-            console.log('Step 1: Found and clicking main menu button.');
-            simulateClick(menuButton);
-            await new Promise(resolve => setTimeout(resolve, 300)); // Wait for sidebar animation
-        } else {
-            console.log('Step 1: Main menu button not found. Assuming sidebar is already open.');
-        }
-
-        // Step 2: Wait for the search bar to appear and click it
-        const searchNavBarButton = await waitForElement('search-nav-bar button.search-nav-bar');
-        console.log('Step 2: Found and clicking search navigation bar.');
-        simulateClick(searchNavBarButton);
-        await new Promise(resolve => setTimeout(resolve, 150)); // Wait for input field to render
-
-        // Step 3: Wait for the actual text input field and focus it
-        const searchInput = await waitForElement('input.search-input, input[placeholder="Search chats"]');
-        console.log('Step 3: Found search input field.');
-        searchInput.focus();
-        
-        console.log('--- GeminiDesk: SUCCESS! Search input focused. ---');
-
-      } catch (error) {
-        console.error('GeminiDesk Error during search sequence:', error.message);
-      }
-    })();
-  `;
-
-  targetView.webContents.executeJavaScript(script).catch(console.error);
-}
-
 
 function getSettings() {
-  try {
-    if (fs.existsSync(settingsPath)) {
-      const savedSettings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
-      // Ensure new settings have a default value if not present
-      const combinedSettings = {
-          ...defaultSettings,
-          ...savedSettings,
-          shortcuts: { ...defaultSettings.shortcuts, ...savedSettings.shortcuts },
-          showInTaskbar: savedSettings.showInTaskbar === undefined ? false : savedSettings.showInTaskbar
-      };
-      return { ...combinedSettings, translations };
+    try {
+        if (fs.existsSync(settingsPath)) {
+            const savedSettings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+            const combinedSettings = {
+                ...defaultSettings,
+                ...savedSettings,
+                shortcuts: { ...defaultSettings.shortcuts, ...savedSettings.shortcuts },
+                showInTaskbar: savedSettings.showInTaskbar === undefined ? false : savedSettings.showInTaskbar
+            };
+            return combinedSettings;
+        }
+    } catch (e) {
+        console.error("Couldn't read settings, falling back to default.", e);
     }
-  } catch (e) {
-    console.error("Couldn't read settings, falling back to default.", e);
-  }
-  return { ...defaultSettings, translations };
-}
-function createNotificationWindow() {
-  if (notificationWin) {
-    notificationWin.focus();
-    return;
-  }
-
-  notificationWin = new BrowserWindow({
-    width: 550, 
-    height: 450,
-    frame: false,
-    alwaysOnTop: true,
-    show: false,
-    transparent: true,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-    }
-  });
-
-  notificationWin.loadFile('notification.html');
-
-  notificationWin.once('ready-to-show', () => {
-    notificationWin.show();
-  });
-
-  notificationWin.on('closed', () => {
-    notificationWin = null;
-  });
-}
-function sendToNotificationWindow(data) {
-  if (!notificationWin || notificationWin.isDestroyed()) return;
-  const wc = notificationWin.webContents;
-  const send = () => wc.send('notification-data', data);
-  if (wc.isLoadingMainFrame()) {
-    wc.once('did-finish-load', send);
-  } else {
-    send();
-  }
+    return { ...defaultSettings };
 }
 
-async function checkForNotifications(isManualCheck = false) {
-  if (isManualCheck) {
-    createNotificationWindow();
-    if (!notificationWin) return;
-  }
-
-  const sendToNotificationWindow = (data) => {
-    if (!notificationWin || notificationWin.isDestroyed()) return;
-    const wc = notificationWin.webContents;
-    const send = () => wc.send('notification-data', data);
-    if (wc.isLoadingMainFrame()) {
-      wc.once('did-finish-load', send);
-    } else {
-      send();
-    }
-  };
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-  try {
-    const response = await fetch('https://latex-v25b.onrender.com/latest-messages', {
-      cache: 'no-cache',
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
-
-    if (!response.ok && response.status !== 404) {
-      throw new Error(`Server error: ${response.status}`);
-    }
-
-    const messages = response.status === 404 ? [] : await response.json();
-
-    if (messages.length > 0) {
-      const latestMessage = messages[0];
-      if (latestMessage.id !== settings.lastShownNotificationId) {
-        console.log(`New notification found: ID ${latestMessage.id}`);
-        settings.lastShownNotificationId = latestMessage.id;
-        // We don't save the whole array in settings, just the ID of the newest one we've shown.
-        saveSettings(settings);
-
-        if (!notificationWin) createNotificationWindow();
-        sendToNotificationWindow({ status: 'found', content: messages });
-      } else if (isManualCheck) {
-        sendToNotificationWindow({ status: 'no-new-message', content: messages });
-      }
-    } else {
-      console.log('No messages found on server. Clearing local cache.');
-      settings.lastShownNotificationId = null;
-      saveSettings(settings);
-
-      if (isManualCheck) {
-        sendToNotificationWindow({ status: 'no-messages-ever' });
-      }
-    }
-  } catch (error) {
-    clearTimeout(timeoutId);
-    console.error('Failed to check for notifications:', error.message);
-    if (isManualCheck && notificationWin) {
-      const errorMessage = (error.name === 'AbortError')
-        ? 'The request timed out.'
-        : error.message;
-      sendToNotificationWindow({ status: 'error', message: errorMessage });
-    }
-  }
-}
-
-let notificationIntervalId = null;
-
-function scheduleNotificationCheck() {
-  // נקה את האינטרוול הקודם אם קיים
-  if (notificationIntervalId) {
-    clearInterval(notificationIntervalId);
-    notificationIntervalId = null;
-  }
-
-  // אם המשתמש רוצה בדיקה אוטומטית, הגדר אותה מחדש
-  if (settings.autoCheckNotifications) {
-    const halfHourInMs = 30 * 60 * 1000; 
-    notificationIntervalId = setInterval(checkForNotifications, halfHourInMs);
-  }
-}
 function saveSettings(settings) {
-  try {
-    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf-8');
-  } catch (e) {
-    console.error("Failed to save settings.", e);
-  }
+    try {
+        fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf-8');
+    } catch (e) {
+        console.error("Failed to save settings.", e);
+    }
 }
 
 let settings = getSettings();
 
 // ================================================================= //
-// Global Settings and Variables
+// Auto Launch Configuration
 // ================================================================= //
-const margin = 20;
-const originalSize = { width: 500, height: 650 };
-const canvasSize = { width: 1400, height: 800 };
-const detachedViews = new Map();
 
-// ================================================================= //
-// Application Management Functions
-// ================================================================= //
+const autoLauncher = new AutoLaunch({
+    name: 'GeminiApp',
+    path: launcherPath,
+    isHidden: true,
+});
 
 function setAutoLaunch(shouldEnable) {
     if (shouldEnable) {
@@ -484,91 +144,42 @@ function setAutoLaunch(shouldEnable) {
     }
 }
 
-function registerShortcuts() {
-    // Unregister all shortcuts before registering new ones to avoid conflicts
-    globalShortcut.unregisterAll();
-    const shortcuts = settings.shortcuts;
+// ================================================================= //
+// Utility Functions
+// ================================================================= //
 
-    // Register show/hide shortcut regardless of global settings
-if (shortcuts.showHide) {
-  globalShortcut.register(shortcuts.showHide, () => {
-    const allWindows = BrowserWindow.getAllWindows();
-
-    // חדש: סינון חלונות פנימיים (כמו חלון הסקרייפ)
-    const userWindows = allWindows.filter(w => !w.__internal);
-
-    if (userWindows.length === 0) return;
-
-    const shouldShow = userWindows.some(win => !win.isVisible());
-
-    if (!shouldShow) {
-      isUserTogglingHide = true;
-      setTimeout(() => { isUserTogglingHide = false; }, 500);
-    }
-
-    userWindows.forEach(win => {
-      if (shouldShow) {
-        if (win.isMinimized()) win.restore();
-        win.show();
-      } else {
-        win.hide();
-      }
-    });
-
-    if (shouldShow) {
-      // החזרת הפוקוס/AlwaysOnTop רק על חלון “אמיתי” של המשתמש
-      const focused = userWindows.find(w => w.isFocused());
-      lastFocusedWindow = (focused && !focused.isDestroyed())
-        ? focused
-        : (userWindows[0] || null);
-
-      if (lastFocusedWindow && !lastFocusedWindow.isDestroyed()) {
-        setTimeout(() => {
-          forceOnTop(lastFocusedWindow);
-          const view = lastFocusedWindow.getBrowserView();
-          if (view && view.webContents && !view.webContents.isDestroyed()) {
-            view.webContents.focus();
-          }
-        }, 100);
-      }
-    }
-  });
-}
-
-
-    // Prepare local shortcuts, excluding the one that's always global
-    const localShortcuts = { ...settings.shortcuts };
-    delete localShortcuts.showHide;
-
-    if (settings.shortcutsGlobal) {
-        console.log('Registering GLOBAL shortcuts.');
-        // Register all other shortcuts globally
-        for (const action in localShortcuts) {
-                 if (action === 'findInPage') continue; 
-            if (localShortcuts[action] && shortcutActions[action]) {
-                globalShortcut.register(localShortcuts[action], shortcutActions[action]);
-            }
-        }
-        // Tell renderer to clear any local shortcuts
-broadcastToAllWebContents('set-local-shortcuts', {});
-    } else {
-        console.log('Registering LOCAL shortcuts.');
-        // Tell renderer to set local shortcuts
-broadcastToAllWebContents('set-local-shortcuts', localShortcuts);
-    }
-}
-function broadcastToAllWebContents(channel, data) {
-  BrowserWindow.getAllWindows().forEach(win => {
+function forceOnTop(win) {
     if (!win || win.isDestroyed()) return;
 
-    if (win.webContents && !win.webContents.isDestroyed()) {
-      win.webContents.send(channel, data);
+    const shouldBeOnTop = !!settings.alwaysOnTop;
+
+    if (process.platform === 'darwin') {
+        win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
     }
+
+    win.setAlwaysOnTop(shouldBeOnTop);
+    win.show();
+    if (typeof win.moveTop === 'function') win.moveTop();
+    win.focus();
+
     const view = win.getBrowserView();
-    if (view && view.webContents && !view.webContents.isDestroyed()) {
-      view.webContents.send(channel, data);
+    if (view && !view.webContents.isDestroyed()) {
+        view.webContents.focus();
     }
-  });
+}
+
+function broadcastToAllWebContents(channel, data) {
+    BrowserWindow.getAllWindows().forEach(win => {
+        if (!win || win.isDestroyed()) return;
+
+        if (win.webContents && !win.webContents.isDestroyed()) {
+            win.webContents.send(channel, data);
+        }
+        const view = win.getBrowserView();
+        if (view && view.webContents && !view.webContents.isDestroyed()) {
+            view.webContents.send(channel, data);
+        }
+    });
 }
 
 function broadcastToWindows(channel, data) {
@@ -578,6 +189,29 @@ function broadcastToWindows(channel, data) {
         }
     });
 }
+
+async function reportErrorToServer(error) {
+    if (!error) return;
+    console.error('Reporting error to server:', error);
+    try {
+        await fetch('https://latex-v25b.onrender.com/error', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                version: app.getVersion(),
+                error: error.message,
+                stack: error.stack,
+                platform: process.platform
+            })
+        });
+    } catch (fetchError) {
+        console.error('Could not send error report:', fetchError.message);
+    }
+}
+
+// ================================================================= //
+// Shortcuts Management
+// ================================================================= //
 
 const shortcutActions = {
     quit: () => app.quit(),
@@ -609,7 +243,7 @@ const shortcutActions = {
         if (!view) return;
 
         if (focusedWindow.appMode === 'aistudio') {
-            view.webContents.loadURL('https://aistudio.google.com/prompts/new_chat?model=gemini-1.5-pro-latest');
+            view.webContents.loadURL('https://aistudio.google.com/prompts/new_chat?model=gemini-2.5-pro');
         } else {
             createNewChatWithModel('Pro');
         }
@@ -621,7 +255,7 @@ const shortcutActions = {
         if (!view) return;
 
         if (focusedWindow.appMode === 'aistudio') {
-            view.webContents.loadURL('https://aistudio.google.com/prompts/new_chat?model=gemini-1.5-flash-latest');
+            view.webContents.loadURL('https://aistudio.google.com/prompts/new_chat?model=gemini-flash-latest');
         } else {
             createNewChatWithModel('Flash');
         }
@@ -636,22 +270,20 @@ const shortcutActions = {
 
             const libraryUrl = 'https://aistudio.google.com/library';
             const focusScript = `
-                const input = document.querySelector('input[placeholder="Search"]');
-                if (input) input.focus();
-            `;
+        const input = document.querySelector('input[placeholder="Search"]');
+        if (input) input.focus();
+      `;
 
             if (view.webContents.getURL().startsWith(libraryUrl)) {
                 view.webContents.executeJavaScript(focusScript).catch(console.error);
             } else {
                 view.webContents.loadURL(libraryUrl);
                 view.webContents.once('did-finish-load', () => {
-                    setTimeout((
-                      
-                    ) => view.webContents.executeJavaScript(focusScript).catch(console.error), 500);
+                    setTimeout(() => view.webContents.executeJavaScript(focusScript).catch(console.error), 500);
                 });
             }
         } else {
-            triggerSearch(); 
+            triggerSearch();
         }
     },
     showInstructions: () => {
@@ -660,10 +292,10 @@ const shortcutActions = {
             const view = focusedWindow.getBrowserView();
             if (view) {
                 focusedWindow.removeBrowserView(view);
-                detachedViews.set(focusedWindow, view); 
+                detachedViews.set(focusedWindow, view);
             }
             focusedWindow.loadFile('onboarding.html');
-            setCanvasMode(false, focusedWindow); 
+            setCanvasMode(false, focusedWindow);
         }
     },
     refresh: () => reloadFocusedView(),
@@ -675,7 +307,7 @@ const shortcutActions = {
             return;
         }
         isScreenshotProcessActive = true;
-        
+
         let targetWin = BrowserWindow.getFocusedWindow();
         if (!targetWin) {
             if (lastFocusedWindow && !lastFocusedWindow.isDestroyed()) {
@@ -685,12 +317,12 @@ const shortcutActions = {
                 targetWin = allWindows.length > 0 ? allWindows[0] : null;
             }
         }
-        
+
         if (!targetWin) {
             isScreenshotProcessActive = false;
             return;
         }
-        
+
         screenshotTargetWindow = targetWin;
         proceedWithScreenshot();
 
@@ -700,6 +332,9 @@ const shortcutActions = {
             if (process.platform === 'win32') {
                 cmd = 'explorer';
                 args = ['ms-screenclip:'];
+            } else if (process.platform === 'linux') {
+                cmd = 'gnome-screenshot';
+                args = ['-a', '-c'];
             } else {
                 cmd = 'screencapture';
                 args = ['-i', '-c'];
@@ -711,6 +346,12 @@ const shortcutActions = {
             snippingTool.on('exit', () => { processExited = true; });
             snippingTool.on('error', (err) => {
                 console.error('Failed to start snipping tool:', err);
+                if (process.platform === 'linux') {
+                    dialog.showErrorBox(
+                        'Screenshot Tool Not Found',
+                        'gnome-screenshot is required but it was not found on your system.\n\nPlease install it using your package manager, for example:\n\nsudo apt-get install gnome-screenshot\n\nOr for Fedora/CentOS:\n\nsudo dnf install gnome-screenshot'
+                    );
+                }
                 isScreenshotProcessActive = false;
             });
 
@@ -718,7 +359,7 @@ const shortcutActions = {
             const maxAttempts = 60;
             const intervalId = setInterval(() => {
                 const image = clipboard.readImage();
-                if (!image.isEmpty() && processExited) {
+                if (!image.isEmpty()) {
                     clearInterval(intervalId);
                     if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
                         if (!screenshotTargetWindow.isVisible()) screenshotTargetWindow.show();
@@ -741,7 +382,7 @@ const shortcutActions = {
                     }
                     isScreenshotProcessActive = false;
                     screenshotTargetWindow = null;
-                } else if (checkAttempts++ > maxAttempts) {
+                } else if (processExited || checkAttempts++ > maxAttempts) {
                     clearInterval(intervalId);
                     isScreenshotProcessActive = false;
                     screenshotTargetWindow = null;
@@ -750,36 +391,259 @@ const shortcutActions = {
         }
     }
 };
-ipcMain.on('start-find-in-page', (event, searchText, findNext = true) => {
-    const focusedWindow = BrowserWindow.getFocusedWindow();
-    if (focusedWindow) {
-        const view = focusedWindow.getBrowserView();
-        if (view && !view.webContents.isDestroyed()) {
-            if (searchText.trim() === '') { // <-- Fix: Check for empty string
-                view.webContents.stopFindInPage('clearSelection');
-                return;
+
+function registerShortcuts() {
+    globalShortcut.unregisterAll();
+    const shortcuts = settings.shortcuts;
+
+    if (shortcuts.showHide) {
+        globalShortcut.register(shortcuts.showHide, () => {
+            const allWindows = BrowserWindow.getAllWindows();
+            const userWindows = allWindows.filter(w => !w.__internal);
+
+            if (userWindows.length === 0) return;
+
+            const shouldShow = userWindows.some(win => !win.isVisible());
+
+            if (!shouldShow) {
+                isUserTogglingHide = true;
+                setTimeout(() => { isUserTogglingHide = false; }, 500);
             }
-            view.webContents.findInPage(searchText, { findNext: findNext });
-        }
-    }
-});
 
-ipcMain.on('stop-find-in-page', (event, action) => {
+            userWindows.forEach(win => {
+                if (shouldShow) {
+                    if (win.isMinimized()) win.restore();
+                    win.show();
+                } else {
+                    win.hide();
+                }
+            });
+
+            if (shouldShow) {
+                const focused = userWindows.find(w => w.isFocused());
+                lastFocusedWindow = (focused && !focused.isDestroyed())
+                    ? focused
+                    : (userWindows[0] || null);
+
+                if (lastFocusedWindow && !lastFocusedWindow.isDestroyed()) {
+                    setTimeout(() => {
+                        forceOnTop(lastFocusedWindow);
+                        const view = lastFocusedWindow.getBrowserView();
+                        if (view && view.webContents && !view.webContents.isDestroyed()) {
+                            view.webContents.focus();
+                        }
+                    }, 100);
+                }
+            }
+        });
+    }
+
+    const localShortcuts = { ...settings.shortcuts };
+    delete localShortcuts.showHide;
+
+    if (settings.shortcutsGlobal) {
+        console.log('Registering GLOBAL shortcuts.');
+        for (const action in localShortcuts) {
+            if (action === 'findInPage') continue;
+            if (localShortcuts[action] && shortcutActions[action]) {
+                globalShortcut.register(localShortcuts[action], shortcutActions[action]);
+            }
+        }
+        broadcastToAllWebContents('set-local-shortcuts', {});
+    } else {
+        console.log('Registering LOCAL shortcuts.');
+        broadcastToAllWebContents('set-local-shortcuts', localShortcuts);
+    }
+}
+
+// ================================================================= //
+// Gemini-Specific Functions
+// ================================================================= //
+
+function createNewChatWithModel(modelType) {
     const focusedWindow = BrowserWindow.getFocusedWindow();
-    if (focusedWindow) {
+    if (!focusedWindow) return;
+    const targetView = focusedWindow.getBrowserView();
+    if (!targetView) return;
+
+    if (!focusedWindow.isVisible()) focusedWindow.show();
+    if (focusedWindow.isMinimized()) focusedWindow.restore();
+    focusedWindow.focus();
+
+    const modelIndex = modelType.toLowerCase() === 'flash' ? 0 : 1;
+
+    const script = `
+    (async function() {
+      console.log('--- GeminiDesk: Starting script v7 ---');
+      
+      const waitForElement = (selector, timeout = 3000) => {
+        console.log(\`Waiting for an active element: \${selector}\`);
+        return new Promise((resolve, reject) => {
+          const timer = setInterval(() => {
+            const element = document.querySelector(selector);
+            if (element && !element.disabled) {
+              clearInterval(timer);
+              console.log(\`Found active element: \${selector}\`);
+              resolve(element);
+            }
+          }, 100);
+          setTimeout(() => {
+            clearInterval(timer);
+            console.warn('GeminiDesk Warn: Timeout. Could not find an active element for:', selector);
+            reject(new Error('Element not found or disabled: ' + selector));
+          }, timeout);
+        });
+      };
+
+      const simulateClick = (element) => {
+        console.log('Simulating a click on:', element);
+        const mousedownEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window });
+        const mouseupEvent = new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window });
+        const clickEvent = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
+        element.dispatchEvent(mousedownEvent);
+        element.dispatchEvent(mouseupEvent);
+        element.dispatchEvent(clickEvent);
+      };
+
+      try {
+        let modelSwitcher;
+        try {
+          console.log('GeminiDesk: Attempt #1 - Direct model menu opening.');
+          modelSwitcher = await waitForElement('[data-test-id="bard-mode-menu-button"]');
+        } catch (e) {
+          console.log('GeminiDesk: Attempt #1 failed. Falling back to plan B - clicking "New Chat".');
+          const newChatButton = await waitForElement('[data-test-id="new-chat-button"] button', 5000);
+          simulateClick(newChatButton);
+          console.log('GeminiDesk: Clicked "New Chat", waiting for UI to stabilize...');
+          await new Promise(resolve => setTimeout(resolve, 500));
+          modelSwitcher = await waitForElement('[data-test-id="bard-mode-menu-button"]', 5000);
+        }
+        
+        simulateClick(modelSwitcher);
+        console.log('GeminiDesk: Clicked model switcher dropdown.');
+
+        const menuPanel = await waitForElement('mat-bottom-sheet-container, .mat-mdc-menu-panel', 5000);
+        console.log('GeminiDesk: Found model panel. Selecting by index...');
+        
+        const modelIndexToSelect = ${modelIndex};
+        console.log(\`Target index: \${modelIndexToSelect}\`);
+        
+        const items = menuPanel.querySelectorAll('button.mat-mdc-menu-item.bard-mode-list-button');
+        console.log(\`Found \${items.length} models in the menu.\`);
+        
+        if (items.length > modelIndexToSelect) {
+          const targetButton = items[modelIndexToSelect];
+          console.log('Target button:', targetButton.textContent.trim());
+          await new Promise(resolve => setTimeout(resolve, 150));
+          simulateClick(targetButton);
+          console.log('GeminiDesk: Success! Clicked model at index:', modelIndexToSelect);
+        } else {
+          console.error(\`GeminiDesk Error: Could not find a model at index \${modelIndexToSelect}\`);
+          document.body.click();
+        }
+
+      } catch (error) {
+        console.error('GeminiDesk Error: The entire process failed.', error);
+      }
+      console.log('--- GeminiDesk: Script v7 finished ---');
+    })();
+  `;
+
+    targetView.webContents.executeJavaScript(script).catch(console.error);
+}
+
+function triggerSearch() {
+    const focusedWindow = BrowserWindow.getFocusedWindow();
+    if (!focusedWindow) return;
+    const targetView = focusedWindow.getBrowserView();
+    if (!targetView) return;
+
+    if (!focusedWindow.isVisible()) focusedWindow.show();
+    if (focusedWindow.isMinimized()) focusedWindow.restore();
+    focusedWindow.focus();
+
+    const script = `
+    (async function() {
+      console.log('--- GeminiDesk: Triggering Search ---');
+
+      const waitForElement = (selector, timeout = 3000) => {
+        console.log(\`Waiting for element: \${selector}\`);
+        return new Promise((resolve, reject) => {
+          let timeoutHandle = null;
+          const interval = setInterval(() => {
+            const element = document.querySelector(selector);
+            if (element) {
+              if (timeoutHandle) clearTimeout(timeoutHandle);
+              clearInterval(interval);
+              console.log(\`Found element: \${selector}\`);
+              resolve(element);
+            }
+          }, 100);
+          timeoutHandle = setTimeout(() => {
+            clearInterval(interval);
+            console.error(\`GeminiDesk Error: Timeout waiting for \${selector}\`);
+            reject(new Error('Timeout for selector: ' + selector));
+          }, timeout);
+        });
+      };
+      
+      const simulateClick = (element) => {
+        if (!element) {
+            console.error('SimulateClick called on a null element.');
+            return;
+        }
+        console.log('Simulating click on:', element);
+        const events = ['mousedown', 'mouseup', 'click'];
+        events.forEach(type => {
+            const event = new MouseEvent(type, { bubbles: true, cancelable: true, view: window });
+            element.dispatchEvent(event);
+        });
+      };
+
+      try {
+        const menuButton = document.querySelector('button[aria-label="Main menu"]');
+        if (menuButton) {
+            console.log('Step 1: Found and clicking main menu button.');
+            simulateClick(menuButton);
+            await new Promise(resolve => setTimeout(resolve, 300));
+        } else {
+            console.log('Step 1: Main menu button not found. Assuming sidebar is already open.');
+        }
+
+        const searchNavBarButton = await waitForElement('search-nav-bar button.search-nav-bar');
+        console.log('Step 2: Found and clicking search navigation bar.');
+        simulateClick(searchNavBarButton);
+        await new Promise(resolve => setTimeout(resolve, 150));
+
+        const searchInput = await waitForElement('input.search-input, input[placeholder="Search chats"]');
+        console.log('Step 3: Found search input field.');
+        searchInput.focus();
+        
+        console.log('--- GeminiDesk: SUCCESS! Search input focused. ---');
+
+      } catch (error) {
+        console.error('GeminiDesk Error during search sequence:', error.message);
+      }
+    })();
+  `;
+
+    targetView.webContents.executeJavaScript(script).catch(console.error);
+}
+
+function reloadFocusedView() {
+    const focusedWindow = BrowserWindow.getFocusedWindow();
+    if (focusedWindow && !focusedWindow.isDestroyed()) {
         const view = focusedWindow.getBrowserView();
-        if (view && !view.webContents.isDestroyed()) {
-            view.webContents.stopFindInPage(action);
+        if (view && view.webContents && !view.webContents.isDestroyed()) {
+            console.log(`Reloading view for window ID: ${focusedWindow.id}`);
+            view.webContents.reload();
         }
     }
-});
+}
 
-
-ipcMain.on('execute-shortcut', (event, action) => {
-    if (shortcutActions[action]) {
-        shortcutActions[action]();
-    }
-});
+// ================================================================= //
+// Window Creation and Management
+// ================================================================= //
 
 function createWindow(state = null) {
     const newWin = new BrowserWindow({
@@ -787,7 +651,7 @@ function createWindow(state = null) {
         height: originalSize.height,
         skipTaskbar: !settings.showInTaskbar,
         frame: false,
-        backgroundColor: '#1E1E1E', // <--- הוסף את השורה הזו
+        backgroundColor: '#1E1E1E',
         alwaysOnTop: settings.alwaysOnTop,
         fullscreenable: false,
         focusable: true,
@@ -807,17 +671,16 @@ function createWindow(state = null) {
         }
     }
 
-    // Attach custom properties for state management
     newWin.isCanvasActive = false;
     newWin.prevBounds = null;
-    newWin.appMode = null; // Initialize appMode property
+    newWin.appMode = null;
 
     newWin.webContents.on('did-finish-load', () => {
-        const themeToSend = settings.theme === 'system' 
-            ? (nativeTheme.shouldUseDarkColors ? 'dark' : 'light') 
+        const themeToSend = settings.theme === 'system'
+            ? (nativeTheme.shouldUseDarkColors ? 'dark' : 'light')
             : settings.theme;
         newWin.webContents.send('theme-updated', themeToSend);
-        
+
         if (!settings.shortcutsGlobal) {
             const localShortcuts = { ...settings.shortcuts };
             delete localShortcuts.showHide;
@@ -835,7 +698,7 @@ function createWindow(state = null) {
                 }
             }
         }, 100);
-        
+
         const findShortcut = settings.shortcuts.findInPage;
         if (findShortcut) {
             globalShortcut.register(findShortcut, shortcutActions.findInPage);
@@ -853,18 +716,14 @@ function createWindow(state = null) {
         detachedViews.delete(newWin);
     });
 
-if (state) {
-    // שחזור מצב החלון
-    if (state.bounds) newWin.setBounds(state.bounds);
-    
-    // טעינת Gemini עם ה-URL המשוחזר
-    loadGemini(state.mode || settings.defaultMode, newWin, state.url);
-    
-    // אם יש URL ספציפי, זה אומר שזה צ'אט קיים שצריך לשחזר את הכותרת שלו
-    if (state.url && state.url !== 'https://gemini.google.com/app' && state.url !== 'https://aistudio.google.com/') {
-        console.log('Restoring window with specific chat URL:', state.url);
-    }
-} else if (!settings.onboardingShown) {
+    if (state) {
+        if (state.bounds) newWin.setBounds(state.bounds);
+        loadGemini(state.mode || settings.defaultMode, newWin, state.url);
+
+        if (state.url && state.url !== GEMINI_URL && state.url !== AISTUDIO_URL) {
+            console.log('Restoring window with specific chat URL:', state.url);
+        }
+    } else if (!settings.onboardingShown) {
         newWin.loadFile('onboarding.html');
     } else if (settings.defaultMode === 'ask') {
         newWin.loadFile('choice.html');
@@ -875,139 +734,145 @@ if (state) {
     } else {
         loadGemini(settings.defaultMode, newWin);
     }
-    return newWin; // <--- הוסף את השורה הזאת בסוף הפונקציה
+
+    return newWin;
 }
 
 function loadGemini(mode, targetWin, initialUrl) {
     if (!targetWin || targetWin.isDestroyed()) return;
 
     targetWin.appMode = mode;
-    const GEMINI_URL = 'https://gemini.google.com/app';
-    const AISTUDIO_URL = 'https://aistudio.google.com/';
     const url = initialUrl || (mode === 'aistudio' ? AISTUDIO_URL : GEMINI_URL);
-    
+
     let loginWin = null;
-// בקובץ main.js - תקן את הפונקציה createAndManageLoginWindow
-const createAndManageLoginWindow = async (loginUrl) => {
-    if (loginWin && !loginWin.isDestroyed()) {
-        loginWin.focus();
-        return;
-    }
 
-    loginWin = new BrowserWindow({
-        width: 700,
-        height: 780,
-        frame: true,
-        autoHideMenuBar: true,
-        alwaysOnTop: true,
-        webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
-            nodeIntegration: false,
-            contextIsolation: true,
-            javascript: true,
-            webSecurity: true,
-            allowRunningInsecureContent: false,
-            experimentalFeatures: false,
-            userAgent: STABLE_USER_AGENT
+    const createAndManageLoginWindow = async (loginUrl) => {
+        if (loginWin && !loginWin.isDestroyed()) {
+            loginWin.focus();
+            return;
         }
-    });
 
-    // נקה את כל נתוני הסשן של חלון ההתחברות
-    try {
-        await loginWin.webContents.session.clearStorageData({
-            storages: ['cookies', 'localstorage'],
-            origins: ['https://accounts.google.com', 'https://google.com'] 
-        });
-        console.log('Login window session cleared for a fresh login attempt.');
-    } catch (error) {
-        console.error('Failed to clear login window session storage:', error);
-    }
-
-    // Prevent unexpected new windows during login flow
-    loginWin.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
-    loginWin.loadURL(loginUrl);
-
-    loginWin.on('closed', () => {
-        loginWin = null;
-    });
-
-    // התיקון המרכזי - רק כאן מטפלים בהעברת העוגיות
-    loginWin.webContents.on('did-navigate', async (event, navigatedUrl) => {
-        const isLoginSuccess = navigatedUrl.startsWith(GEMINI_URL) || navigatedUrl.startsWith(AISTUDIO_URL);
-        
-        if (isLoginSuccess) {
-            console.log('Login successful in isolated window. Transferring session...');
-            
-            try {
-                const isolatedSession = loginWin.webContents.session;
-                const mainSession = session.fromPartition(SESSION_PARTITION);
-                const googleCookies = await isolatedSession.cookies.get({ domain: '.google.com' });
-
-                if (googleCookies.length === 0) {
-                    console.warn("Login successful, but no cookies found to transfer.");
-                } else {
-                    let successfulTransfers = 0;
-                    for (const cookie of googleCookies) {
-                        try {
-                            const cookieUrl = `https://${cookie.domain.startsWith('.') ? 'www' : ''}${cookie.domain}${cookie.path}`;
-
-                            const newCookie = {
-                                url: cookieUrl,
-                                name: cookie.name,
-                                value: cookie.value,
-                                path: cookie.path,
-                                secure: cookie.secure,
-                                httpOnly: cookie.httpOnly,
-                                expirationDate: Math.floor(Date.now() / 1000) + (365 * 24 * 60 * 60),
-                                session: false,
-                                sameSite: cookie.sameSite
-                            };
-
-                            if (!cookie.name.startsWith('__Host-')) {
-                                newCookie.domain = cookie.domain;
-                            }
-
-                            await mainSession.cookies.set(newCookie);
-                            successfulTransfers++;
-                        } catch (cookieError) {
-                            console.warn(`Could not transfer cookie "${cookie.name}": ${cookieError.message}`);
-                        }
-                    }
-                    console.log(`${successfulTransfers}/${googleCookies.length} cookies transferred successfully.`);
-                }
-
-                // Ensure transferred cookies are immediately written to disk
-                try {
-                    await mainSession.cookies.flushStore();
-                } catch (flushErr) {
-                    console.error('Failed to flush cookies store:', flushErr);
-                }
-
-                // סגור את חלון ההתחברות
-                if (loginWin && !loginWin.isDestroyed()) {
-                    loginWin.close();
-                }
-                
-                // רענן את כל החלונות
-                BrowserWindow.getAllWindows().forEach(win => {
-                    if (win && !win.isDestroyed() && (!loginWin || win.id !== loginWin.id)) {
-                        const view = win.getBrowserView();
-                        if (view && view.webContents && !view.webContents.isDestroyed()) {
-                            console.log(`Reloading view for window ID: ${win.id}`);
-                            view.webContents.reload();
-                        }
-                    }
-                });
-
-                // **התיקון המרכזי - שלח הודעה ל-agent רק פה**
-                
-            } catch (error) {
+        loginWin = new BrowserWindow({
+            width: 700,
+            height: 780,
+            frame: true,
+            autoHideMenuBar: true,
+            alwaysOnTop: true,
+            webPreferences: {
+                preload: path.join(__dirname, 'preload.js'),
+                nodeIntegration: false,
+                contextIsolation: true,
+                javascript: true,
+                webSecurity: true,
+                allowRunningInsecureContent: false,
+                experimentalFeatures: false,
+                userAgent: STABLE_USER_AGENT
             }
-        }
-    });
-};
+        });
 
-    // --- הגדרת החלון הראשי (נשאר כפי שהיה) ---
+        try {
+            await loginWin.webContents.session.clearStorageData({
+                storages: ['cookies', 'localstorage'],
+                origins: ['https://accounts.google.com', 'https://google.com']
+            });
+            console.log('Login window session cleared for a fresh login attempt.');
+        } catch (error) {
+            console.error('Failed to clear login window session storage:', error);
+        }
+
+        loginWin.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+        loginWin.loadURL(loginUrl);
+
+        loginWin.on('closed', () => {
+            loginWin = null;
+        });
+
+        loginWin.webContents.on('did-navigate', async (event, navigatedUrl) => {
+            const isLoginSuccess = navigatedUrl.startsWith(GEMINI_URL) || navigatedUrl.startsWith(AISTUDIO_URL);
+
+            if (isLoginSuccess) {
+                let sessionCookieFound = false;
+                const maxAttempts = 20;
+                const isolatedSession = loginWin.webContents.session;
+
+                for (let i = 0; i < maxAttempts; i++) {
+                    const criticalCookies = await isolatedSession.cookies.get({ name: '__Secure-1PSID' });
+                    if (criticalCookies && criticalCookies.length > 0) {
+                        sessionCookieFound = true;
+                        break;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+
+                if (!sessionCookieFound) {
+                    console.warn('Timed out waiting for critical session cookie. Transfer may be incomplete.');
+                }
+
+                try {
+                    const mainSession = session.fromPartition(SESSION_PARTITION);
+                    const googleCookies = await isolatedSession.cookies.get({ domain: '.google.com' });
+
+                    if (googleCookies.length === 0) {
+                        console.warn("Login successful, but no cookies found to transfer.");
+                    } else {
+                        let successfulTransfers = 0;
+                        for (const cookie of googleCookies) {
+                            try {
+                                const cookieUrl = `https://${cookie.domain.startsWith('.') ? 'www' : ''}${cookie.domain}${cookie.path}`;
+
+                                const newCookie = {
+                                    url: cookieUrl,
+                                    name: cookie.name,
+                                    value: cookie.value,
+                                    path: cookie.path,
+                                    secure: cookie.secure,
+                                    httpOnly: cookie.httpOnly,
+                                    expirationDate: Math.floor(Date.now() / 1000) + (365 * 24 * 60 * 60),
+                                    session: false,
+                                    sameSite: cookie.sameSite
+                                };
+
+                                if (!cookie.name.startsWith('__Host-')) {
+                                    newCookie.domain = cookie.domain;
+                                }
+
+                                await mainSession.cookies.set(newCookie);
+                                successfulTransfers++;
+                            } catch (cookieError) {
+                                console.warn(`Could not transfer cookie "${cookie.name}": ${cookieError.message}`);
+                            }
+                        }
+                        console.log(`${successfulTransfers}/${googleCookies.length} cookies transferred successfully.`);
+                    }
+
+                    try {
+                        await mainSession.cookies.flushStore();
+                    } catch (flushErr) {
+                        console.error('Failed to flush cookies store:', flushErr);
+                    }
+
+
+                    if (loginWin && !loginWin.isDestroyed()) {
+                        loginWin.close();
+                    }
+
+                    BrowserWindow.getAllWindows().forEach(win => {
+                        if (win && !win.isDestroyed() && (!loginWin || win.id !== loginWin.id)) {
+                            const view = win.getBrowserView();
+                            if (view && view.webContents && !view.webContents.isDestroyed()) {
+                                console.log(`Reloading view for window ID: ${win.id}`);
+                                view.webContents.reload();
+                            }
+                        }
+                    });
+
+                } catch (error) {
+                    console.error('Error during login success handling:', error);
+                }
+            }
+        });
+    };
+
     const existingView = targetWin.getBrowserView();
     if (existingView) {
         existingView.webContents.loadURL(url);
@@ -1018,39 +883,35 @@ const createAndManageLoginWindow = async (loginUrl) => {
 
     const newView = new BrowserView({
         webPreferences: {
-            partition: SESSION_PARTITION, // הוא חייב להישאר עם partition כדי לשמור את הסשן
+            partition: SESSION_PARTITION,
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
             nativeWindowOpen: true
         }
     });
 
-    // יירוט ניתובים ופופ-אפים שקורא לפונקציה שיוצרת את החלון החיצוני
     newView.webContents.setWindowOpenHandler(({ url: popupUrl }) => {
         const isGoogleLogin = /^https:\/\/accounts\.google\.com\//.test(popupUrl);
         if (isGoogleLogin) {
             createAndManageLoginWindow(popupUrl);
-            return { action: 'deny' }; 
+            return { action: 'deny' };
         }
         shell.openExternal(popupUrl);
         return { action: 'deny' };
     });
+
     newView.webContents.on('will-navigate', async (event, navigationUrl) => {
         const isGoogleAccountUrl = /^https:\/\/accounts\.google\.com\//.test(navigationUrl);
 
         if (isGoogleAccountUrl) {
-            // ירט תמיד את הניווט כדי שנוכל לטפל בו בעצמנו
             event.preventDefault();
 
-            // בדוק אם זו כתובת התנתקות (היא בדרך כלל מכילה 'Logout')
             const isSignOutUrl = navigationUrl.includes('/Logout');
 
             if (isSignOutUrl) {
-                // --- טיפול בהתנתקות ---
                 console.log('Sign-out detected. Clearing main application session...');
                 try {
                     const mainSession = session.fromPartition(SESSION_PARTITION);
-                    // נקה את כל העוגיות והאחסון של הסשן הראשי
                     await mainSession.clearStorageData({ storages: ['cookies', 'localstorage'] });
                     try {
                         await mainSession.cookies.flushStore();
@@ -1059,7 +920,6 @@ const createAndManageLoginWindow = async (loginUrl) => {
                     }
                     console.log('Main session cleared. Reloading the view to show logged-out state.');
 
-                    // רענן את התצוגה כדי להציג את מסך ההתחברות של Gemini
                     if (newView && !newView.webContents.isDestroyed()) {
                         newView.webContents.reload();
                     }
@@ -1067,8 +927,6 @@ const createAndManageLoginWindow = async (loginUrl) => {
                     console.error('Failed to clear main session on sign-out:', error);
                 }
             } else {
-                // --- טיפול בהתחברות או הוספת חשבון ---
-                // זה המצב הרגיל של פתיחת חלון חיצוני
                 console.log('Sign-in or Add Account detected. Opening isolated login window.');
                 await createAndManageLoginWindow(navigationUrl);
             }
@@ -1076,8 +934,7 @@ const createAndManageLoginWindow = async (loginUrl) => {
             event.preventDefault();
         }
     });
-    
-    // שאר הקוד של הפונקציה
+
     newView.webContents.on('found-in-page', (event, result) => {
         if (event.sender && !event.sender.isDestroyed()) {
             event.sender.send('find-in-page-result', result);
@@ -1085,102 +942,93 @@ const createAndManageLoginWindow = async (loginUrl) => {
     });
 
     newView.webContents.loadURL(url);
-    
+
     targetWin.setBrowserView(newView);
-    
+
     const bounds = targetWin.getBounds();
     newView.setBounds({ x: 0, y: 30, width: bounds.width, height: bounds.height - 30 });
     newView.setAutoResize({ width: true, height: true });
-    
-if (initialUrl && initialUrl !== GEMINI_URL && initialUrl !== AISTUDIO_URL) {
-// Add this function to main.js to replace the existing waitForTitleAndUpdate
-const waitForTitleAndUpdate = async () => {
-  let attempts = 0;
-  const maxAttempts = 20; 
-  
-  while (attempts < maxAttempts) {
-    try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Simpler, more robust script that's less likely to throw errors
-      const title = await newView.webContents.executeJavaScript(`
-        (function() {
-          try {
-            // Simple helper function
-            const text = el => el ? (el.textContent || el.innerText || '').trim() : '';
-            
-            // Try multiple selector strategies, from most specific to most general
-            const selectors = [
-              '.conversation.selected .conversation-title',
-              'li.active a.prompt-link',
-              '[data-test-id="conversation-title"]',
-              'h1.conversation-title',
-              '.conversation-title',
-              '.chat-title',
-              'article h1'
-            ];
-            
-            // Try each selector
-            for (const selector of selectors) {
-              const el = document.querySelector(selector);
-              if (el) {
-                const t = text(el);
-                if (t && t !== 'Gemini' && t !== 'New Chat') return t;
+
+    if (initialUrl && initialUrl !== GEMINI_URL && initialUrl !== AISTUDIO_URL) {
+        const waitForTitleAndUpdate = async () => {
+            let attempts = 0;
+            const maxAttempts = 20;
+
+            while (attempts < maxAttempts) {
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    const title = await newView.webContents.executeJavaScript(`
+            (function() {
+              try {
+                const text = el => el ? (el.textContent || el.innerText || '').trim() : '';
+                
+                const selectors = [
+                  '.conversation.selected .conversation-title',
+                  'li.active a.prompt-link',
+                  '[data-test-id="conversation-title"]',
+                  'h1.conversation-title',
+                  '.conversation-title',
+                  '.chat-title',
+                  'article h1'
+                ];
+                
+                for (const selector of selectors) {
+                  const el = document.querySelector(selector);
+                  if (el) {
+                    const t = text(el);
+                    if (t && t !== 'Gemini' && t !== 'New Chat') return t;
+                  }
+                }
+                
+                const urlMatch = location.href.match(/\\/chat\\/([^\\/\\?]+)/);
+                if (urlMatch) {
+                  return decodeURIComponent(urlMatch[1]).replace(/[-_]/g, ' ');
+                }
+                
+                const firstUserMsg = document.querySelector('user-query .query-text');
+                if (firstUserMsg) {
+                  const t = text(firstUserMsg);
+                  return t.length > 50 ? t.substring(0, 50) + '...' : t;
+                }
+                
+                return document.title || 'Restored Chat';
+              } catch (e) {
+                return 'Restored Chat';
               }
+            })();
+          `, true);
+
+                    if (title && title.trim() !== '') {
+                        console.log('Found chat title after restore:', title);
+                        if (!targetWin.isDestroyed()) {
+                            targetWin.webContents.send('update-title', title);
+                        }
+                        break;
+                    }
+
+                    attempts++;
+                } catch (e) {
+                    console.warn('Failed to read title on attempt', attempts + 1, ':', e.message);
+                    attempts++;
+                }
             }
-            
-            // Try URL-based extraction as fallback
-            const urlMatch = location.href.match(/\\/chat\\/([^\\/\\?]+)/);
-            if (urlMatch) {
-              return decodeURIComponent(urlMatch[1]).replace(/[-_]/g, ' ');
+
+            if (attempts >= maxAttempts) {
+                console.log('Could not find chat title after restore, using fallback');
+                if (!targetWin.isDestroyed()) {
+                    targetWin.webContents.send('update-title', 'Restored Chat');
+                }
             }
-            
-            // Final fallbacks
-            const firstUserMsg = document.querySelector('user-query .query-text');
-            if (firstUserMsg) {
-              const t = text(firstUserMsg);
-              return t.length > 50 ? t.substring(0, 50) + '...' : t;
-            }
-            
-            return document.title || 'Restored Chat';
-          } catch (e) {
-            // Return a safe value if anything goes wrong
-            return 'Restored Chat';
-          }
-        })();
-      `, true);
-      
-      if (title && title.trim() !== '') {
-        console.log('Found chat title after restore:', title);
-        if (!targetWin.isDestroyed()) {
-          targetWin.webContents.send('update-title', title);
-        }
-        break; // Found title, exit loop
-      }
-      
-      attempts++;
-    } catch (e) {
-      console.warn('Failed to read title on attempt', attempts + 1, ':', e.message);
-      attempts++;
+        };
+
+        newView.webContents.once('did-finish-load', () => {
+            setTimeout(waitForTitleAndUpdate, 1000);
+        });
+
+        newView.webContents.on('did-navigate-in-page', waitForTitleAndUpdate);
     }
-  }
-  
-  if (attempts >= maxAttempts) {
-    console.log('Could not find chat title after restore, using fallback');
-    if (!targetWin.isDestroyed()) {
-      targetWin.webContents.send('update-title', 'Restored Chat');
-    }
-  }
-};
-  
-  // התחל את התהליך אחרי שהדף נטען
-  newView.webContents.once('did-finish-load', () => {
-    setTimeout(waitForTitleAndUpdate, 1000); // המתנה נוספת לוודא שכל הדינמיקה של Gemini נטענה
-  });
-  
-  // גם מאזין לשינויים בדף (למקרה של SPA navigation)
-  newView.webContents.on('did-navigate-in-page', waitForTitleAndUpdate);
-}
+
     if (!settings.shortcutsGlobal) {
         const localShortcuts = { ...settings.shortcuts };
         delete localShortcuts.showHide;
@@ -1193,107 +1041,379 @@ const waitForTitleAndUpdate = async () => {
         newView.webContents.on('did-finish-load', sendShortcuts);
     }
 }
+
 // ================================================================= //
-// Animation and Resizing Functions (Unchanged from original)
+// Canvas Mode and Resizing
 // ================================================================= //
 
 async function setCanvasMode(isCanvas, targetWin) {
-  if (!settings.enableCanvasResizing) {
-    return;
-  }
-  if (!targetWin || targetWin.isDestroyed() || isCanvas === targetWin.isCanvasActive) {
-    return;
-  }
-
-  const activeView = targetWin.getBrowserView();
-  targetWin.isCanvasActive = isCanvas;
-  const currentBounds = targetWin.getBounds();
-  if (targetWin.isMinimized()) targetWin.restore();
-
-  let scrollY = 0;
-  if (activeView) {
-    try {
-      scrollY = await activeView.webContents.executeJavaScript(`(document.scrollingElement || document.documentElement).scrollTop`);
-    } catch (e) {
-      console.error('Could not read scroll position:', e);
+    if (!settings.enableCanvasResizing) {
+        return;
     }
-  }
-
-  if (isCanvas) {
-    if (!activeView) {
-      console.warn("Canvas mode requested, but no active view found. Aborting.");
-      targetWin.isCanvasActive = false;
-      return;
+    if (!targetWin || targetWin.isDestroyed() || isCanvas === targetWin.isCanvasActive) {
+        return;
     }
 
-    targetWin.prevBounds = { ...currentBounds };
-    const display = screen.getDisplayMatching(currentBounds);
-    const workArea = display.workArea;
-    const targetWidth = Math.min(canvasSize.width, workArea.width - margin * 2);
-    const targetHeight = Math.min(canvasSize.height, workArea.height - margin * 2);
-    const newX = Math.max(workArea.x + margin, Math.min(currentBounds.x, workArea.x + workArea.width - targetWidth - margin));
-    const newY = Math.max(workArea.y + margin, Math.min(currentBounds.y, workArea.y + workArea.height - targetHeight - margin));
+    const activeView = targetWin.getBrowserView();
+    targetWin.isCanvasActive = isCanvas;
+    const currentBounds = targetWin.getBounds();
+    if (targetWin.isMinimized()) targetWin.restore();
 
-    animateResize({ x: newX, y: newY, width: targetWidth, height: targetHeight }, targetWin, activeView);
-  } else {
-    if (targetWin.prevBounds) {
-      animateResize(targetWin.prevBounds, targetWin, activeView);
-      targetWin.prevBounds = null;
+    let scrollY = 0;
+    if (activeView) {
+        try {
+            scrollY = await activeView.webContents.executeJavaScript(`(document.scrollingElement || document.documentElement).scrollTop`);
+        } catch (e) {
+            console.error('Could not read scroll position:', e);
+        }
+    }
+
+    if (isCanvas) {
+        if (!activeView) {
+            console.warn("Canvas mode requested, but no active view found. Aborting.");
+            targetWin.isCanvasActive = false;
+            return;
+        }
+
+        targetWin.prevBounds = { ...currentBounds };
+        const display = screen.getDisplayMatching(currentBounds);
+        const workArea = display.workArea;
+        const targetWidth = Math.min(canvasSize.width, workArea.width - margin * 2);
+        const targetHeight = Math.min(canvasSize.height, workArea.height - margin * 2);
+        const newX = Math.max(workArea.x + margin, Math.min(currentBounds.x, workArea.x + workArea.width - targetWidth - margin));
+        const newY = Math.max(workArea.y + margin, Math.min(currentBounds.y, workArea.y + workArea.height - targetHeight - margin));
+
+        animateResize({ x: newX, y: newY, width: targetWidth, height: targetHeight }, targetWin, activeView);
     } else {
-      const newBounds = { ...originalSize, x: currentBounds.x, y: currentBounds.y };
-      animateResize(newBounds, targetWin, activeView);
-      // Center window only when returning to default size
-      setTimeout(() => { if (targetWin && !targetWin.isDestroyed()) targetWin.center(); }, 210);
+        if (targetWin.prevBounds) {
+            animateResize(targetWin.prevBounds, targetWin, activeView);
+            targetWin.prevBounds = null;
+        } else {
+            const newBounds = { ...originalSize, x: currentBounds.x, y: currentBounds.y };
+            animateResize(newBounds, targetWin, activeView);
+            setTimeout(() => { if (targetWin && !targetWin.isDestroyed()) targetWin.center(); }, 210);
+        }
     }
-  }
 
-  if (activeView) {
-    setTimeout(() => {
-      if (activeView && activeView.webContents && !activeView.webContents.isDestroyed()) {
-        activeView.webContents.executeJavaScript(`(document.scrollingElement || document.documentElement).scrollTop = ${scrollY};`).catch(console.error);
-      }
-    }, 300);
-  }
+    if (activeView) {
+        setTimeout(() => {
+            if (activeView && activeView.webContents && !activeView.webContents.isDestroyed()) {
+                activeView.webContents.executeJavaScript(`(document.scrollingElement || document.documentElement).scrollTop = ${scrollY};`).catch(console.error);
+            }
+        }, 300);
+    }
 }
+
 function animateResize(targetBounds, activeWin, activeView, duration_ms = 200) {
-  if (!activeWin || activeWin.isDestroyed()) return;
+    if (!activeWin || activeWin.isDestroyed()) return;
 
-  const start = activeWin.getBounds();
-  const steps = 20;
-  const interval = duration_ms / steps;
-  const delta = {
-    x: (targetBounds.x - start.x) / steps,
-    y: (targetBounds.y - start.y) / steps,
-    width: (targetBounds.width - start.width) / steps,
-    height: (targetBounds.height - start.height) / steps
-  };
-  let i = 0;
-
-  function step() {
-    i++;
-    const b = {
-      x: Math.round(start.x + delta.x * i),
-      y: Math.round(start.y + delta.y * i),
-      width: Math.round(start.width + delta.width * i),
-      height: Math.round(start.height + delta.height * i)
+    const start = activeWin.getBounds();
+    const steps = 20;
+    const interval = duration_ms / steps;
+    const delta = {
+        x: (targetBounds.x - start.x) / steps,
+        y: (targetBounds.y - start.y) / steps,
+        width: (targetBounds.width - start.width) / steps,
+        height: (targetBounds.height - start.height) / steps
     };
-    if (activeWin && !activeWin.isDestroyed()) {
-      activeWin.setBounds(b);
-      if (activeView && activeView.webContents && !activeView.webContents.isDestroyed()) {
-        activeView.setBounds({ x: 0, y: 30, width: b.width, height: b.height - 30 });
-      }
-      if (i < steps) setTimeout(step, interval);
+    let i = 0;
+
+    function step() {
+        i++;
+        const b = {
+            x: Math.round(start.x + delta.x * i),
+            y: Math.round(start.y + delta.y * i),
+            width: Math.round(start.width + delta.width * i),
+            height: Math.round(start.height + delta.height * i)
+        };
+        if (activeWin && !activeWin.isDestroyed()) {
+            activeWin.setBounds(b);
+            if (activeView && activeView.webContents && !activeView.webContents.isDestroyed()) {
+                activeView.setBounds({ x: 0, y: 30, width: b.width, height: b.height - 30 });
+            }
+            if (i < steps) setTimeout(step, interval);
+        }
     }
-  }
-  step();
+    step();
 }
+
 // ================================================================= //
-// Handling files from context menu and single instance lock
+// Theme Management
 // ================================================================= //
 
-let filePathToProcess = null;
+function broadcastThemeChange(newTheme) {
+    const themeToSend = newTheme === 'system'
+        ? (nativeTheme.shouldUseDarkColors ? 'dark' : 'light')
+        : newTheme;
 
-// Handle file path argument if the app is opened with a file
+    broadcastToAllWebContents('theme-updated', themeToSend);
+}
+
+function syncThemeWithWebsite(theme) {
+    if (['light', 'dark', 'system'].includes(theme)) {
+        nativeTheme.themeSource = theme;
+    }
+}
+
+nativeTheme.on('updated', () => {
+    if (settings.theme === 'system') {
+        broadcastThemeChange('system');
+    }
+});
+
+// ================================================================= //
+// Notifications Management
+// ================================================================= //
+
+function createNotificationWindow() {
+    if (notificationWin) {
+        notificationWin.focus();
+        return;
+    }
+
+    notificationWin = new BrowserWindow({
+        width: 550,
+        height: 450,
+        frame: false,
+        alwaysOnTop: true,
+        show: false,
+        transparent: true,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+        }
+    });
+
+    notificationWin.loadFile('notification.html');
+
+    notificationWin.once('ready-to-show', () => {
+        if (notificationWin) notificationWin.show();
+    });
+
+    notificationWin.on('closed', () => {
+        notificationWin = null;
+    });
+}
+
+function sendToNotificationWindow(data) {
+    if (!notificationWin || notificationWin.isDestroyed()) return;
+    const wc = notificationWin.webContents;
+    const send = () => wc.send('notification-data', data);
+    if (wc.isLoadingMainFrame()) {
+        wc.once('did-finish-load', send);
+    } else {
+        send();
+    }
+}
+
+async function checkForNotifications(isManualCheck = false) {
+    if (isManualCheck) {
+        createNotificationWindow();
+        if (!notificationWin) return;
+    }
+
+    const sendToNotificationWindow = (data) => {
+        if (!notificationWin || notificationWin.isDestroyed()) return;
+        const wc = notificationWin.webContents;
+        const send = () => wc.send('notification-data', data);
+        if (wc.isLoadingMainFrame()) {
+            wc.once('did-finish-load', send);
+        } else {
+            send();
+        }
+    };
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+    try {
+        const response = await fetch('https://latex-v25b.onrender.com/latest-messages', {
+            cache: 'no-cache',
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (!response.ok && response.status !== 404) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+
+        const messages = response.status === 404 ? [] : await response.json();
+
+        if (messages.length > 0) {
+            const latestMessage = messages[0];
+            if (latestMessage.id !== settings.lastShownNotificationId) {
+                console.log(`New notification found: ID ${latestMessage.id}`);
+                settings.lastShownNotificationId = latestMessage.id;
+                saveSettings(settings);
+
+                if (!notificationWin) createNotificationWindow();
+                sendToNotificationWindow({ status: 'found', content: messages });
+            } else if (isManualCheck) {
+                sendToNotificationWindow({ status: 'no-new-message', content: messages });
+            }
+        } else {
+            console.log('No messages found on server. Clearing local cache.');
+            settings.lastShownNotificationId = null;
+            saveSettings(settings);
+
+            if (isManualCheck) {
+                sendToNotificationWindow({ status: 'no-messages-ever' });
+            }
+        }
+    } catch (error) {
+        clearTimeout(timeoutId);
+        console.error('Failed to check for notifications:', error.message);
+        if (isManualCheck && notificationWin) {
+            const errorMessage = (error.name === 'AbortError')
+                ? 'The request timed out.'
+                : error.message;
+            sendToNotificationWindow({ status: 'error', message: errorMessage });
+        }
+    }
+}
+
+function scheduleNotificationCheck() {
+    if (notificationIntervalId) {
+        clearInterval(notificationIntervalId);
+        notificationIntervalId = null;
+    }
+
+    if (settings.autoCheckNotifications) {
+        const halfHourInMs = 30 * 60 * 1000;
+        notificationIntervalId = setInterval(checkForNotifications, halfHourInMs);
+    }
+}
+
+// ================================================================= //
+// Update Management
+// ================================================================= //
+
+function scheduleDailyUpdateCheck() {
+    const checkForUpdates = async () => {
+        console.log('Checking for updates...');
+        try {
+            await autoUpdater.checkForUpdates();
+        } catch (error) {
+            console.error('Background update check failed. This is not critical and will be ignored:', error.message);
+        }
+    };
+
+    checkForUpdates();
+    setInterval(checkForUpdates, 30 * 60 * 1000);
+}
+
+function openUpdateWindowAndCheck() {
+    if (updateWin) {
+        updateWin.focus();
+        return;
+    }
+
+    const parentWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+    updateWin = new BrowserWindow({
+        width: 420, height: 500, frame: false, resizable: false, alwaysOnTop: true,
+        show: false, parent: parentWindow, modal: true,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+        }
+    });
+
+    updateWin.loadFile('update-available.html');
+
+    updateWin.once('ready-to-show', async () => {
+        if (!updateWin) return;
+        updateWin.show();
+        updateWin.webContents.send('update-info', { status: 'checking' });
+        try {
+            await autoUpdater.checkForUpdates();
+        } catch (error) {
+            console.error('Manual update check failed:', error.message);
+            if (updateWin && !updateWin.isDestroyed()) {
+                updateWin.webContents.send('update-info', {
+                    status: 'error',
+                    message: 'Could not connect to GitHub to check for updates. Please check your internet connection or try again later. You can also check for new releases manually on the GitHub page.'
+                });
+            }
+        }
+    });
+
+    updateWin.on('closed', () => {
+        updateWin = null;
+    });
+}
+
+const sendUpdateStatus = (status, data = {}) => {
+    const allWindows = BrowserWindow.getAllWindows();
+    allWindows.forEach(win => {
+        if (!win.isDestroyed()) {
+            win.webContents.send('update-status', { status, ...data });
+        }
+    });
+};
+
+autoUpdater.on('checking-for-update', () => {
+    sendUpdateStatus('checking');
+});
+
+autoUpdater.on('update-available', async (info) => {
+    if (!updateWin) {
+        openUpdateWindowAndCheck();
+        return;
+    }
+
+    try {
+        const { marked } = await import('marked');
+        const options = { hostname: 'api.github.com', path: '/repos/hillelkingqt/GeminiDesk/releases/latest', method: 'GET', headers: { 'User-Agent': 'GeminiDesk-App' } };
+        const req = https.request(options, (res) => {
+            let data = '';
+            res.on('data', (chunk) => { data += chunk; });
+            res.on('end', () => {
+                let releaseNotesHTML = '<p>Could not load release notes.</p>';
+                try {
+                    const releaseInfo = JSON.parse(data);
+                    if (releaseInfo.body) { releaseNotesHTML = marked.parse(releaseInfo.body); }
+                } catch (e) { console.error('Failed to parse release notes JSON:', e); }
+
+                if (updateWin) {
+                    updateWin.webContents.send('update-info', {
+                        status: 'update-available',
+                        version: info.version,
+                        releaseNotesHTML: releaseNotesHTML
+                    });
+                }
+            });
+        });
+        req.on('error', (e) => { if (updateWin) { updateWin.webContents.send('update-info', { status: 'error', message: e.message }); } });
+        req.end();
+    } catch (importError) { if (updateWin) { updateWin.webContents.send('update-info', { status: 'error', message: 'Failed to load modules.' }); } }
+});
+
+autoUpdater.on('update-not-available', (info) => {
+    if (updateWin) {
+        updateWin.webContents.send('update-info', { status: 'up-to-date' });
+    }
+    sendUpdateStatus('up-to-date');
+});
+
+autoUpdater.on('error', (err) => {
+    if (updateWin) {
+        updateWin.webContents.send('update-info', { status: 'error', message: err.message });
+    }
+    sendUpdateStatus('error', { message: err.message });
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+    sendUpdateStatus('downloading', { percent: Math.round(progressObj.percent) });
+});
+
+autoUpdater.on('update-downloaded', () => {
+    sendUpdateStatus('downloaded');
+});
+
+// ================================================================= //
+// File Handling
+// ================================================================= //
+
 if (process.argv.length >= 2 && !process.argv[0].includes('electron')) {
     const potentialPath = process.argv[1];
     if (fs.existsSync(potentialPath)) {
@@ -1301,21 +1421,18 @@ if (process.argv.length >= 2 && !process.argv[0].includes('electron')) {
     }
 }
 
-// Single instance lock to prevent multiple app windows
 const gotTheLock = app.requestSingleInstanceLock();
 
 if (!gotTheLock) {
     app.quit();
 } else {
     app.on('second-instance', (event, commandLine, workingDirectory) => {
-        // Someone tried to run a second instance.
         let targetWin = BrowserWindow.getAllWindows().pop() || null;
 
         if (targetWin) {
             if (targetWin.isMinimized()) targetWin.restore();
             targetWin.focus();
 
-            // Check for a file path in the command line of the second instance
             const potentialPath = commandLine.find(arg => fs.existsSync(arg));
             if (potentialPath) {
                 handleFileOpen(potentialPath);
@@ -1328,14 +1445,12 @@ function handleFileOpen(filePath) {
     let targetWin = BrowserWindow.getFocusedWindow();
 
     if (!targetWin) {
-        // If no window is focused, try to get the last created one.
         const allWindows = BrowserWindow.getAllWindows();
         if (allWindows.length > 0) {
             targetWin = allWindows[allWindows.length - 1];
         }
     }
 
-    // If still no window, store for later.
     if (!targetWin) {
         filePathToProcess = filePath;
         return;
@@ -1343,85 +1458,103 @@ function handleFileOpen(filePath) {
 
     const targetView = targetWin.getBrowserView();
     if (!targetView) {
-        // If the view isn't ready, store for later.
         filePathToProcess = filePath;
         return;
     }
 
-
     try {
-        // Bring the window to the front and give it focus
         if (!targetWin.isVisible()) targetWin.show();
         if (targetWin.isMinimized()) targetWin.restore();
-        targetWin.setAlwaysOnTop(true); // Temporarily bring to front to ensure it gets focus
+        targetWin.setAlwaysOnTop(true);
         targetWin.focus();
         targetWin.moveTop();
 
-        // Check file type to handle images and other files correctly
         const ext = path.extname(filePath).toLowerCase();
         if (['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp'].includes(ext)) {
             const image = nativeImage.createFromPath(filePath);
             clipboard.writeImage(image);
         } else {
-            // For other files (PDF, TXT, etc.), we put the file on the clipboard
-            // This mimics the "Copy" action in the file explorer.
-            // Note: This works reliably on Windows. macOS/Linux support can vary.
-if (process.platform === 'win32') {
-  // 1. בונים את מבנה ה-DROPFILES (20 בתים)  
-  const dropFilesStruct = Buffer.alloc(20);
-  // pFiles = 20 (היסט השורה הראשונה שבה מתחיל רשימת השמות)
-  dropFilesStruct.writeUInt32LE(20, 0);
-  // fWide = 1 (UTF-16)
-  dropFilesStruct.writeUInt32LE(1, 16);
+            if (process.platform === 'win32') {
+                const dropFilesStruct = Buffer.alloc(20);
+                dropFilesStruct.writeUInt32LE(20, 0);
+                dropFilesStruct.writeUInt32LE(1, 16);
 
-  // 2. כותבים את השם (Unicode, null-terminated)
-  const utf16Path = filePath + '\0';
-  const pathBuffer = Buffer.from(utf16Path, 'ucs2');
-  
-  // 3. מסיימים ב-double-null כדי לסמן סוף הרשימה
-  const terminator = Buffer.from('\0\0', 'ucs2');
+                const utf16Path = filePath + '\0';
+                const pathBuffer = Buffer.from(utf16Path, 'ucs2');
 
-  // 4. מאחדים הכל ויוצקים ל-clipboard
-  const dropBuffer = Buffer.concat([dropFilesStruct, pathBuffer, terminator]);
-  clipboard.writeBuffer('CF_HDROP', dropBuffer);
+                const terminator = Buffer.from('\0\0', 'ucs2');
 
-} else {
-  // macOS/Linux או כ fallback: רק טקסט
-  clipboard.write({ text: filePath });
-}
+                const dropBuffer = Buffer.concat([dropFilesStruct, pathBuffer, terminator]);
+                clipboard.writeBuffer('CF_HDROP', dropBuffer);
 
+            } else {
+                clipboard.write({ text: filePath });
+            }
         }
 
-        // Give the OS a moment to process the clipboard command
         setTimeout(() => {
             if (targetWin && !targetWin.isDestroyed() && targetView && targetView.webContents) {
                 targetView.webContents.focus();
                 targetView.webContents.paste();
                 console.log('Pasting file from clipboard:', filePath);
 
-                // Restore the original alwaysOnTop setting after a moment
                 setTimeout(() => {
                     if (targetWin && !targetWin.isDestroyed()) {
-                       targetWin.setAlwaysOnTop(settings.alwaysOnTop);
+                        targetWin.setAlwaysOnTop(settings.alwaysOnTop);
                     }
                 }, 200);
             }
-            filePathToProcess = null; // Clear the path after processing
-        }, 300); // A slightly longer delay for file system operations
+            filePathToProcess = null;
+        }, 300);
 
     } catch (error) {
         console.error('Failed to process file for pasting:', error);
         dialog.showErrorBox('File Error', 'Could not copy the selected file to the clipboard.');
-        if (targetWin) { // Restore alwaysOnTop setting even on error
+        if (targetWin) {
             targetWin.setAlwaysOnTop(settings.alwaysOnTop);
         }
     }
 }
+
+// ================================================================= //
+// IPC Handlers
+// ================================================================= //
+
+ipcMain.on('start-find-in-page', (event, searchText, findNext = true) => {
+    const focusedWindow = BrowserWindow.getFocusedWindow();
+    if (focusedWindow) {
+        const view = focusedWindow.getBrowserView();
+        if (view && !view.webContents.isDestroyed()) {
+            if (searchText.trim() === '') {
+                view.webContents.stopFindInPage('clearSelection');
+                return;
+            }
+            view.webContents.findInPage(searchText, { findNext: findNext });
+        }
+    }
+});
+
+ipcMain.on('stop-find-in-page', (event, action) => {
+    const focusedWindow = BrowserWindow.getFocusedWindow();
+    if (focusedWindow) {
+        const view = focusedWindow.getBrowserView();
+        if (view && !view.webContents.isDestroyed()) {
+            view.webContents.stopFindInPage(action);
+        }
+    }
+});
+
+ipcMain.on('execute-shortcut', (event, action) => {
+    if (shortcutActions[action]) {
+        shortcutActions[action]();
+    }
+});
+
 ipcMain.on('select-app-mode', (event, mode) => {
     const senderWindow = BrowserWindow.fromWebContents(event.sender);
     if (senderWindow && !senderWindow.isDestroyed()) {
-        // --- שחזור גודל החלון המקורי ---
-        senderWindow.setResizable(true); // אפשר שינוי גודל מחדש
+        // --- Restore original window size ---
+        senderWindow.setResizable(true); // Re-enable resizing
         senderWindow.setBounds(originalSize);
         senderWindow.center();
         // ------------------------------------
@@ -1429,19 +1562,20 @@ ipcMain.on('select-app-mode', (event, mode) => {
         loadGemini(mode, senderWindow);
     }
 });
+
 ipcMain.on('toggle-full-screen', (event) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (win && !win.isDestroyed()) {
         if (win.isMaximized()) {
             win.unmaximize();
-            // החזר את מצב "תמיד למעלה" המקורי מההגדרות
+            // Restore original "always on top" state from settings
             win.setAlwaysOnTop(settings.alwaysOnTop, 'screen-saver');
-            win.focus(); // ודא שהחלון נשאר בפוקוס
+            win.focus(); // Ensure window stays in focus
         } else {
-            // כבה זמנית את "תמיד למעלה" לפני ההגדלה
+            // Temporarily disable "always on top" before maximizing
             win.setAlwaysOnTop(false);
             win.maximize();
-            win.focus(); // ודא שהחלון נשאר בפוקוס
+            win.focus(); // Ensure window stays in focus
         }
     }
 });
@@ -1454,7 +1588,7 @@ async function reportErrorToServer(error) {
     if (!error) return;
     console.error('Reporting error to server:', error);
     try {
-        await fetch('https://latex-v25b.onrender.com/error', { // ודא שזו כתובת ה-worker שלך
+        await fetch('https://latex-v25b.onrender.com/error', { // Ensure this is your worker address
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1468,6 +1602,7 @@ async function reportErrorToServer(error) {
         console.error('Could not send error report:', fetchError.message);
     }
 }
+
 // ================================================================= //
 // Theme Management
 // ================================================================= //
@@ -1477,9 +1612,10 @@ function broadcastThemeChange(newTheme) {
         ? (nativeTheme.shouldUseDarkColors ? 'dark' : 'light')
         : newTheme;
 
-    // השתמש בפונקציה הזו כדי לשלוח את העדכון גם לחלון הראשי וגם ל-BrowserView
+    // Use this function to send the update to both main window and BrowserView
     broadcastToAllWebContents('theme-updated', themeToSend);
 }
+
 function syncThemeWithWebsite(theme) {
     if (['light', 'dark', 'system'].includes(theme)) {
         nativeTheme.themeSource = theme;
@@ -1511,141 +1647,148 @@ ipcMain.on('theme:set', (event, newTheme) => {
 // ================================================================= //
 // App Lifecycle
 // ================================================================= //
+
 app.whenReady().then(() => {
-  syncThemeWithWebsite(settings.theme);
+    syncThemeWithWebsite(settings.theme);
+
     if (settings.restoreWindows && Array.isArray(settings.savedWindows) && settings.savedWindows.length) {
-      settings.savedWindows.forEach(state => createWindow(state));
+        settings.savedWindows.forEach(state => createWindow(state));
     } else {
-      createWindow();
+        createWindow();
     }
-  const gemSession = session.fromPartition(SESSION_PARTITION);
 
-gemSession.setUserAgent(REAL_CHROME_UA);
-const sendPing = async () => {
-    try {
-        await fetch('https://latex-v25b.onrender.com/ping-stats', { // ודא שזו כתובת ה-worker שלך
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ version: app.getVersion() })
-        });
-        console.log('Analytics ping sent successfully.');
-    } catch (error) {
-        console.error('Failed to send analytics ping:', error.message);
-    }
-};
-sendPing(); 
-  // --- 1. טיפול בבקשות הרשאה (כמו מיקרופון) ---
-  const ses = session.defaultSession;
-  ses.setPermissionRequestHandler((webContents, permission, callback) => {
-    // בדוק אם הבקשה היא עבור 'media' (כולל מיקרופון)
-    if (permission === 'media') {
-      // אשר את ההרשאה אוטומטית בכל פעם
-      callback(true);
-    } else {
-      // סרב לכל בקשת הרשאה אחרת מטעמי אבטחה
-      callback(false);
-    }
-  });
+    const gemSession = session.fromPartition(SESSION_PARTITION);
+    gemSession.setUserAgent(REAL_CHROME_UA);
 
-  // --- 2. פתרון לבאג צילום מסך ב-Windows שגורם לחלונות להיעלם ---
-  const preventWindowHiding = () => {
-    const allWindows = BrowserWindow.getAllWindows();
-    allWindows.forEach(win => {
-      if (win && !win.isDestroyed() && win.isVisible()) {
-        // הגדר זמנית את החלון ל"תמיד למעלה" כדי למנוע ממנו להסתתר
-        win.setAlwaysOnTop(true);
-        setTimeout(() => {
-          if (win && !win.isDestroyed()) {
-            // החזר את הגדרת "תמיד למעלה" המקורית מההגדרות
-            win.setAlwaysOnTop(settings.alwaysOnTop, 'screen-saver');
-          }
-        }, 3000); // שחזר את המצב אחרי 3 שניות
-      }
+    const sendPing = async () => {
+        try {
+            await fetch('https://latex-v25b.onrender.com/ping-stats', { // Ensure this is your worker address
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ version: app.getVersion() })
+            });
+            console.log('Analytics ping sent successfully.');
+        } catch (error) {
+            console.error('Failed to send analytics ping:', error.message);
+        }
+    };
+    sendPing();
+
+    // --- 1. Handle permission requests (like microphone) ---
+    const ses = session.defaultSession;
+    ses.setPermissionRequestHandler((webContents, permission, callback) => {
+        // Check if request is for 'media' (includes microphone)
+        if (permission === 'media') {
+            // Automatically approve the permission every time
+            callback(true);
+        } else {
+            // Deny any other permission request for security reasons
+            callback(false);
+        }
     });
-  };
 
-  // --- 3. רישום קיצורי דרך והגדרות הפעלה ---
-  registerShortcuts();
-  if (settings.autoStart) {
-    setAutoLaunch(true);
-  }
-
-  // --- 4. הגדרות מערכת העדכונים האוטומטית ---
-  autoUpdater.autoDownload = false;
-  autoUpdater.forceDevUpdateConfig = true; // טוב לבדיקות, יכול להישאר
-
-  
-  // --- 5. הפעלת מערכת הנוטיפיקציות מהשרת ---
-  checkForNotifications(); // בצע בדיקה ראשונית אחת מיד עם הפעלת האפליקציה
-  scheduleNotificationCheck();
-  // --- 6. טיפול בפתיחת קובץ דרך "Open With" ---
-  if (filePathToProcess) {
-    const primaryWindow = BrowserWindow.getAllWindows()[0];
-    if (primaryWindow) {
-      const primaryView = primaryWindow.getBrowserView();
-      if (primaryView) {
-        // המתן עד שהתוכן של Gemini ייטען במלואו לפני הדבקת הקובץ
-        primaryView.webContents.once('did-finish-load', () => {
-          setTimeout(() => {
-            handleFileOpen(filePathToProcess);
-          }, 1000);
+    // --- 2. Fix for Windows screenshot bug causing windows to disappear ---
+    const preventWindowHiding = () => {
+        const allWindows = BrowserWindow.getAllWindows();
+        allWindows.forEach(win => {
+            if (win && !win.isDestroyed() && win.isVisible()) {
+                // Temporarily set window to "always on top" to prevent it from hiding
+                win.setAlwaysOnTop(true);
+                setTimeout(() => {
+                    if (win && !win.isDestroyed()) {
+                        // Restore original "always on top" setting from settings
+                        win.setAlwaysOnTop(settings.alwaysOnTop, 'screen-saver');
+                    }
+                }, 3000); // Restore state after 3 seconds
+            }
         });
-      }
+    };
+
+    // --- 3. Register shortcuts and startup settings ---
+    registerShortcuts();
+    if (settings.autoStart) {
+        setAutoLaunch(true);
     }
-  }
+
+    // --- 4. Auto-updater system settings ---
+    autoUpdater.autoDownload = false;
+    autoUpdater.forceDevUpdateConfig = true; // Good for testing, can remain
+
+    // --- 5. Start server notifications system ---
+    checkForNotifications(); // Perform one initial check immediately on app launch
+    scheduleNotificationCheck();
+
+    // --- 6. Handle file opening via "Open With" ---
+    if (filePathToProcess) {
+        const primaryWindow = BrowserWindow.getAllWindows()[0];
+        if (primaryWindow) {
+            const primaryView = primaryWindow.getBrowserView();
+            if (primaryView) {
+                // Wait until Gemini content is fully loaded before pasting file
+                primaryView.webContents.once('did-finish-load', () => {
+                    setTimeout(() => {
+                        handleFileOpen(filePathToProcess);
+                    }, 1000);
+                });
+            }
+        }
+    }
+
+    // --- 7. Schedule daily update check ---
+    scheduleDailyUpdateCheck();
 });
+
 app.on('before-quit', () => {
-  if (settings.restoreWindows) {
-    const openWindows = BrowserWindow.getAllWindows().filter(w => !w.isDestroyed());
-    settings.savedWindows = openWindows.map(w => {
-      const view = w.getBrowserView();
-      return {
-        url: view && !view.webContents.isDestroyed() ? view.webContents.getURL() : null,
-        bounds: w.getBounds(),
-        mode: w.appMode || settings.defaultMode
-      };
-    });
-  } else {
-    settings.savedWindows = [];
-  }
-  saveSettings(settings);
+    if (settings.restoreWindows) {
+        const openWindows = BrowserWindow.getAllWindows().filter(w => !w.isDestroyed());
+        settings.savedWindows = openWindows.map(w => {
+            const view = w.getBrowserView();
+            return {
+                url: view && !view.webContents.isDestroyed() ? view.webContents.getURL() : null,
+                bounds: w.getBounds(),
+                mode: w.appMode || settings.defaultMode
+            };
+        });
+    } else {
+        settings.savedWindows = [];
+    }
+    saveSettings(settings);
+    // The save.js module will handle background worker creation
 });
+
 app.on('will-quit', () => {
-  isQuitting = true; // <-- Add this line
-  globalShortcut.unregisterAll();
+    isQuitting = true;
+    globalShortcut.unregisterAll();
 });
 
 app.on('window-all-closed', () => {
-  app.quit();
+    app.quit();
 });
+
 app.on('before-quit', async () => {
-  try {
-    const s = session.fromPartition(SESSION_PARTITION); // persist:gemini-session
-    if (s && s.cookies && typeof s.cookies.flushStore === 'function') {
-      await s.cookies.flushStore();
-    } else if (s && typeof s.flushStorageData === 'function') {
-      // גרסאות Electron ישנות יותר
-      await s.flushStorageData();
+    try {
+        const s = session.fromPartition(SESSION_PARTITION); // persist:gemini-session
+        if (s && s.cookies && typeof s.cookies.flushStore === 'function') {
+            await s.cookies.flushStore();
+        } else if (s && typeof s.flushStorageData === 'function') {
+            // Older Electron versions
+            await s.flushStorageData();
+        }
+    } catch (e) {
+        console.error('Failed to flush cookies store:', e);
     }
-  } catch (e) {
-    console.error('Failed to flush cookies store:', e);
-  }
 });
+
 ipcMain.on('check-for-updates', () => {
-  openUpdateWindowAndCheck();
+    openUpdateWindowAndCheck();
 });
+
 ipcMain.on('manual-check-for-notifications', () => {
-  checkForNotifications(true); // true = isManualCheck
+    checkForNotifications(true); // true = isManualCheck
 });
-// === Update process management with feedback to the settings window ===
-const sendUpdateStatus = (status, data = {}) => {
-  const allWindows = BrowserWindow.getAllWindows();
-  allWindows.forEach(win => {
-    if (!win.isDestroyed()) {
-      win.webContents.send('update-status', { status, ...data });
-    }
-  });
-};
+
+
+
 function openUpdateWindowAndCheck() {
     if (updateWin) {
         updateWin.focus();
@@ -1665,18 +1808,19 @@ function openUpdateWindowAndCheck() {
     updateWin.loadFile('update-available.html');
 
     updateWin.once('ready-to-show', async () => {
+        if (!updateWin) return;
         updateWin.show();
-        // שלב 1: שלח לחלון הודעה שאנחנו מתחילים לבדוק
+        // Step 1: Send to window a message that we're starting to check
         updateWin.webContents.send('update-info', { status: 'checking' });
         try {
-            // שלב 2: רק עכשיו, התחל את תהליך הבדיקה ברקע
+            // Step 2: Only now, start the check process in background
             await autoUpdater.checkForUpdates();
         } catch (error) {
             console.error('Manual update check failed:', error.message);
             if (updateWin && !updateWin.isDestroyed()) {
-                updateWin.webContents.send('update-info', { 
-                    status: 'error', 
-                    message: 'Could not connect to GitHub to check for updates. Please check your internet connection or try again later. You can also check for new releases manually on the GitHub page.' 
+                updateWin.webContents.send('update-info', {
+                    status: 'error',
+                    message: 'Could not connect to GitHub to check for updates. Please check your internet connection or try again later. You can also check for new releases manually on the GitHub page.'
                 });
             }
         }
@@ -1686,20 +1830,26 @@ function openUpdateWindowAndCheck() {
         updateWin = null;
     });
 }
+
 autoUpdater.on('checking-for-update', () => {
-  sendUpdateStatus('checking');
+    sendUpdateStatus('checking');
 });
 
 autoUpdater.on('update-available', async (info) => {
     if (!updateWin) {
-        // אם החלון לא נפתח ידנית, פתח אותו עכשיו (למקרה של בדיקה אוטומטית)
+        // If window wasn't manually opened, open it now (in case of automatic check)
         openUpdateWindowAndCheck();
-        return; // הפונקציה תקרא לעצמה שוב אחרי שהחלון יהיה מוכן
+        return; // Function will call itself again after window is ready
     }
 
     try {
         const { marked } = await import('marked');
-        const options = { hostname: 'api.github.com', path: '/repos/hillelkingqt/GeminiDesk/releases/latest', method: 'GET', headers: { 'User-Agent': 'GeminiDesk-App' }};
+        const options = {
+            hostname: 'api.github.com',
+            path: '/repos/hillelkingqt/GeminiDesk/releases/latest',
+            method: 'GET',
+            headers: { 'User-Agent': 'GeminiDesk-App' }
+        };
         const req = https.request(options, (res) => {
             let data = '';
             res.on('data', (chunk) => { data += chunk; });
@@ -1707,8 +1857,12 @@ autoUpdater.on('update-available', async (info) => {
                 let releaseNotesHTML = '<p>Could not load release notes.</p>';
                 try {
                     const releaseInfo = JSON.parse(data);
-                    if (releaseInfo.body) { releaseNotesHTML = marked.parse(releaseInfo.body); }
-                } catch (e) { console.error('Failed to parse release notes JSON:', e); }
+                    if (releaseInfo.body) {
+                        releaseNotesHTML = marked.parse(releaseInfo.body);
+                    }
+                } catch (e) {
+                    console.error('Failed to parse release notes JSON:', e);
+                }
 
                 if (updateWin) {
                     updateWin.webContents.send('update-info', {
@@ -1719,248 +1873,325 @@ autoUpdater.on('update-available', async (info) => {
                 }
             });
         });
-        req.on('error', (e) => { if (updateWin) { updateWin.webContents.send('update-info', { status: 'error', message: e.message }); } });
+        req.on('error', (e) => {
+            if (updateWin) {
+                updateWin.webContents.send('update-info', { status: 'error', message: e.message });
+            }
+        });
         req.end();
-    } catch (importError) { if (updateWin) { updateWin.webContents.send('update-info', { status: 'error', message: 'Failed to load modules.' }); } }
+    } catch (importError) {
+        if (updateWin) {
+            updateWin.webContents.send('update-info', { status: 'error', message: 'Failed to load modules.' });
+        }
+    }
 });
 
-// החלף את המאזין הקיים של 'update-not-available' בזה:
+// Replace existing 'update-not-available' listener with this:
 autoUpdater.on('update-not-available', (info) => {
     if (updateWin) {
         updateWin.webContents.send('update-info', { status: 'up-to-date' });
     }
-    sendUpdateStatus('up-to-date'); // שלח גם להגדרות, ליתר ביטחון
+    sendUpdateStatus('up-to-date'); // Also send to settings, just in case
 });
 
-// החלף את המאזין הקיים של 'error' בזה:
+// Replace existing 'error' listener with this:
 autoUpdater.on('error', (err) => {
     if (updateWin) {
         updateWin.webContents.send('update-info', { status: 'error', message: err.message });
     }
     sendUpdateStatus('error', { message: err.message });
 });
+
 autoUpdater.on('download-progress', (progressObj) => {
-  sendUpdateStatus('downloading', { percent: Math.round(progressObj.percent) });
+    sendUpdateStatus('downloading', { percent: Math.round(progressObj.percent) });
 });
 
 autoUpdater.on('update-downloaded', () => {
-  sendUpdateStatus('downloaded');
+    sendUpdateStatus('downloaded');
 });
-
-
 
 // ================================================================= //
 // IPC Event Handlers
 // ================================================================= //
+
 ipcMain.on('open-download-page', () => {
-  const repoUrl = `https://github.com/hillelkingqt/GeminiDesk/releases/latest`;
-  shell.openExternal(repoUrl);
-  // סגור את חלון העדכון לאחר פתיחת הדפדפן
-  if (updateWin) {
-    updateWin.close();
-  }
+    const repoUrl = `https://github.com/hillelkingqt/GeminiDesk/releases/latest`;
+    shell.openExternal(repoUrl);
+    // Close update window after opening browser
+    if (updateWin) {
+        updateWin.close();
+    }
 });
 
 ipcMain.on('close-update-window', () => {
-  if (updateWin) {
-    updateWin.close();
-  }
+    if (updateWin) {
+        updateWin.close();
+    }
 });
+
 ipcMain.on('start-download-update', () => {
-  const parentWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
-  if (updateWin) {
-    updateWin.close();
-  }
-  if (downloadWin) {
-    downloadWin.focus();
-  } else {
-    downloadWin = new BrowserWindow({
-      width: 360,
-      height: 180,
-      frame: false,
-      resizable: false,
-      parent: parentWindow,
-      modal: true,
-      webPreferences: {
-        preload: path.join(__dirname, 'preload.js'),
-        contextIsolation: true,
-      }
-    });
-    downloadWin.loadFile('download-progress.html');
-    downloadWin.on('closed', () => {
-      downloadWin = null;
-    });
-  }
-  autoUpdater.downloadUpdate();
+    const parentWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+    if (updateWin) {
+        updateWin.close();
+    }
+    if (downloadWin) {
+        downloadWin.focus();
+    } else {
+        downloadWin = new BrowserWindow({
+            width: 360,
+            height: 180,
+            frame: false,
+            resizable: false,
+            parent: parentWindow,
+            modal: true,
+            webPreferences: {
+                preload: path.join(__dirname, 'preload.js'),
+                contextIsolation: true,
+            }
+        });
+        downloadWin.loadFile('download-progress.html');
+        downloadWin.on('closed', () => {
+            downloadWin = null;
+        });
+    }
+    autoUpdater.downloadUpdate();
 });
+
 ipcMain.on('close-notification-window', () => {
-  if (notificationWin) {
-    notificationWin.close();
-  }
+    if (notificationWin) {
+        notificationWin.close();
+    }
 });
 
 ipcMain.on('close-personal-message-window', () => {
-  if (personalMessageWin) {
-    personalMessageWin.close();
-  }
+    if (personalMessageWin) {
+        personalMessageWin.close();
+    }
 });
+
 ipcMain.on('close-download-window', () => {
-  if (downloadWin) {
-    downloadWin.close();
-  }
+    if (downloadWin) {
+        downloadWin.close();
+    }
 });
+
 ipcMain.on('request-last-notification', async (event) => {
-  const senderWebContents = event.sender;
-  if (!senderWebContents || senderWebContents.isDestroyed()) return;
+    const senderWebContents = event.sender;
+    if (!senderWebContents || senderWebContents.isDestroyed()) return;
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-  try {
-    const response = await fetch('https://latex-v25b.onrender.com/latest-messages', {
-      cache: 'no-cache',
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
-    
-    if (!response.ok && response.status !== 404) throw new Error(`Server error: ${response.status}`);
-    const messages = response.status === 404 ? [] : await response.json();
-    
-    if (messages.length > 0) {
-      // When explicitly requesting, we always treat it as 'found' to show the content.
-      senderWebContents.send('notification-data', { status: 'found', content: messages });
-    } else {
-      senderWebContents.send('notification-data', { status: 'no-messages-ever' });
+    try {
+        const response = await fetch('https://latex-v25b.onrender.com/latest-messages', {
+            cache: 'no-cache',
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (!response.ok && response.status !== 404) throw new Error(`Server error: ${response.status}`);
+        const messages = response.status === 404 ? [] : await response.json();
+
+        if (messages.length > 0) {
+            // When explicitly requesting, we always treat it as 'found' to show the content.
+            senderWebContents.send('notification-data', { status: 'found', content: messages });
+        } else {
+            senderWebContents.send('notification-data', { status: 'no-messages-ever' });
+        }
+    } catch (error) {
+        clearTimeout(timeoutId);
+        console.error('Failed to fetch last notification:', error.message);
+        let errorMessage = error.name === 'AbortError' ? 'The request timed out.' : error.message;
+        if (!senderWebContents.isDestroyed()) {
+            senderWebContents.send('notification-data', { status: 'error', message: errorMessage });
+        }
     }
-  } catch (error) {
-    clearTimeout(timeoutId);
-    console.error('Failed to fetch last notification:', error.message);
-    let errorMessage = error.name === 'AbortError' ? 'The request timed out.' : error.message;
-    if (!senderWebContents.isDestroyed()) {
-      senderWebContents.send('notification-data', { status: 'error', message: errorMessage });
-    }
-  }
 });
+
 ipcMain.on('install-update-now', () => {
-  autoUpdater.quitAndInstall();
+    autoUpdater.quitAndInstall();
 });
+
 ipcMain.on('open-new-window', () => {
-  createWindow();
+    createWindow();
 });
+
 ipcMain.on('export-chat', async (event) => {
-  const win = BrowserWindow.fromWebContents(event.sender);
-  const view = win ? win.getBrowserView() : null;
-  if (!view) return;
-  let cssKey;
-  try {
-    const title = await view.webContents.executeJavaScript(`(() => {
-      const t = document.querySelector('.conversation.selected .conversation-title') ||
-                document.querySelector('li.active a.prompt-link');
-      return t ? t.textContent.trim() : (document.title || 'chat');
-    })();`);
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const view = win ? win.getBrowserView() : null;
+    if (!view) return;
 
-    const { filePath } = await dialog.showSaveDialog(win, {
-      title: 'Export Chat',
-      defaultPath: `${(title || 'chat').trim()}.pdf`,
-      filters: [{ name: 'PDF', extensions: ['pdf'] }]
-    });
-    if (!filePath) return;
+    try {
+        // שלב 1: חילוץ הכותרת של הצ'אט לקביעת שם הקובץ
+        const title = await view.webContents.executeJavaScript(`
+      (() => {
+        const el = document.querySelector('.conversation.selected .conversation-title') ||
+                   document.querySelector('li.active a.prompt-link');
+        return el ? el.textContent.trim() : (document.title || 'chat');
+      })();
+    `);
 
-    const css = `
-      nav, aside, header, footer,
-      [data-test-id="bard-sidenav-container"],
-      [data-test-id="new-chat-button"],
-      [data-test-id="referral-label"],
-      [data-test-id="bard-mode-switcher"],
-      [data-test-id="thinking-toggle"],
-      form, textarea, input { display: none !important; }
-    `;
-    cssKey = await view.webContents.insertCSS(css);
+        // שלב 2: פתיחת דיאלוג שמירת קובץ
+        const { filePath } = await dialog.showSaveDialog(win, {
+            title: 'Export Chat to PDF',
+            defaultPath: `${(title || 'chat').replace(/[\\/:*?"<>|]/g, '')}.pdf`, // מסיר תווים לא חוקיים
+            filters: [{ name: 'PDF Documents', extensions: ['pdf'] }]
+        });
 
-    const pdfData = await view.webContents.printToPDF({ printBackground: true });
-    fs.writeFileSync(filePath, pdfData);
-  } catch (err) {
-    console.error('Failed to export chat:', err);
-  } finally {
-    if (cssKey) {
-      try { await view.webContents.removeInsertedCSS(cssKey); } catch (_) {}
-    }
-  }
-});
-ipcMain.on('onboarding-complete', (event) => {
-  settings.onboardingShown = true;
-  saveSettings(settings);
-  
-  const senderWindow = BrowserWindow.fromWebContents(event.sender);
-  
-  if (senderWindow && !senderWindow.isDestroyed()) {
-    const existingView = detachedViews.get(senderWindow);
-    
-    if (existingView) {
-      // Fix: Reload the top bar before restoring the view
-      senderWindow.loadFile('drag.html').then(() => {
-        // After the bar is loaded, restore the Gemini view
-        senderWindow.setBrowserView(existingView);
-        const bounds = senderWindow.getBounds();
-        existingView.setBounds({ x: 0, y: 30, width: bounds.width, height: bounds.height - 30 });
-// Replace the sendCurrentTitle function in the onboarding-complete handler
-const sendCurrentTitle = async () => {
-  try {
-    const title = await existingView.webContents.executeJavaScript(`
-      (function() {
-        try {
-          // Simple helper function
-          const text = el => el ? (el.textContent || el.innerText || '').trim() : '';
-          
-          // Try multiple selector strategies
-          const selectors = [
-            '.conversation.selected .conversation-title',
-            'li.active a.prompt-link',
-            '[data-test-id="conversation-title"]',
-            'h1.conversation-title', 
-            '.conversation-title',
-            '.chat-title'
-          ];
-          
-          for (const selector of selectors) {
-            const el = document.querySelector(selector);
-            if (el) {
-              const t = text(el);
-              if (t && t !== 'Gemini' && t !== 'New Chat') return t;
+        if (!filePath) {
+            console.log('User cancelled PDF export.');
+            return; // המשתמש ביטל את השמירה
+        }
+
+        // שלב 3: הרצת סקריפט מתוחכם לחילוץ כל תוכן השיחה
+        const chatData = await view.webContents.executeJavaScript(`
+      (() => {
+        const conversation = [];
+        // סלקטור זה מוצא את כל הרכיבים הרלוונטיים (גם שלך וגם של המודל) לפי הסדר שלהם בדף
+        const allContentBlocks = document.querySelectorAll('.query-text, .markdown');
+
+        allContentBlocks.forEach(block => {
+          // בודקים אם הרכיב הוא שאילתת משתמש לפי הקלאס שלו
+          if (block.classList.contains('query-text')) {
+            conversation.push({ type: 'user', content: block.innerText.trim() });
+          } 
+          // אחרת, בודקים אם זה תשובת מודל
+          else if (block.classList.contains('markdown')) {
+            const text = block.innerText.trim();
+            // מוסיפים רק אם יש תוכן, למנוע הוספת בלוקים ריקים
+            if (text) {
+              conversation.push({ type: 'model', content: text });
             }
           }
-          
-          return document.title || 'New Chat';
-        } catch (e) {
-          return 'New Chat';
-        }
+        });
+        return conversation;
       })();
-    `, true);
-    
-    if (!senderWindow.isDestroyed()) {
-      senderWindow.webContents.send('update-title', title || 'New Chat');
-    }
-  } catch (e) {
-    console.log('Safe title extraction fallback activated');
-    if (!senderWindow.isDestroyed()) {
-      senderWindow.webContents.send('update-title', 'New Chat');
-    }
-  }
-};
+    `);
+        if (!chatData || chatData.length === 0) {
+            dialog.showErrorBox('Export Failed', 'Could not find any chat content to export.');
+            return;
+        }
 
-// קרא מייד, וגם כשלדף ישתנה ה־SPA
-sendCurrentTitle();
-existingView.webContents.once('did-finish-load', sendCurrentTitle);
-existingView.webContents.on('did-navigate-in-page', sendCurrentTitle);
+        // שלב 4: יצירת קובץ PDF מסודר באמצעות pdfkit
+        const doc = new PDFDocument({
+            bufferPages: true,
+            autoFirstPage: true,
+            margins: { top: 50, bottom: 50, left: 50, right: 50 }
+        });
 
-        detachedViews.delete(senderWindow);
-      }).catch(err => console.error('Failed to reload drag.html:', err));
-    } else {
-      // On first launch, load normally
-      loadGemini(senderWindow);
+        const writeStream = fs.createWriteStream(filePath);
+        doc.pipe(writeStream);
+
+        // הגדרת פונטים (אופציונלי, אך משפר תמיכה בעברית אם הפונט מותקן)
+        // נשתמש בפונטים בסיסיים כדי למנוע בעיות
+        doc.font('Helvetica');
+
+        // הוספת כותרת ראשית לקובץ
+        doc.fontSize(18).text(title, { align: 'center' });
+        doc.moveDown(2);
+
+        // לולאה על כל חלקי השיחה והוספתם למסמך
+        chatData.forEach(message => {
+            if (message.type === 'user') {
+                doc.font('Helvetica-Bold').fontSize(12).text('You:', { continued: false });
+                doc.font('Helvetica').fontSize(12).text(message.content);
+            } else {
+                doc.font('Helvetica-Bold').fontSize(12).text('Gemini:', { continued: false });
+                doc.font('Helvetica').fontSize(12).text(message.content);
+            }
+            doc.moveDown(1.5); // רווח בין ההודעות
+        });
+
+        console.log('Finalizing PDF document...');
+        doc.end();
+
+        writeStream.on('finish', () => {
+            console.log(`PDF successfully saved to ${filePath}`);
+            // פתח את הקובץ או התיקייה לאחר השמירה (אופציונלי)
+            shell.showItemInFolder(filePath);
+        });
+
+    } catch (err) {
+        console.error('Failed to export chat to PDF:', err);
+        dialog.showErrorBox('Export Error', 'An unexpected error occurred while exporting the chat. See console for details.');
     }
-  }
 });
+ipcMain.on('onboarding-complete', (event) => {
+    settings.onboardingShown = true;
+    saveSettings(settings);
+
+    const senderWindow = BrowserWindow.fromWebContents(event.sender);
+
+    if (senderWindow && !senderWindow.isDestroyed()) {
+        const existingView = detachedViews.get(senderWindow);
+
+        if (existingView) {
+            // Fix: Reload the top bar before restoring the view
+            senderWindow.loadFile('drag.html').then(() => {
+                // After the bar is loaded, restore the Gemini view
+                senderWindow.setBrowserView(existingView);
+                const bounds = senderWindow.getBounds();
+                existingView.setBounds({ x: 0, y: 30, width: bounds.width, height: bounds.height - 30 });
+
+                // Replace the sendCurrentTitle function in the onboarding-complete handler
+                const sendCurrentTitle = async () => {
+                    try {
+                        const title = await existingView.webContents.executeJavaScript(`
+                            (function() {
+                                try {
+                                    // Simple helper function
+                                    const text = el => el ? (el.textContent || el.innerText || '').trim() : '';
+                                    
+                                    // Try multiple selector strategies
+                                    const selectors = [
+                                        '.conversation.selected .conversation-title',
+                                        'li.active a.prompt-link',
+                                        '[data-test-id="conversation-title"]',
+                                        'h1.conversation-title', 
+                                        '.conversation-title',
+                                        '.chat-title'
+                                    ];
+                                    
+                                    for (const selector of selectors) {
+                                        const el = document.querySelector(selector);
+                                        if (el) {
+                                            const t = text(el);
+                                            if (t && t !== 'Gemini' && t !== 'New Chat') return t;
+                                        }
+                                    }
+                                    
+                                    return document.title || 'New Chat';
+                                } catch (e) {
+                                    return 'New Chat';
+                                }
+                            })();
+                        `, true);
+
+                        if (!senderWindow.isDestroyed()) {
+                            senderWindow.webContents.send('update-title', title || 'New Chat');
+                        }
+                    } catch (e) {
+                        console.log('Safe title extraction fallback activated');
+                        if (!senderWindow.isDestroyed()) {
+                            senderWindow.webContents.send('update-title', 'New Chat');
+                        }
+                    }
+                };
+
+                // Call immediately, and also when page SPA changes
+                sendCurrentTitle();
+                existingView.webContents.once('did-finish-load', sendCurrentTitle);
+                existingView.webContents.on('did-navigate-in-page', sendCurrentTitle);
+
+                detachedViews.delete(senderWindow);
+            }).catch(err => console.error('Failed to reload drag.html:', err));
+        } else {
+            // On first launch, load normally
+            loadGemini(senderWindow);
+        }
+    }
+});
+
 ipcMain.on('canvas-state-changed', (event, isCanvasVisible) => {
     const senderWebContents = event.sender;
 
@@ -1968,10 +2199,10 @@ ipcMain.on('canvas-state-changed', (event, isCanvasVisible) => {
         if (window.isDestroyed()) continue;
 
         const view = window.getBrowserView();
-        
-        if ((view && view.webContents.id === senderWebContents.id) || 
+
+        if ((view && view.webContents.id === senderWebContents.id) ||
             (window.webContents.id === senderWebContents.id)) {
-            
+
             setCanvasMode(isCanvasVisible, window);
             return;
         }
@@ -1989,47 +2220,49 @@ ipcMain.on('update-title', (event, title) => {
             if (!window.isDestroyed()) {
                 window.webContents.send('update-title', title);
             }
-            break; 
+            break;
         }
     }
 });
 
 ipcMain.on('show-confirm-reset', () => {
-  if (confirmWin) return;
-  confirmWin = new BrowserWindow({
-    width: 340, height: 180, resizable: false, frame: false,
-    parent: settingsWin, modal: true, show: false,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-    }
-  });
-  confirmWin.loadFile('confirm-reset.html');
-  confirmWin.once('ready-to-show', () => confirmWin.show());
-  confirmWin.on('closed', () => confirmWin = null);
+    if (confirmWin) return;
+    confirmWin = new BrowserWindow({
+        width: 340, height: 180, resizable: false, frame: false,
+        parent: settingsWin, modal: true, show: false,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+        }
+    });
+    confirmWin.loadFile('confirm-reset.html');
+    confirmWin.once('ready-to-show', () => {
+        if (confirmWin) confirmWin.show();
+    });
+    confirmWin.on('closed', () => confirmWin = null);
 });
 
 // 2. Cancel the reset action
 ipcMain.on('cancel-reset-action', () => {
-  if (confirmWin) confirmWin.close();
+    if (confirmWin) confirmWin.close();
 });
 
 // 3. Confirm and execute the reset
 ipcMain.on('confirm-reset-action', () => {
-  if (confirmWin) confirmWin.close();
+    if (confirmWin) confirmWin.close();
 
-  // The reset logic itself
-  if (fs.existsSync(settingsPath)) fs.unlinkSync(settingsPath);
-  settings = JSON.parse(JSON.stringify(defaultSettings));
-  registerShortcuts();
-  setAutoLaunch(settings.autoStart);
-  BrowserWindow.getAllWindows().forEach(w => {
-    if (!w.isDestroyed()) {
-        w.setAlwaysOnTop(settings.alwaysOnTop);
-        w.webContents.send('settings-updated', settings);
-    }
-  });
-  console.log('All settings have been reset to default.');
+    // The reset logic itself
+    if (fs.existsSync(settingsPath)) fs.unlinkSync(settingsPath);
+    settings = JSON.parse(JSON.stringify(defaultSettings));
+    registerShortcuts();
+    setAutoLaunch(settings.autoStart);
+    BrowserWindow.getAllWindows().forEach(w => {
+        if (!w.isDestroyed()) {
+            w.setAlwaysOnTop(settings.alwaysOnTop);
+            w.webContents.send('settings-updated', settings);
+        }
+    });
+    console.log('All settings have been reset to default.');
 });
 
 ipcMain.handle('get-settings', async () => {
@@ -2057,7 +2290,6 @@ ipcMain.handle('request-current-title', async (event) => {
         return 'New Chat'; // Fallback on error
     }
 });
-
 
 ipcMain.on('update-setting', (event, key, value) => {
     // **Fix:** We don't call getSettings() again.
@@ -2092,12 +2324,12 @@ ipcMain.on('update-setting', (event, key, value) => {
         setAutoLaunch(value);
     }
     if (key === 'autoCheckNotifications') {
-    scheduleNotificationCheck(); // עדכן את הטיימר
+        scheduleNotificationCheck(); // Update the timer
     }
     if (key.startsWith('shortcuts.') || key === 'shortcutsGlobal') {
         registerShortcuts(); // This function will now use the updated settings
     }
-    
+
     if (key === 'language') {
         // Instead of reloading, just notify windows of the change.
         // The renderer process will handle re-applying translations.
@@ -2108,35 +2340,35 @@ ipcMain.on('update-setting', (event, key, value) => {
     broadcastToAllWebContents('settings-updated', settings);
 });
 
-ipcMain.on('open-settings-window', (event) => { // Added the event word
-  if (settingsWin) {
-    settingsWin.focus();
-    return;
-  }
-
-  // Identify the window from which the request was sent
-  const parentWindow = BrowserWindow.fromWebContents(event.sender);
-
-  settingsWin = new BrowserWindow({
-    width: 450,
-    height: 580,
-    resizable: false,
-    frame: false,
-    parent: parentWindow, // Use the correct parent window
-    show: false,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
+ipcMain.on('open-settings-window', (event) => {
+    if (settingsWin) {
+        settingsWin.focus();
+        return;
     }
-  });
 
-  settingsWin.loadFile('settings.html');
+    // Identify the window from which the request was sent
+    const parentWindow = BrowserWindow.fromWebContents(event.sender);
 
-  settingsWin.once('ready-to-show', () => {
-    settingsWin.show();
-  });
+    settingsWin = new BrowserWindow({
+        width: 450,
+        height: 580,
+        resizable: false,
+        frame: false,
+        parent: parentWindow, // Use the correct parent window
+        show: false,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+        }
+    });
 
-  settingsWin.on('closed', () => {
-    settingsWin = null;
-  });
+    settingsWin.loadFile('settings.html');
+
+    settingsWin.once('ready-to-show', () => {
+        if (settingsWin) settingsWin.show();
+    });
+
+    settingsWin.on('closed', () => {
+        settingsWin = null;
+    });
 });

@@ -6,7 +6,7 @@ const translations = {
         'checkForUpdates': 'Check for Updates', 'autoStart-label': 'Run on System Startup', 'autoStart-desc': 'Start GeminiDesk automatically.', 'alwaysOnTop-label': 'Always on Top', 'alwaysOnTop-desc': 'Keep the window above others.',
         'showInTaskbar-label': 'Show in Taskbar', 'showInTaskbar-desc': 'Let the app icon appear in the taskbar.',
         'enableCanvasResizing-label': 'Automatic Canvas Resizing', 'enableCanvasResizing-desc': 'Resize the canvas when needed.', 'restoreWindows-label': 'Restore Windows on Launch', 'restoreWindows-desc': 'Reopen previous windows at startup.',
-        'showCloseButton-label': 'Show Close Button', 'showCloseButton-desc': 'Add a close button to each window.', 'showExportButton-label': 'Show Export Button', 'showExportButton-desc': 'Add an export chat button to each window.',
+        'showCloseButton-label': 'Show Close Button', 'showCloseButton-desc': 'Add a close button to each window.', 'showExportButton-label': 'Show Export Button (English only)', 'showExportButton-desc': 'Add an export chat button to each window.',
         'defaultMode-label': 'Default Mode', 'defaultMode-desc': 'Choose what opens by default.', 'notifications': 'Notifications', 'autoCheckNotifications-label': 'Automatic Daily Check',
         'autoCheckNotifications-desc': 'Check for new messages once a day.', 'manualCheckNotifications-label': 'Manual Check', 'manualCheckNotifications-desc': 'Check for new messages now.', 'checkNow': 'Check Now',
         'shortcuts': 'Shortcuts', 'shortcutsGlobal-label': 'Enable Global Shortcuts', 'shortcutsGlobal-desc': 'Allow shortcuts to work from any app.', 'showHide-label': 'Show / Hide Window', 'showHide-desc': 'Toggle window visibility.',

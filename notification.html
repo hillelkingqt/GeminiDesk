@@ -125,6 +125,34 @@
         .message-counter { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
 
         .state-icon { width: 56px; height: 56px; }
+
+        /* --- RTL Support --- */
+        html[dir="rtl"] .header {
+            direction: rtl;
+        }
+        html[dir="rtl"] .header-icon {
+            margin-right: 0;
+            margin-left: 12px;
+        }
+        html[dir="rtl"] #close-notification-btn {
+            margin-left: 0;
+            margin-right: auto;
+        }
+        html[dir="rtl"] .message-slide {
+            transform: translateX(-100%);
+        }
+        html[dir="rtl"] .message-slide.active {
+            transform: translateX(0);
+        }
+        html[dir="rtl"] .message-slide.previous {
+            transform: translateX(100%);
+        }
+        html[dir="rtl"] .navigation-controls {
+            flex-direction: row-reverse;
+        }
+        html[dir="rtl"] .text-content {
+            text-align: right;
+        }
     </style>
 </head>
 <body>
