@@ -26,7 +26,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install deps
-        run: npm ci
+        run: npm install
 
       # --publish never כדי לא לפרסם, אבל עדיין יווצרו קבצי ה-updater
       - name: Build Linux (AppImage, deb + updater files)
@@ -55,7 +55,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install deps
-        run: npm ci
+        run: npm install
 
       - name: Build Windows (EXE + updater files)
         run: npm run build -- --win --publish never
@@ -82,7 +82,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install deps
-        run: npm ci
+        run: npm install
 
       - name: Build macOS (DMG + updater files)
         run: npm run build -- --mac dmg --publish never
@@ -132,4 +132,5 @@ jobs:
             rel/mac/**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
