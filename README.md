@@ -46,9 +46,6 @@ GeminiDesk is more than a wrapper. It's a command center, loaded with powerful, 
 *   **📸 Screenshot to Chat: See It, Snip It, Solve It!**
     Instantly snip any part of your screen with a hotkey. The image is magically beamed into your chat, ready for Gemini's brilliant analysis. It's like having a conversation with your screen!
 
-*   **📁 Universal File Drop: Your Files' New Best Friend**
-    Drag and drop images, PDFs, text files—heck, almost any file—directly into the app. It's instantly ready for upload. The friction? Gone. The future? Now.
-
 *   **⚡️ Instant Model Switching: Flash or Pro? Decide in a Flash.**
     Why click through menus? Use dedicated hotkeys (`Alt+F`, `Alt+P`) to instantly fire up a new chat with either the lightning-fast **Flash** model or the powerhouse **Pro** model. Your workflow just got a nitrous boost.
 
@@ -72,12 +69,6 @@ GeminiDesk is more than a wrapper. It's a command center, loaded with powerful, 
 
 *   **🖼️ Expand Your Mind with Canvas Mode**
     Need more space for a complex thought? The app window automatically expands to a larger, more comfortable "Canvas" size when Gemini enters its immersive panel, perfect for deep dives.
-
-*   **🔔 Stay in the Know with System Notifications**
-    Receive important announcements and updates directly through a clean, native notification system. No more checking GitHub for news.
-
-*   **🤝 "Open With" Integration**
-    Set GeminiDesk as the default application for images or text files. Opening a file with the app will instantly load it into the chat, ready for action.
 
 *   **📌 Always-On-Top Mode: Your Unwavering AI Companion**
     Keep Gemini watching over your shoulder (in a non-creepy way) while you work. Perfect for coding, writing, or just feeling less alone.
