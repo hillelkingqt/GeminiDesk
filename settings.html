@@ -518,8 +518,20 @@
                 <div class="setting-label"><strong data-i18n="showCloseButton-label">Show Close Button</strong><span data-i18n="showCloseButton-desc">Add a close button to each window.</span></div>
                 <label class="toggle-switch"><input type="checkbox" id="setting-showCloseButton"><span class="slider"></span></label>
             </div>
-            <div class="setting-item english-only-feature" id="export-button-setting">
-                <div class="setting-label"><strong data-i18n="showExportButton-label">Show Export Button (English only)</strong><span data-i18n="showExportButton-desc">Add an export chat button to each window.</span></div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="showFullscreenButton-label">Show Fullscreen Button</strong><span data-i18n="showFullscreenButton-desc">Display fullscreen toggle button.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-showFullscreenButton"><span class="slider"></span></label>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="showNewWindowButton-label">Show New Window Button</strong><span data-i18n="showNewWindowButton-desc">Display new window creation button.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-showNewWindowButton"><span class="slider"></span></label>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="showMinimizeButton-label">Show Minimize Button</strong><span data-i18n="showMinimizeButton-desc">Display minimize window button.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-showMinimizeButton"><span class="slider"></span></label>
+            </div>
+            <div class="setting-item" id="export-button-setting">
+                <div class="setting-label"><strong data-i18n="showExportButton-label">Show Export Button</strong><span data-i18n="showExportButton-desc">Add an export chat button to each window.</span></div>
                 <label class="toggle-switch"><input type="checkbox" id="setting-showExportButton"><span class="slider"></span></label>
             </div>
 
@@ -588,10 +600,10 @@
                 <div class="setting-label"><strong data-i18n="searchChats-label">Search Chats</strong><span data-i18n="searchChats-desc">Focus the chat search bar.</span></div>
                 <button class="record-button" data-key="search" data-i18n="recordButton-default">Click to record</button>
             </div>
-<div class="setting-item">
-    <div class="setting-label"><strong data-i18n="findInPage-label">Find in Page</strong><span data-i18n="findInPage-desc">Opens the find bar.</span></div>
-    <button class="record-button" data-key="findInPage" data-i18n="recordButton-default">Click to record</button>
-</div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="findInPage-label">Find in Page</strong><span data-i18n="findInPage-desc">Opens the find bar.</span></div>
+                <button class="record-button" data-key="findInPage" data-i18n="recordButton-default">Click to record</button>
+            </div>
             <div class="setting-item">
                 <div class="setting-label"><strong data-i18n="screenshot-label">Take Screenshot & Paste</strong><span data-i18n="screenshot-desc">Copies screen area to clipboard and pastes it.</span></div>
                 <button class="record-button" data-key="screenshot" data-i18n="recordButton-default">Click to record</button>
@@ -605,6 +617,63 @@
                 <button class="record-button" data-key="newChatFlash" data-i18n="recordButton-default">Click to record</button>
             </div>
         </div>
+        <div class="setting-category">
+            <h3 class="setting-category-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                </svg>
+                <span data-i18n="soundSettings">Sound Settings</span>
+            </h3>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <strong data-i18n="aiCompletionSound-label">AI Response Completion Sound</strong>
+                    <span data-i18n="aiCompletionSound-desc">Play a sound when AI finishes responding.</span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="setting-aiCompletionSound">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <strong data-i18n="aiCompletionSoundFile-label">Completion Sound</strong>
+                    <span data-i18n="aiCompletionSoundFile-desc">Choose which sound to play.</span>
+                </div>
+                <div id="sound-file-options" class="option-group">
+                    <input type="radio" id="sound-1" name="aiCompletionSoundFile" value="new-notification-09-352705.mp3">
+                    <label for="sound-1" data-i18n="sound-1">Sound 1</label>
+
+                    <input type="radio" id="sound-2" name="aiCompletionSoundFile" value="new-notification-3-398649.mp3">
+                    <label for="sound-2" data-i18n="sound-2">Sound 2</label>
+                </div>
+            </div>
+        </div>
+        <div class="setting-category">
+            <h3 class="setting-category-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                <span data-i18n="deepResearchSchedule">Deep Research Schedule</span>
+            </h3>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <strong data-i18n="scheduleEnabled-label">Enable Deep Research Automation</strong>
+                    <span data-i18n="scheduleEnabled-desc">Automatically run deep research at scheduled times.</span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="setting-deepResearchEnabled">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <strong data-i18n="manageSchedule-label">Manage Schedule</strong>
+                    <span data-i18n="manageSchedule-desc">Configure when and how deep research runs.</span>
+                </div>
+                <button id="open-schedule-manager" class="action-button" data-i18n="openScheduleManager">Manage Schedule</button>
+            </div>
+        </div>
+
         <div class="setting-category">
             <h3 class="setting-category-title" style="color: var(--danger-color);">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>
@@ -762,6 +831,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const syncUi = (settings) => {
         try {
             currentSettings = settings;
+            document.getElementById('setting-deepResearchEnabled').checked = settings.deepResearchEnabled || false;
             document.getElementById('setting-autoStart').checked = settings.autoStart || false;
             document.getElementById('setting-showInTaskbar').checked = settings.showInTaskbar || false;
             document.getElementById('setting-alwaysOnTop').checked = settings.alwaysOnTop || false;
@@ -773,6 +843,18 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('setting-showCloseButton').checked = settings.showCloseButton || false;
             document.getElementById('setting-draggableButtonsEnabled').checked = settings.draggableButtonsEnabled !== false;
             document.getElementById('setting-showExportButton').checked = settings.showExportButton || false;
+            document.getElementById('setting-showFullscreenButton').checked = settings.showFullscreenButton !== false;
+            document.getElementById('setting-showNewWindowButton').checked = settings.showNewWindowButton !== false;
+            document.getElementById('setting-showMinimizeButton').checked = settings.showMinimizeButton !== false;
+            document.getElementById('setting-aiCompletionSound').checked = settings.aiCompletionSound !== false;
+            
+            // Set sound file radio button
+            const soundFileName = settings.aiCompletionSoundFile || 'new-notification-09-352705.mp3';
+            const soundRadio = document.querySelector(`input[name="aiCompletionSoundFile"][value="${soundFileName}"]`);
+            if (soundRadio) {
+                soundRadio.checked = true;
+            }
+            
             document.getElementById(`mode-${settings.defaultMode || 'ask'}`).checked = true;
             applyTranslations(settings.language || 'en');
             document.querySelectorAll('.record-button').forEach(button => {
@@ -811,7 +893,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('reset-button-order').addEventListener('click', () => {
         electronAPI.updateSetting('buttonOrder', []);
     });
-    
+    // Deep Research Schedule event listeners
+    document.getElementById('setting-deepResearchEnabled').addEventListener('change', (e) => {
+        electronAPI.updateSetting('deepResearchEnabled', e.target.checked);
+    });
+
+    document.getElementById('open-schedule-manager').addEventListener('click', () => {
+        electronAPI.openDeepResearchScheduleWindow();
+    });
+
     // --- Toggle Switches ---
     document.getElementById('setting-autoStart').addEventListener('change', (e) => {
         electronAPI.updateSetting('autoStart', e.target.checked);
@@ -853,8 +943,30 @@ document.addEventListener('DOMContentLoaded', () => {
         electronAPI.updateSetting('showExportButton', e.target.checked);
     });
 
+    document.getElementById('setting-showFullscreenButton').addEventListener('change', (e) => {
+        electronAPI.updateSetting('showFullscreenButton', e.target.checked);
+    });
+
+    document.getElementById('setting-showNewWindowButton').addEventListener('change', (e) => {
+        electronAPI.updateSetting('showNewWindowButton', e.target.checked);
+    });
+
+    document.getElementById('setting-showMinimizeButton').addEventListener('change', (e) => {
+        electronAPI.updateSetting('showMinimizeButton', e.target.checked);
+    });
+
     document.getElementById('setting-draggableButtonsEnabled').addEventListener('change', (e) => {
         electronAPI.updateSetting('draggableButtonsEnabled', e.target.checked);
+    });
+
+    document.getElementById('setting-aiCompletionSound').addEventListener('change', (e) => {
+        electronAPI.updateSetting('aiCompletionSound', e.target.checked);
+    });
+
+    document.querySelectorAll('input[name="aiCompletionSoundFile"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            electronAPI.updateSetting('aiCompletionSoundFile', e.target.value);
+        });
     });
 
     // --- Manual Action Buttons ---

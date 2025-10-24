@@ -151,6 +151,11 @@
         <button id="new-window-button" class="icon-button" data-tooltip-i18n="tooltip-new-chat">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 4V20M4 12H20" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
+        <button id="minimize-button" class="icon-button" data-tooltip-i18n="tooltip-minimize">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 12H19" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
         <button id="fullscreen-button" class="icon-button" data-tooltip-i18n="tooltip-fullscreen">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path class="enter-fullscreen" d="M16 3h5v5M8 3H3v5M16 21h5v-5M8 21H3v-5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -180,13 +185,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeButton = document.getElementById('close-window-button');
     const exportButton = document.getElementById('export-chat-button');
     const fullscreenButton = document.getElementById('fullscreen-button');
+    const minimizeButton = document.getElementById('minimize-button');
     const titleElement = document.getElementById('chat-title');
     const buttonContainer = document.querySelector('.button-container');
 
     let showChatTitle = true;
     let latestTitle = '__NEW_CHAT__'; // Use a special key for new chats
     let sortable = null;
-    const defaultButtonOrder = ['new-window-button', 'fullscreen-button', 'settings-button', 'export-chat-button', 'close-window-button'];
+    const defaultButtonOrder = ['new-window-button', 'minimize-button', 'fullscreen-button', 'settings-button', 'export-chat-button', 'close-window-button'];
 
     const newChatTitles = new Set(Object.values(translations).map(t => t['new-chat']));
 
@@ -254,6 +260,9 @@ document.addEventListener('DOMContentLoaded', () => {
         window.electronAPI.theme.getResolved().then(applyTheme);
         closeButton.style.display = settings.showCloseButton ? 'flex' : 'none';
         exportButton.style.display = settings.showExportButton ? 'flex' : 'none';
+        fullscreenButton.style.display = settings.showFullscreenButton !== false ? 'flex' : 'none';
+        newWindowButton.style.display = settings.showNewWindowButton !== false ? 'flex' : 'none';
+        minimizeButton.style.display = settings.showMinimizeButton !== false ? 'flex' : 'none';
         showChatTitle = settings.showChatTitle !== false;
         updateTitleUI();
         setButtonOrder(settings.buttonOrder);
@@ -267,6 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
     newWindowButton.addEventListener('click', () => window.electronAPI.openNewWindow());
     closeButton.addEventListener('click', () => window.close());
     exportButton.addEventListener('click', () => window.electronAPI.exportChat());
+    minimizeButton.addEventListener('click', () => window.electronAPI.minimizeWindow());
 
     fullscreenButton.addEventListener('click', () => {
         const enterIcon = fullscreenButton.querySelector('.enter-fullscreen');

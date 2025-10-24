@@ -1,0 +1,801 @@
+﻿<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>Deep Research Schedule - GeminiDesk</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+        
+        :root {
+            --bg-primary: #1e1e1e; --bg-secondary: #252526; --bg-tertiary: #2d2d30;
+            --text-primary: #cccccc; --text-secondary: #9e9e9e; --accent-primary: #0e98d9;
+            --accent-secondary: #3c3c3c; --danger-color: #f44336; --success-color: #4caf50;
+            --border-color: #3e3e42; --warning-color: #ff9800;
+        }
+
+        html.light-mode {
+            --bg-primary: #f5f5f5; --bg-secondary: #ffffff; --bg-tertiary: #e0e0e0;
+            --text-primary: #212121; --text-secondary: #757575; --accent-primary: #007aff;
+            --accent-secondary: #e9e9e9; --danger-color: #d32f2f; --success-color: #388e3c;
+            --border-color: #dcdcdc; --warning-color: #f57c00;
+        }
+
+        html, body {
+            margin: 0; padding: 0; background-color: var(--bg-primary);
+            color: var(--text-primary); font-family: 'Poppins', sans-serif;
+            overflow: hidden; -webkit-font-smoothing: antialiased; user-select: none;
+            width: 100%; height: 100vh;
+        }
+
+        .drag-bar {
+            width: 100%; height: 50px; -webkit-app-region: drag; background-color: var(--bg-secondary);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 20px; box-sizing: border-box; border-bottom: 2px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .drag-bar h2 { 
+            font-size: 18px; margin: 0; font-weight: 600; color: var(--text-primary); 
+            -webkit-app-region: drag; display: flex; align-items: center; gap: 10px;
+        }
+
+        .drag-bar svg { width: 20px; height: 20px; color: var(--accent-primary); }
+
+        #close-button {
+            -webkit-app-region: no-drag; font-size: 24px; background: none; border: none;
+            color: var(--text-secondary); cursor: pointer; transition: transform .2s ease, color .2s ease;
+            padding: 8px; line-height: 1; border-radius: 4px;
+        }
+        #close-button:hover { 
+            transform: rotate(90deg); 
+            color: var(--accent-primary); 
+            background-color: var(--bg-tertiary);
+        }
+
+        .content { 
+            padding: 25px; 
+            padding-bottom: 80px;
+            overflow-y: auto; 
+            max-height: calc(100vh - 50px);
+            min-height: calc(100vh - 50px);
+            display: flex; 
+            flex-direction: column; 
+            gap: 25px;
+            box-sizing: border-box;
+        }
+        .content::-webkit-scrollbar { width: 8px; }
+        .content::-webkit-scrollbar-track { background: var(--bg-primary); }
+        .content::-webkit-scrollbar-thumb { background-color: var(--accent-secondary); border-radius: 4px; }
+        .content::-webkit-scrollbar-thumb:hover { background-color: var(--accent-primary); }
+
+        /* Custom scrollbar for textareas */
+        textarea::-webkit-scrollbar { width: 8px; }
+        textarea::-webkit-scrollbar-track { 
+            background: var(--bg-tertiary); 
+            border-radius: 4px;
+        }
+        textarea::-webkit-scrollbar-thumb { 
+            background-color: var(--accent-primary); 
+            border-radius: 4px;
+            border: 2px solid var(--bg-tertiary);
+        }
+        textarea::-webkit-scrollbar-thumb:hover { 
+            background-color: #0c87c4;
+        }
+
+        .section {
+            background-color: var(--bg-secondary); border-radius: 14px; padding: 25px;
+            border: 2px solid var(--border-color); transition: all .3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .section:hover { 
+            border-color: var(--accent-primary); 
+            box-shadow: 0 6px 20px rgba(14, 152, 217, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .section-title {
+            font-weight: 600; font-size: 18px; color: var(--text-primary);
+            margin-bottom: 20px; display: flex; align-items: center; gap: 12px;
+            padding-bottom: 12px; border-bottom: 2px solid var(--border-color);
+        }
+        .section-title svg { width: 18px; height: 18px; color: var(--accent-primary); flex-shrink: 0; }
+
+        .day-schedule {
+            display: flex; 
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px; 
+            padding: 20px; 
+            background-color: var(--bg-tertiary);
+            border-radius: 10px; 
+            border: 1px solid var(--border-color);
+            transition: all .2s ease;
+        }
+        .day-schedule:hover {
+            background-color: var(--bg-secondary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .day-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .day-label {
+            font-weight: 600; font-size: 15px; color: var(--text-primary); 
+            flex: 1;
+        }
+
+        .day-toggle {
+            position: relative; display: inline-block; width: 52px; height: 28px;
+        }
+        .day-toggle input { display: none; }
+        .day-slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--accent-secondary); transition: .4s; border-radius: 34px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .day-slider:before {
+            position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px;
+            background-color: #fff; transition: .4s; border-radius: 50%; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+        }
+        .day-slider:hover {
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3), 0 0 8px rgba(14, 152, 217, 0.3);
+        }
+        input:checked + .day-slider { 
+            background-color: var(--success-color); 
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2), 0 0 8px rgba(76, 175, 80, 0.4);
+        }
+        input:checked + .day-slider:before { transform: translateX(24px); }
+        
+        .time-slots {
+            display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .time-slot {
+            display: grid; grid-template-columns: 100px 1fr 44px; gap: 12px; align-items: center;
+            padding: 14px; background-color: var(--bg-secondary); border-radius: 8px;
+            border: 1px solid var(--border-color);
+            transition: all .2s ease;
+        }
+        .time-slot:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 2px 8px rgba(14, 152, 217, 0.1);
+        }
+
+        .time-input {
+            background-color: var(--bg-primary); border: 2px solid var(--border-color);
+            color: var(--text-primary); padding: 8px 10px; border-radius: 6px;
+            font-family: 'Poppins', sans-serif; font-size: 13px;
+            transition: all .2s ease;
+            text-align: left;
+            direction: ltr;
+        }
+        .time-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(14, 152, 217, 0.1);
+        }
+
+        /* Style time picker dropdown list */
+        .time-input::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.7;
+            filter: invert(0.5);
+            transition: opacity 0.2s ease;
+            margin-inline-start: 8px;
+            position: relative;
+            left: 8px;
+        }
+        .time-input::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
+
+        /* Style the dropdown for light mode */
+        html.light-mode .time-input::-webkit-calendar-picker-indicator {
+            filter: invert(0.3);
+        }
+
+        /* Style time picker list (works in some browsers) */
+        .time-input::-webkit-list-button {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .time-input::-webkit-datetime-edit-fields-wrapper {
+            padding: 0;
+        }
+        
+        .time-input::-webkit-datetime-edit-text {
+            color: var(--text-secondary);
+            padding: 0 2px;
+        }
+        
+        .time-input::-webkit-datetime-edit-hour-field,
+        .time-input::-webkit-datetime-edit-minute-field,
+        .time-input::-webkit-datetime-edit-ampm-field {
+            background-color: transparent;
+            color: var(--text-primary);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        .time-input::-webkit-datetime-edit-hour-field:focus,
+        .time-input::-webkit-datetime-edit-minute-field:focus,
+        .time-input::-webkit-datetime-edit-ampm-field:focus {
+            background-color: var(--accent-primary);
+            color: #fff;
+            outline: none;
+        }
+
+        .format-input {
+            background-color: var(--bg-primary); border: 2px solid var(--border-color);
+            color: var(--text-primary); padding: 10px 12px; border-radius: 6px;
+            font-family: 'Poppins', sans-serif; font-size: 13px; resize: vertical;
+        .add-time-btn, .remove-time-btn {
+            background: var(--bg-tertiary); border: 2px solid var(--border-color); color: var(--text-secondary);
+            border-radius: 6px; cursor: pointer; width: 38px; height: 38px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all .3s ease; font-size: 18px; font-weight: 600;
+        }
+
+        .add-time-btn:hover {
+            background-color: var(--success-color);
+            border-color: var(--success-color); 
+            color: #fff;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .remove-time-btn:hover {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color); 
+            color: #fff;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+        }   min-height: 60px;
+        }
+
+        .add-time-btn, .remove-time-btn {
+            background: none; border: 1px solid var(--border-color); color: var(--text-secondary);
+            border-radius: 4px; cursor: pointer; width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all .2s ease; font-size: 14px;
+        }
+
+        .add-time-btn:hover {
+            border-color: var(--success-color); color: var(--success-color);
+        }
+
+        .remove-time-btn:hover {
+            border-color: var(--danger-color); color: var(--danger-color);
+        }
+
+        .control-buttons {
+            display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px; border-radius: 8px; cursor: pointer; font-family: 'Poppins', sans-serif;
+            font-size: 14px; font-weight: 600; transition: all .3s ease; border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-primary); color: #fff;
+        }
+        .btn-primary:hover {
+            background-color: #0c87c4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(14, 152, 217, 0.4);
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-tertiary); color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+        .btn-secondary:hover {
+            border-color: var(--accent-primary); 
+            color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(14, 152, 217, 0.2);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color); color: #fff;
+        }
+        .btn-danger:hover {
+            background-color: #d32f2f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+        }
+
+        .status-info {
+            background-color: var(--bg-tertiary); border-radius: 10px; padding: 18px 20px;
+            border-left: 5px solid var(--accent-primary); margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all .3s ease;
+        }
+        .status-info:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(14, 152, 217, 0.15);
+        }
+
+        .status-info h3 {
+            margin: 0 0 10px 0; font-size: 15px; font-weight: 600; color: var(--text-primary);
+        }
+        .status-info svg {
+            width: 16px; height: 16px; vertical-align: middle; margin-left: 5px;
+        }
+
+        .status-info p {
+            margin: 0; font-size: 13px; color: var(--text-secondary); line-height: 1.5;
+        }
+
+        .preview-section {
+            background-color: var(--bg-tertiary); border-radius: 8px; padding: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .preview-title {
+            font-weight: 600; color: var(--text-primary); margin-bottom: 10px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .preview-title svg {
+            width: 16px; height: 16px; flex-shrink: 0;
+        }
+
+        .preview-list {
+            max-height: 200px; overflow-y: auto;
+        }
+
+        .preview-item {
+            padding: 8px 12px; background-color: var(--bg-secondary); border-radius: 4px;
+            margin-bottom: 6px; font-size: 12px; color: var(--text-secondary);
+            border-left: 3px solid var(--accent-primary);
+        }
+
+        .global-format {
+            margin-bottom: 20px;
+        }
+
+        .global-format textarea {
+            width: 100%; min-height: 120px; background-color: var(--bg-primary);
+            border: 2px solid var(--border-color); color: var(--text-primary);
+            padding: 14px; border-radius: 8px; font-family: 'Poppins', sans-serif;
+            font-size: 13px; resize: vertical; box-sizing: border-box;
+            transition: all .2s ease;
+        }
+        .global-format textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(14, 152, 217, 0.1);
+        }
+
+        .helper-text {
+            font-size: 11px; color: var(--text-secondary); margin-top: 5px;
+            line-height: 1.3;
+        }
+
+        /* RTL Support */
+        html[dir="rtl"] {
+            direction: rtl;
+        }
+
+        html[dir="rtl"] .day-header {
+            flex-direction: row-reverse;
+        }
+
+        html[dir="rtl"] .time-slot {
+            grid-template-columns: 44px 1fr 100px;
+        }
+
+        html[dir="rtl"] .day-toggle .day-slider:before {
+            left: auto; right: 3px;
+        }
+
+        html[dir="rtl"] input:checked + .day-slider:before {
+            transform: translateX(-24px);
+        }
+    </style>
+</head>
+<body>
+    <div class="drag-bar">
+        <h2>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+            <span data-i18n="deepResearchSchedule">Deep Research Schedule</span>
+        </h2>
+        <button id="close-button" title="Close">&times;</button>
+    </div>
+
+    <div class="content">
+        <div class="status-info">
+            <h3 data-i18n="scheduleStatus">Schedule Status</h3>
+            <p id="status-text" data-i18n="scheduleDisabled">Deep Research automation is currently disabled. Enable schedules below and save to activate.</p>
+        </div>
+
+        <div class="section">
+            <div class="section-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                </svg>
+                <span data-i18n="weeklySchedule">Weekly Schedule</span>
+            </div>
+
+            <div class="global-format">
+                <label for="global-format-input" style="font-weight: 500; color: var(--text-primary); margin-bottom: 8px; display: block;">
+                    <span data-i18n="globalFormat">Global Format Template</span>
+                </label>
+                <textarea id="global-format-input" placeholder="Enter your default research prompt here. This will be used when specific time slots don't have custom formats."></textarea>
+                <div class="helper-text" data-i18n="globalFormatHelp">
+                    This template will be used for all scheduled research sessions unless overridden by specific time slot formats below.
+                </div>
+            </div>
+
+            <div id="schedule-container">
+                <!-- Days will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+                <span data-i18n="schedulePreview">Schedule Preview</span>
+            </div>
+            
+            <div class="preview-section">
+                <div class="preview-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
+                        <path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                    </svg>
+                    <span data-i18n="upcomingSchedules">Upcoming Scheduled Research</span>
+                </div>
+                <div id="preview-list" class="preview-list">
+                    <div class="preview-item" data-i18n="noSchedulesSet">No schedules configured yet. Set up your weekly schedule above.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-buttons">
+            <button id="clear-all-btn" class="btn btn-danger" data-i18n="clearAll">Clear All</button>
+            <button id="cancel-btn" class="btn btn-secondary" data-i18n="cancel">Cancel</button>
+            <button id="save-btn" class="btn btn-primary" data-i18n="saveSchedule">Save Schedule</button>
+        </div>
+    </div>
+
+    <script>
+        // Schedule data structure
+        let scheduleData = {
+            enabled: false,
+            globalFormat: '',
+            weeklySchedule: {}
+        };
+
+        const daysOfWeek = [
+            { key: 'monday', name: 'Monday', nameHe: 'יום שני' },
+            { key: 'tuesday', name: 'Tuesday', nameHe: 'יום שלישי' },
+            { key: 'wednesday', name: 'Wednesday', nameHe: 'יום רביעי' },
+            { key: 'thursday', name: 'Thursday', nameHe: 'יום חמישי' },
+            { key: 'friday', name: 'Friday', nameHe: 'יום שישי' },
+            { key: 'saturday', name: 'Saturday', nameHe: 'שבת' },
+            { key: 'sunday', name: 'Sunday', nameHe: 'יום ראשון' }
+        ];
+
+        // Initialize the schedule interface
+        function initializeSchedule() {
+            const container = document.getElementById('schedule-container');
+            
+            daysOfWeek.forEach(day => {
+                const dayElement = createDaySchedule(day);
+                container.appendChild(dayElement);
+            });
+
+            loadSavedSchedule();
+            updatePreview();
+        }
+
+        function createDaySchedule(day) {
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'day-schedule';
+            dayDiv.innerHTML = `
+                <div class="day-header">
+                    <label class="day-toggle">
+                        <input type="checkbox" id="day-${day.key}" onchange="toggleDay('${day.key}')">
+                        <span class="day-slider"></span>
+                    </label>
+                    <span class="day-label">${day.name}</span>
+                </div>
+                <div class="time-slots" id="slots-${day.key}" style="display: none;">
+                    <div class="time-slot">
+                        <input type="time" class="time-input" value="09:00" onchange="updatePreview()">
+                        <textarea class="format-input" placeholder="Enter research format for this time slot (leave empty to use global format)" onchange="updatePreview()"></textarea>
+                        <button class="add-time-btn" onclick="addTimeSlot('${day.key}')" title="Add another time slot">+</button>
+                    </div>
+                </div>
+            `;
+            return dayDiv;
+        }
+
+        function toggleDay(dayKey) {
+            const checkbox = document.getElementById(`day-${dayKey}`);
+            const slotsContainer = document.getElementById(`slots-${dayKey}`);
+            
+            if (checkbox.checked) {
+                slotsContainer.style.display = 'flex';
+                if (!scheduleData.weeklySchedule[dayKey]) {
+                    scheduleData.weeklySchedule[dayKey] = {
+                        enabled: true,
+                        timeSlots: [{ time: '09:00', format: '' }]
+                    };
+                }
+                scheduleData.weeklySchedule[dayKey].enabled = true;
+            } else {
+                slotsContainer.style.display = 'none';
+                if (scheduleData.weeklySchedule[dayKey]) {
+                    scheduleData.weeklySchedule[dayKey].enabled = false;
+                }
+            }
+            updatePreview();
+        }
+
+        function addTimeSlot(dayKey) {
+            const slotsContainer = document.getElementById(`slots-${dayKey}`);
+            const timeSlot = document.createElement('div');
+            timeSlot.className = 'time-slot';
+            timeSlot.innerHTML = `
+                <input type="time" class="time-input" value="12:00" onchange="updatePreview()">
+                <textarea class="format-input" placeholder="Enter research format for this time slot (leave empty to use global format)" onchange="updatePreview()"></textarea>
+                <button class="remove-time-btn" onclick="removeTimeSlot(this)" title="Remove this time slot">×</button>
+            `;
+            slotsContainer.appendChild(timeSlot);
+            updatePreview();
+        }
+
+        function removeTimeSlot(button) {
+            button.parentElement.remove();
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const previewList = document.getElementById('preview-list');
+            const activeSchedules = [];
+
+            // Collect all active schedules
+            daysOfWeek.forEach(day => {
+                const checkbox = document.getElementById(`day-${day.key}`);
+                if (checkbox && checkbox.checked) {
+                    const slotsContainer = document.getElementById(`slots-${day.key}`);
+                    const timeSlots = slotsContainer.querySelectorAll('.time-slot');
+                    
+                    timeSlots.forEach(slot => {
+                        const timeInput = slot.querySelector('.time-input');
+                        const formatInput = slot.querySelector('.format-input');
+                        if (timeInput && timeInput.value) {
+                            activeSchedules.push({
+                                day: day.name,
+                                time: timeInput.value,
+                                format: formatInput.value.trim() || 'Using global format'
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Sort by day and time
+            const dayOrder = daysOfWeek.map(d => d.name);
+            activeSchedules.sort((a, b) => {
+                const dayDiff = dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day);
+                if (dayDiff !== 0) return dayDiff;
+                return a.time.localeCompare(b.time);
+            });
+
+            // Update preview
+            if (activeSchedules.length === 0) {
+                previewList.innerHTML = '<div class="preview-item">No schedules configured yet. Set up your weekly schedule above.</div>';
+            } else {
+                previewList.innerHTML = activeSchedules.map(schedule => `
+                    <div class="preview-item">
+                        <strong>${schedule.day} ${schedule.time}</strong><br>
+                        ${schedule.format.substring(0, 100)}${schedule.format.length > 100 ? '...' : ''}
+                    </div>
+                `).join('');
+            }
+        }
+
+        function collectScheduleData() {
+            const globalFormat = document.getElementById('global-format-input').value.trim();
+            const weeklySchedule = {};
+
+            daysOfWeek.forEach(day => {
+                const checkbox = document.getElementById(`day-${day.key}`);
+                if (checkbox && checkbox.checked) {
+                    const slotsContainer = document.getElementById(`slots-${day.key}`);
+                    const timeSlots = [];
+                    
+                    slotsContainer.querySelectorAll('.time-slot').forEach(slot => {
+                        const timeInput = slot.querySelector('.time-input');
+                        const formatInput = slot.querySelector('.format-input');
+                        
+                        if (timeInput && timeInput.value) {
+                            timeSlots.push({
+                                time: timeInput.value,
+                                format: formatInput.value.trim()
+                            });
+                        }
+                    });
+
+                    if (timeSlots.length > 0) {
+                        weeklySchedule[day.key] = {
+                            enabled: true,
+                            timeSlots: timeSlots
+                        };
+                    }
+                }
+            });
+
+            return {
+                enabled: Object.keys(weeklySchedule).length > 0,
+                globalFormat: globalFormat,
+                weeklySchedule: weeklySchedule
+            };
+        }
+
+        function saveSchedule() {
+            const scheduleData = collectScheduleData();
+            
+            if (window.electronAPI) {
+                // Save to settings
+                window.electronAPI.updateSetting('deepResearchSchedule', scheduleData);
+                window.electronAPI.updateSetting('deepResearchEnabled', scheduleData.enabled);
+                
+                // Show success feedback
+                updateStatusText(scheduleData.enabled);
+                
+                // Close window after short delay
+                setTimeout(() => {
+                    window.close();
+                }, 1000);
+            } else {
+                // Browser mode - just log
+                console.log('Schedule saved:', scheduleData);
+                alert('Schedule saved successfully!');
+            }
+        }
+
+        function loadSavedSchedule() {
+            if (window.electronAPI) {
+                window.electronAPI.getSettings().then(settings => {
+                    const savedSchedule = settings.deepResearchSchedule || {};
+                    const isEnabled = settings.deepResearchEnabled || false;
+                    
+                    updateStatusText(isEnabled);
+                    
+                    // Load global format
+                    if (savedSchedule.globalFormat) {
+                        document.getElementById('global-format-input').value = savedSchedule.globalFormat;
+                    }
+                    
+                    // Load weekly schedule
+                    if (savedSchedule.weeklySchedule) {
+                        Object.entries(savedSchedule.weeklySchedule).forEach(([dayKey, dayData]) => {
+                            if (dayData.enabled) {
+                                const checkbox = document.getElementById(`day-${dayKey}`);
+                                if (checkbox) {
+                                    checkbox.checked = true;
+                                    toggleDay(dayKey);
+                                    
+                                    // Load time slots
+                                    const slotsContainer = document.getElementById(`slots-${dayKey}`);
+                                    slotsContainer.innerHTML = ''; // Clear default slot
+                                    
+                                    dayData.timeSlots.forEach(slot => {
+                                        const timeSlotDiv = document.createElement('div');
+                                        timeSlotDiv.className = 'time-slot';
+                                        timeSlotDiv.innerHTML = `
+                                            <input type="time" class="time-input" value="${slot.time}" onchange="updatePreview()">
+                                            <textarea class="format-input" placeholder="Enter research format for this time slot (leave empty to use global format)" onchange="updatePreview()">${slot.format}</textarea>
+                                            <button class="remove-time-btn" onclick="removeTimeSlot(this)" title="Remove this time slot">×</button>
+                                        `;
+                                        slotsContainer.appendChild(timeSlotDiv);
+                                    });
+                                    
+                                    // Add the "+" button for the last slot
+                                    const lastSlot = slotsContainer.lastElementChild;
+                                    if (lastSlot) {
+                                        const addBtn = lastSlot.querySelector('.remove-time-btn');
+                                        if (addBtn) {
+                                            addBtn.outerHTML = `<button class="add-time-btn" onclick="addTimeSlot('${dayKey}')" title="Add another time slot">+</button>`;
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    
+                    updatePreview();
+                }).catch(error => {
+                    console.error('Error loading settings:', error);
+                });
+            }
+        }
+
+        function updateStatusText(isEnabled) {
+            const statusText = document.getElementById('status-text');
+            if (isEnabled) {
+                statusText.textContent = 'Deep Research automation is active. Scheduled research will run automatically.';
+                statusText.style.color = 'var(--success-color)';
+            } else {
+                statusText.textContent = 'Deep Research automation is currently disabled. Enable schedules below and save to activate.';
+                statusText.style.color = 'var(--text-secondary)';
+            }
+        }
+
+        function clearAllSchedules() {
+            if (confirm('Are you sure you want to clear all schedules? This action cannot be undone.')) {
+                // Reset all checkboxes
+                daysOfWeek.forEach(day => {
+                    const checkbox = document.getElementById(`day-${day.key}`);
+                    if (checkbox) {
+                        checkbox.checked = false;
+                        toggleDay(day.key);
+                    }
+                });
+                
+                // Clear global format
+                document.getElementById('global-format-input').value = '';
+                
+                updatePreview();
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeSchedule();
+            
+            document.getElementById('save-btn').addEventListener('click', saveSchedule);
+            document.getElementById('cancel-btn').addEventListener('click', () => {
+                if (window.close) {
+                    window.close();
+                } else if (window.electronAPI) {
+                    window.electronAPI.closeWindow();
+                }
+            });
+            document.getElementById('clear-all-btn').addEventListener('click', clearAllSchedules);
+            document.getElementById('close-button').addEventListener('click', () => {
+                if (window.close) {
+                    window.close();
+                } else if (window.electronAPI) {
+                    window.electronAPI.closeWindow();
+                }
+            });
+            
+            // Update preview when global format changes
+            document.getElementById('global-format-input').addEventListener('input', updatePreview);
+        });
+
+        // Theme support
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                document.documentElement.classList.add('light-mode');
+            } else {
+                document.documentElement.classList.remove('light-mode');
+            }
+        }
+
+        if (window.electronAPI) {
+            window.electronAPI.theme.getResolved().then(applyTheme);
+            window.electronAPI.theme.onUpdate(applyTheme);
+        }
+    </script>
+</body>
+</html>

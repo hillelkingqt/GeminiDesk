@@ -1,6 +1,5 @@
 const { app, BrowserWindow, BrowserView, globalShortcut, ipcMain, dialog, screen, shell, session, nativeTheme, clipboard, nativeImage } = require('electron');
 const https = require('https');
-const PDFDocument = require('pdfkit');
 
 const path = require('path');
 const fs = require('fs');
@@ -39,7 +38,8 @@ app.commandLine.appendSwitch('enable-features', 'ThirdPartyStoragePartitioning')
 // ================================================================= //
 // Global Variables
 // ================================================================= //
-
+let deepResearchScheduleInterval = null;
+let lastScheduleCheck = 0;
 let isQuitting = false;
 let isUserTogglingHide = false;
 let lastFocusedWindow = null;
@@ -52,6 +52,7 @@ let personalMessageWin = null;
 let lastFetchedMessageId = null;
 let filePathToProcess = null;
 let notificationIntervalId = null;
+let agentProcess = null;
 
 const detachedViews = new Map();
 
@@ -63,6 +64,12 @@ const settingsPath = path.join(app.getPath('userData'), 'settings.json');
 
 const defaultSettings = {
     onboardingShown: false,
+    deepResearchEnabled: false,
+    deepResearchSchedule: {
+        enabled: false,
+        globalFormat: '',
+        weeklySchedule: {}
+    },
     defaultMode: 'ask',
     autoStart: true,
     alwaysOnTop: true,
@@ -95,7 +102,9 @@ const defaultSettings = {
     lastUpdateCheck: 0,
     microphoneGranted: null,
     theme: 'system',
-    showInTaskbar: false
+    showInTaskbar: false,
+    aiCompletionSound: true,
+    aiCompletionSoundFile: 'new-notification-09-352705.mp3'
 };
 
 function getSettings() {
@@ -135,7 +144,367 @@ const autoLauncher = new AutoLaunch({
     path: launcherPath,
     isHidden: true,
 });
+// Deep Research Schedule Functions
+function scheduleDeepResearchCheck() {
+    // Clear any existing interval first
+    if (deepResearchScheduleInterval) {
+        clearInterval(deepResearchScheduleInterval);
+        deepResearchScheduleInterval = null;
+        console.log('Deep Research Schedule: Cleared existing monitoring');
+    }
 
+    if (settings.deepResearchEnabled && settings.deepResearchSchedule && settings.deepResearchSchedule.enabled) {
+        // Check every minute for scheduled research
+        deepResearchScheduleInterval = setInterval(checkAndExecuteScheduledResearch, 60000);
+        console.log('Deep Research Schedule: Monitoring started');
+    } else {
+        console.log('Deep Research Schedule: Monitoring disabled - no valid schedule configuration');
+    }
+}
+function checkAndExecuteScheduledResearch() {
+    if (!settings.deepResearchEnabled || !settings.deepResearchSchedule) {
+        return;
+    }
+
+    const now = new Date();
+    const currentDay = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
+    const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+    // To prevent multiple executions in the same minute
+    const currentMinute = Math.floor(now.getTime() / 60000);
+    if (currentMinute === lastScheduleCheck) {
+        return;
+    }
+    lastScheduleCheck = currentMinute;
+
+    const daySchedule = settings.deepResearchSchedule.weeklySchedule[currentDay];
+    if (!daySchedule || !daySchedule.enabled) {
+        return;
+    }
+
+    // Check if any time slot matches current time
+    const matchingSlot = daySchedule.timeSlots.find(slot => slot.time === currentTime);
+    if (matchingSlot) {
+        const format = matchingSlot.format.trim() || settings.deepResearchSchedule.globalFormat.trim();
+        if (format) {
+            executeScheduledDeepResearch(format);
+        }
+    }
+}
+
+async function executeScheduledDeepResearch(format) {
+    try {
+        console.log('Deep Research Schedule: Executing scheduled research with format:', format.substring(0, 50) + '...');
+
+        // Create a new window (Alt+N equivalent)
+        const targetWin = createWindow();
+
+        // Wait for window to be ready
+        await new Promise(resolve => {
+            if (targetWin.webContents.isLoading()) {
+                targetWin.webContents.once('did-finish-load', resolve);
+            } else {
+                setTimeout(resolve, 1000);
+            }
+        });
+
+        // If it's a choice window, select Gemini mode
+        const currentUrl = targetWin.webContents.getURL();
+        if (currentUrl.includes('choice.html')) {
+            console.log('Deep Research Schedule: Selecting Gemini mode from choice window');
+            targetWin.webContents.executeJavaScript(`
+                const geminiButton = document.querySelector('button[onclick*="gemini"]') || 
+                                   document.querySelector('[data-mode="gemini"]') || 
+                                   document.querySelector('.mode-card[data-mode="gemini"]');
+                if (geminiButton) {
+                    geminiButton.click();
+                } else {
+                    window.electronAPI.selectAppMode('gemini');
+                }
+            `);
+
+            await new Promise(resolve => setTimeout(resolve, 3000));
+        }
+
+        // Ensure window is visible and focused
+        if (!targetWin.isVisible()) targetWin.show();
+        if (targetWin.isMinimized()) targetWin.restore();
+        targetWin.focus();
+
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Switch to Pro model (Alt+P)
+        console.log('Deep Research Schedule: Switching to Pro model');
+        if (settings.shortcuts.newChatPro) {
+            shortcutActions.newChatPro();
+            await new Promise(resolve => setTimeout(resolve, 3000));
+        }
+
+        // Execute the automation script
+        const view = targetWin.getBrowserView();
+        if (view && view.webContents && !view.webContents.isDestroyed()) {
+            console.log('Deep Research Schedule: Starting automation sequence');
+
+            await view.webContents.executeJavaScript(`
+                (async function() {
+                    console.log('Deep Research Schedule: Starting complete automation sequence');
+                    
+                    const waitForElement = (selector, timeout = 15000) => {
+                        return new Promise((resolve, reject) => {
+                            const timer = setInterval(() => {
+                                const element = document.querySelector(selector);
+                                if (element && !element.disabled && element.offsetParent !== null) {
+                                    clearInterval(timer);
+                                    resolve(element);
+                                }
+                            }, 100);
+                            setTimeout(() => {
+                                clearInterval(timer);
+                                reject(new Error('Element not found: ' + selector));
+                            }, timeout);
+                        });
+                    };
+
+                    const simulateClick = (element) => {
+                        ['mousedown', 'mouseup', 'click'].forEach(type => {
+                            const event = new MouseEvent(type, { bubbles: true, cancelable: true, view: window });
+                            element.dispatchEvent(event);
+                        });
+                    };
+
+                    const findDeepResearchButton = () => {
+                        const selectors = [
+                            'button[jslog*="251250"]',
+                            'button .gds-label-l',
+                            'button .feature-content',
+                            '.toolbox-drawer-item-list-button',
+                            'mat-list-item button',
+                            '[mat-list-item]'
+                        ];
+
+                        for (const selector of selectors) {
+                            try {
+                                const buttons = document.querySelectorAll(selector);
+                                for (const btn of buttons) {
+                                    const text = (btn.textContent || btn.innerText || '').toLowerCase();
+                                    if (text.includes('deep research') || text.includes('research')) {
+                                        console.log('Deep Research Schedule: Found button with text:', text);
+                                        return btn;
+                                    }
+                                }
+                            } catch (e) {
+                                console.log('Deep Research Schedule: Selector failed:', selector);
+                            }
+                        }
+                        return null;
+                    };
+
+                    const insertTextSafely = (element, text) => {
+                        try {
+                            element.focus();
+                            document.execCommand('selectAll', false, null);
+                            document.execCommand('delete', false, null);
+                            document.execCommand('insertText', false, text);
+                            console.log('Deep Research Schedule: Text inserted using execCommand');
+                            return true;
+                        } catch (e) {
+                            console.log('Deep Research Schedule: execCommand failed, trying alternative methods');
+                        }
+
+                        try {
+                            element.focus();
+                            element.textContent = '';
+                            
+                            for (let i = 0; i < text.length; i++) {
+                                const char = text[i];
+                                const keydownEvent = new KeyboardEvent('keydown', {
+                                    key: char, char: char, keyCode: char.charCodeAt(0),
+                                    which: char.charCodeAt(0), bubbles: true, cancelable: true
+                                });
+                                const inputEvent = new InputEvent('input', {
+                                    data: char, inputType: 'insertText', bubbles: true, cancelable: true
+                                });
+                                element.dispatchEvent(keydownEvent);
+                                element.textContent += char;
+                                element.dispatchEvent(inputEvent);
+                            }
+                            console.log('Deep Research Schedule: Text inserted using simulation');
+                            return true;
+                        } catch (e) {
+                            console.log('Deep Research Schedule: All text insertion methods failed');
+                            return false;
+                        }
+                    };
+
+                    const checkIfResearchCompleted = () => {
+                        const spinner = document.querySelector('.avatar_spinner_animation');
+                        if (spinner) {
+                            const style = window.getComputedStyle(spinner);
+                            return style.opacity === '0' || style.visibility === 'hidden';
+                        }
+                        
+                        const immersivePanel = document.querySelector('deep-research-immersive-panel');
+                        return !!immersivePanel;
+                    };
+
+                    const waitForResearchCompletion = () => {
+                        return new Promise((resolve) => {
+                            const checkInterval = setInterval(() => {
+                                if (checkIfResearchCompleted()) {
+                                    console.log('Deep Research Schedule: Research completed, immersive panel detected');
+                                    clearInterval(checkInterval);
+                                    resolve();
+                                } else {
+                                    console.log('Deep Research Schedule: Research still in progress, waiting...');
+                                }
+                            }, 30000); // Check every 30 seconds
+                        });
+                    };
+
+                    const exportToGoogleDocs = async () => {
+                        try {
+                            console.log('Deep Research Schedule: Starting export to Google Docs');
+                            
+                            // Step 1: Find and click "Share & Export" button
+                            const shareExportButton = await waitForElement(
+                                'button[data-test-id="export-menu-button"], button:has(.mat-mdc-button-persistent-ripple):has([class*="Export"])', 
+                                10000
+                            );
+                            simulateClick(shareExportButton);
+                            console.log('Deep Research Schedule: Share & Export button clicked');
+                            
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+
+                            // Step 2: Find and click "Export to Docs" in the dropdown menu
+                            const exportToDocsButton = await waitForElement(
+                                'button[data-test-id="export-to-docs-button"], button:has([data-test-id="docs-icon"]), button:has([fonticon="docs"])', 
+                                5000
+                            );
+                            simulateClick(exportToDocsButton);
+                            console.log('Deep Research Schedule: Export to Docs button clicked');
+                            
+                            return true;
+                        } catch (error) {
+                            console.error('Deep Research Schedule: Failed to export to Google Docs:', error);
+                            return false;
+                        }
+                    };
+
+                    try {
+                        // Step 1: Click Tools button
+                        console.log('Deep Research Schedule: Looking for Tools button');
+                        const toolsButton = await waitForElement('button.toolbox-drawer-button, toolbox-drawer button, [aria-label*="Tools"]');
+                        simulateClick(toolsButton);
+                        console.log('Deep Research Schedule: Tools button clicked');
+                        
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+
+                        // Step 2: Find and click Deep Research option
+                        console.log('Deep Research Schedule: Looking for Deep Research option');
+                        let deepResearchButton = null;
+                        let attempts = 0;
+                        const maxAttempts = 10;
+
+                        while (!deepResearchButton && attempts < maxAttempts) {
+                            deepResearchButton = findDeepResearchButton();
+                            if (!deepResearchButton) {
+                                console.log('Deep Research Schedule: Attempt', attempts + 1, '- Deep Research button not found, retrying...');
+                                await new Promise(resolve => setTimeout(resolve, 500));
+                                attempts++;
+                            }
+                        }
+
+                        if (!deepResearchButton) {
+                            throw new Error('Could not find Deep Research button after ' + maxAttempts + ' attempts');
+                        }
+
+                        simulateClick(deepResearchButton);
+                        console.log('Deep Research Schedule: Deep Research option clicked');
+                        
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+
+                        // Step 3: Find input area and paste format
+                        console.log('Deep Research Schedule: Looking for input area');
+                        const inputArea = await waitForElement('.ql-editor[contenteditable="true"], rich-textarea .ql-editor, [data-placeholder*="Ask"]');
+                        
+                        const formatText = \`${format.replace(/`/g, '\\`').replace(/\\/g, '\\\\').replace(/\${/g, '\\${')}\`;
+                        
+                        console.log('Deep Research Schedule: Attempting to insert text:', formatText.substring(0, 50) + '...');
+                        
+                        const insertSuccess = insertTextSafely(inputArea, formatText);
+                        
+                        if (!insertSuccess) {
+                            throw new Error('Failed to insert text into input area');
+                        }
+                        
+                        console.log('Deep Research Schedule: Format inserted successfully');
+                        
+                        await new Promise(resolve => setTimeout(resolve, 1500));
+
+                        // Step 4: Click Send button
+                        console.log('Deep Research Schedule: Looking for Send button');
+                        const sendButton = await waitForElement('button.send-button[jslog*="173899"], button[aria-label="Send message"], button.send-button.submit');
+                        simulateClick(sendButton);
+                        console.log('Deep Research Schedule: Send button clicked');
+                        
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+
+                        // Step 5: Look for and click "Start research" button
+                        console.log('Deep Research Schedule: Looking for Start Research button');
+                        
+                        // Use stable selectors that don't depend on language
+                        const startResearchButton = await waitForElement(
+                            'button[data-test-id="confirm-button"], button.confirm-button[mat-flat-button], button.mdc-button--unelevated[color="primary"]'
+                        );
+                        
+                        simulateClick(startResearchButton);
+                        console.log('Deep Research Schedule: Start Research button clicked');
+
+                        // Step 6: Wait for research completion (30 seconds intervals)
+                        console.log('Deep Research Schedule: Waiting for research completion...');
+                        await waitForResearchCompletion();
+                        
+                        // Step 7: Wait additional time for UI to stabilize
+                        await new Promise(resolve => setTimeout(resolve, 5000));
+
+                        // Step 8: Export to Google Docs
+                        const exportSuccess = await exportToGoogleDocs();
+                        
+                        if (exportSuccess) {
+                            console.log('Deep Research Schedule: Complete automation sequence finished successfully');
+                        } else {
+                            console.log('Deep Research Schedule: Research completed but export failed');
+                        }
+                        
+                    } catch (error) {
+                        console.error('Deep Research Schedule: Complete automation failed:', error);
+                        throw error;
+                    }
+                })();
+            `);
+            
+            // Play completion sound after research is done
+            setTimeout(() => {
+                playAiCompletionSound();
+                console.log('Deep Research Schedule: Completion sound played');
+            }, 60000); // Wait at least 1 minute before checking for completion sound
+            
+        } else {
+            throw new Error('No browser view available');
+        }
+
+        console.log('Deep Research Schedule: Research executed successfully');
+
+    } catch (error) {
+        console.error('Deep Research Schedule: Failed to execute scheduled research:', error);
+
+        // Close the Gemini window that was opened
+        if (targetWin && !targetWin.isDestroyed()) {
+            console.log('Deep Research Schedule: Closing Gemini window due to failure');
+            targetWin.close();
+        }
+    }
+}
 function setAutoLaunch(shouldEnable) {
     if (shouldEnable) {
         autoLauncher.enable();
@@ -208,6 +577,39 @@ async function reportErrorToServer(error) {
         console.error('Could not send error report:', fetchError.message);
     }
 }
+
+function playAiCompletionSound() {
+    console.log('🔊 playAiCompletionSound called');
+    console.log('🔊 aiCompletionSound setting:', settings.aiCompletionSound);
+    console.log('🔊 aiCompletionSoundFile setting:', settings.aiCompletionSoundFile);
+    
+    if (!settings.aiCompletionSound) {
+        console.log('🔊 AI completion sound is disabled in settings');
+        return;
+    }
+    
+    try {
+        const soundPath = path.join(__dirname, 'sounds', settings.aiCompletionSoundFile);
+        console.log('🔊 Sound file path:', soundPath);
+        
+        if (!fs.existsSync(soundPath)) {
+            console.error('🔊 Sound file not found:', soundPath);
+            return;
+        }
+
+        console.log('🔊 Playing sound with sound-play library');
+        
+        const sound = require("sound-play");
+        sound.play(soundPath)
+            .then(() => console.log('🔊 Sound finished playing'))
+            .catch(err => console.error('🔊 Error playing sound:', err));
+        
+    } catch (error) {
+        console.error('🔊 Error playing completion sound:', error);
+    }
+}
+
+
 
 // ================================================================= //
 // Shortcuts Management
@@ -332,9 +734,6 @@ const shortcutActions = {
             if (process.platform === 'win32') {
                 cmd = 'explorer';
                 args = ['ms-screenclip:'];
-            } else if (process.platform === 'linux') {
-                cmd = 'gnome-screenshot';
-                args = ['-a', '-c'];
             } else {
                 cmd = 'screencapture';
                 args = ['-i', '-c'];
@@ -346,12 +745,6 @@ const shortcutActions = {
             snippingTool.on('exit', () => { processExited = true; });
             snippingTool.on('error', (err) => {
                 console.error('Failed to start snipping tool:', err);
-                if (process.platform === 'linux') {
-                    dialog.showErrorBox(
-                        'Screenshot Tool Not Found',
-                        'gnome-screenshot is required but it was not found on your system.\n\nPlease install it using your package manager, for example:\n\nsudo apt-get install gnome-screenshot\n\nOr for Fedora/CentOS:\n\nsudo dnf install gnome-screenshot'
-                    );
-                }
                 isScreenshotProcessActive = false;
             });
 
@@ -359,7 +752,7 @@ const shortcutActions = {
             const maxAttempts = 60;
             const intervalId = setInterval(() => {
                 const image = clipboard.readImage();
-                if (!image.isEmpty()) {
+                if (!image.isEmpty() && processExited) {
                     clearInterval(intervalId);
                     if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
                         if (!screenshotTargetWindow.isVisible()) screenshotTargetWindow.show();
@@ -382,7 +775,7 @@ const shortcutActions = {
                     }
                     isScreenshotProcessActive = false;
                     screenshotTargetWindow = null;
-                } else if (processExited || checkAttempts++ > maxAttempts) {
+                } else if (checkAttempts++ > maxAttempts) {
                     clearInterval(intervalId);
                     isScreenshotProcessActive = false;
                     screenshotTargetWindow = null;
@@ -716,6 +1109,23 @@ function createWindow(state = null) {
         detachedViews.delete(newWin);
     });
 
+    // Prevent webContents throttling when window is hidden
+    newWin.on('hide', () => {
+        const view = newWin.getBrowserView();
+        if (view && view.webContents && !view.webContents.isDestroyed()) {
+            view.webContents.setBackgroundThrottling(false);
+            console.log('Background throttling disabled for hidden window');
+        }
+    });
+
+    newWin.on('show', () => {
+        const view = newWin.getBrowserView();
+        if (view && view.webContents && !view.webContents.isDestroyed()) {
+            view.webContents.setBackgroundThrottling(false);
+            console.log('Background throttling kept disabled for shown window');
+        }
+    });
+
     if (state) {
         if (state.bounds) newWin.setBounds(state.bounds);
         loadGemini(state.mode || settings.defaultMode, newWin, state.url);
@@ -851,7 +1261,6 @@ function loadGemini(mode, targetWin, initialUrl) {
                         console.error('Failed to flush cookies store:', flushErr);
                     }
 
-
                     if (loginWin && !loginWin.isDestroyed()) {
                         loginWin.close();
                     }
@@ -886,9 +1295,13 @@ function loadGemini(mode, targetWin, initialUrl) {
             partition: SESSION_PARTITION,
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
-            nativeWindowOpen: true
+            nativeWindowOpen: true,
+            backgroundThrottling: false
         }
     });
+
+    // Prevent webContents from being throttled when window is hidden
+    newView.webContents.setBackgroundThrottling(false);
 
     newView.webContents.setWindowOpenHandler(({ url: popupUrl }) => {
         const isGoogleLogin = /^https:\/\/accounts\.google\.com\//.test(popupUrl);
@@ -1519,7 +1932,42 @@ function handleFileOpen(filePath) {
 // ================================================================= //
 // IPC Handlers
 // ================================================================= //
+// Deep Research Schedule Window
+let deepResearchScheduleWin = null;
+let pdfDirectionWin = null;
+let selectedPdfDirection = null;
+let pendingPdfExportData = null;
 
+ipcMain.on('open-deep-research-schedule-window', () => {
+    if (deepResearchScheduleWin) {
+        deepResearchScheduleWin.focus();
+        return;
+    }
+
+    const parentWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+    deepResearchScheduleWin = new BrowserWindow({
+        width: 800,
+        height: 700,
+        resizable: true,
+        frame: false,
+        parent: parentWindow,
+        show: false,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+        }
+    });
+
+    deepResearchScheduleWin.loadFile('deep-research-schedule.html');
+
+    deepResearchScheduleWin.once('ready-to-show', () => {
+        if (deepResearchScheduleWin) deepResearchScheduleWin.show();
+    });
+
+    deepResearchScheduleWin.on('closed', () => {
+        deepResearchScheduleWin = null;
+    });
+});
 ipcMain.on('start-find-in-page', (event, searchText, findNext = true) => {
     const focusedWindow = BrowserWindow.getFocusedWindow();
     if (focusedWindow) {
@@ -1548,6 +1996,11 @@ ipcMain.on('execute-shortcut', (event, action) => {
     if (shortcutActions[action]) {
         shortcutActions[action]();
     }
+});
+
+ipcMain.on('ai-response-completed', () => {
+    console.log('🔊 Main process received ai-response-completed event, playing sound...');
+    playAiCompletionSound();
 });
 
 ipcMain.on('select-app-mode', (event, mode) => {
@@ -1650,6 +2103,13 @@ ipcMain.on('theme:set', (event, newTheme) => {
 
 app.whenReady().then(() => {
     syncThemeWithWebsite(settings.theme);
+    
+    // Disable background throttling globally to keep AI responses working when hidden
+    app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+    app.commandLine.appendSwitch('disable-renderer-backgrounding');
+    
+    // Start Deep Research Schedule monitoring
+    scheduleDeepResearchCheck();
 
     if (settings.restoreWindows && Array.isArray(settings.savedWindows) && settings.savedWindows.length) {
         settings.savedWindows.forEach(state => createWindow(state));
@@ -2016,6 +2476,13 @@ ipcMain.on('open-new-window', () => {
     createWindow();
 });
 
+ipcMain.on('minimize-window', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win && !win.isDestroyed()) {
+        win.minimize();
+    }
+});
+
 ipcMain.on('export-chat', async (event) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     const view = win ? win.getBrowserView() : null;
@@ -2024,97 +2491,324 @@ ipcMain.on('export-chat', async (event) => {
     try {
         // שלב 1: חילוץ הכותרת של הצ'אט לקביעת שם הקובץ
         const title = await view.webContents.executeJavaScript(`
-      (() => {
-        const el = document.querySelector('.conversation.selected .conversation-title') ||
-                   document.querySelector('li.active a.prompt-link');
-        return el ? el.textContent.trim() : (document.title || 'chat');
-      })();
-    `);
+            (() => {
+                const el = document.querySelector('.conversation.selected .conversation-title') ||
+                           document.querySelector('li.active a.prompt-link');
+                return el ? el.textContent.trim() : (document.title || 'chat');
+            })();
+        `);
 
-        // שלב 2: פתיחת דיאלוג שמירת קובץ
+        // שלב 2: חילוץ כל התוכן של הצ'אט כולל HTML מלא
+        const chatHTML = await view.webContents.executeJavaScript(`
+            (() => {
+                const conversation = [];
+                
+                // מציאת כל בלוקי השיחה
+                const conversationContainers = document.querySelectorAll('.conversation-container');
+                
+                conversationContainers.forEach(container => {
+                    // שאילתת משתמש
+                    const userQuery = container.querySelector('user-query .query-text');
+                    if (userQuery) {
+                        conversation.push({
+                            type: 'user',
+                            html: userQuery.innerHTML,
+                            text: userQuery.innerText.trim()
+                        });
+                    }
+                    
+                    // תשובת המודל
+                    const modelResponse = container.querySelector('model-response .markdown');
+                    if (modelResponse) {
+                        conversation.push({
+                            type: 'model',
+                            html: modelResponse.innerHTML,
+                            text: modelResponse.innerText.trim()
+                        });
+                    }
+                });
+                
+                return conversation;
+            })();
+        `);
+
+        if (!chatHTML || chatHTML.length === 0) {
+            dialog.showErrorBox('Export Failed', 'Could not find any chat content to export.');
+            return;
+        }
+
+        // שמירת הנתונים לשימוש מאוחר יותר
+        pendingPdfExportData = { win, title, chatHTML };
+
+        // פתיחת חלון בחירת כיוון
+        if (pdfDirectionWin) {
+            pdfDirectionWin.focus();
+            return;
+        }
+
+        pdfDirectionWin = new BrowserWindow({
+            width: 550,
+            height: 450,
+            frame: false,
+            resizable: false,
+            alwaysOnTop: true,
+            show: false,
+            parent: win,
+            modal: true,
+            webPreferences: {
+                preload: path.join(__dirname, 'preload.js'),
+                contextIsolation: true,
+            }
+        });
+
+        pdfDirectionWin.loadFile('pdf-direction-choice.html');
+
+        pdfDirectionWin.once('ready-to-show', () => {
+            if (pdfDirectionWin) pdfDirectionWin.show();
+        });
+
+        pdfDirectionWin.on('closed', () => {
+            pdfDirectionWin = null;
+            selectedPdfDirection = null;
+            pendingPdfExportData = null;
+        });
+
+    } catch (err) {
+        console.error('Failed to prepare chat export:', err);
+        dialog.showErrorBox('Export Error', 'An unexpected error occurred while preparing the export.');
+    }
+});
+
+ipcMain.on('select-pdf-direction', async (event, direction) => {
+    if (pdfDirectionWin) {
+        pdfDirectionWin.close();
+    }
+
+    if (!pendingPdfExportData) {
+        console.error('No pending PDF export data found');
+        return;
+    }
+
+    const { win, title, chatHTML } = pendingPdfExportData;
+    selectedPdfDirection = direction;
+
+    try {
+        // שלב 1: פתיחת דיאלוג שמירת קובץ
         const { filePath } = await dialog.showSaveDialog(win, {
             title: 'Export Chat to PDF',
-            defaultPath: `${(title || 'chat').replace(/[\\/:*?"<>|]/g, '')}.pdf`, // מסיר תווים לא חוקיים
+            defaultPath: `${(title || 'chat').replace(/[\\/:*?"<>|]/g, '')}.pdf`,
             filters: [{ name: 'PDF Documents', extensions: ['pdf'] }]
         });
 
         if (!filePath) {
             console.log('User cancelled PDF export.');
-            return; // המשתמש ביטל את השמירה
-        }
-
-        // שלב 3: הרצת סקריפט מתוחכם לחילוץ כל תוכן השיחה
-        const chatData = await view.webContents.executeJavaScript(`
-      (() => {
-        const conversation = [];
-        // סלקטור זה מוצא את כל הרכיבים הרלוונטיים (גם שלך וגם של המודל) לפי הסדר שלהם בדף
-        const allContentBlocks = document.querySelectorAll('.query-text, .markdown');
-
-        allContentBlocks.forEach(block => {
-          // בודקים אם הרכיב הוא שאילתת משתמש לפי הקלאס שלו
-          if (block.classList.contains('query-text')) {
-            conversation.push({ type: 'user', content: block.innerText.trim() });
-          } 
-          // אחרת, בודקים אם זה תשובת מודל
-          else if (block.classList.contains('markdown')) {
-            const text = block.innerText.trim();
-            // מוסיפים רק אם יש תוכן, למנוע הוספת בלוקים ריקים
-            if (text) {
-              conversation.push({ type: 'model', content: text });
-            }
-          }
-        });
-        return conversation;
-      })();
-    `);
-        if (!chatData || chatData.length === 0) {
-            dialog.showErrorBox('Export Failed', 'Could not find any chat content to export.');
+            pendingPdfExportData = null;
             return;
         }
 
-        // שלב 4: יצירת קובץ PDF מסודר באמצעות pdfkit
-        const doc = new PDFDocument({
-            bufferPages: true,
-            autoFirstPage: true,
-            margins: { top: 50, bottom: 50, left: 50, right: 50 }
-        });
+        // שלב 2: יצירת קובץ HTML זמני עם KaTeX
+        const tempHtmlPath = path.join(app.getPath('temp'), `gemini-chat-${Date.now()}.html`);
+        
+        const isRTL = direction === 'rtl';
+        const borderSide = isRTL ? 'border-right' : 'border-left';
+        const textAlign = isRTL ? 'right' : 'left';
+        const userLabel = isRTL ? 'אתה:' : 'You:';
+        
+        let htmlContent = `<!DOCTYPE html>
+<html dir="${direction}">
+<head>
+    <meta charset="utf-8">
+    <title>${title}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/contrib/auto-render.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #fff;
+            color: #1f1f1f;
+            line-height: 1.6;
+        }
+        h1 {
+            text-align: center;
+            color: #1967d2;
+            border-bottom: 2px solid #1967d2;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        .message {
+            margin-bottom: 25px;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .user-message {
+            background: #e3f2fd;
+            ${borderSide}: 4px solid #1967d2;
+        }
+        .model-message {
+            background: #f5f5f5;
+            ${borderSide}: 4px solid #666;
+        }
+        .message-header {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .user-message .message-header {
+            color: #1967d2;
+        }
+        .model-message .message-header {
+            color: #666;
+        }
+        .message-content {
+            font-size: 13px;
+        }
+        /* תמיכה ב-Markdown */
+        .message-content h1, .message-content h2, .message-content h3 {
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+        .message-content code {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', monospace;
+        }
+        .message-content pre {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .message-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+        .message-content table td, .message-content table th {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: ${textAlign};
+        }
+        .message-content table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .message-content img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>${title}</h1>
+`;
 
-        const writeStream = fs.createWriteStream(filePath);
-        doc.pipe(writeStream);
-
-        // הגדרת פונטים (אופציונלי, אך משפר תמיכה בעברית אם הפונט מותקן)
-        // נשתמש בפונטים בסיסיים כדי למנוע בעיות
-        doc.font('Helvetica');
-
-        // הוספת כותרת ראשית לקובץ
-        doc.fontSize(18).text(title, { align: 'center' });
-        doc.moveDown(2);
-
-        // לולאה על כל חלקי השיחה והוספתם למסמך
-        chatData.forEach(message => {
+        // הוספת כל ההודעות
+        chatHTML.forEach(message => {
             if (message.type === 'user') {
-                doc.font('Helvetica-Bold').fontSize(12).text('You:', { continued: false });
-                doc.font('Helvetica').fontSize(12).text(message.content);
+                htmlContent += `
+    <div class="message user-message">
+        <div class="message-header">${userLabel}</div>
+        <div class="message-content">${message.html}</div>
+    </div>
+`;
             } else {
-                doc.font('Helvetica-Bold').fontSize(12).text('Gemini:', { continued: false });
-                doc.font('Helvetica').fontSize(12).text(message.content);
+                htmlContent += `
+    <div class="message model-message">
+        <div class="message-header">Gemini:</div>
+        <div class="message-content">${message.html}</div>
+    </div>
+`;
             }
-            doc.moveDown(1.5); // רווח בין ההודעות
         });
 
-        console.log('Finalizing PDF document...');
-        doc.end();
-
-        writeStream.on('finish', () => {
-            console.log(`PDF successfully saved to ${filePath}`);
-            // פתח את הקובץ או התיקייה לאחר השמירה (אופציונלי)
-            shell.showItemInFolder(filePath);
+        htmlContent += `
+    <script>
+        // רנדור של נוסחאות LaTeX אחרי טעינת הדף
+        document.addEventListener('DOMContentLoaded', function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '\\\\[', right: '\\\\]', display: true},
+                    {left: '$', right: '$', display: false},
+                    {left: '\\\\(', right: '\\\\)', display: false}
+                ]
+            });
         });
+    </script>
+</body>
+</html>`;
+
+        fs.writeFileSync(tempHtmlPath, htmlContent, 'utf-8');
+
+        // שלב 3: יצירת חלון Electron נסתר לטעינת ה-HTML והמרה ל-PDF
+        const pdfWin = new BrowserWindow({
+            width: 800,
+            height: 600,
+            show: false,
+            webPreferences: {
+                offscreen: false
+            }
+        });
+
+        await pdfWin.loadFile(tempHtmlPath);
+
+        // המתנה לרנדור של כל הנוסחאות
+        await new Promise(resolve => setTimeout(resolve, 3000));
+
+        // המרה ל-PDF
+        const pdfData = await pdfWin.webContents.printToPDF({
+            landscape: false,
+            printBackground: true,
+            pageSize: 'A4',
+            margins: {
+                top: 1,
+                bottom: 1,
+                left: 1,
+                right: 1
+            }
+        });
+
+        // שמירת הקובץ
+        fs.writeFileSync(filePath, pdfData);
+
+        // סגירת החלון הזמני
+        pdfWin.close();
+
+        // מחיקת קובץ HTML הזמני
+        fs.unlinkSync(tempHtmlPath);
+
+        console.log(`PDF successfully saved to ${filePath}`);
+        shell.showItemInFolder(filePath);
+
+        dialog.showMessageBox(win, {
+            type: 'info',
+            title: 'Success!',
+            message: 'PDF file created successfully!',
+            buttons: ['OK']
+        });
+
+        pendingPdfExportData = null;
 
     } catch (err) {
         console.error('Failed to export chat to PDF:', err);
         dialog.showErrorBox('Export Error', 'An unexpected error occurred while exporting the chat. See console for details.');
+        pendingPdfExportData = null;
     }
+});
+
+ipcMain.on('cancel-pdf-export', () => {
+    if (pdfDirectionWin) {
+        pdfDirectionWin.close();
+    }
+    pendingPdfExportData = null;
+    selectedPdfDirection = null;
 });
 ipcMain.on('onboarding-complete', (event) => {
     settings.onboardingShown = true;
@@ -2301,7 +2995,9 @@ ipcMain.on('update-setting', (event, key, value) => {
     } else {
         settings[key] = value; // Update the global object
     }
-
+    if (key === 'deepResearchEnabled' || key === 'deepResearchSchedule') {
+        scheduleDeepResearchCheck(); // Restart schedule monitoring
+    }
     saveSettings(settings); // Save the updated global object
 
     // Apply settings immediately

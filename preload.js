@@ -88,6 +88,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getSettings: () => ipcRenderer.invoke('get-settings'),
     updateSetting: (key, value) => ipcRenderer.send('update-setting', key, value),
     openSettingsWindow: () => ipcRenderer.send('open-settings-window'),
+    openDeepResearchScheduleWindow: () => ipcRenderer.send('open-deep-research-schedule-window'),
+
     resetSettings: () => ipcRenderer.send('reset-settings'),
     showConfirmReset: () => ipcRenderer.send('show-confirm-reset'),
     confirmReset: () => ipcRenderer.send('confirm-reset-action'),
@@ -95,10 +97,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     // Window management
     openNewWindow: () => ipcRenderer.send('open-new-window'),
+    minimizeWindow: () => ipcRenderer.send('minimize-window'),
 
     // Export and updates
     exportChat: () => ipcRenderer.send('export-chat'),
     checkForUpdates: () => ipcRenderer.send('check-for-updates'),
+
+    // PDF Direction selection
+    selectPdfDirection: (direction) => ipcRenderer.send('select-pdf-direction', direction),
+    cancelPdfExport: () => ipcRenderer.send('cancel-pdf-export'),
 
     // Notifications
     manualCheckForNotifications: () => ipcRenderer.send('manual-check-for-notifications'),
@@ -459,4 +466,334 @@ const domObserver = new MutationObserver(() => {
 window.addEventListener('load', () => {
     applyLayoutFix(); // Run once on load
     domObserver.observe(document.body, observerConfig); // Then watch for changes
+});
+
+// ================================================================
+// AI Response Completion Detection
+// ================================================================
+/**
+ * Monitors the send/stop button for AI response completion signals.
+ * When the button changes from "Stop" back to "Send" or "Mic", 
+ * it means the AI finished generating a response.
+ */
+console.log('🎵 GeminiDesk AI Completion Sound: Preload script loading...');
+let lastButtonState = null;
+let responseObserver = null;
+let hasNotifiedCompletion = false;
+
+function checkAiResponseCompletion() {
+    try {
+        let isAiGenerating = false;
+        let detectionMethod = null;
+        
+        console.log('🔍 [DEBUG] ==========================================');
+        console.log('🔍 [DEBUG] Starting AI response check...');
+        console.log('🔍 [DEBUG] Current URL:', window.location.href);
+        console.log('🔍 [DEBUG] Page title:', document.title);
+        
+        // Method 1: Look for the send button and check its state directly
+        // Search for buttons with different selectors
+        const allButtons = document.querySelectorAll('button[mat-icon-button]');
+        const allButtonsGeneral = document.querySelectorAll('button');
+        let sendButton = null;
+        
+        console.log(`🔍 [DEBUG] Found ${allButtons.length} mat-icon-button elements`);
+        console.log(`🔍 [DEBUG] Found ${allButtonsGeneral.length} total button elements`);
+        
+        // Log some button details for debugging
+        if (allButtons.length > 0) {
+            console.log('🔍 [DEBUG] Sample mat-icon-buttons:');
+            for (let i = 0; i < Math.min(3, allButtons.length); i++) {
+                const btn = allButtons[i];
+                console.log(`  Button ${i + 1}:`, {
+                    ariaLabel: btn.getAttribute('aria-label'),
+                    classes: btn.className,
+                    id: btn.id
+                });
+            }
+        }
+        
+        for (const btn of allButtons) {
+            const ariaLabel = btn.getAttribute('aria-label')?.toLowerCase() || '';
+            if (ariaLabel.includes('send') || ariaLabel.includes('stop')) {
+                sendButton = btn;
+                console.log(`🔍 [DEBUG] Found send/stop button via aria-label: "${ariaLabel}"`);
+                break;
+            }
+        }
+        
+        // Alternative search methods
+        if (!sendButton) {
+            console.log('🔍 [DEBUG] Trying alternative button selectors...');
+            sendButton = document.querySelector('.send-button-container button') ||
+                        document.querySelector('button[aria-label*="Send"]') ||
+                        document.querySelector('button[aria-label*="Stop"]') ||
+                        document.querySelector('button.send-button') ||
+                        document.querySelector('button.stop');
+            
+            if (sendButton) {
+                console.log('🔍 [DEBUG] Found button via alternative selector');
+            }
+        }
+        
+        if (sendButton) {
+            const ariaLabel = sendButton.getAttribute('aria-label')?.toLowerCase() || '';
+            const classList = sendButton.classList.toString();
+            const hasStopIcon = sendButton.querySelector('.stop-icon, .blue-circle');
+            
+            console.log('🔍 [DEBUG] Send button analysis:', {
+                ariaLabel: ariaLabel,
+                classes: classList,
+                hasStopIcon: !!hasStopIcon
+            });
+            
+            // Check if button indicates AI is generating
+            if (ariaLabel.includes('stop')) {
+                isAiGenerating = true;
+                detectionMethod = 'aria-label-stop';
+                console.log('🔍 [DEBUG] AI generating detected via aria-label "stop"');
+            } else if (classList.includes('stop')) {
+                isAiGenerating = true;
+                detectionMethod = 'class-stop';
+                console.log('🔍 [DEBUG] AI generating detected via CSS class "stop"');
+            } else if (hasStopIcon) {
+                isAiGenerating = true;
+                detectionMethod = 'stop-icon';
+                console.log('🔍 [DEBUG] AI generating detected via stop icon presence');
+            }
+        } else {
+            console.log('🔍 [DEBUG] No send button found with any selector');
+        }
+        
+        // Method 2: Check for mic button visibility (complementary approach)
+        if (!isAiGenerating) {
+            console.log('🔍 [DEBUG] Checking mic button visibility...');
+            const micButton = document.querySelector('.mic-button-container, button[aria-label*="microphone" i], button[aria-label*="mic" i]');
+            if (micButton) {
+                const micStyle = window.getComputedStyle(micButton);
+                const micVisible = !micButton.classList.contains('hidden') && 
+                                 micStyle.display !== 'none' && 
+                                 micStyle.visibility !== 'hidden' &&
+                                 micStyle.opacity !== '0';
+                
+                console.log('🔍 [DEBUG] Mic button found:', {
+                    visible: micVisible,
+                    classes: micButton.className,
+                    display: micStyle.display,
+                    visibility: micStyle.visibility,
+                    opacity: micStyle.opacity
+                });
+                
+                // If mic is visible and no stop button found, AI is not generating
+                if (micVisible && !sendButton?.getAttribute('aria-label')?.toLowerCase().includes('stop')) {
+                    isAiGenerating = false;
+                    detectionMethod = 'mic-visible';
+                    console.log('🔍 [DEBUG] AI NOT generating - mic button is visible');
+                }
+            } else {
+                console.log('🔍 [DEBUG] No mic button found');
+            }
+        }
+        
+        // Method 3: Check for visible stop icons anywhere in the page
+        if (!isAiGenerating) {
+            console.log('🔍 [DEBUG] Scanning for stop icons...');
+            const stopIcons = document.querySelectorAll('.stop-icon, .blue-circle, [class*="stop"]');
+            console.log(`🔍 [DEBUG] Found ${stopIcons.length} potential stop icons`);
+            
+            for (const icon of stopIcons) {
+                const iconStyle = window.getComputedStyle(icon);
+                const isVisible = iconStyle.display !== 'none' && 
+                                iconStyle.visibility !== 'hidden' && 
+                                iconStyle.opacity !== '0' &&
+                                !icon.classList.contains('hidden');
+                
+                if (isVisible) {
+                    console.log('🔍 [DEBUG] Visible stop icon found:', {
+                        classes: icon.className,
+                        display: iconStyle.display,
+                        visibility: iconStyle.visibility,
+                        opacity: iconStyle.opacity
+                    });
+                    isAiGenerating = true;
+                    detectionMethod = 'stop-icon-scan';
+                    break;
+                }
+            }
+        }
+        
+        // Method 4: Look for any streaming/generating indicators
+        if (!isAiGenerating) {
+            console.log('🔍 [DEBUG] Scanning for streaming indicators...');
+            const streamingIndicators = document.querySelectorAll('[class*="generating"], [class*="streaming"], [class*="typing"]');
+            console.log(`🔍 [DEBUG] Found ${streamingIndicators.length} potential streaming indicators`);
+            
+            for (const indicator of streamingIndicators) {
+                const style = window.getComputedStyle(indicator);
+                if (style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0') {
+                    console.log('🔍 [DEBUG] Active streaming indicator found:', indicator.className);
+                    isAiGenerating = true;
+                    detectionMethod = 'streaming-indicator';
+                    break;
+                }
+            }
+        }
+        
+        console.log(`🔍 [DEBUG] Final result: AI generating = ${isAiGenerating} (method: ${detectionMethod})`);
+        
+        // Log state changes for debugging
+        if (isAiGenerating !== lastButtonState) {
+            console.log(`� GeminiDesk: Button state changed - AI generating: ${isAiGenerating} (detected via: ${detectionMethod})`);
+            
+            if (sendButton) {
+                console.log('� Send button details:', {
+                    classes: sendButton.className,
+                    ariaLabel: sendButton.getAttribute('aria-label'),
+                    hasStopIcon: !!sendButton.querySelector('.stop-icon, .blue-circle')
+                });
+            }
+        }
+        
+        // If we detect AI started generating, reset notification flag
+        if (isAiGenerating && lastButtonState !== true) {
+            hasNotifiedCompletion = false;
+            console.log('🤖 GeminiDesk: AI STARTED generating response');
+            console.log('🤖 Detection method:', detectionMethod);
+        }
+        
+        // If we were generating and now we're not, AI completed response
+        if (lastButtonState === true && !isAiGenerating && !hasNotifiedCompletion) {
+            console.log('✅ GeminiDesk: AI COMPLETED generating response!');
+            console.log('🔊 Notifying main process to play completion sound...');
+            ipcRenderer.send('ai-response-completed');
+            hasNotifiedCompletion = true;
+        }
+        
+        lastButtonState = isAiGenerating;
+        
+    } catch (error) {
+        console.error('❌ GeminiDesk: Error checking AI response completion:', error);
+    }
+}
+
+// Set up observer for AI response completion
+function initializeAiResponseDetection() {
+    console.log('🚀 GeminiDesk: Initializing AI response detection system...');
+    
+    // Initial check
+    console.log('🚀 Setting up initial check in 500ms...');
+    setTimeout(() => {
+        console.log('🚀 Running initial AI response check...');
+        checkAiResponseCompletion();
+    }, 500);
+
+    // Set up MutationObserver to watch for button changes
+    console.log('🚀 Setting up DOM mutation observer...');
+    responseObserver = new MutationObserver((mutations) => {
+        // Check if any mutations affect button-related elements
+        let shouldCheck = false;
+        let relevantMutations = 0;
+        
+        mutations.forEach(mutation => {
+            if (mutation.type === 'attributes' && 
+                (mutation.attributeName === 'class' || 
+                 mutation.attributeName === 'style' ||
+                 mutation.attributeName === 'aria-label')) {
+                const target = mutation.target;
+                if (target.classList && 
+                    (target.classList.contains('send-button-container') ||
+                     target.classList.contains('mic-button-container') ||
+                     target.classList.contains('stop-icon') ||
+                     target.classList.contains('send-button-icon') ||
+                     target.classList.contains('blue-circle') ||
+                     target.classList.contains('stop') ||
+                     target.matches('[class*="send-button"]') ||
+                     target.matches('[class*="mic-button"]') ||
+                     target.querySelector && 
+                     (target.querySelector('.send-button-container') ||
+                      target.querySelector('.mic-button-container')))) {
+                    shouldCheck = true;
+                    relevantMutations++;
+                }
+            } else if (mutation.type === 'childList') {
+                // Check if added/removed nodes contain button elements
+                const checkNodes = (nodes) => {
+                    return Array.from(nodes).some(node => {
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            return node.classList && 
+                                   (node.classList.contains('send-button-container') ||
+                                    node.classList.contains('mic-button-container') ||
+                                    node.matches('[class*="send-button"]') ||
+                                    node.matches('[class*="mic-button"]') ||
+                                    node.querySelector('.send-button-container') ||
+                                    node.querySelector('.mic-button-container') ||
+                                    node.querySelector('[class*="send-button"]') ||
+                                    node.querySelector('[class*="mic-button"]'));
+                        }
+                        return false;
+                    });
+                };
+                
+                if (checkNodes(mutation.addedNodes) || checkNodes(mutation.removedNodes)) {
+                    shouldCheck = true;
+                    relevantMutations++;
+                }
+            }
+        });
+        
+        if (shouldCheck) {
+            console.log(`🔄 DOM changed: ${relevantMutations} relevant mutations detected, checking AI status...`);
+            // Small delay to let the DOM settle
+            setTimeout(() => {
+                checkAiResponseCompletion();
+            }, 10);
+        }
+    });
+
+    // Start observing
+    const targetNode = document.body || document.documentElement;
+    if (targetNode) {
+        console.log('🚀 Starting DOM observation on:', targetNode.tagName);
+        responseObserver.observe(targetNode, {
+            attributes: true,
+            attributeFilter: ['style', 'class', 'aria-label', 'title'],
+            childList: true,
+            subtree: true
+        });
+    } else {
+        console.log('❌ Could not find target node for DOM observation!');
+    }
+
+    // Also check periodically as a backup
+    console.log('🚀 Setting up periodic checks every 300ms...');
+    setInterval(() => {
+        console.log('⏰ Periodic AI response check...');
+        checkAiResponseCompletion();
+    }, 300);
+    
+    console.log('✅ GeminiDesk: AI response detection system initialized successfully!');
+}
+
+// Initialize when DOM is ready
+console.log('🔧 GeminiDesk preload: Setting up AI response detection initialization...');
+console.log('🔧 Document ready state:', document.readyState);
+
+if (document.readyState === 'loading') {
+    console.log('🔧 Document still loading, waiting for DOMContentLoaded...');
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('🔧 DOMContentLoaded fired, initializing AI response detection...');
+        initializeAiResponseDetection();
+    });
+} else {
+    console.log('🔧 Document already loaded, initializing AI response detection immediately...');
+    initializeAiResponseDetection();
+}
+
+// Also initialize on window load as additional backup
+window.addEventListener('load', () => {
+    console.log('🔧 Window load event fired, running backup initialization in 1 second...');
+    setTimeout(() => {
+        console.log('🔧 Running backup AI response detection initialization...');
+        initializeAiResponseDetection();
+    }, 1000);
 });
