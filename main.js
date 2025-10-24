@@ -7,7 +7,7 @@ const { spawn, fork } = require('child_process');
 const Store = require('electron-store');
 const os = require('os');
 const crypto = require('crypto');
-const fetch = require('node-fetch');
+import fetch from 'node-fetch';
 const { autoUpdater } = require('electron-updater');
 const AutoLaunch = require('auto-launch');
 const translations = require('./translations.js');
