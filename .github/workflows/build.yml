@@ -70,8 +70,35 @@ jobs:
             dist/latest*.yml
             dist/*.blockmap
 
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install deps
+        run: npm install
+
+      - name: Build macOS (DMG + updater files)
+        run: npm run build -- --mac dmg --publish never
+
+      - name: Upload mac artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac
+          if-no-files-found: error
+          path: |
+            dist/*.dmg
+            dist/latest*.yml
+            dist/*.blockmap
+
   release:
-    needs: [build-win, build-linux]
+    needs: [build-win, build-linux, build-mac]
     runs-on: ubuntu-latest
     steps:
       - name: Download linux artifacts
@@ -86,6 +113,12 @@ jobs:
           name: win
           path: rel/windows
 
+      - name: Download mac artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: mac
+          path: rel/mac
+
       # יצירת דרפט עם שם רנדומלי geminidesk-<run id>
       - name: Create draft release & upload all files
         uses: softprops/action-gh-release@v2
@@ -96,5 +129,6 @@ jobs:
           files: |
             rel/windows/**
             rel/linux/**
+            rel/mac/**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
