@@ -38,7 +38,7 @@ GeminiDesk is more than a wrapper. It's a command center, loaded with powerful, 
     Start your session your way. Choose between the classic **Gemini** chat interface for streamlined conversations or the powerful **AI Studio** for advanced prompt engineering and development.
 
 *   **🗓️ Deep Research Automation: Your AI Autopilot**
-    Schedule complex research tasks to run automatically! Set a day, time, and a detailed prompt. GeminiDesk will launch, switch to the Pro model, execute your "Deep Research" query, and even export the findings to Google Docs—all without you lifting a finger.
+    Schedule complex research tasks to run automatically! Set a day, time, and a detailed prompt. GeminiDesk will launch, switch to the Pro model and execute your "Deep Research" query, all without you lifting a finger.
 
 *   **📄 Flawless PDF Export: Your Chats, Perfected**
     Export your conversations into beautifully formatted PDF documents. With full support for **Right-to-Left (RTL)** languages like Hebrew and Arabic, and perfect rendering of **KaTeX math equations**, your chats have never looked better on paper.
