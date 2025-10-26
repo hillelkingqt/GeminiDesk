@@ -113,6 +113,42 @@
   }
 }
 </script>
+  <div id="screenshots-section" style="display:none;">
+    <section id="screenshots" class="py-20 md:py-28">
+      <div class="container mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">Visual Showcase</h2>
+          <p class="mt-4 text-lg text-slate-600 dark:text-gem-text-secondary max-w-2xl mx-auto">A glimpse into the sleek and powerful interface of GeminiDesk.</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <div class="animated-feature rounded-lg overflow-hidden border border-slate-200 dark:border-gem-border shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300">
+            <img src="screenshots/Screenshot1.png" alt="GeminiDesk Screenshot 1" class="w-full h-auto object-cover">
+          </div>
+          <div class="animated-feature rounded-lg overflow-hidden border border-slate-200 dark:border-gem-border shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300">
+            <img src="screenshots/screenshot2.png" alt="GeminiDesk Screenshot 2" class="w-full h-auto object-cover">
+          </div>
+          <div class="animated-feature rounded-lg overflow-hidden border border-slate-200 dark:border-gem-border shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300">
+            <img src="screenshots/screenshot3.png" alt="GeminiDesk Screenshot 3" class="w-full h-auto object-cover">
+          </div>
+          <div class="animated-feature rounded-lg overflow-hidden border border-slate-200 dark:border-gem-border shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300">
+            <img src="screenshots/screenshot4.png" alt="GeminiDesk Screenshot 4" class="w-full h-auto object-cover">
+          </div>
+          <div class="animated-feature rounded-lg overflow-hidden border border-slate-200 dark:border-gem-border shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300">
+            <img src="screenshots/screenshot5.png" alt="GeminiDesk Screenshot 5" class="w-full h-auto object-cover">
+          </div>
+          <div class="animated-feature rounded-lg overflow-hidden border border-slate-200 dark:border-gem-border shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300">
+            <img src="screenshots/screenshot6.png" alt="GeminiDesk Screenshot 6" class="w-full h-auto object-cover">
+          </div>
+          <div class="animated-feature rounded-lg overflow-hidden border border-slate-200 dark:border-gem-border shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300">
+            <img src="screenshots/screenshot7.png" alt="GeminiDesk Screenshot 7" class="w-full h-auto object-cover">
+          </div>
+          <div class="animated-feature rounded-lg overflow-hidden border border-slate-200 dark:border-gem-border shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300">
+            <img src="screenshots/screenshot8.png" alt="GeminiDesk Screenshot 8" class="w-full h-auto object-cover">
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
   <script type="module" crossorigin>(function(){const W=document.createElement("link").relList;if(W&&W.supports&&W.supports("modulepreload"))return;for(const R of document.querySelectorAll('link[rel="modulepreload"]'))v(R);new MutationObserver(R=>{for(const Q of R)if(Q.type==="childList")for(const ml of Q.addedNodes)ml.tagName==="LINK"&&ml.rel==="modulepreload"&&v(ml)}).observe(document,{childList:!0,subtree:!0});function L(R){const Q={};return R.integrity&&(Q.integrity=R.integrity),R.referrerPolicy&&(Q.referrerPolicy=R.referrerPolicy),R.crossOrigin==="use-credentials"?Q.credentials="include":R.crossOrigin==="anonymous"?Q.credentials="omit":Q.credentials="same-origin",Q}function v(R){if(R.ep)return;R.ep=!0;const Q=L(R);fetch(R.href,Q)}})();function Ed(S){return S&&S.__esModule&&Object.prototype.hasOwnProperty.call(S,"default")?S.default:S}var nf={exports:{}},bu={};/**
  * @license React
  * react-jsx-runtime.production.js
@@ -166,5 +202,15 @@ cd GeminiDesk`,language:"sh"})]}),s.jsxs("div",{children:[s.jsx("h3",{className:
 </head>
   <body>
     <div id="root"></div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const screenshotsSection = document.getElementById('screenshots-section');
+        const featuresSection = document.getElementById('features');
+        if (screenshotsSection && featuresSection) {
+          featuresSection.parentNode.insertBefore(screenshotsSection, featuresSection.nextSibling);
+          screenshotsSection.style.display = 'block';
+        }
+      });
+    </script>
 </body>
 </html>
