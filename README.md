@@ -32,6 +32,25 @@
 
 ## ✨ Why Settle for a Tab When You Can Have a Throne? ✨
 
+<table>
+  <tr>
+    <td align="center"><img src="screenshots/Screenshot1.png" alt="Screenshot 1" width="400"></td>
+    <td align="center"><img src="screenshots/screenshot2.png" alt="Screenshot 2" width="400"></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="screenshots/screenshot3.png" alt="Screenshot 3" width="400"></td>
+    <td align="center"><img src="screenshots/screenshot4.png" alt="Screenshot 4" width="400"></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="screenshots/screenshot5.png" alt="Screenshot 5" width="400"></td>
+    <td align="center"><img src="screenshots/screenshot6.png" alt="Screenshot 6" width="400"></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="screenshots/screenshot7.png" alt="Screenshot 7" width="400"></td>
+    <td align="center"><img src="screenshots/screenshot8.png" alt="Screenshot 8" width="400"></td>
+  </tr>
+</table>
+
 GeminiDesk is more than a wrapper. It's a command center, loaded with powerful, exclusive features that will make you wonder how you ever lived without them.
 
 *   **🤖 Your Choice of Playground: Gemini or AI Studio**
