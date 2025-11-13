@@ -522,11 +522,13 @@ function forceOnTop(win) {
 
     const shouldBeOnTop = !!settings.alwaysOnTop;
 
-    if (process.platform === 'darwin') {
+    if (process.platform === 'darwin' && shouldBeOnTop) {
         win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+        win.setAlwaysOnTop(true, 'screen-saver');
+    } else {
+        win.setAlwaysOnTop(shouldBeOnTop);
     }
 
-    win.setAlwaysOnTop(shouldBeOnTop);
     win.show();
     if (typeof win.moveTop === 'function') win.moveTop();
     win.focus();
@@ -2107,6 +2109,10 @@ app.whenReady().then(() => {
     // Disable background throttling globally to keep AI responses working when hidden
     app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
     app.commandLine.appendSwitch('disable-renderer-backgrounding');
+    
+    if (process.platform === 'darwin' && settings.alwaysOnTop) {
+        app.dock.hide();
+    }
     
     // Start Deep Research Schedule monitoring
     scheduleDeepResearchCheck();
