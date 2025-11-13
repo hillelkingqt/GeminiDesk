@@ -3008,6 +3008,13 @@ ipcMain.on('update-setting', (event, key, value) => {
 
     // Apply settings immediately
     if (key === 'alwaysOnTop') {
+        if (process.platform === 'darwin') {
+            if (value) {
+                app.dock.hide();
+            } else {
+                app.dock.show();
+            }
+        }
         BrowserWindow.getAllWindows().forEach(w => {
             if (!w.isDestroyed()) {
                 w.setAlwaysOnTop(value);
