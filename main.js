@@ -522,11 +522,13 @@ function forceOnTop(win) {
 
     const shouldBeOnTop = !!settings.alwaysOnTop;
 
-    if (process.platform === 'darwin') {
+    if (process.platform === 'darwin' && shouldBeOnTop) {
         win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+        win.setAlwaysOnTop(true, 'screen-saver');
+    } else {
+        win.setAlwaysOnTop(shouldBeOnTop);
     }
 
-    win.setAlwaysOnTop(shouldBeOnTop);
     win.show();
     if (typeof win.moveTop === 'function') win.moveTop();
     win.focus();
@@ -2108,6 +2110,10 @@ app.whenReady().then(() => {
     app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
     app.commandLine.appendSwitch('disable-renderer-backgrounding');
     
+    if (process.platform === 'darwin' && settings.alwaysOnTop) {
+        app.dock.hide();
+    }
+    
     // Start Deep Research Schedule monitoring
     scheduleDeepResearchCheck();
 
@@ -3002,6 +3008,13 @@ ipcMain.on('update-setting', (event, key, value) => {
 
     // Apply settings immediately
     if (key === 'alwaysOnTop') {
+        if (process.platform === 'darwin') {
+            if (value) {
+                app.dock.hide();
+            } else {
+                app.dock.show();
+            }
+        }
         BrowserWindow.getAllWindows().forEach(w => {
             if (!w.isDestroyed()) {
                 w.setAlwaysOnTop(value);
