@@ -82,9 +82,6 @@ GeminiDesk is more than a wrapper. It's a command center, loaded with powerful, 
 *   **🔊 Smart Audio Feedback: Never Miss a Beat**
     Know the second your AI has finished its thought. GeminiDesk detects when the response is complete and plays a subtle, satisfying sound so you can multitask without losing your flow.
 
-*   **🔔 Smart Notifications**
-    Stay in the loop with a built-in notification system that checks for important server announcements and updates.
-
 *   **🌍 Speak Your Language: Full Internationalization**
     The entire app interface, from tooltips to the settings menu, is fully localized into over 20 languages.
 
