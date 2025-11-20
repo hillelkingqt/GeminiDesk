@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -173,22 +174,23 @@
         }
     </style>
 </head>
+
 <body class="light">
     <div class="container">
         <button class="close-btn" onclick="window.electronAPI.cancelPdfExport()">✕</button>
-        
+
         <div class="icon">📄</div>
-        
+
         <h1 data-i18n="title">בחר כיוון כתיבה למסמך PDF</h1>
         <p data-i18n="subtitle">איך תרצה שהתוכן יוצג בקובץ PDF?</p>
-        
+
         <div class="buttons">
             <button class="choice-btn ltr-btn" onclick="selectDirection('ltr')">
                 <div class="choice-icon">→</div>
                 <div class="choice-title" data-i18n="ltr-title">Left to Right</div>
                 <div class="choice-subtitle" data-i18n="ltr-desc">English</div>
             </button>
-            
+
             <button class="choice-btn rtl-btn" onclick="selectDirection('rtl')">
                 <div class="choice-icon">←</div>
                 <div class="choice-title" data-i18n="rtl-title">Right to Left</div>
@@ -321,13 +323,13 @@
             try {
                 // Get settings from main process
                 const settings = await window.electronAPI.getSettings();
-                
+
                 // Apply theme
                 let theme = settings.theme || 'light';
                 if (theme === 'system') {
                     theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                 }
-                
+
                 document.body.className = theme;
 
                 // Apply language
@@ -361,4 +363,5 @@
         });
     </script>
 </body>
+
 </html>

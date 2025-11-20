@@ -1,99 +1,397 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
+
 <head>
     <meta charset="UTF-8">
     <title>GeminiDesk Settings</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
-        
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
         :root {
-            --bg-primary: #1e1e1e; --bg-secondary: #252526; --bg-tertiary: #2d2d30;
-            --text-primary: #cccccc; --text-secondary: #9e9e9e; --accent-primary: #0e98d9;
-            --accent-secondary: #3c3c3c; --danger-color: #f44336; --success-color: #4caf50;
-            --border-color: #3e3e42;
+            /* Premium Dark Palette (Default) */
+            --bg-root: #0f0f13;
+            --glass-surface: rgba(20, 20, 25, 0.95);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.05);
+
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --text-tertiary: #6b7280;
+
+            --accent-primary: #818cf8;
+            --accent-glow: rgba(129, 140, 248, 0.4);
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+
+            --input-bg: rgba(255, 255, 255, 0.03);
+            --input-border: rgba(255, 255, 255, 0.08);
+
+            --danger-color: #f43f5e;
+            --success-color: #22c55e;
+
+            --radius-xl: 24px;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
+
+            --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+            /* Component Variables */
+            --item-bg: rgba(255, 255, 255, 0.02);
+            --item-hover-bg: rgba(255, 255, 255, 0.04);
+            --button-bg: rgba(255, 255, 255, 0.05);
+            --button-hover-bg: rgba(255, 255, 255, 0.08);
+            --search-input-bg: rgba(0, 0, 0, 0.2);
         }
 
         html.light-mode {
-            --bg-primary: #f5f5f5; --bg-secondary: #ffffff; --bg-tertiary: #e0e0e0;
-            --text-primary: #212121; --text-secondary: #757575; --accent-primary: #007aff;
-            --accent-secondary: #e9e9e9; --danger-color: #d32f2f; --success-color: #388e3c;
-            --border-color: #dcdcdc;
+            --bg-root: #f1f5f9;
+            --glass-surface: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.8);
+
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-tertiary: #94a3b8;
+
+            --accent-primary: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.25);
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+
+            --input-bg: rgba(0, 0, 0, 0.04);
+            --input-border: rgba(0, 0, 0, 0.1);
+
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+
+            --item-bg: rgba(255, 255, 255, 0.6);
+            --item-hover-bg: rgba(255, 255, 255, 0.9);
+            --button-bg: rgba(0, 0, 0, 0.04);
+            --button-hover-bg: rgba(0, 0, 0, 0.08);
+            --search-input-bg: rgba(0, 0, 0, 0.05);
         }
 
-        html, body {
-            margin: 0; padding: 0; background-color: var(--bg-primary);
-            color: var(--text-primary); font-family: 'Poppins', sans-serif;
-            overflow: hidden; -webkit-font-smoothing: antialiased; user-select: none;
+        html.light-mode body::before {
+            background: radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.08), transparent 60%),
+                radial-gradient(circle at 90% 90%, rgba(168, 85, 247, 0.08), transparent 60%);
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-root);
+            color: var(--text-primary);
+            user-select: none;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Background Effects */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.12), transparent 60%),
+                radial-gradient(circle at 90% 90%, rgba(168, 85, 247, 0.12), transparent 60%);
+            opacity: 1;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
         }
 
         .drag-bar {
-            width: 100%; height: 40px; -webkit-app-region: drag; background-color: var(--bg-secondary);
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 15px; box-sizing: border-box; border-bottom: 1px solid var(--border-color);
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 44px;
+            -webkit-app-region: drag;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.03), transparent);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-sizing: border-box;
+            border-bottom: 1px solid var(--glass-border);
         }
 
-        .drag-bar h2 { font-size: 16px; margin: 0; font-weight: 500; color: var(--text-primary); -webkit-app-region: drag; }
+        .drag-bar h2 {
+            font-size: 15px;
+            margin: 0;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: 0.01em;
+            -webkit-app-region: drag;
+        }
 
         #close-button {
-            -webkit-app-region: no-drag; font-size: 22px; background: none; border: none;
-            color: var(--text-secondary); cursor: pointer; transition: transform .2s ease, color .2s ease;
-            padding: 5px; line-height: 1;
+            -webkit-app-region: no-drag;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            border: 1px solid transparent;
+            background: var(--button-bg);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 20px;
+            line-height: 1;
+            padding: 0;
         }
-        #close-button:hover { transform: rotate(90deg); color: var(--accent-primary); }
 
-        .content { padding: 20px; overflow-y: auto; height: calc(100vh - 40px); }
-        .content::-webkit-scrollbar { width: 8px; }
-        .content::-webkit-scrollbar-track { background: var(--bg-primary); }
-        .content::-webkit-scrollbar-thumb { background-color: var(--accent-secondary); border-radius: 4px; }
+        #close-button:hover {
+            background: var(--danger-color);
+            color: white;
+            transform: rotate(90deg);
+            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
+        }
 
-        .setting-category { margin-bottom: 30px; }
+        .content {
+            position: relative;
+            z-index: 1;
+            padding: clamp(16px, 2vw, 24px);
+            padding-bottom: clamp(48px, 8vh, 96px);
+            overflow-y: auto;
+            height: calc(100vh - 44px);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: clamp(14px, 2vw, 20px);
+            overscroll-behavior: contain;
+            scroll-padding-bottom: 64px;
+        }
+
+        .content::after {
+            content: "";
+            display: block;
+            height: 28px;
+        }
+
+        /* Modern custom scrollbar */
+        .content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .content::-webkit-scrollbar-thumb {
+            background: rgba(129, 140, 248, 0.3);
+            border-radius: 10px;
+            transition: background 0.2s ease;
+        }
+
+        .content::-webkit-scrollbar-thumb:hover {
+            background: rgba(129, 140, 248, 0.5);
+        }
+
+        .setting-category {
+            position: relative;
+            margin: 0;
+            background: var(--glass-surface);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg), inset 0 1px 0 var(--glass-highlight);
+            padding: clamp(12px, 1.4vw, 18px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .setting-category::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            background: radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.08), transparent 60%),
+                radial-gradient(circle at 90% 90%, rgba(168, 85, 247, 0.08), transparent 60%);
+            opacity: 1;
+        }
+
         .setting-category-title {
-            font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
-            color: var(--accent-primary); margin-bottom: 15px; padding-bottom: 8px;
-            border-bottom: 1px solid var(--border-color); display: flex; align-items: center;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent-primary);
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
         }
-        .setting-category-title svg { width: 16px; height: 16px; margin-right: 8px; }
+
+        .setting-category-title svg {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+        }
 
         .setting-item {
-            background-color: var(--bg-secondary); border-radius: 8px; padding: 15px;
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 10px; border: 1px solid var(--border-color);
-            transition: border-color .2s ease, box-shadow .2s ease;
+            background: var(--item-bg);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
         }
-        .setting-item:hover { border-color: var(--accent-secondary); }
-        
-        .setting-label { display: flex; flex-direction: column; }
-        .setting-label strong { font-weight: 500; font-size: 14px; }
-        .setting-label span { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
 
-        .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
-        .toggle-switch input { display: none; }
+        .setting-item:hover {
+            background: var(--item-hover-bg);
+            border-color: rgba(129, 140, 248, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .setting-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .setting-label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .setting-label strong {
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .setting-label span {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch input {
+            display: none;
+        }
+
         .slider {
-            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: var(--accent-secondary); transition: .3s; border-radius: 34px;
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.1);
+            transition: .3s ease;
+            border-radius: 999px;
+            border: 1px solid var(--glass-border);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
         }
-        .slider:before {
-            position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
-            background-color: #fff; transition: .3s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-        input:checked + .slider { background-color: var(--success-color); }
-        input:checked + .slider:before { transform: translateX(20px); }
 
-        .record-button, .action-button {
-            background-color: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary);
-            padding: 8px 12px; border-radius: 6px; cursor: pointer; font-family: 'Poppins', sans-serif;
-            font-size: 13px; min-width: 130px; text-align: center; transition: all .2s ease;
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 2px;
+            bottom: 2px;
+            background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
+            transition: .3s ease;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
         }
-        .record-button:hover, .action-button:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
-        .record-button.is-recording { background-color: var(--accent-primary); border-color: var(--accent-primary); color: #fff; font-weight: 600; cursor: default; }
+
+        input:checked+.slider {
+            background: var(--accent-gradient);
+            border-color: transparent;
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(22px);
+            background: #ffffff;
+        }
+
+        .record-button,
+        .action-button {
+            background: var(--button-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            min-width: 130px;
+            text-align: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .record-button:hover,
+        .action-button:hover {
+            background: var(--button-hover-bg);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(129, 140, 248, 0.2);
+        }
+
+        .record-button.is-recording {
+            background: var(--accent-gradient);
+            border-color: transparent;
+            color: #fff;
+            font-weight: 600;
+            cursor: default;
+            box-shadow: 0 4px 16px var(--accent-glow);
+        }
 
         #reset-button {
-            border: 1px solid var(--danger-color); background: transparent; color: var(--danger-color);
-            padding: 8px 15px; border-radius: 6px; cursor: pointer;
-            font-size: 14px; font-weight: 500; transition: background-color .2s, color .2s;
-            font-family: 'Poppins', sans-serif;
+            border: 1px solid var(--danger-color);
+            background: rgba(244, 63, 94, 0.1);
+            color: var(--danger-color);
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            font-family: 'Outfit', sans-serif;
         }
-        #reset-button:hover { background-color: var(--danger-color); color: #fff; }
+
+        #reset-button:hover {
+            background: var(--danger-color);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(244, 63, 94, 0.3);
+        }
 
         #notification-status-text {
             font-size: 12px;
@@ -103,7 +401,7 @@
             text-align: left;
             transition: opacity 0.3s ease;
         }
-        
+
         #update-status-text {
             font-size: 12px;
             color: var(--text-secondary);
@@ -163,7 +461,7 @@
             right: 3px;
         }
 
-        html[dir="rtl"] input:checked + .slider:before {
+        html[dir="rtl"] input:checked+.slider:before {
             transform: translateX(-20px);
         }
 
@@ -179,46 +477,68 @@
         /* --- Custom Option Group Selector --- */
         .option-group {
             display: flex;
-            background-color: var(--bg-tertiary);
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
+            flex-wrap: nowrap;
+            gap: 0;
+            max-width: 100%;
+            background: var(--button-bg);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--glass-border);
             overflow: hidden;
         }
+
         .option-group input[type="radio"] {
-            display: none; /* Hide the actual radio button */
+            display: none;
         }
+
         .option-group label {
-            padding: 6px 12px;
+            padding: 10px 14px;
+            flex: 1 1 0;
+            text-align: center;
+            white-space: nowrap;
+            min-width: 0;
+            margin: 0;
             cursor: pointer;
             color: var(--text-secondary);
             font-size: 13px;
-            transition: background-color 0.2s ease, color 0.2s ease;
-            border-left: 1px solid var(--border-color);
+            font-weight: 400;
+            transition: all 0.2s ease;
+            border-right: 1px solid var(--glass-border);
         }
+
         .option-group label:first-of-type {
             border-left: none;
         }
-        .option-group input[type="radio"]:checked + label {
-            background-color: var(--accent-primary);
+
+        .option-group label:last-of-type {
+            border-right: none;
+        }
+
+        .option-group input[type="radio"]:checked+label {
+            background: var(--accent-gradient);
             color: #fff;
             font-weight: 500;
+            box-shadow: 0 2px 8px var(--accent-glow);
         }
+
         .option-group label:hover {
-            background-color: var(--accent-secondary);
+            background: var(--button-hover-bg);
         }
 
         html[dir="rtl"] .option-group {
             flex-direction: row-reverse;
         }
+
         html[dir="rtl"] .option-group label {
             border-left: none;
-            border-right: 1px solid var(--border-color);
+            border-right: 1px solid var(--glass-border);
         }
+
         html[dir="rtl"] .option-group label:first-of-type {
             border-right: none;
         }
+
         html[dir="rtl"] .option-group label:last-of-type {
-            border-right: 1px solid var(--border-color);
+            border-right: 1px solid var(--glass-border);
         }
 
         .option-group label .icon {
@@ -226,6 +546,7 @@
             height: 20px;
             vertical-align: middle;
         }
+
         /* Hide English-only features by default */
         .english-only-feature {
             display: none;
@@ -237,31 +558,32 @@
         }
 
         /* --- Custom Language Selector --- */
-.language-selector {
-    position: relative;
-    width: fit-content;  /* התאמה לתוכן */
-    min-width: 120px;
-}
+        .language-selector {
+            position: relative;
+            width: fit-content;
+            min-width: 120px;
+        }
 
         .language-selector-button {
             width: 100%;
-            background-color: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
+            background: var(--button-bg);
+            border: 1px solid var(--glass-border);
             color: var(--text-primary);
-            padding: 8px 12px;
-            border-radius: 6px;
+            padding: 10px 12px;
+            border-radius: var(--radius-md);
             cursor: pointer;
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Outfit', sans-serif;
             font-size: 13px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all .2s ease;
+            transition: all 0.2s ease;
             box-sizing: border-box;
             direction: ltr;
         }
 
         .language-selector-button:hover {
+            background: var(--button-hover-bg);
             border-color: var(--accent-primary);
         }
 
@@ -288,16 +610,32 @@
             bottom: 100%;
             left: 0;
             right: 0;
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            max-height: 250px;
+            background: var(--glass-surface);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-height: 300px;
             z-index: 1000;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
             display: none;
             overflow: hidden;
             direction: ltr;
+            transform-origin: bottom center;
+            animation: dropdownSlideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes dropdownSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         .language-dropdown.show {
@@ -305,33 +643,36 @@
         }
 
         .language-search {
-            padding: 12px;
-            border-bottom: 1px solid var(--border-color);
-            background-color: var(--bg-secondary);
+            padding: 10px;
+            border-bottom: 1px solid var(--glass-border);
+            background: var(--item-bg);
         }
 
         .language-search input {
             width: 100%;
             padding: 8px 12px;
-            background-color: var(--bg-primary);
-            border: 1px solid var(--border-color);
+            background: var(--search-input-bg);
+            border: 1px solid transparent;
             color: var(--text-primary);
-            border-radius: 4px;
-            font-family: 'Poppins', sans-serif;
+            border-radius: var(--radius-sm);
+            font-family: 'Outfit', sans-serif;
             font-size: 13px;
             box-sizing: border-box;
             outline: none;
-            transition: border-color 0.2s ease;
+            transition: all 0.2s ease;
             direction: ltr;
             text-align: left;
         }
 
         .language-search input:focus {
+            background: rgba(0, 0, 0, 0.3);
             border-color: var(--accent-primary);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
         }
 
         .language-search input::placeholder {
-            color: var(--text-secondary);
+            color: var(--text-tertiary);
+            opacity: 0.7;
         }
 
         .language-list {
@@ -347,38 +688,47 @@
         }
 
         .language-list::-webkit-scrollbar-track {
-            background: var(--bg-secondary);
+            background: transparent;
         }
 
         .language-list::-webkit-scrollbar-thumb {
-            background-color: var(--accent-secondary);
+            background: rgba(129, 140, 248, 0.3);
             border-radius: 3px;
         }
 
+        .language-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(129, 140, 248, 0.5);
+        }
+
         .language-list li {
-            padding: 12px 15px;
+            padding: 10px 14px;
             cursor: pointer;
             font-size: 13px;
-            color: var(--text-primary);
-            transition: background-color 0.2s ease;
+            color: var(--text-secondary);
+            transition: all 0.15s ease;
             border-bottom: 1px solid transparent;
             text-align: left;
             direction: ltr;
+            margin: 2px 4px;
+            border-radius: var(--radius-sm);
         }
 
         .language-list li:last-child {
             border-bottom: none;
+            margin-bottom: 4px;
         }
 
         .language-list li:hover {
-            background-color: var(--accent-primary);
-            color: #fff;
+            background: var(--button-hover-bg);
+            color: var(--text-primary);
+            transform: translateX(2px);
         }
 
         .language-list li.selected {
-            background-color: var(--accent-primary);
+            background: var(--accent-gradient);
             color: #fff;
             font-weight: 500;
+            box-shadow: 0 2px 8px var(--accent-glow);
         }
 
         .language-list li.hidden {
@@ -419,17 +769,36 @@
             direction: rtl;
         }
 
-        html[dir="rtl"] .setting-item > div:first-child {
+        html[dir="rtl"] .setting-item>div:first-child {
             margin-left: 15px;
             margin-right: 0;
         }
 
-        html[dir="rtl"] .setting-item > div:last-child {
+        html[dir="rtl"] .setting-item>div:first-child {
+            margin-left: 15px;
+            margin-right: 0;
+        }
+
+        html[dir="rtl"] .setting-item>div:last-child {
             margin-right: 15px;
             margin-left: 0;
         }
+
+        /* Responsive tweaks */
+        @media (max-width: 420px) {
+            .drag-bar h2 {
+                font-size: 14px;
+            }
+
+            .record-button,
+            .action-button {
+                min-width: 0;
+                padding: 8px 10px;
+            }
+        }
     </style>
 </head>
+
 <body>
     <div class="drag-bar">
         <h2 data-i18n="settings-title">Settings</h2>
@@ -438,11 +807,16 @@
     <div class="content">
         <div class="setting-category">
             <h3 class="setting-category-title">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z">
+                    </path>
+                </svg>
                 <span data-i18n="appearance">Appearance</span>
             </h3>
             <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="theme-label">Theme</strong><span data-i18n="theme-desc">Select your preferred theme.</span></div>
+                <div class="setting-label"><strong data-i18n="theme-label">Theme</strong><span
+                        data-i18n="theme-desc">Select your preferred theme.</span></div>
                 <div id="theme-options" class="option-group">
                     <input type="radio" id="theme-light" name="theme" value="light">
                     <label for="theme-light" data-i18n="theme-light">Light</label>
@@ -455,28 +829,41 @@
                 </div>
             </div>
             <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="showChatTitle-label">Show Chat Title</strong><span data-i18n="showChatTitle-desc">Display conversation name in the window.</span></div>
-                <label class="toggle-switch"><input type="checkbox" id="setting-showChatTitle"><span class="slider"></span></label>
+                <div class="setting-label"><strong data-i18n="showChatTitle-label">Show Chat Title</strong><span
+                        data-i18n="showChatTitle-desc">Display conversation name in the window.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-showChatTitle"><span
+                        class="slider"></span></label>
             </div>
             <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="draggableButtons-label">Draggable Buttons</strong><span data-i18n="draggableButtons-desc">Allow reordering of toolbar buttons.</span></div>
+                <div class="setting-label"><strong data-i18n="draggableButtons-label">Draggable Buttons</strong><span
+                        data-i18n="draggableButtons-desc">Allow reordering of toolbar buttons.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button id="reset-button-order" class="action-button" data-i18n="resetOrder" style="min-width: auto;">Reset Order</button>
-                    <label class="toggle-switch"><input type="checkbox" id="setting-draggableButtonsEnabled"><span class="slider"></span></label>
+                    <button id="reset-button-order" class="action-button" data-i18n="resetOrder"
+                        style="min-width: auto;">Reset Order</button>
+                    <label class="toggle-switch"><input type="checkbox" id="setting-draggableButtonsEnabled"><span
+                            class="slider"></span></label>
                 </div>
             </div>
         </div>
         <div class="setting-category">
             <h3 class="setting-category-title">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.9142 9.40429C19.9142 9.13571 19.9429 8.87143 19.9857 8.60286L21.6571 7.25286C21.8429 7.09714 21.8857 6.83286 21.7857 6.61857L20.2286 3.97714C20.1286 3.76286 19.8857 3.65571 19.6714 3.72571L17.6571 4.52286C17.1143 4.11143 16.5286 3.76286 15.9 3.48571L15.5857 1.32571C15.5571 1.09714 15.3571 0.928571 15.1143 0.928571H11.8857C11.6429 0.928571 11.4429 1.09714 11.4143 1.32571L11.1 3.48571C10.4714 3.76286 9.88571 4.11143 9.34286 4.52286L7.32857 3.72571C7.11429 3.65571 6.87143 3.76286 6.77143 3.97714L5.21429 6.61857C5.11429 6.83286 5.15714 7.09714 5.34286 7.25286L7.01429 8.60286C6.97143 8.87143 6.94286 9.13571 6.94286 9.40429C6.94286 9.67286 6.97143 9.93714 7.01429 10.2057L5.34286 11.5557C5.15714 11.7114 5.11429 11.9757 5.21429 12.19L6.77143 14.8314C6.87143 15.0457 7.11429 15.1529 7.32857 15.0829L9.34286 14.2857C9.88571 14.6971 10.4714 15.0457 11.1 15.3229L11.4143 17.4829C11.4429 17.7114 11.6429 17.88 11.8857 17.88H15.1143C15.3571 17.88 15.5571 17.7114 15.5857 17.4829L15.9 15.3229C16.5286 15.0457 17.1143 14.6971 17.6571 14.2857L19.6714 15.0829C19.8857 15.1529 20.1286 15.0457 20.2286 14.8314L21.7857 12.19C21.8857 11.9757 21.8429 11.7114 21.6571 11.5557L19.9857 10.2057C19.9429 9.93714 19.9142 9.67286 19.9142 9.40429ZM13.5 12.4343C11.5286 12.4343 9.94286 10.8486 9.94286 8.87714C9.94286 6.90571 11.5286 5.32 13.5 5.32C15.4714 5.32 17.0571 6.90571 17.0571 8.87714C17.0571 10.8486 15.4714 12.4343 13.5 12.4343Z"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M19.9142 9.40429C19.9142 9.13571 19.9429 8.87143 19.9857 8.60286L21.6571 7.25286C21.8429 7.09714 21.8857 6.83286 21.7857 6.61857L20.2286 3.97714C20.1286 3.76286 19.8857 3.65571 19.6714 3.72571L17.6571 4.52286C17.1143 4.11143 16.5286 3.76286 15.9 3.48571L15.5857 1.32571C15.5571 1.09714 15.3571 0.928571 15.1143 0.928571H11.8857C11.6429 0.928571 11.4429 1.09714 11.4143 1.32571L11.1 3.48571C10.4714 3.76286 9.88571 4.11143 9.34286 4.52286L7.32857 3.72571C7.11429 3.65571 6.87143 3.76286 6.77143 3.97714L5.21429 6.61857C5.11429 6.83286 5.15714 7.09714 5.34286 7.25286L7.01429 8.60286C6.97143 8.87143 6.94286 9.13571 6.94286 9.40429C6.94286 9.67286 6.97143 9.93714 7.01429 10.2057L5.34286 11.5557C5.15714 11.7114 5.11429 11.9757 5.21429 12.19L6.77143 14.8314C6.87143 15.0457 7.11429 15.1529 7.32857 15.0829L9.34286 14.2857C9.88571 14.6971 10.4714 15.0457 11.1 15.3229L11.4143 17.4829C11.4429 17.7114 11.6429 17.88 11.8857 17.88H15.1143C15.3571 17.88 15.5571 17.7114 15.5857 17.4829L15.9 15.3229C16.5286 15.0457 17.1143 14.6971 17.6571 14.2857L19.6714 15.0829C19.8857 15.1529 20.1286 15.0457 20.2286 14.8314L21.7857 12.19C21.8857 11.9757 21.8429 11.7114 21.6571 11.5557L19.9857 10.2057C19.9429 9.93714 19.9142 9.67286 19.9142 9.40429ZM13.5 12.4343C11.5286 12.4343 9.94286 10.8486 9.94286 8.87714C9.94286 6.90571 11.5286 5.32 13.5 5.32C15.4714 5.32 17.0571 6.90571 17.0571 8.87714C17.0571 10.8486 15.4714 12.4343 13.5 12.4343Z">
+                    </path>
+                </svg>
                 <span data-i18n="general">General</span>
             </h3>
             <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="language-label">Language</strong><span data-i18n="language-desc">Select interface language.</span></div>
+                <div class="setting-label"><strong data-i18n="language-label">Language</strong><span
+                        data-i18n="language-desc">Select interface language.</span></div>
                 <div class="language-selector">
                     <button id="language-selector-button" class="language-selector-button">
                         <span>English</span>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m6 9 6 6 6-6" />
+                        </svg>
                     </button>
                     <div id="language-dropdown" class="language-dropdown">
                         <div class="language-search">
@@ -489,138 +876,373 @@
                 </div>
             </div>
             <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="updates-label">Application Updates</strong><span data-i18n="updates-desc">Check for the latest version.</span></div>
+                <div class="setting-label"><strong data-i18n="updates-label">Application Updates</strong><span
+                        data-i18n="updates-desc">Check for the latest version.</span></div>
                 <div style="display: flex; align-items: center;">
-                    <button id="manual-check-for-updates-button" class="action-button" data-i18n="checkForUpdates">Check for Updates</button>
+                    <button id="manual-check-for-updates-button" class="action-button" data-i18n="checkForUpdates">Check
+                        for Updates</button>
                 </div>
             </div>
             <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="autoStart-label">Run on System Startup</strong><span data-i18n="autoStart-desc">Start GeminiDesk automatically.</span></div>
-                <label class="toggle-switch"><input type="checkbox" id="setting-autoStart"><span class="slider"></span></label>
+                <div class="setting-label"><strong data-i18n="disableAutoUpdate-label">Disable Automatic Daily
+                        Updates</strong><span data-i18n="disableAutoUpdate-desc">Do not check for updates
+                        automatically.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-disableAutoUpdateCheck"><span
+                        class="slider"></span></label>
             </div>
             <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="alwaysOnTop-label">Always on Top</strong><span data-i18n="alwaysOnTop-desc">Keep the window above others.</span></div>
-                <label class="toggle-switch"><input type="checkbox" id="setting-alwaysOnTop"><span class="slider"></span></label>
+                <div class="setting-label"><strong data-i18n="autoStart-label">Run on System Startup</strong><span
+                        data-i18n="autoStart-desc">Start GeminiDesk automatically.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-autoStart"><span
+                        class="slider"></span></label>
             </div>
             <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="showInTaskbar-label">Show in Taskbar</strong><span data-i18n="showInTaskbar-desc">Let the app icon appear in the taskbar.</span></div>
-                <label class="toggle-switch"><input type="checkbox" id="setting-showInTaskbar"><span class="slider"></span></label>
+                <div class="setting-label"><strong data-i18n="alwaysOnTop-label">Always on Top</strong><span
+                        data-i18n="alwaysOnTop-desc">Keep the window above others.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-alwaysOnTop"><span
+                        class="slider"></span></label>
             </div>
             <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="enableCanvasResizing-label">Automatic Canvas Resizing</strong><span data-i18n="enableCanvasResizing-desc">Resize the canvas when needed.</span></div>
-                <label class="toggle-switch"><input type="checkbox" id="setting-enableCanvasResizing"><span class="slider"></span></label>
+                <div class="setting-label"><strong data-i18n="showInTaskbar-label">Show in Taskbar</strong><span
+                        data-i18n="showInTaskbar-desc">Let the app icon appear in the taskbar.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-showInTaskbar"><span
+                        class="slider"></span></label>
             </div>
             <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="restoreWindows-label">Restore Windows on Launch</strong><span data-i18n="restoreWindows-desc">Reopen previous windows at startup.</span></div>
-                <label class="toggle-switch"><input type="checkbox" id="setting-restoreWindows"><span class="slider"></span></label>
+                <div class="setting-label"><strong data-i18n="enableCanvasResizing-label">Automatic Canvas
+                        Resizing</strong><span data-i18n="enableCanvasResizing-desc">Resize the canvas when
+                        needed.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-enableCanvasResizing"><span
+                        class="slider"></span></label>
+            </div>
+            <!-- English-only: Load MCP SuperAssistant unpacked extension -->
+            <div class="setting-item english-only-feature">
+                <div class="setting-label"><strong>Load MCP SuperAssistant Extension</strong><span>When enabled, the
+                        unpacked extension in the app folder (0.5.8_0) will be auto-loaded into browser sessions.</span>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-loadUnpackedExtension"><span
+                        class="slider"></span></label>
+            </div>
+
+            <!-- Always visible: quick access to MCP Setup window -->
+            <div class="setting-item">
+                <div class="setting-label"><strong>MCP Setup</strong><span>Open the MCP SuperAssistant setup window with
+                        instructions and auto-setup.</span></div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button id="open-mcp-setup-global" class="action-button" title="Open MCP Setup"
+                        style="min-width: 36px; padding: 6px 10px; font-weight: 700;">i</button>
+                </div>
             </div>
             <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="showCloseButton-label">Show Close Button</strong><span data-i18n="showCloseButton-desc">Add a close button to each window.</span></div>
-                <label class="toggle-switch"><input type="checkbox" id="setting-showCloseButton"><span class="slider"></span></label>
+                <div class="setting-label"><strong data-i18n="restoreWindows-label">Restore Windows on
+                        Launch</strong><span data-i18n="restoreWindows-desc">Reopen previous windows at startup.</span>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-restoreWindows"><span
+                        class="slider"></span></label>
             </div>
             <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="showFullscreenButton-label">Show Fullscreen Button</strong><span data-i18n="showFullscreenButton-desc">Display fullscreen toggle button.</span></div>
-                <label class="toggle-switch"><input type="checkbox" id="setting-showFullscreenButton"><span class="slider"></span></label>
+                <div class="setting-label"><strong data-i18n="showCloseButton-label">Show Close Button</strong><span
+                        data-i18n="showCloseButton-desc">Add a close button to each window.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-showCloseButton"><span
+                        class="slider"></span></label>
             </div>
             <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="showNewWindowButton-label">Show New Window Button</strong><span data-i18n="showNewWindowButton-desc">Display new window creation button.</span></div>
-                <label class="toggle-switch"><input type="checkbox" id="setting-showNewWindowButton"><span class="slider"></span></label>
+                <div class="setting-label"><strong data-i18n="showFullscreenButton-label">Show Fullscreen
+                        Button</strong><span data-i18n="showFullscreenButton-desc">Display fullscreen toggle
+                        button.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-showFullscreenButton"><span
+                        class="slider"></span></label>
             </div>
             <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="showMinimizeButton-label">Show Minimize Button</strong><span data-i18n="showMinimizeButton-desc">Display minimize window button.</span></div>
-                <label class="toggle-switch"><input type="checkbox" id="setting-showMinimizeButton"><span class="slider"></span></label>
+                <div class="setting-label"><strong data-i18n="showNewWindowButton-label">Show New Window
+                        Button</strong><span data-i18n="showNewWindowButton-desc">Display new window creation
+                        button.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-showNewWindowButton"><span
+                        class="slider"></span></label>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="showMinimizeButton-label">Show Minimize
+                        Button</strong><span data-i18n="showMinimizeButton-desc">Display minimize window button.</span>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-showMinimizeButton"><span
+                        class="slider"></span></label>
             </div>
             <div class="setting-item" id="export-button-setting">
-                <div class="setting-label"><strong data-i18n="showExportButton-label">Show Export Button</strong><span data-i18n="showExportButton-desc">Add an export chat button to each window.</span></div>
-                <label class="toggle-switch"><input type="checkbox" id="setting-showExportButton"><span class="slider"></span></label>
+                <div class="setting-label"><strong data-i18n="showExportButton-label">Show Export Button</strong><span
+                        data-i18n="showExportButton-desc">Add an export chat button to each window.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-showExportButton"><span
+                        class="slider"></span></label>
             </div>
 
             <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="defaultMode-label">Default Mode</strong><span data-i18n="defaultMode-desc">Choose what opens by default.</span></div>
+                <div class="setting-label"><strong data-i18n="defaultMode-label">Default Mode</strong><span
+                        data-i18n="defaultMode-desc">Choose what opens by default.</span></div>
                 <div id="default-mode-options" class="option-group">
                     <input type="radio" id="mode-ask" name="defaultMode" value="ask">
-                    <label for="mode-ask" title="Ask"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg></label>
+                    <label for="mode-ask" title="Ask"><svg class="icon" xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z">
+                            </path>
+                        </svg></label>
 
                     <input type="radio" id="mode-gemini" name="defaultMode" value="gemini">
-                    <label for="mode-gemini" title="Gemini"><svg class="icon" viewBox="0 0 65 65" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M57.8647 29.0109C52.865 26.8587 48.4905 23.9061 44.7393 20.1567C40.99 16.4074 38.0373 12.031 35.8851 7.03132C35.0589 5.11516 34.395 3.14552 33.886 1.12608C33.72 0.465846 33.128 0.00109863 32.4475 0.00109863C31.7669 0.00109863 31.1749 0.465846 31.009 1.12608C30.4999 3.14552 29.836 5.11332 29.0098 7.03132C26.8576 12.031 23.905 16.4074 20.1556 20.1567C16.4063 23.9061 12.0299 26.8587 7.03022 29.0109C5.11406 29.8371 3.14442 30.501 1.12498 31.0101C0.464747 31.176 0 31.768 0 32.4486C0 33.1291 0.464747 33.7211 1.12498 33.8871C3.14442 34.3961 5.11222 35.06 7.03022 35.8862C12.0299 38.0384 16.4045 40.9911 20.1556 44.7404C23.9068 48.4897 26.8576 52.8661 29.0098 57.8658C29.836 59.782 30.4999 61.7516 31.009 63.771C31.1749 64.4313 31.7669 64.896 32.4475 64.896C33.128 64.896 33.72 64.4313 33.886 63.771C34.395 61.7516 35.0589 59.7838 35.8851 57.8658C38.0373 52.8661 40.99 48.4916 44.7393 44.7404C48.4886 40.9911 52.865 38.0384 57.8647 35.8862C59.7809 35.06 61.7505 34.3961 63.7699 33.8871C64.4302 33.7211 64.8949 33.1291 64.8949 32.4486C64.8949 31.768 64.4302 31.176 63.7699 31.0101C61.7505 30.501 59.7827 29.8371 57.8647 29.0109Z" fill="currentColor"></path></svg></label>
+                    <label for="mode-gemini" title="Gemini"><svg class="icon" viewBox="0 0 65 65" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M57.8647 29.0109C52.865 26.8587 48.4905 23.9061 44.7393 20.1567C40.99 16.4074 38.0373 12.031 35.8851 7.03132C35.0589 5.11516 34.395 3.14552 33.886 1.12608C33.72 0.465846 33.128 0.00109863 32.4475 0.00109863C31.7669 0.00109863 31.1749 0.465846 31.009 1.12608C30.4999 3.14552 29.836 5.11332 29.0098 7.03132C26.8576 12.031 23.905 16.4074 20.1556 20.1567C16.4063 23.9061 12.0299 26.8587 7.03022 29.0109C5.11406 29.8371 3.14442 30.501 1.12498 31.0101C0.464747 31.176 0 31.768 0 32.4486C0 33.1291 0.464747 33.7211 1.12498 33.8871C3.14442 34.3961 5.11222 35.06 7.03022 35.8862C12.0299 38.0384 16.4045 40.9911 20.1556 44.7404C23.9068 48.4897 26.8576 52.8661 29.0098 57.8658C29.836 59.782 30.4999 61.7516 31.009 63.771C31.1749 64.4313 31.7669 64.896 32.4475 64.896C33.128 64.896 33.72 64.4313 33.886 63.771C34.395 61.7516 35.0589 59.7838 35.8851 57.8658C38.0373 52.8661 40.99 48.4916 44.7393 44.7404C48.4886 40.9911 52.865 38.0384 57.8647 35.8862C59.7809 35.06 61.7505 34.3961 63.7699 33.8871C64.4302 33.7211 64.8949 33.1291 64.8949 32.4486C64.8949 31.768 64.4302 31.176 63.7699 31.0101C61.7505 30.501 59.7827 29.8371 57.8647 29.0109Z"
+                                fill="currentColor"></path>
+                        </svg></label>
 
                     <input type="radio" id="mode-aistudio" name="defaultMode" value="aistudio">
-                    <label for="mode-aistudio" title="AI Studio"><svg class="icon" aria-label="Google AI Studio logo" viewBox="0 0 299 310" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M125.365 32C120.691 38.5727 116.782 45.7277 113.766 53.334H64C40.4361 53.3342 21.3342 72.4361 21.334 96V245.334C21.3344 268.898 40.4362 288 64 288H213.334C236.898 288 256 268.898 256 245.334V179.93C263.778 175.739 270.945 170.561 277.334 164.563V245.334C277.334 280.68 248.68 309.334 213.334 309.334H64C28.6542 309.334 0.00038177 280.68 0 245.334V96C0.000171479 60.654 28.654 32.0002 64 32H125.365Z" fill="currentColor"></path><path d="M281.333 71.5244C269.006 66.218 258.221 58.9383 248.972 49.6942C239.728 40.4502 232.448 29.6601 227.142 17.3332C225.105 12.6088 223.468 7.75264 222.213 2.77367C221.804 1.14585 220.344 0 218.666 0C216.988 0 215.529 1.14585 215.12 2.77367C213.865 7.75264 212.228 12.6043 210.191 17.3332C204.884 29.6601 197.605 40.4502 188.36 49.6942C179.116 58.9383 168.326 66.218 155.999 71.5244C151.275 73.5614 146.419 75.1984 141.44 76.4533C139.812 76.8626 138.666 78.3222 138.666 80C138.666 81.6778 139.812 83.1374 141.44 83.5467C146.419 84.8016 151.271 86.4386 155.999 88.4756C168.326 93.782 179.112 101.062 188.36 110.306C197.609 119.55 204.884 130.34 210.191 142.667C212.228 147.391 213.865 152.247 215.12 157.226C215.529 158.854 216.988 160 218.666 160C220.344 160 221.804 158.854 222.213 157.226C223.468 152.247 225.105 147.396 227.142 142.667C232.448 130.34 239.728 119.554 248.972 110.306C258.216 101.062 269.006 93.782 281.333 88.4756C286.057 86.4386 290.914 84.8016 295.893 83.5467C297.52 83.1374 298.666 81.6778 298.666 80C298.666 78.3222 297.52 76.8626 295.893 76.4533C290.914 75.1984 286.062 73.5614 281.333 71.5244Z" fill="currentColor"></path></svg></label>
+                    <label for="mode-aistudio" title="AI Studio"><svg class="icon" aria-label="Google AI Studio logo"
+                            viewBox="0 0 299 310" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M125.365 32C120.691 38.5727 116.782 45.7277 113.766 53.334H64C40.4361 53.3342 21.3342 72.4361 21.334 96V245.334C21.3344 268.898 40.4362 288 64 288H213.334C236.898 288 256 268.898 256 245.334V179.93C263.778 175.739 270.945 170.561 277.334 164.563V245.334C277.334 280.68 248.68 309.334 213.334 309.334H64C28.6542 309.334 0.00038177 280.68 0 245.334V96C0.000171479 60.654 28.654 32.0002 64 32H125.365Z"
+                                fill="currentColor"></path>
+                            <path
+                                d="M281.333 71.5244C269.006 66.218 258.221 58.9383 248.972 49.6942C239.728 40.4502 232.448 29.6601 227.142 17.3332C225.105 12.6088 223.468 7.75264 222.213 2.77367C221.804 1.14585 220.344 0 218.666 0C216.988 0 215.529 1.14585 215.12 2.77367C213.865 7.75264 212.228 12.6043 210.191 17.3332C204.884 29.6601 197.605 40.4502 188.36 49.6942C179.116 58.9383 168.326 66.218 155.999 71.5244C151.275 73.5614 146.419 75.1984 141.44 76.4533C139.812 76.8626 138.666 78.3222 138.666 80C138.666 81.6778 139.812 83.1374 141.44 83.5467C146.419 84.8016 151.271 86.4386 155.999 88.4756C168.326 93.782 179.112 101.062 188.36 110.306C197.609 119.55 204.884 130.34 210.191 142.667C212.228 147.391 213.865 152.247 215.12 157.226C215.529 158.854 216.988 160 218.666 160C220.344 160 221.804 158.854 222.213 157.226C223.468 152.247 225.105 147.396 227.142 142.667C232.448 130.34 239.728 119.554 248.972 110.306C258.216 101.062 269.006 93.782 281.333 88.4756C286.057 86.4386 290.914 84.8016 295.893 83.5467C297.52 83.1374 298.666 81.6778 298.666 80C298.666 78.3222 297.52 76.8626 295.893 76.4533C290.914 75.1984 286.062 73.5614 281.333 71.5244Z"
+                                fill="currentColor"></path>
+                        </svg></label>
                 </div>
-            </div>
-        </div>
-        <div class="setting-category">
-            <h3 class="setting-category-title">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                <span data-i18n="notifications">Notifications</span>
-            </h3>
-            <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="autoCheckNotifications-label">Automatic Daily Check</strong><span data-i18n="autoCheckNotifications-desc">Check for new messages once a day.</span></div>
-                <label class="toggle-switch"><input type="checkbox" id="setting-autoCheckNotifications"><span class="slider"></span></label>
-            </div>
-            <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="manualCheckNotifications-label">Manual Check</strong><span data-i18n="manualCheckNotifications-desc">Check for new messages now.</span></div>
-                <button id="check-for-notifications-button" class="action-button" data-i18n="checkNow">Check Now</button>
-            </div>
-        </div>
-        <div class="setting-category">
-            <h3 class="setting-category-title">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20 5H4C2.89543 5 2 5.89543 2 7V17C2 18.1046 2.89543 19 4 19H20C21.1046 19 22 18.1046 22 17V7C22 5.89543 21.1046 5 20 5ZM11 16H4V14H11V16ZM14.5 16H12.5V14H14.5V16ZM11 13H4V11H11V13ZM11 10H4V8H11V10ZM16.5 16H18.5C18.7761 16 19 15.7761 19 15.5V14.5C19 14.2239 18.7761 14 18.5 14H16.5C16.2239 14 16 14.2239 16 14.5V15.5C16 15.7761 16.2239 16 16.5 16ZM15.5 13H12.5V11H15.5V13ZM18.5 13H16.5V11H18.5V13ZM20 10H12V8H20V10Z"></path></svg>
-                <span data-i18n="shortcuts">Shortcuts</span>
-            </h3>
-            <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="shortcutsGlobal-label">Enable Global Shortcuts</strong><span data-i18n="shortcutsGlobal-desc">Allow shortcuts to work from any app.</span></div>
-                <label class="toggle-switch"><input type="checkbox" id="setting-shortcutsGlobal"><span class="slider"></span></label>
-            </div>
-            <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="showHide-label">Show / Hide Window</strong><span data-i18n="showHide-desc">Toggle window visibility.</span></div>
-                <button class="record-button" data-key="showHide" data-i18n="recordButton-default">Click to record</button>
-            </div>
-            <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="openNewWindow-label">Open New Window</strong><span data-i18n="openNewWindow-desc">Creates a new, separate window.</span></div>
-                <button class="record-button" data-key="newWindow" data-i18n="recordButton-default">Click to record</button>
-            </div>
-            <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="quitApplication-label">Quit Application</strong><span data-i18n="quitApplication-desc">Close the application.</span></div>
-                <button class="record-button" data-key="quit" data-i18n="recordButton-default">Click to record</button>
-            </div>
-            <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="closeWindow-label">Close Window</strong><span data-i18n="closeWindow-desc">Closes the current window.</span></div>
-                <button class="record-button" data-key="closeWindow" data-i18n="recordButton-default">Click to record</button>
-            </div>
-            <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="showInstructions-label">Show Instructions</strong><span data-i18n="showInstructions-desc">See the welcome screen.</span></div>
-                <button class="record-button" data-key="showInstructions" data-i18n="recordButton-default">Click to record</button>
-            </div>
-            <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="refreshWindow-label">Refresh Window</strong><span data-i18n="refreshWindow-desc">Reloads the current page content.</span></div>
-                <button class="record-button" data-key="refresh" data-i18n="recordButton-default">Click to record</button>
-            </div>
-            <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="searchChats-label">Search Chats</strong><span data-i18n="searchChats-desc">Focus the chat search bar.</span></div>
-                <button class="record-button" data-key="search" data-i18n="recordButton-default">Click to record</button>
-            </div>
-            <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="findInPage-label">Find in Page</strong><span data-i18n="findInPage-desc">Opens the find bar.</span></div>
-                <button class="record-button" data-key="findInPage" data-i18n="recordButton-default">Click to record</button>
-            </div>
-            <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="screenshot-label">Take Screenshot & Paste</strong><span data-i18n="screenshot-desc">Copies screen area to clipboard and pastes it.</span></div>
-                <button class="record-button" data-key="screenshot" data-i18n="recordButton-default">Click to record</button>
-            </div>
-            <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="newChatPro-label">New Chat (Pro)</strong><span data-i18n="newChatPro-desc">Starts a new chat with the Pro model.</span></div>
-                <button class="record-button" data-key="newChatPro" data-i18n="recordButton-default">Click to record</button>
-            </div>
-            <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="newChatFlash-label">New Chat (Flash)</strong><span data-i18n="newChatFlash-desc">Starts a new chat with the Flash model.</span></div>
-                <button class="record-button" data-key="newChatFlash" data-i18n="recordButton-default">Click to record</button>
             </div>
         </div>
         <div class="setting-category">
             <h3 class="setting-category-title">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <span data-i18n="notifications">Notifications</span>
+            </h3>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="autoCheckNotifications-label">Automatic Daily
+                        Check</strong><span data-i18n="autoCheckNotifications-desc">Check for new messages once a
+                        day.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-autoCheckNotifications"><span
+                        class="slider"></span></label>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="manualCheckNotifications-label">Manual Check</strong><span
+                        data-i18n="manualCheckNotifications-desc">Check for new messages now.</span></div>
+                <button id="check-for-notifications-button" class="action-button" data-i18n="checkNow">Check
+                    Now</button>
+            </div>
+        </div>
+        <div class="setting-category">
+            <h3 class="setting-category-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M20 5H4C2.89543 5 2 5.89543 2 7V17C2 18.1046 2.89543 19 4 19H20C21.1046 19 22 18.1046 22 17V7C22 5.89543 21.1046 5 20 5ZM11 16H4V14H11V16ZM14.5 16H12.5V14H14.5V16ZM11 13H4V11H11V13ZM11 10H4V8H11V10ZM16.5 16H18.5C18.7761 16 19 15.7761 19 15.5V14.5C19 14.2239 18.7761 14 18.5 14H16.5C16.2239 14 16 14.2239 16 14.5V15.5C16 15.7761 16.2239 16 16.5 16ZM15.5 13H12.5V11H15.5V13ZM18.5 13H16.5V11H18.5V13ZM20 10H12V8H20V10Z">
+                    </path>
+                </svg>
+                <span data-i18n="shortcuts">Shortcuts</span>
+            </h3>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="shortcutsGlobal-label">Enable Global
+                        Shortcuts</strong><span data-i18n="shortcutsGlobal-desc">Allow shortcuts to work from any
+                        app.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-shortcutsGlobal"><span
+                        class="slider"></span></label>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="showAdvancedShortcutOptions-label">Show Advanced
+                        Options</strong><span data-i18n="showAdvancedShortcutOptions-desc">Display per-shortcut
+                        global/local toggles.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-showAdvancedShortcutOptions"><span
+                        class="slider"></span></label>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="showHide-label">Show / Hide Window</strong><span
+                        data-i18n="showHide-desc">Toggle window visibility.</span></div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="record-button" data-key="showHide" data-i18n="recordButton-default">Click to
+                        record</button>
+                    <label class="toggle-switch shortcut-global-toggle" data-key="showHide" style="display: none;">
+                        <input type="checkbox" class="shortcut-global-checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="openNewWindow-label">Open New Window</strong><span
+                        data-i18n="openNewWindow-desc">Creates a new, separate window.</span></div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="record-button" data-key="newWindow" data-i18n="recordButton-default">Click to
+                        record</button>
+                    <label class="toggle-switch shortcut-global-toggle" data-key="newWindow" style="display: none;">
+                        <input type="checkbox" class="shortcut-global-checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="quitApplication-label">Quit Application</strong><span
+                        data-i18n="quitApplication-desc">Close the application.</span></div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="record-button" data-key="quit" data-i18n="recordButton-default">Click to
+                        record</button>
+                    <label class="toggle-switch shortcut-global-toggle" data-key="quit" style="display: none;">
+                        <input type="checkbox" class="shortcut-global-checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="closeWindow-label">Close Window</strong><span
+                        data-i18n="closeWindow-desc">Closes the current window.</span></div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="record-button" data-key="closeWindow" data-i18n="recordButton-default">Click to
+                        record</button>
+                    <label class="toggle-switch shortcut-global-toggle" data-key="closeWindow" style="display: none;">
+                        <input type="checkbox" class="shortcut-global-checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="showInstructions-label">Show Instructions</strong><span
+                        data-i18n="showInstructions-desc">See the welcome screen.</span></div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="record-button" data-key="showInstructions" data-i18n="recordButton-default">Click to
+                        record</button>
+                    <label class="toggle-switch shortcut-global-toggle" data-key="showInstructions"
+                        style="display: none;">
+                        <input type="checkbox" class="shortcut-global-checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="refreshWindow-label">Refresh Window</strong><span
+                        data-i18n="refreshWindow-desc">Reloads the current page content.</span></div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="record-button" data-key="refresh" data-i18n="recordButton-default">Click to
+                        record</button>
+                    <label class="toggle-switch shortcut-global-toggle" data-key="refresh" style="display: none;">
+                        <input type="checkbox" class="shortcut-global-checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="searchChats-label">Search Chats</strong><span
+                        data-i18n="searchChats-desc">Focus the chat search bar.</span></div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="record-button" data-key="search" data-i18n="recordButton-default">Click to
+                        record</button>
+                    <label class="toggle-switch shortcut-global-toggle" data-key="search" style="display: none;">
+                        <input type="checkbox" class="shortcut-global-checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="findInPage-label">Find in Page</strong><span
+                        data-i18n="findInPage-desc">Opens the find bar.</span></div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="record-button" data-key="findInPage" data-i18n="recordButton-default">Click to
+                        record</button>
+                    <label class="toggle-switch shortcut-global-toggle" data-key="findInPage" style="display: none;">
+                        <input type="checkbox" class="shortcut-global-checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="screenshot-label">Take Screenshot & Paste</strong><span
+                        data-i18n="screenshot-desc">Copies screen area to clipboard and pastes it.</span></div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="record-button" data-key="screenshot" data-i18n="recordButton-default">Click to
+                        record</button>
+                    <label class="toggle-switch shortcut-global-toggle" data-key="screenshot" style="display: none;">
+                        <input type="checkbox" class="shortcut-global-checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="newChat-label">New Chat</strong><span
+                        data-i18n="newChat-desc">Opens a new chat window.</span></div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="record-button" data-key="newChat" data-i18n="recordButton-default">Click to
+                        record</button>
+                    <label class="toggle-switch shortcut-global-toggle" data-key="newChat" style="display: none;">
+                        <input type="checkbox" class="shortcut-global-checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="changeModelPro-label">Change Model (Pro)</strong><span
+                        data-i18n="changeModelPro-desc">Changes the current chat to Pro model.</span></div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="record-button" data-key="changeModelPro" data-i18n="recordButton-default">Click to
+                        record</button>
+                    <label class="toggle-switch shortcut-global-toggle" data-key="changeModelPro"
+                        style="display: none;">
+                        <input type="checkbox" class="shortcut-global-checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="changeModelFlash-label">Change Model (Flash)</strong><span
+                        data-i18n="changeModelFlash-desc">Changes the current chat to Flash model.</span></div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="record-button" data-key="changeModelFlash" data-i18n="recordButton-default">Click to
+                        record</button>
+                    <label class="toggle-switch shortcut-global-toggle" data-key="changeModelFlash"
+                        style="display: none;">
+                        <input type="checkbox" class="shortcut-global-checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="newChatWithPro-label">New Chat with Pro</strong><span
+                        data-i18n="newChatWithPro-desc">Opens a new chat and selects the Pro model.</span></div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="record-button" data-key="newChatWithPro" data-i18n="recordButton-default">Click to
+                        record</button>
+                    <label class="toggle-switch shortcut-global-toggle" data-key="newChatWithPro"
+                        style="display: none;">
+                        <input type="checkbox" class="shortcut-global-checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="newChatWithFlash-label">New Chat with Flash</strong><span
+                        data-i18n="newChatWithFlash-desc">Opens a new chat and selects the Flash model.</span></div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="record-button" data-key="newChatWithFlash" data-i18n="recordButton-default">Click to
+                        record</button>
+                    <label class="toggle-switch shortcut-global-toggle" data-key="newChatWithFlash"
+                        style="display: none;">
+                        <input type="checkbox" class="shortcut-global-checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="voiceAssistant-label">Voice Assistant</strong><span
+                        data-i18n="voiceAssistant-desc">Shows app and activates microphone for voice input.</span></div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="record-button" data-key="voiceAssistant" data-i18n="recordButton-default">Click to
+                        record</button>
+                    <label class="toggle-switch shortcut-global-toggle" data-key="voiceAssistant"
+                        style="display: none;">
+                        <input type="checkbox" class="shortcut-global-checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="setting-category">
+            <h3 class="setting-category-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
                 </svg>
                 <span data-i18n="soundSettings">Sound Settings</span>
             </h3>
@@ -640,18 +1262,78 @@
                     <span data-i18n="aiCompletionSoundFile-desc">Choose which sound to play.</span>
                 </div>
                 <div id="sound-file-options" class="option-group">
-                    <input type="radio" id="sound-1" name="aiCompletionSoundFile" value="new-notification-09-352705.mp3">
+                    <input type="radio" id="sound-1" name="aiCompletionSoundFile"
+                        value="new-notification-09-352705.mp3">
                     <label for="sound-1" data-i18n="sound-1">Sound 1</label>
 
                     <input type="radio" id="sound-2" name="aiCompletionSoundFile" value="new-notification-3-398649.mp3">
                     <label for="sound-2" data-i18n="sound-2">Sound 2</label>
                 </div>
             </div>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <strong data-i18n="exportFormat-label">Export Format</strong>
+                    <span data-i18n="exportFormat-desc">Choose the default export format for chats.</span>
+                </div>
+                <div id="export-format-options" class="option-group">
+                    <input type="radio" id="format-pdf" name="exportFormat" value="pdf">
+                    <label for="format-pdf" title="PDF">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="icon">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <text x="12" y="19" font-size="9" font-family="sans-serif" font-weight="900"
+                                text-anchor="middle" fill="currentColor" stroke="none">PDF</text>
+                        </svg>
+                    </label>
+
+                    <input type="radio" id="format-md" name="exportFormat" value="md">
+                    <label for="format-md" title="Markdown">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="icon">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <text x="12" y="19" font-size="9" font-family="sans-serif" font-weight="900"
+                                text-anchor="middle" fill="currentColor" stroke="none">MD</text>
+                        </svg>
+                    </label>
+
+                    <input type="radio" id="format-ask" name="exportFormat" value="ask">
+                    <label for="format-ask" title="Ask Every Time">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="icon">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <path d="M12 17h.01"></path>
+                        </svg>
+                    </label>
+                </div>
+            </div>
         </div>
         <div class="setting-category">
             <h3 class="setting-category-title">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    <path
+                        d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z" />
+                </svg>
+                <span data-i18n="feedback">Feedback</span>
+            </h3>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <strong data-i18n="shareIdeas-label">Share Ideas with Creator</strong>
+                    <span data-i18n="shareIdeas-desc">Suggest new features or improvements for GeminiDesk.</span>
+                </div>
+                <button id="open-share-ideas" class="action-button" data-i18n="shareIdeasButton">Share Ideas</button>
+            </div>
+        </div>
+        <div class="setting-category">
+            <h3 class="setting-category-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                 </svg>
                 <span data-i18n="deepResearchSchedule">Deep Research Schedule</span>
             </h3>
@@ -670,431 +1352,657 @@
                     <strong data-i18n="manageSchedule-label">Manage Schedule</strong>
                     <span data-i18n="manageSchedule-desc">Configure when and how deep research runs.</span>
                 </div>
-                <button id="open-schedule-manager" class="action-button" data-i18n="openScheduleManager">Manage Schedule</button>
+                <button id="open-schedule-manager" class="action-button" data-i18n="openScheduleManager">Manage
+                    Schedule</button>
+            </div>
+        </div>
+        <div class="setting-category">
+            <h3 class="setting-category-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z" />
+                </svg>
+                <span data-i18n="assistantApi">Assistant</span>
+            </h3>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <strong data-i18n="openVoiceAssistant-label">Open Voice Assistant</strong>
+                    <span data-i18n="openVoiceAssistant-desc">Launch the conversational assistant.</span>
+                </div>
+                <button id="open-voice-assistant" class="action-button" data-i18n="open">Open</button>
             </div>
         </div>
 
         <div class="setting-category">
             <h3 class="setting-category-title" style="color: var(--danger-color);">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z">
+                    </path>
+                </svg>
                 <span data-i18n="dangerZone">Danger Zone</span>
             </h3>
             <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="resetSettings-label">Reset All Settings</strong><span data-i18n="resetSettings-desc">This action cannot be undone.</span></div>
+                <div class="setting-label"><strong data-i18n="resetSettings-label">Reset All Settings</strong><span
+                        data-i18n="resetSettings-desc">This action cannot be undone.</span></div>
                 <button id="reset-button" data-i18n="reset">Reset</button>
             </div>
         </div>
     </div>
 
-<script src="translations.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    // Check if electronAPI exists (for Electron environment)
-    if (!window.electronAPI) { 
-        console.warn('electronAPI not available - running in browser mode');
-        // Initialize with default values for testing
-        initializeBrowserMode();
-        return; 
-    }
-    
-    const electronAPI = window.electronAPI;
-
-    let currentLanguage = 'en';
-    let currentSettings = {};
-
-    // RTL languages list
-    const rtlLanguages = ['he', 'ar', 'fa', 'ur'];
-
-    const applyTranslations = (lang) => {
-        const dict = translations[lang] || translations.en;
-        document.querySelectorAll('[data-i18n]').forEach(el => {
-            const key = el.getAttribute('data-i18n');
-            if (dict[key]) {
-                el.textContent = dict[key];
-            }
-        });
-        document.querySelectorAll('.record-button').forEach(button => {
-            const key = button.dataset.key;
-            if (currentSettings.shortcuts && currentSettings.shortcuts[key]) {
-                button.textContent = currentSettings.shortcuts[key];
-            } else {
-                button.textContent = dict['recordButton-default'];
-            }
-        });
-        currentLanguage = lang;
-        document.documentElement.setAttribute('lang', lang);
-
-        // Set direction based on language
-        const isRTL = rtlLanguages.includes(lang);
-        document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
-
-        // Show/hide English-only features
-        const englishOnlyFeatures = document.querySelectorAll('.english-only-feature');
-        if (lang === 'en') {
-            englishOnlyFeatures.forEach(feature => feature.style.display = 'flex');
-        } else {
-            englishOnlyFeatures.forEach(feature => feature.style.display = 'none');
-        }
-
-        updateLangSelectorUI(lang);
-    };
-
-    // --- Custom Language Selector Logic ---
-    const languageSelector = document.querySelector('.language-selector');
-    const langButton = document.getElementById('language-selector-button');
-    const langDropdown = document.getElementById('language-dropdown');
-    const langSearch = document.getElementById('language-search-input');
-    const langList = document.getElementById('language-list');
-
-    const languages = [
-        { code: 'en', name: 'English' }, { code: 'fr', name: 'Français' }, { code: 'he', name: 'עברית' },
-        { code: 'ru', name: 'Русский' }, { code: 'es', name: 'Español' }, { code: 'de', name: 'Deutsch' },
-        { code: 'it', name: 'Italiano' }, { code: 'pt', name: 'Português' }, { code: 'nl', name: 'Nederlands' },
-        { code: 'pl', name: 'Polski' }, { code: 'tr', name: 'Türkçe' }, { code: 'zh', name: '简体中文' },
-        { code: 'ja', name: '日本語' }, { code: 'ko', name: '한국어' }, { code: 'hi', name: 'हिन्दी' },
-        { code: 'ar', name: 'العربية' }, { code: 'bn', name: 'বাংলা' }, { code: 'id', name: 'Bahasa Indonesia' },
-        { code: 'ur', name: 'اردو' }, { code: 'sw', name: 'Kiswahili' }, { code: 'ta', name: 'தமிழ்' },
-        { code: 'vi', name: 'Tiếng Việt' }, { code: 'th', name: 'ไทย' }, { code: 'cs', name: 'Čeština' },
-    ];
-
-    languages.forEach(lang => {
-        const li = document.createElement('li');
-        li.dataset.lang = lang.code;
-        li.textContent = lang.name;
-        langList.appendChild(li);
-    });
-
-    langButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isOpen = langDropdown.classList.contains('show');
-        langDropdown.classList.toggle('show');
-        langButton.classList.toggle('open', !isOpen);
-        
-        if (!isOpen) {
-            langSearch.focus();
-            langSearch.value = '';
-            langList.querySelectorAll('li').forEach(li => li.classList.remove('hidden'));
-        }
-    });
-
-    langSearch.addEventListener('input', () => {
-        const filter = langSearch.value.toLowerCase();
-        langList.querySelectorAll('li').forEach(li => {
-            const text = li.textContent.toLowerCase();
-            li.classList.toggle('hidden', !text.includes(filter));
-        });
-    });
-
-    langList.addEventListener('click', (e) => {
-        if (e.target.tagName === 'LI') {
-            const langCode = e.target.dataset.lang;
-            langDropdown.classList.remove('show');
-            langButton.classList.remove('open');
-            applyTranslations(langCode);
-            electronAPI.updateSetting('language', langCode);
-        }
-    });
-
-    document.addEventListener('click', (e) => {
-        if (!languageSelector.contains(e.target)) {
-            langDropdown.classList.remove('show');
-            langButton.classList.remove('open');
-        }
-    });
-
-    const updateLangSelectorUI = (langCode) => {
-        const lang = languages.find(l => l.code === langCode) || languages[0];
-        langButton.querySelector('span').textContent = lang.name;
-        langList.querySelectorAll('li').forEach(li => {
-            li.classList.toggle('selected', li.dataset.lang === langCode);
-        });
-    };
-
-
-    // --- Theme Selection --- 
-    const themeRadios = document.querySelectorAll('input[name="theme"]');
-    electronAPI.theme.getSetting().then(currentTheme => {
-        document.getElementById(`theme-${currentTheme}`).checked = true;
-    });
-    document.querySelectorAll('input[name="defaultMode"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            electronAPI.updateSetting('defaultMode', e.target.value);
-        });
-    });
-    themeRadios.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            electronAPI.theme.set(e.target.value);
-        });
-    });
-
-    // --- Sync UI with settings ---
-    const syncUi = (settings) => {
-        try {
-            currentSettings = settings;
-            document.getElementById('setting-deepResearchEnabled').checked = settings.deepResearchEnabled || false;
-            document.getElementById('setting-autoStart').checked = settings.autoStart || false;
-            document.getElementById('setting-showInTaskbar').checked = settings.showInTaskbar || false;
-            document.getElementById('setting-alwaysOnTop').checked = settings.alwaysOnTop || false;
-            document.getElementById('setting-autoCheckNotifications').checked = settings.autoCheckNotifications || false;
-            document.getElementById('setting-enableCanvasResizing').checked = settings.enableCanvasResizing || false;
-            document.getElementById('setting-shortcutsGlobal').checked = settings.shortcutsGlobal !== false;
-            document.getElementById('setting-showChatTitle').checked = settings.showChatTitle !== false;
-            document.getElementById('setting-restoreWindows').checked = settings.restoreWindows || false;
-            document.getElementById('setting-showCloseButton').checked = settings.showCloseButton || false;
-            document.getElementById('setting-draggableButtonsEnabled').checked = settings.draggableButtonsEnabled !== false;
-            document.getElementById('setting-showExportButton').checked = settings.showExportButton || false;
-            document.getElementById('setting-showFullscreenButton').checked = settings.showFullscreenButton !== false;
-            document.getElementById('setting-showNewWindowButton').checked = settings.showNewWindowButton !== false;
-            document.getElementById('setting-showMinimizeButton').checked = settings.showMinimizeButton !== false;
-            document.getElementById('setting-aiCompletionSound').checked = settings.aiCompletionSound !== false;
-            
-            // Set sound file radio button
-            const soundFileName = settings.aiCompletionSoundFile || 'new-notification-09-352705.mp3';
-            const soundRadio = document.querySelector(`input[name="aiCompletionSoundFile"][value="${soundFileName}"]`);
-            if (soundRadio) {
-                soundRadio.checked = true;
-            }
-            
-            document.getElementById(`mode-${settings.defaultMode || 'ask'}`).checked = true;
-            applyTranslations(settings.language || 'en');
-            document.querySelectorAll('.record-button').forEach(button => {
-                const key = button.dataset.key;
-                if(settings.shortcuts && settings.shortcuts[key]) {
-                    button.textContent = settings.shortcuts[key];
-                } else {
-                    button.textContent = (translations[currentLanguage] || translations.en)['recordButton-default'];
-                }
-            });
-        } catch (error) {
-            console.error('Error syncing UI:', error);
-        }
-    };
-
-    // Initialize settings
-    electronAPI.getSettings().then(syncUi).catch(error => {
-        console.error('Error getting settings:', error);
-    });
-    
-    electronAPI.onSettingsUpdated(syncUi);
-
-    // --- General Event Listeners ---
-    document.getElementById('close-button').addEventListener('click', () => {
-        if (window.close) {
-            window.close();
-        } else {
-            electronAPI.closeWindow();
-        }
-    });
-    
-    document.getElementById('reset-button').addEventListener('click', () => {
-        electronAPI.showConfirmReset();
-    });
-
-    document.getElementById('reset-button-order').addEventListener('click', () => {
-        electronAPI.updateSetting('buttonOrder', []);
-    });
-    // Deep Research Schedule event listeners
-    document.getElementById('setting-deepResearchEnabled').addEventListener('change', (e) => {
-        electronAPI.updateSetting('deepResearchEnabled', e.target.checked);
-    });
-
-    document.getElementById('open-schedule-manager').addEventListener('click', () => {
-        electronAPI.openDeepResearchScheduleWindow();
-    });
-
-    // --- Toggle Switches ---
-    document.getElementById('setting-autoStart').addEventListener('change', (e) => {
-        electronAPI.updateSetting('autoStart', e.target.checked);
-    });
-    
-    document.getElementById('setting-alwaysOnTop').addEventListener('change', (e) => {
-        electronAPI.updateSetting('alwaysOnTop', e.target.checked);
-    });
-
-    document.getElementById('setting-showInTaskbar').addEventListener('change', (e) => {
-        electronAPI.updateSetting('showInTaskbar', e.target.checked);
-    });
-    
-    document.getElementById('setting-autoCheckNotifications').addEventListener('change', (e) => {
-        electronAPI.updateSetting('autoCheckNotifications', e.target.checked);
-    });
-    
-    document.getElementById('setting-enableCanvasResizing').addEventListener('change', (e) => {
-        electronAPI.updateSetting('enableCanvasResizing', e.target.checked);
-    });
-
-    document.getElementById('setting-shortcutsGlobal').addEventListener('change', (e) => {
-        electronAPI.updateSetting('shortcutsGlobal', e.target.checked);
-    });
-
-    document.getElementById('setting-showChatTitle').addEventListener('change', (e) => {
-        electronAPI.updateSetting('showChatTitle', e.target.checked);
-    });
-
-    document.getElementById('setting-restoreWindows').addEventListener('change', (e) => {
-        electronAPI.updateSetting('restoreWindows', e.target.checked);
-    });
-
-    document.getElementById('setting-showCloseButton').addEventListener('change', (e) => {
-        electronAPI.updateSetting('showCloseButton', e.target.checked);
-    });
-
-    document.getElementById('setting-showExportButton').addEventListener('change', (e) => {
-        electronAPI.updateSetting('showExportButton', e.target.checked);
-    });
-
-    document.getElementById('setting-showFullscreenButton').addEventListener('change', (e) => {
-        electronAPI.updateSetting('showFullscreenButton', e.target.checked);
-    });
-
-    document.getElementById('setting-showNewWindowButton').addEventListener('change', (e) => {
-        electronAPI.updateSetting('showNewWindowButton', e.target.checked);
-    });
-
-    document.getElementById('setting-showMinimizeButton').addEventListener('change', (e) => {
-        electronAPI.updateSetting('showMinimizeButton', e.target.checked);
-    });
-
-    document.getElementById('setting-draggableButtonsEnabled').addEventListener('change', (e) => {
-        electronAPI.updateSetting('draggableButtonsEnabled', e.target.checked);
-    });
-
-    document.getElementById('setting-aiCompletionSound').addEventListener('change', (e) => {
-        electronAPI.updateSetting('aiCompletionSound', e.target.checked);
-    });
-
-    document.querySelectorAll('input[name="aiCompletionSoundFile"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            electronAPI.updateSetting('aiCompletionSoundFile', e.target.value);
-        });
-    });
-
-    // --- Manual Action Buttons ---
-    document.getElementById('manual-check-for-updates-button').addEventListener('click', () => {
-        electronAPI.checkForUpdates();
-    });
-
-    document.getElementById('check-for-notifications-button').addEventListener('click', () => {
-        electronAPI.manualCheckForNotifications();
-    });
-
-    // --- Shortcut Recording Logic ---
-    let isRecording = false;
-    
-    const startRecording = (button) => {
-        if (isRecording) return;
-        
-        isRecording = true;
-        const originalText = button.textContent;
-        const pressedKeys = new Set();
-        
-        button.textContent = (translations[currentLanguage] || translations.en)['recording'];
-        button.classList.add('is-recording');
-        
-        const cleanup = () => {
-            document.removeEventListener('keydown', keydownHandler, true);
-            document.removeEventListener('keyup', keyupHandler, true);
-            button.classList.remove('is-recording');
-            isRecording = false;
-        };
-        
-        const keydownHandler = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            if (e.ctrlKey) pressedKeys.add('Control');
-            if (e.altKey) pressedKeys.add('Alt');
-            if (e.shiftKey) pressedKeys.add('Shift');
-            if (e.metaKey) pressedKeys.add('Super');
-            
-            if (!['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) {
-                const keyCode = e.code.replace('Key', '').replace('Digit', '');
-                pressedKeys.add(keyCode);
-            }
-            
-            button.textContent = Array.from(pressedKeys).join('+');
-        };
-        
-        const keyupHandler = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            if (e.key === 'Escape') {
-                button.textContent = (translations[currentLanguage] || translations.en)['recordButton-default'];
-                cleanup();
+    <script src="translations.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if electronAPI exists (for Electron environment)
+            if (!window.electronAPI) {
+                console.warn('electronAPI not available - running in browser mode');
+                // Initialize with default values for testing
+                initializeBrowserMode();
                 return;
             }
-            
-            const finalShortcut = Array.from(pressedKeys).join('+');
-            
-            if (pressedKeys.size > 1 && finalShortcut !== 'Control+Alt+Shift') {
-                button.textContent = finalShortcut;
-                electronAPI.updateSetting(`shortcuts.${button.dataset.key}`, finalShortcut);
-            } else {
-                button.textContent = (translations[currentLanguage] || translations.en)['recordButton-default'];
+
+            const electronAPI = window.electronAPI;
+
+            let currentLanguage = 'en';
+            let currentSettings = {};
+
+            // RTL languages list
+            const rtlLanguages = ['he', 'ar', 'fa', 'ur'];
+
+            const applyTranslations = (lang) => {
+                const dict = translations[lang] || translations.en;
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    if (dict[key]) {
+                        el.textContent = dict[key];
+                    }
+                });
+                document.querySelectorAll('.record-button').forEach(button => {
+                    const key = button.dataset.key;
+                    if (currentSettings.shortcuts && currentSettings.shortcuts[key]) {
+                        button.textContent = currentSettings.shortcuts[key];
+                    } else {
+                        button.textContent = dict['recordButton-default'];
+                    }
+                });
+                currentLanguage = lang;
+                document.documentElement.setAttribute('lang', lang);
+
+                // Set direction based on language
+                const isRTL = rtlLanguages.includes(lang);
+                document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
+
+                // Show/hide English-only features
+                const englishOnlyFeatures = document.querySelectorAll('.english-only-feature');
+                if (lang === 'en') {
+                    englishOnlyFeatures.forEach(feature => feature.style.display = 'flex');
+                } else {
+                    englishOnlyFeatures.forEach(feature => feature.style.display = 'none');
+                }
+
+                updateLangSelectorUI(lang);
+            };
+
+            // --- Custom Language Selector Logic ---
+            const languageSelector = document.querySelector('.language-selector');
+            const langButton = document.getElementById('language-selector-button');
+            const langDropdown = document.getElementById('language-dropdown');
+            const langSearch = document.getElementById('language-search-input');
+            const langList = document.getElementById('language-list');
+
+            const languages = [
+                { code: 'en', name: 'English' }, { code: 'fr', name: 'Français' }, { code: 'he', name: 'עברית' },
+                { code: 'ru', name: 'Русский' }, { code: 'es', name: 'Español' }, { code: 'de', name: 'Deutsch' },
+                { code: 'it', name: 'Italiano' }, { code: 'pt', name: 'Português' }, { code: 'nl', name: 'Nederlands' },
+                { code: 'pl', name: 'Polski' }, { code: 'tr', name: 'Türkçe' }, { code: 'zh', name: '简体中文' },
+                { code: 'ja', name: '日本語' }, { code: 'ko', name: '한국어' }, { code: 'hi', name: 'हिन्दी' },
+                { code: 'ar', name: 'العربية' }, { code: 'bn', name: 'বাংলা' }, { code: 'id', name: 'Bahasa Indonesia' },
+                { code: 'ur', name: 'اردو' }, { code: 'sw', name: 'Kiswahili' }, { code: 'ta', name: 'தமிழ்' },
+                { code: 'vi', name: 'Tiếng Việt' }, { code: 'th', name: 'ไทย' }, { code: 'cs', name: 'Čeština' },
+            ];
+
+            languages.forEach(lang => {
+                const li = document.createElement('li');
+                li.dataset.lang = lang.code;
+                li.textContent = lang.name;
+                langList.appendChild(li);
+            });
+
+            langButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = langDropdown.classList.contains('show');
+                langDropdown.classList.toggle('show');
+                langButton.classList.toggle('open', !isOpen);
+
+                if (!isOpen) {
+                    langSearch.focus();
+                    langSearch.value = '';
+                    langList.querySelectorAll('li').forEach(li => li.classList.remove('hidden'));
+                }
+            });
+
+            langSearch.addEventListener('input', () => {
+                const filter = langSearch.value.toLowerCase();
+                langList.querySelectorAll('li').forEach(li => {
+                    const text = li.textContent.toLowerCase();
+                    li.classList.toggle('hidden', !text.includes(filter));
+                });
+            });
+
+            langList.addEventListener('click', (e) => {
+                if (e.target.tagName === 'LI') {
+                    const langCode = e.target.dataset.lang;
+                    langDropdown.classList.remove('show');
+                    langButton.classList.remove('open');
+                    applyTranslations(langCode);
+                    electronAPI.updateSetting('language', langCode);
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!languageSelector.contains(e.target)) {
+                    langDropdown.classList.remove('show');
+                    langButton.classList.remove('open');
+                }
+            });
+
+            const updateLangSelectorUI = (langCode) => {
+                const lang = languages.find(l => l.code === langCode) || languages[0];
+                langButton.querySelector('span').textContent = lang.name;
+                langList.querySelectorAll('li').forEach(li => {
+                    li.classList.toggle('selected', li.dataset.lang === langCode);
+                });
+            };
+
+
+            // --- Theme Selection --- 
+            const themeRadios = document.querySelectorAll('input[name="theme"]');
+            electronAPI.theme.getSetting().then(currentTheme => {
+                document.getElementById(`theme-${currentTheme}`).checked = true;
+            });
+            document.querySelectorAll('input[name="defaultMode"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    electronAPI.updateSetting('defaultMode', e.target.value);
+                });
+            });
+            themeRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    electronAPI.theme.set(e.target.value);
+                });
+            });
+
+            // --- Sync UI with settings ---
+
+            // Helper function to attach event listeners for per-key global toggles
+            const attachToggleListeners = () => {
+                const checkboxes = document.querySelectorAll('.shortcut-global-checkbox');
+                console.log('🔧 [SETTINGS] Attaching toggle listeners to', checkboxes.length, 'checkboxes');
+
+                checkboxes.forEach(checkbox => {
+                    // Remove old listener if exists
+                    if (checkbox._changeHandler) {
+                        checkbox.removeEventListener('change', checkbox._changeHandler);
+                    }
+
+                    // Create new handler for each checkbox
+                    const handleChange = (e) => {
+                        const toggle = e.target.closest('.shortcut-global-toggle');
+                        const key = toggle ? toggle.dataset.key : null;
+                        if (key) {
+                            const isGlobal = e.target.checked;
+                            console.log('🎛️ [SETTINGS] Toggle changed for', key, '- Global:', isGlobal);
+
+                            // Update the settings object with the new per-key global state
+                            if (!currentSettings.shortcutsGlobalPerKey) {
+                                currentSettings.shortcutsGlobalPerKey = {};
+                            }
+                            currentSettings.shortcutsGlobalPerKey[key] = isGlobal;
+
+                            // Save the entire shortcutsGlobalPerKey object
+                            electronAPI.updateSetting('shortcutsGlobalPerKey', currentSettings.shortcutsGlobalPerKey);
+                        }
+                    };
+
+                    // Store the handler on the element for future removal
+                    checkbox._changeHandler = handleChange;
+
+                    // Add the new listener
+                    checkbox.addEventListener('change', handleChange);
+                });
+
+                console.log('✅ [SETTINGS] Toggle listeners attached successfully');
+            };
+
+            const syncUi = (settings) => {
+                try {
+                    currentSettings = settings;
+                    document.getElementById('setting-deepResearchEnabled').checked = settings.deepResearchEnabled || false;
+                    document.getElementById('setting-autoStart').checked = settings.autoStart || false;
+                    document.getElementById('setting-showInTaskbar').checked = settings.showInTaskbar || false;
+                    document.getElementById('setting-alwaysOnTop').checked = settings.alwaysOnTop || false;
+                    document.getElementById('setting-autoCheckNotifications').checked = settings.autoCheckNotifications || false;
+                    document.getElementById('setting-disableAutoUpdateCheck').checked = settings.disableAutoUpdateCheck || false;
+                    document.getElementById('setting-enableCanvasResizing').checked = settings.enableCanvasResizing || false;
+                    // Load unpacked extension setting (English-only)
+                    const loadExtEl = document.getElementById('setting-loadUnpackedExtension');
+                    if (loadExtEl) loadExtEl.checked = !!settings.loadUnpackedExtension;
+                    document.getElementById('setting-shortcutsGlobal').checked = settings.shortcutsGlobal !== false;
+                    document.getElementById('setting-showAdvancedShortcutOptions').checked = settings.showAdvancedShortcutOptions || false;
+                    document.getElementById('setting-showChatTitle').checked = settings.showChatTitle !== false;
+
+                    // Handle per-key global toggles visibility
+                    const advancedToggles = document.querySelectorAll('.shortcut-global-toggle');
+                    advancedToggles.forEach(toggle => {
+                        toggle.style.display = settings.showAdvancedShortcutOptions ? 'inline-block' : 'none';
+                    });
+
+                    // Update per-key global toggle states when settings change from server
+                    advancedToggles.forEach(toggle => {
+                        const key = toggle.dataset.key;
+                        const checkbox = toggle.querySelector('.shortcut-global-checkbox');
+                        if (checkbox) {
+                            // Get the saved state for this specific key, or fall back to global setting
+                            const isGlobal = settings.shortcutsGlobalPerKey && settings.shortcutsGlobalPerKey.hasOwnProperty(key)
+                                ? settings.shortcutsGlobalPerKey[key]
+                                : settings.shortcutsGlobal !== false;
+
+                            // Only update if value actually changed to avoid infinite loops
+                            if (checkbox.checked !== isGlobal) {
+                                checkbox.checked = isGlobal;
+                            }
+
+                            // Mark as initialized
+                            checkbox._initialized = true;
+                        }
+                    });
+
+                    // Attach listeners only once during first initialization
+                    if (!window._toggleListenersAttached) {
+                        attachToggleListeners();
+                        window._toggleListenersAttached = true;
+                    }
+                    document.getElementById('setting-restoreWindows').checked = settings.restoreWindows || false;
+                    document.getElementById('setting-showCloseButton').checked = settings.showCloseButton || false;
+                    document.getElementById('setting-draggableButtonsEnabled').checked = settings.draggableButtonsEnabled !== false;
+                    document.getElementById('setting-showExportButton').checked = settings.showExportButton || false;
+                    document.getElementById('setting-showFullscreenButton').checked = settings.showFullscreenButton !== false;
+                    document.getElementById('setting-showNewWindowButton').checked = settings.showNewWindowButton !== false;
+                    document.getElementById('setting-showMinimizeButton').checked = settings.showMinimizeButton !== false;
+                    document.getElementById('setting-aiCompletionSound').checked = settings.aiCompletionSound !== false;
+
+                    // Set sound file radio button
+                    const soundFileName = settings.aiCompletionSoundFile || 'new-notification-09-352705.mp3';
+                    const soundRadio = document.querySelector(`input[name="aiCompletionSoundFile"][value="${soundFileName}"]`);
+                    if (soundRadio) {
+                        soundRadio.checked = true;
+                    }
+
+                    // Set export format radio button
+                    const exportFormat = settings.exportFormat || 'ask';
+                    const exportRadio = document.querySelector(`input[name="exportFormat"][value="${exportFormat}"]`);
+                    if (exportRadio) {
+                        exportRadio.checked = true;
+                    }
+
+                    document.getElementById(`mode-${settings.defaultMode || 'ask'}`).checked = true;
+                    applyTranslations(settings.language || 'en');
+                    document.querySelectorAll('.record-button').forEach(button => {
+                        const key = button.dataset.key;
+                        if (settings.shortcuts && settings.shortcuts[key]) {
+                            button.textContent = settings.shortcuts[key];
+                        } else {
+                            button.textContent = (translations[currentLanguage] || translations.en)['recordButton-default'];
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error syncing UI:', error);
+                }
+            };
+
+            // Initialize settings
+            electronAPI.getSettings().then(syncUi).catch(error => {
+                console.error('Error getting settings:', error);
+            });
+
+            electronAPI.onSettingsUpdated(syncUi);
+
+            // --- General Event Listeners ---
+            document.getElementById('close-button').addEventListener('click', () => {
+                if (window.close) {
+                    window.close();
+                } else {
+                    electronAPI.closeWindow();
+                }
+            });
+
+            document.getElementById('reset-button').addEventListener('click', () => {
+                electronAPI.showConfirmReset();
+            });
+
+            document.getElementById('reset-button-order').addEventListener('click', () => {
+                electronAPI.updateSetting('buttonOrder', []);
+            });
+            // Deep Research Schedule event listeners
+            document.getElementById('setting-deepResearchEnabled').addEventListener('change', (e) => {
+                electronAPI.updateSetting('deepResearchEnabled', e.target.checked);
+            });
+
+            document.getElementById('open-schedule-manager').addEventListener('click', () => {
+                electronAPI.openDeepResearchScheduleWindow();
+            });
+
+            // --- Toggle Switches ---
+            document.getElementById('setting-autoStart').addEventListener('change', (e) => {
+                electronAPI.updateSetting('autoStart', e.target.checked);
+            });
+
+            document.getElementById('setting-alwaysOnTop').addEventListener('change', (e) => {
+                electronAPI.updateSetting('alwaysOnTop', e.target.checked);
+            });
+
+            document.getElementById('setting-showInTaskbar').addEventListener('change', (e) => {
+                electronAPI.updateSetting('showInTaskbar', e.target.checked);
+            });
+
+            document.getElementById('setting-autoCheckNotifications').addEventListener('change', (e) => {
+                electronAPI.updateSetting('autoCheckNotifications', e.target.checked);
+            });
+
+            document.getElementById('setting-disableAutoUpdateCheck').addEventListener('change', (e) => {
+                electronAPI.updateSetting('disableAutoUpdateCheck', e.target.checked);
+            });
+
+            document.getElementById('setting-enableCanvasResizing').addEventListener('change', (e) => {
+                electronAPI.updateSetting('enableCanvasResizing', e.target.checked);
+            });
+
+            // Load Unpacked Extension toggle (English-only feature)
+            const loadExtCheckbox = document.getElementById('setting-loadUnpackedExtension');
+            if (loadExtCheckbox) {
+                loadExtCheckbox.addEventListener('change', (e) => {
+                    electronAPI.updateSetting('loadUnpackedExtension', e.target.checked);
+                });
             }
-            
-            cleanup();
-        };
-        
-        document.addEventListener('keydown', keydownHandler, true);
-        document.addEventListener('keyup', keyupHandler, true);
-    };
 
-    document.querySelectorAll('.record-button').forEach(button => {
-        button.addEventListener('click', () => startRecording(button));
-    });
-});
+            // Open MCP setup window (global button - always visible)
+            const openMcpBtnGlobal = document.getElementById('open-mcp-setup-global');
+            if (openMcpBtnGlobal) {
+                openMcpBtnGlobal.addEventListener('click', () => {
+                    electronAPI.openMcpSetupWindow();
+                });
+            }
 
-// --- Theme Application Logic ---
-function applyTheme(theme) {
-    if (theme === 'light') {
-        document.documentElement.classList.add('light-mode');
-    } else {
-        document.documentElement.classList.remove('light-mode');
-    }
-}
+            document.getElementById('setting-shortcutsGlobal').addEventListener('change', (e) => {
+                electronAPI.updateSetting('shortcutsGlobal', e.target.checked);
+            });
 
-if (window.electronAPI) {
-    window.electronAPI.theme.getResolved().then(applyTheme);
-    window.electronAPI.theme.onUpdate(applyTheme);
-}
+            document.getElementById('setting-showAdvancedShortcutOptions').addEventListener('change', (e) => {
+                const show = e.target.checked;
+                electronAPI.updateSetting('showAdvancedShortcutOptions', show);
 
-// Initialize browser mode for testing without Electron
-function initializeBrowserMode() {
-    console.log('Initializing browser mode');
-    // This function can be left empty or with minimal mocks for this task
-    const mockSettings = {
-        autoStart: false,
-        alwaysOnTop: false,
-        autoCheckNotifications: true,
-        enableCanvasResizing: true,
-        shortcuts: {
-            showHide: 'Control+Space',
-            newWindow: 'Control+N',
-            quit: 'Control+Q',
-            showInstructions: 'F1',
-            refresh: 'F5',
-            search: 'Control+F',
-            screenshot: 'Control+Shift+S',
-            newChatPro: 'Control+Shift+P',
-            newChatFlash: 'Control+Shift+F'
+                // Show/hide all per-key toggles
+                document.querySelectorAll('.shortcut-global-toggle').forEach(toggle => {
+                    toggle.style.display = show ? 'inline-block' : 'none';
+                });
+
+                // Attach listeners only if not attached yet
+                if (!window._toggleListenersAttached) {
+                    attachToggleListeners();
+                    window._toggleListenersAttached = true;
+                }
+            });
+
+            document.getElementById('setting-showChatTitle').addEventListener('change', (e) => {
+                electronAPI.updateSetting('showChatTitle', e.target.checked);
+            });
+
+            document.getElementById('setting-restoreWindows').addEventListener('change', (e) => {
+                electronAPI.updateSetting('restoreWindows', e.target.checked);
+            });
+
+            document.getElementById('setting-showCloseButton').addEventListener('change', (e) => {
+                electronAPI.updateSetting('showCloseButton', e.target.checked);
+            });
+
+            document.getElementById('setting-showExportButton').addEventListener('change', (e) => {
+                electronAPI.updateSetting('showExportButton', e.target.checked);
+            });
+
+            document.getElementById('setting-showFullscreenButton').addEventListener('change', (e) => {
+                electronAPI.updateSetting('showFullscreenButton', e.target.checked);
+            });
+
+            document.getElementById('setting-showNewWindowButton').addEventListener('change', (e) => {
+                electronAPI.updateSetting('showNewWindowButton', e.target.checked);
+            });
+
+            document.getElementById('setting-showMinimizeButton').addEventListener('change', (e) => {
+                electronAPI.updateSetting('showMinimizeButton', e.target.checked);
+            });
+
+            document.getElementById('setting-draggableButtonsEnabled').addEventListener('change', (e) => {
+                electronAPI.updateSetting('draggableButtonsEnabled', e.target.checked);
+            });
+
+            document.getElementById('setting-aiCompletionSound').addEventListener('change', (e) => {
+                electronAPI.updateSetting('aiCompletionSound', e.target.checked);
+            });
+
+            document.getElementById('open-voice-assistant').addEventListener('click', () => {
+                electronAPI.openVoiceAssistant();
+            });
+
+            document.getElementById('open-share-ideas').addEventListener('click', () => {
+                electronAPI.openShareIdeasWindow();
+            });
+
+            document.querySelectorAll('input[name="aiCompletionSoundFile"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    electronAPI.updateSetting('aiCompletionSoundFile', e.target.value);
+                });
+            });
+
+            document.querySelectorAll('input[name="exportFormat"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    electronAPI.updateSetting('exportFormat', e.target.value);
+                });
+            });
+
+            // --- Manual Action Buttons ---
+            document.getElementById('manual-check-for-updates-button').addEventListener('click', () => {
+                electronAPI.checkForUpdates();
+            });
+
+            document.getElementById('check-for-notifications-button').addEventListener('click', () => {
+                electronAPI.manualCheckForNotifications();
+            });
+
+            // --- Shortcut Recording Logic ---
+            let isRecording = false;
+            let recordingButton = null;
+            let recordingTimeout = null;
+
+            const startRecording = (button) => {
+                if (isRecording) return;
+
+                isRecording = true;
+                recordingButton = button;
+                const originalText = button.textContent;
+                const pressedKeys = new Set();
+                let hasRecordedKeys = false;
+
+                button.textContent = (translations[currentLanguage] || translations.en)['recording'];
+                button.classList.add('is-recording');
+
+                // Auto-cancel recording after 10 seconds of inactivity
+                const resetTimeout = () => {
+                    if (recordingTimeout) clearTimeout(recordingTimeout);
+                    recordingTimeout = setTimeout(() => {
+                        if (isRecording) {
+                            button.textContent = originalText;
+                            cleanup();
+                        }
+                    }, 10000);
+                };
+                resetTimeout();
+
+                const cleanup = () => {
+                    if (recordingTimeout) {
+                        clearTimeout(recordingTimeout);
+                        recordingTimeout = null;
+                    }
+                    document.removeEventListener('keydown', keydownHandler, true);
+                    document.removeEventListener('keyup', keyupHandler, true);
+                    document.removeEventListener('blur', blurHandler, true);
+                    button.classList.remove('is-recording');
+                    isRecording = false;
+                    recordingButton = null;
+                    pressedKeys.clear();
+                };
+
+                const blurHandler = () => {
+                    // If window loses focus during recording, cancel it
+                    if (isRecording && recordingButton === button) {
+                        button.textContent = originalText;
+                        cleanup();
+                    }
+                };
+
+                const keydownHandler = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    resetTimeout();
+
+                    // Handle Escape to cancel
+                    if (e.key === 'Escape') {
+                        button.textContent = originalText;
+                        cleanup();
+                        return;
+                    }
+
+                    // Add modifier keys
+                    if (e.ctrlKey) pressedKeys.add('Control');
+                    if (e.altKey) pressedKeys.add('Alt');
+                    if (e.shiftKey) pressedKeys.add('Shift');
+                    if (e.metaKey) pressedKeys.add('Super');
+
+                    // Add regular keys (exclude modifier keys themselves)
+                    const ignoredCodes = [
+                        'ControlLeft', 'ControlRight',
+                        'AltLeft', 'AltRight',
+                        'ShiftLeft', 'ShiftRight',
+                        'MetaLeft', 'MetaRight'
+                    ];
+
+                    if (!['Control', 'Alt', 'Shift', 'Meta', 'AltGraph'].includes(e.key) && !ignoredCodes.includes(e.code)) {
+                        const keyCode = e.code.replace('Key', '').replace('Digit', '');
+                        if (keyCode && keyCode.length > 0) {
+                            pressedKeys.add(keyCode);
+                            hasRecordedKeys = true;
+                        }
+                    }
+
+                    // Update button text with current combination
+                    if (pressedKeys.size > 0) {
+                        button.textContent = Array.from(pressedKeys).join('+');
+                    }
+                };
+
+                const keyupHandler = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // Don't process if Escape was pressed (already handled in keydown)
+                    if (e.key === 'Escape') {
+                        return;
+                    }
+
+                    // Only save if we have at least one modifier + one key
+                    const modifierCount = ['Control', 'Alt', 'Shift', 'Super'].filter(mod => pressedKeys.has(mod)).length;
+                    const hasNonModifier = hasRecordedKeys;
+
+                    if (modifierCount > 0 && hasNonModifier && pressedKeys.size > 1) {
+                        const finalShortcut = Array.from(pressedKeys).join('+');
+                        button.textContent = finalShortcut;
+                        electronAPI.updateSetting(`shortcuts.${button.dataset.key}`, finalShortcut);
+                        cleanup();
+                    } else if (pressedKeys.size > 0) {
+                        // Invalid combination - show feedback and reset
+                        button.textContent = '⚠️ Invalid combination';
+                        setTimeout(() => {
+                            button.textContent = originalText;
+                            cleanup();
+                        }, 1500);
+                    } else {
+                        // No keys recorded
+                        button.textContent = originalText;
+                        cleanup();
+                    }
+                };
+
+                document.addEventListener('keydown', keydownHandler, true);
+                document.addEventListener('keyup', keyupHandler, true);
+                window.addEventListener('blur', blurHandler, true);
+            };
+
+            document.querySelectorAll('.record-button').forEach(button => {
+                button.addEventListener('click', () => startRecording(button));
+            });
+
+            // Initialize toggle listeners
+            attachToggleListeners();
+        });
+
+        // --- Theme Application Logic ---
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                document.documentElement.classList.add('light-mode');
+            } else {
+                document.documentElement.classList.remove('light-mode');
+            }
         }
-    };
-    
-    // Update UI with mock settings
-    document.getElementById('setting-autoStart').checked = mockSettings.autoStart;
-    document.getElementById('setting-alwaysOnTop').checked = mockSettings.alwaysOnTop;
-    document.getElementById('setting-autoCheckNotifications').checked = mockSettings.autoCheckNotifications;
-    document.getElementById('setting-enableCanvasResizing').checked = mockSettings.enableCanvasResizing;
-    
-    document.querySelectorAll('.record-button').forEach(button => {
-        const key = button.dataset.key;
-        if(mockSettings.shortcuts[key]) {
-            button.textContent = mockSettings.shortcuts[key];
+
+        if (window.electronAPI) {
+            window.electronAPI.theme.getResolved().then(applyTheme);
+            window.electronAPI.theme.onUpdate(applyTheme);
         }
-    });
-}
-</script>
+
+        // Initialize browser mode for testing without Electron
+        function initializeBrowserMode() {
+            console.log('Initializing browser mode');
+            // This function can be left empty or with minimal mocks for this task
+            const mockSettings = {
+                autoStart: false,
+                alwaysOnTop: false,
+                autoCheckNotifications: true,
+                enableCanvasResizing: true,
+                shortcuts: {
+                    showHide: 'Control+Space',
+                    newWindow: 'Control+N',
+                    quit: 'Control+Q',
+                    showInstructions: 'F1',
+                    refresh: 'F5',
+                    search: 'Control+F',
+                    screenshot: 'Control+Shift+S',
+                    newChatPro: 'Control+Shift+P',
+                    newChatFlash: 'Control+Shift+F'
+                }
+            };
+
+            // Update UI with mock settings
+            document.getElementById('setting-autoStart').checked = mockSettings.autoStart;
+            document.getElementById('setting-alwaysOnTop').checked = mockSettings.alwaysOnTop;
+            document.getElementById('setting-autoCheckNotifications').checked = mockSettings.autoCheckNotifications;
+            document.getElementById('setting-enableCanvasResizing').checked = mockSettings.enableCanvasResizing;
+
+            document.querySelectorAll('.record-button').forEach(button => {
+                const key = button.dataset.key;
+                if (mockSettings.shortcuts[key]) {
+                    button.textContent = mockSettings.shortcuts[key];
+                }
+            });
+        }
+    </script>
 </body>
+
 </html>

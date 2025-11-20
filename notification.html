@@ -1,336 +1,830 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>GeminiDesk Notification</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
-        
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
         :root {
-            --bg-graphite: #19191D; --bg-surface: #222228; --bg-interactive: #2f2f37;
-            --text-primary: #f0f0f5; --text-secondary: #8a8a93; --accent-neon: #34d399;
-            --accent-blue: #58a6ff; --danger-color: #ef4444; --border-color: rgba(255, 255, 255, 0.1);
+            /* Premium Dark Palette (Default) */
+            --bg-root: #0f0f13;
+            --glass-surface: rgba(30, 30, 35, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.03);
+
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-tertiary: #71717a;
+
+            --accent-primary: #6366f1;
+            /* Indigo 500 */
+            --accent-glow: rgba(99, 102, 241, 0.4);
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+
+            --danger: #f43f5e;
+
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
+
+            --radius-xl: 24px;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+
+            --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         html.light-mode {
-            --bg-graphite: #f5f5f5; --bg-surface: #ffffff; --bg-interactive: #e0e0e0;
-            --text-primary: #212121; --text-secondary: #757575; --accent-neon: #007aff;
-            --accent-blue: #007aff; --danger-color: #d32f2f; --border-color: #dcdcdc;
+            --bg-root: #f8fafc;
+            --glass-surface: rgba(255, 255, 255, 0.90);
+            --glass-border: rgba(0, 0, 0, 0.06);
+            --glass-highlight: rgba(255, 255, 255, 0.4);
+
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-tertiary: #94a3b8;
+
+            --accent-primary: #4f46e5;
+            --accent-glow: rgba(79, 70, 229, 0.25);
+            --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
-        html, body {
-            margin: 0; padding: 0; background-color: transparent;
-            color: var(--text-primary); font-family: 'Inter', sans-serif;
-            overflow: hidden; user-select: none; -webkit-font-smoothing: antialiased;
+        * {
+            box-sizing: border-box;
         }
 
-        .container {
-            width: 100vw; height: 100vh; display: flex; flex-direction: column;
-            background-color: var(--bg-graphite); border: 1px solid var(--border-color);
-            border-radius: 12px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.5s ease-out forwards;
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
+            background: transparent;
+            color: var(--text-primary);
+            user-select: none;
+            -webkit-font-smoothing: antialiased;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* --- Background & Atmosphere --- */
+        .orb-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.15), transparent 70%);
+            opacity: 0.8;
         }
 
+        .noise-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* --- Main Card Container --- */
+        .card {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            background: var(--glass-surface);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg), var(--shadow-glow), inset 0 1px 0 var(--glass-highlight);
+            overflow: hidden;
+            transition: transform 0.3s var(--ease-smooth), box-shadow 0.3s var(--ease-smooth);
+            animation: cardEnter 0.6s var(--ease-elastic) forwards;
+        }
+
+        @keyframes cardEnter {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.96);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* --- Header --- */
         .header {
-            -webkit-app-region: drag; display: flex; align-items: center;
-            padding: 16px 20px; flex-shrink: 0; border-bottom: 1px solid var(--border-color);
+            -webkit-app-region: drag;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--glass-border);
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.02), transparent);
         }
-        
-        .header-icon { width: 20px; height: 20px; margin-right: 12px; stroke: var(--accent-neon); }
-        .header-text { display: flex; flex-direction: column; }
-        .header-title { font-weight: 700; font-size: 16px; }
-        .header-subtitle { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
 
-        #close-notification-btn {
-            -webkit-app-region: no-drag; margin-left: auto; width: 26px; height: 26px;
-            background-color: var(--bg-surface); color: var(--text-secondary);
-            border: none; border-radius: 50%; font-size: 16px;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-            transition: all 0.2s ease-in-out;
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        #close-notification-btn:hover { background-color: var(--danger-color); color: white; transform: rotate(180deg); }
 
-        .state-wrapper { flex-grow: 1; position: relative; padding: 20px; overflow: hidden; }
-        
-        .state {
-            position: absolute; top: 20px; left: 20px; right: 20px; bottom: 20px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; opacity: 0; transform: scale(0.95);
-            transition: opacity 0.4s ease, transform 0.4s ease; pointer-events: none;
+        .brand-icon-wrapper {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px var(--accent-glow);
         }
-        
-        .state.active { opacity: 1; transform: scale(1); pointer-events: auto; }
-        .state h3 { font-size: 18px; font-weight: 700; margin-top: 20px; margin-bottom: 8px; }
-        .state p { font-size: 14px; color: var(--text-secondary); max-width: 300px; line-height: 1.6; }
 
-        .checking-loader {
-            width: 50px; height: 50px; border: 4px solid var(--bg-surface);
-            border-top-color: var(--accent-neon); border-radius: 50%;
-            animation: spin 1s linear infinite;
+        .brand-icon {
+            width: 18px;
+            height: 18px;
+            color: white;
+            stroke-width: 2.5;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* --- Content Slider (Carousel) --- */
-        #content-state {
-            align-items: stretch; justify-content: flex-start;
-            padding: 0; top: 0; left: 0; right: 0; bottom: 0;
-            display: flex; flex-direction: column;
+        .brand-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
-        .message-slider {
-            flex-grow: 1;
+
+        .brand-title {
+            font-weight: 600;
+            font-size: 15px;
+            line-height: 1.2;
+            letter-spacing: -0.01em;
+        }
+
+        .brand-subtitle {
+            font-weight: 400;
+            font-size: 11px;
+            color: var(--text-secondary);
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .close-btn {
+            -webkit-app-region: no-drag;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid transparent;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: var(--danger);
+            color: white;
+            transform: rotate(90deg);
+            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.4);
+        }
+
+        .close-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* --- Content Area --- */
+        .content-area {
+            flex: 1;
             position: relative;
             overflow: hidden;
-            width: 100%;
+            display: flex;
+            flex-direction: column;
         }
-        .message-slide {
+
+        /* States */
+        .state-view {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            padding: 20px;
-            box-sizing: border-box;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
             opacity: 0;
-            transform: translateX(100%);
-            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.5s ease;
+            pointer-events: none;
+            transform: scale(0.95);
+            transition: opacity 0.4s ease, transform 0.4s var(--ease-elastic);
         }
-        .message-slide.active { opacity: 1; transform: translateX(0); z-index: 1; }
-        .message-slide.previous { transform: translateX(-100%); }
-        .message-slide .text-content { white-space: pre-wrap; word-wrap: break-word; overflow-y: auto; height: 100%; }
-        .message-slide .html-content { width: 100%; height: 100%; border: none; }
 
-        #content-state ::-webkit-scrollbar { width: 14px; }
-        #content-state ::-webkit-scrollbar-track { background: transparent; }
-        #content-state ::-webkit-scrollbar-thumb {
-            background-color: var(--bg-surface); border-radius: 7px;
-            border: 4px solid var(--bg-graphite);
+        .state-view.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1);
         }
-        #content-state ::-webkit-scrollbar-thumb:hover { background-color: var(--accent-neon); }
 
-        .navigation-controls {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 20px; border-top: 1px solid var(--border-color);
-            flex-shrink: 0;
+        /* Loader */
+        .loader-ring {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: var(--accent-primary);
+            border-right-color: var(--accent-primary);
+            animation: spin 1s linear infinite;
+            filter: drop-shadow(0 0 8px var(--accent-glow));
         }
-        .nav-button {
-            background-color: var(--bg-interactive); color: var(--text-primary);
-            border: 1px solid var(--border-color); border-radius: 50%;
-            width: 36px; height: 36px; display: flex; align-items: center;
-            justify-content: center; cursor: pointer; transition: all 0.2s ease;
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
         }
-        .nav-button:hover { border-color: var(--accent-blue); color: var(--accent-blue); transform: scale(1.1); }
-        .nav-button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; border-color: var(--border-color); color: var(--text-secondary); }
-        .message-counter { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
 
-        .state-icon { width: 56px; height: 56px; }
+        .status-text {
+            margin-top: 16px;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
 
-        /* --- RTL Support --- */
+        /* Empty State */
+        .empty-icon {
+            width: 64px;
+            height: 64px;
+            color: var(--text-tertiary);
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .empty-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-align: center;
+            max-width: 280px;
+            line-height: 1.5;
+        }
+
+        /* Message Slider */
+        .slider-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            perspective: 1000px;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            padding: 4px 24px 0 24px;
+            /* Top padding small, rest standard */
+            opacity: 0;
+            transform: translateX(40px) scale(0.95);
+            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            pointer-events: none;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+            pointer-events: auto;
+            z-index: 2;
+        }
+
+        .slide.prev {
+            opacity: 0;
+            transform: translateX(-40px) scale(0.95);
+            z-index: 1;
+        }
+
+        .message-body {
+            flex: 1;
+            overflow-y: auto;
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-primary);
+            padding-right: 8px;
+            /* Space for scrollbar */
+        }
+
+        /* Custom Scrollbar */
+        .message-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .message-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .message-body::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .message-body::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .html-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-md);
+        }
+
+        /* --- Footer / Controls --- */
+        .footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: default;
+            transform: none;
+        }
+
+        .nav-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .pagination-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-tertiary);
+            opacity: 0.4;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .dot.active {
+            width: 20px;
+            border-radius: 10px;
+            background: var(--accent-primary);
+            opacity: 1;
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+
+        .dot:hover:not(.active) {
+            opacity: 0.8;
+            transform: scale(1.2);
+        }
+
+        .action-btn {
+            height: 36px;
+            padding: 0 16px;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .action-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .counter {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            letter-spacing: 0.5px;
+            margin-left: 8px;
+        }
+
+        /* RTL Support */
         html[dir="rtl"] .header {
             direction: rtl;
         }
-        html[dir="rtl"] .header-icon {
-            margin-right: 0;
-            margin-left: 12px;
+
+        html[dir="rtl"] .brand {
+            flex-direction: row;
         }
-        html[dir="rtl"] #close-notification-btn {
-            margin-left: 0;
-            margin-right: auto;
+
+        html[dir="rtl"] .slide {
+            transform: translateX(-40px) scale(0.95);
         }
-        html[dir="rtl"] .message-slide {
-            transform: translateX(-100%);
+
+        html[dir="rtl"] .slide.active {
+            transform: translateX(0) scale(1);
         }
-        html[dir="rtl"] .message-slide.active {
-            transform: translateX(0);
+
+        html[dir="rtl"] .slide.prev {
+            transform: translateX(40px) scale(0.95);
         }
-        html[dir="rtl"] .message-slide.previous {
-            transform: translateX(100%);
-        }
-        html[dir="rtl"] .navigation-controls {
+
+        html[dir="rtl"] .footer {
             flex-direction: row-reverse;
         }
-        html[dir="rtl"] .text-content {
-            text-align: right;
+
+        html[dir="rtl"] .counter {
+            margin-left: 0;
+            margin-right: 8px;
         }
     </style>
 </head>
+
 <body>
-    <div class="container" id="main-container">
+    <div class="orb-canvas"></div>
+    <div class="noise-overlay"></div>
+
+    <div class="card">
+        <!-- Header -->
         <div class="header">
-            <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-            <div class="header-text">
-                <span class="header-title" data-i18n="notification-title">System Notification</span>
-                <span class="header-subtitle" data-i18n="notification-subtitle">for GeminiDesk</span>
+            <div class="brand">
+                <div class="brand-icon-wrapper">
+                    <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                </div>
+                <div class="brand-info">
+                    <span class="brand-title" data-i18n="notification-title">Notifications</span>
+                    <span class="brand-subtitle" data-i18n="notification-subtitle">GeminiDesk</span>
+                </div>
             </div>
-            <button id="close-notification-btn" title="Close">&times;</button>
+            <button class="close-btn" id="close-btn" title="Close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
         </div>
-        
-        <div class="state-wrapper">
-            <div id="checking-state" class="state active">
-                <div class="checking-loader"></div>
-                <h3 data-i18n="notification-checking">Checking for messages...</h3>
+
+        <!-- Content -->
+        <div class="content-area">
+            <!-- Loading State -->
+            <div id="state-checking" class="state-view active">
+                <div class="loader-ring"></div>
+                <div class="status-text" data-i18n="notification-checking">Checking for updates...</div>
             </div>
 
-            <div id="content-state" class="state">
-                <div class="message-slider" id="message-slider">
-                    <!-- Message slides will be injected here -->
-                </div>
-                <div class="navigation-controls">
-                    <button class="nav-button" id="prev-btn" title="Previous">&lt;</button>
-                    <span class="message-counter" id="message-counter"></span>
-                    <button class="nav-button" id="next-btn" title="Next">&gt;</button>
-                </div>
+            <!-- Empty State -->
+            <div id="state-empty" class="state-view">
+                <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 12h-6l-2 3h-4l-2-3H2"></path>
+                    <path
+                        d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z">
+                    </path>
+                </svg>
+                <div class="empty-title" data-i18n="notification-all-clear">All Caught Up</div>
+                <div class="empty-desc" data-i18n="notification-no-messages-ever">You have no new notifications at this
+                    time.</div>
             </div>
 
-            <div id="no-messages-ever-state" class="state">
-                <svg class="state-icon" style="color: var(--accent-neon);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                <h3 data-i18n="notification-all-clear">All Clear</h3>
-                <p data-i18n="notification-no-messages-ever">No system notifications to show at the moment. We'll let you know when there's news.</p>
+            <!-- Error State -->
+            <div id="state-error" class="state-view">
+                <svg class="empty-icon" style="color: var(--danger);" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <div class="empty-title" data-i18n="notification-error-title">Connection Error</div>
+                <div class="empty-desc" id="error-text">Unable to fetch notifications.</div>
             </div>
-            
-            <div id="error-state" class="state">
-                <svg class="state-icon" style="color: var(--danger-color);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <h3 data-i18n="notification-error-title">An Error Occurred</h3>
-                <p id="error-message-text" data-i18n="notification-error-default-text">Could not connect to the notification service. Please check your internet connection.</p>
+
+            <!-- Messages State -->
+            <div id="state-content" class="state-view" style="display: none; padding: 0;">
+                <div class="slider-container" id="slider">
+                    <!-- Slides injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer" id="footer-controls" style="display: none;">
+            <div class="nav-group">
+                <button class="nav-btn" id="prev-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+                <div class="pagination-dots" id="dots"></div>
+                <button class="nav-btn" id="next-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="nav-group">
+                <button class="action-btn" id="copy-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    <span>Copy</span>
+                </button>
+                <span class="counter" id="counter">1/1</span>
             </div>
         </div>
     </div>
-<script src="translations.js"></script>
-<script>
-    const states = {
-        checking: document.getElementById('checking-state'),
-        content: document.getElementById('content-state'),
-        noEver: document.getElementById('no-messages-ever-state'),
-        error: document.getElementById('error-state')
-    };
-    const slider = document.getElementById('message-slider');
-    const prevBtn = document.getElementById('prev-btn');
-    const nextBtn = document.getElementById('next-btn');
-    const counter = document.getElementById('message-counter');
 
-    let messages = [];
-    let currentIndex = 0;
-    let lastDirection = 'next';
+    <script src="translations.js"></script>
+    <script>
+        // --- Logic ---
+        const states = {
+            checking: document.getElementById('state-checking'),
+            empty: document.getElementById('state-empty'),
+            error: document.getElementById('state-error'),
+            content: document.getElementById('state-content')
+        };
+        const footer = document.getElementById('footer-controls');
+        const slider = document.getElementById('slider');
+        const dotsContainer = document.getElementById('dots');
+        const counter = document.getElementById('counter');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const copyBtn = document.getElementById('copy-btn');
 
-    function setActiveState(activeStateKey) {
-        Object.keys(states).forEach(key => {
-            states[key].classList.toggle('active', key === activeStateKey);
-        });
-    }
+        let messages = [];
+        let currentIndex = 0;
 
-    function renderMessages() {
-        slider.innerHTML = '';
-        messages.forEach((msg, index) => {
-            const slide = document.createElement('div');
-            slide.className = 'message-slide';
-            slide.dataset.index = index;
-
-            if (msg.type === 'text') {
-                const textElement = document.createElement('div');
-                textElement.className = 'text-content';
-                textElement.textContent = msg.content;
-                slide.appendChild(textElement);
-            } else if (msg.type === 'html') {
-                const iframeElement = document.createElement('iframe');
-                iframeElement.className = 'html-content';
-                iframeElement.sandbox = 'allow-scripts allow-same-origin';
-                const injectedStyles = `<style>body{background-color:transparent!important;color:var(--text-primary);font-family:'Inter',sans-serif;line-height:1.7;font-size:16px;margin:0;padding:5px 10px 5px 5px}a{color:var(--accent-blue)}img{max-width:100%;height:auto;border-radius:8px;margin-top:1em}hr{border-color:var(--border-color)}::-webkit-scrollbar{width:14px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background-color:var(--bg-surface);border-radius:7px;border:4px solid var(--bg-graphite);background-clip:padding-box}::-webkit-scrollbar-thumb:hover{background-color:var(--accent-neon)}</style>`;
-                iframeElement.srcdoc = injectedStyles + msg.content;
-                slide.appendChild(iframeElement);
-            }
-            slider.appendChild(slide);
-        });
-        updateSlider();
-    }
-
-    function updateSlider() {
-        const slides = document.querySelectorAll('.message-slide');
-        slides.forEach((slide, index) => {
-            slide.classList.remove('active', 'previous');
-            if (index === currentIndex) {
-                slide.classList.add('active');
-            } else if (index < currentIndex) {
-                slide.classList.add('previous');
-            }
-        });
-
-        counter.textContent = `${currentIndex + 1} / ${messages.length}`;
-        prevBtn.disabled = currentIndex === 0;
-        nextBtn.disabled = currentIndex === messages.length - 1;
-    }
-
-    prevBtn.addEventListener('click', () => {
-        if (currentIndex > 0) {
-            currentIndex--;
-            lastDirection = 'prev';
-            updateSlider();
-        }
-    });
-
-    nextBtn.addEventListener('click', () => {
-        if (currentIndex < messages.length - 1) {
-            currentIndex++;
-            lastDirection = 'next';
-            updateSlider();
-        }
-    });
-
-    document.getElementById('close-notification-btn').addEventListener('click', () => {
-        window.notificationAPI.closeWindow();
-    });
-
-    window.notificationAPI.onReceiveNotification((result) => {
-        switch (result.status) {
-            case 'found':
-            case 'no-new-message': // Treat this the same as found, just don't reset index
-                if (result.content && result.content.length > 0) {
-                    messages = result.content;
-                    if(result.status === 'found') {
-                        currentIndex = 0; // Only go to first message if it's a new notification
-                    }
-                    renderMessages();
-                    setActiveState('content');
-                } else {
-                     setActiveState('noEver');
-                }
-                break;
-            case 'no-messages-ever':
-                setActiveState('noEver');
-                break;
-            case 'error':
-                document.getElementById('error-message-text').textContent = result.message || 'An unknown error occurred.';
-                setActiveState('error');
-                break;
-        }
-    });
-
-    // --- Theme and Translation ---
-    if (window.electronAPI) {
-        // Apply theme
-        window.electronAPI.theme.getResolved().then(theme => {
-            document.documentElement.classList.toggle('light-mode', theme === 'light');
-        });
-        window.electronAPI.theme.onUpdate(theme => {
-            document.documentElement.classList.toggle('light-mode', theme === 'light');
-        });
-
-        // Apply translations
-        const applyTranslations = (lang) => {
-            const dict = translations[lang] || translations.en;
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (dict[key]) el.textContent = dict[key];
+        function switchState(name) {
+            Object.values(states).forEach(el => {
+                el.classList.remove('active');
+                el.style.display = 'none';
             });
-            document.documentElement.lang = lang;
-            document.documentElement.dir = ['he', 'ar', 'fa', 'ur'].includes(lang) ? 'rtl' : 'ltr';
+
+            const target = states[name];
+            if (target) {
+                target.style.display = (name === 'content') ? 'block' : 'flex';
+                // Small delay to allow display:block to apply before opacity transition
+                setTimeout(() => target.classList.add('active'), 10);
+            }
+
+            if (name === 'content') {
+                footer.style.display = 'flex';
+            } else {
+                footer.style.display = 'none';
+            }
+        }
+
+        function renderMessages() {
+            slider.innerHTML = '';
+            dotsContainer.innerHTML = '';
+
+            messages.forEach((msg, idx) => {
+                // Slide
+                const slide = document.createElement('div');
+                slide.className = 'slide';
+                if (idx === currentIndex) slide.classList.add('active');
+
+                if (msg.type === 'text') {
+                    const body = document.createElement('div');
+                    body.className = 'message-body';
+                    body.innerHTML = linkify(escapeHtml(msg.content));
+                    slide.appendChild(body);
+                } else if (msg.type === 'html') {
+                    const iframe = document.createElement('iframe');
+                    iframe.className = 'html-frame';
+                    iframe.sandbox = 'allow-scripts allow-same-origin';
+                    iframe.srcdoc = buildIframeStyle() + (msg.content || '');
+                    slide.appendChild(iframe);
+                }
+                slider.appendChild(slide);
+
+                // Dot
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                if (idx === currentIndex) dot.classList.add('active');
+                dot.onclick = () => goToSlide(idx);
+                dotsContainer.appendChild(dot);
+            });
+
+            updateControls();
+        }
+
+        function goToSlide(index) {
+            if (index < 0 || index >= messages.length) return;
+
+            const slides = slider.querySelectorAll('.slide');
+            const dots = dotsContainer.querySelectorAll('.dot');
+
+            // Direction for animation
+            const direction = index > currentIndex ? 'next' : 'prev';
+
+            slides[currentIndex].classList.remove('active');
+            slides[currentIndex].classList.add(direction === 'next' ? 'prev' : 'next-waiting'); // Simple logic, refine if needed
+
+            // Reset all classes for clean state
+            slides.forEach(s => s.classList.remove('active', 'prev'));
+
+            slides.forEach((s, i) => {
+                if (i < index) s.classList.add('prev');
+                if (i === index) s.classList.add('active');
+            });
+
+            dots.forEach((d, i) => d.classList.toggle('active', i === index));
+
+            currentIndex = index;
+            updateControls();
+        }
+
+        function updateControls() {
+            counter.textContent = `${currentIndex + 1}/${messages.length}`;
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex === messages.length - 1;
+
+            // Copy button
+            const currentMsg = messages[currentIndex];
+            copyBtn.style.display = (currentMsg && currentMsg.type === 'text') ? 'flex' : 'none';
+        }
+
+        prevBtn.onclick = () => goToSlide(currentIndex - 1);
+        nextBtn.onclick = () => goToSlide(currentIndex + 1);
+
+        // Copy Functionality
+        copyBtn.onclick = async () => {
+            const text = messages[currentIndex]?.content;
+            if (!text) return;
+
+            try {
+                await navigator.clipboard.writeText(text);
+                const span = copyBtn.querySelector('span');
+                const original = span.textContent;
+                span.textContent = 'Copied!';
+                copyBtn.style.borderColor = 'var(--accent-primary)';
+                setTimeout(() => {
+                    span.textContent = original;
+                    copyBtn.style.borderColor = '';
+                }, 1500);
+            } catch (err) {
+                console.error('Copy failed', err);
+            }
         };
 
-        window.electronAPI.getSettings().then(settings => {
-            applyTranslations(settings.language || 'en');
+        // Close
+        document.getElementById('close-btn').onclick = () => {
+            if (window.notificationAPI) window.notificationAPI.closeWindow();
+        };
+
+        // API Integration
+        if (window.notificationAPI) {
+            window.notificationAPI.onReceiveNotification((result) => {
+                if (result.status === 'found' || result.status === 'no-new-message') {
+                    if (result.content && result.content.length > 0) {
+                        messages = result.content;
+                        if (result.status === 'found') currentIndex = 0;
+                        renderMessages();
+                        switchState('content');
+                    } else {
+                        switchState('empty');
+                    }
+                } else if (result.status === 'no-messages-ever') {
+                    switchState('empty');
+                } else if (result.status === 'error') {
+                    document.getElementById('error-text').textContent = result.message || 'Unknown error';
+                    switchState('error');
+                }
+            });
+
+            window.notificationAPI.requestLastNotification();
+        }
+
+        // Helpers
+        function escapeHtml(str) {
+            return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;").replace(/'/g, "&#039;").replace(/\n/g, '<br>');
+        }
+
+        function linkify(str) {
+            return (str || '').replace(/(https?:\/\/[^\s]+)/g, '<a href="#" onclick="openLink(event, \'$1\')">$1</a>');
+        }
+
+        window.openLink = (e, url) => {
+            e.preventDefault();
+            if (window.electronAPI) window.electronAPI.openExternal(url);
+        };
+
+        function buildIframeStyle() {
+            const style = getComputedStyle(document.documentElement);
+            const text = style.getPropertyValue('--text-primary').trim();
+            const link = style.getPropertyValue('--accent-primary').trim();
+            return `<style>
+                body { color: ${text}; font-family: 'Outfit', sans-serif; margin: 0; padding: 4px; font-size: 15px; line-height: 1.6; background: transparent; overflow-wrap: break-word; }
+                a { color: ${link}; text-decoration: none; cursor: pointer; transition: opacity 0.2s; }
+                a:hover { text-decoration: underline; opacity: 0.8; }
+                img { max-width: 100%; border-radius: 8px; }
+                ::-webkit-scrollbar { width: 6px; }
+                ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+            </style>
+            <script>
+                document.addEventListener('click', (e) => {
+                    const a = e.target.closest('a');
+                    if (a && a.href) {
+                        e.preventDefault();
+                        // Send message to parent
+                        window.parent.postMessage({ type: 'open-link', url: a.href }, '*');
+                    }
+                });
+            <\/script>`;
+        }
+
+        // Listen for messages from iframe
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'open-link' && event.data.url) {
+                if (window.electronAPI) window.electronAPI.openExternal(event.data.url);
+            }
         });
-        window.electronAPI.onLanguageChanged(applyTranslations);
-    }
-</script>
+
+        // Theme & Translation Support
+        if (window.electronAPI) {
+            window.electronAPI.theme.getResolved().then(t => document.documentElement.classList.toggle('light-mode', t === 'light'));
+            window.electronAPI.theme.onUpdate(t => document.documentElement.classList.toggle('light-mode', t === 'light'));
+
+            const applyLang = (lang) => {
+                const dict = translations[lang] || translations.en;
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.dataset.i18n;
+                    if (dict[key]) el.textContent = dict[key];
+                });
+                document.documentElement.dir = ['he', 'ar'].includes(lang) ? 'rtl' : 'ltr';
+            };
+
+            window.electronAPI.getSettings().then(s => applyLang(s.language || 'en'));
+            window.electronAPI.onLanguageChanged(applyLang);
+        }
+    </script>
 </body>
+
 </html>

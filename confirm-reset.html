@@ -1,81 +1,361 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Confirm Reset</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
-        :root{--bg-primary:#1e1e1e;--text-primary:#cccccc;--text-secondary:#9e9e9e;--accent-primary:#0e98d9;--danger-color:#f44336;--danger-hover-bg:#dc3545}
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            /* Premium Dark Palette (Default) */
+            --bg-root: #0f0f13;
+            --glass-surface: rgba(20, 20, 25, 0.95);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.05);
+
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --text-tertiary: #6b7280;
+
+            --accent-primary: #818cf8;
+            --accent-glow: rgba(129, 140, 248, 0.4);
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+
+            --danger-color: #f43f5e;
+            --danger-hover: #dc2f4a;
+            --danger-glow: rgba(244, 63, 94, 0.4);
+
+            --radius-xl: 24px;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
+
+            --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
         html.light-mode {
-            --bg-primary: #ffffff;
-            --text-primary: #212121;
-            --text-secondary: #757575;
-            --danger-color: #d32f2f;
-            --danger-hover-bg: #c62828;
+            --bg-root: #f8fafc;
+            --glass-surface: rgba(255, 255, 255, 0.90);
+            --glass-border: rgba(0, 0, 0, 0.06);
+            --glass-highlight: rgba(255, 255, 255, 0.4);
+
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-tertiary: #94a3b8;
+
+            --accent-primary: #4f46e5;
+            --accent-glow: rgba(79, 70, 229, 0.25);
+            --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+
+            --danger-color: #dc2626;
+            --danger-hover: #b91c1c;
+            --danger-glow: rgba(220, 38, 38, 0.3);
+
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
-        html.light-mode #cancel-btn { background-color: #e0e0e0; color: #212121; }
-        html.light-mode #cancel-btn:hover { background-color: #dcdcdc; }
-        html, body {
-            margin: 0; padding: 0; background-color: var(--bg-primary);
-            color: var(--text-primary); font-family: 'Poppins', sans-serif;
-            overflow: hidden; -webkit-font-smoothing: antialiased; user-select: none;
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
         }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-root);
+            color: var(--text-primary);
+            user-select: none;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Background Effects */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at 30% 30%, rgba(244, 63, 94, 0.15), transparent 60%),
+                radial-gradient(circle at 70% 70%, rgba(99, 102, 241, 0.12), transparent 60%);
+            opacity: 1;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
         .container {
-            padding: 25px; text-align: center; display: flex;
-            flex-direction: column; justify-content: space-between; height: 100%; box-sizing: border-box;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 16px;
+            /* Reduced padding */
+            animation: fadeIn 0.4s var(--ease-smooth) forwards;
         }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .card {
+            background: var(--glass-surface);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            /* Slightly smaller radius */
+            box-shadow: var(--shadow-lg), inset 0 1px 0 var(--glass-highlight);
+            padding: 20px;
+            /* Reduced padding */
+            width: 100%;
+            max-width: 100%;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            justify-content: center;
+            animation: cardEnter 0.6s var(--ease-elastic) forwards;
+        }
+
+        @keyframes cardEnter {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.96);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .icon-wrapper {
+            width: 48px;
+            /* Smaller icon */
+            height: 48px;
+            margin: 0 auto 12px;
+            /* Reduced margin */
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(244, 63, 94, 0.1));
+            border: 2px solid rgba(244, 63, 94, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px var(--danger-glow);
+            flex-shrink: 0;
+        }
+
+        .icon-wrapper svg {
+            width: 24px;
+            /* Smaller svg */
+            height: 24px;
+            fill: var(--danger-color);
+        }
+
         .title {
-            display: flex; align-items: center; justify-content: center;
-            font-size: 16px; font-weight: 500; color: var(--text-primary);
+            font-size: 18px;
+            /* Smaller title */
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 8px 0;
+            letter-spacing: -0.02em;
         }
-        .title svg { width: 22px; height: 22px; margin-right: 10px; fill: var(--danger-color); }
-        .message { font-size: 13px; color: var(--text-secondary); margin-top: 8px; }
-        .button-group { display: flex; justify-content: space-between; margin-top: 20px; }
+
+        .message {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            margin: 0 0 20px 0;
+            /* Reduced margin */
+            max-width: 100%;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: auto;
+            /* Push to bottom if needed */
+        }
+
         .button {
-            flex-grow: 1; border: none; padding: 10px; border-radius: 6px;
-            font-size: 14px; font-weight: 500; cursor: pointer; transition: all .2s ease;
+            flex: 1;
+            border: none;
+            padding: 10px 16px;
+            /* Smaller padding */
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s var(--ease-smooth);
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
         }
-        .button:first-child { margin-right: 10px; }
-        #cancel-btn { background-color: #3e3e42; color: #fff; }
-        #cancel-btn:hover { background-color: #4e4e52; }
-        #confirm-btn { background-color: var(--danger-color); color: #fff; }
-        #confirm-btn:hover { background-color: var(--danger-hover-bg); }
+
+        .button::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .button:hover::before {
+            opacity: 1;
+        }
+
+        #cancel-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+        }
+
+        #cancel-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(129, 140, 248, 0.2);
+        }
+
+        #cancel-btn:active {
+            transform: translateY(0);
+        }
+
+        #confirm-btn {
+            background: var(--danger-color);
+            border: 1px solid transparent;
+            color: #ffffff;
+            box-shadow: 0 4px 12px var(--danger-glow);
+        }
+
+        #confirm-btn:hover {
+            background: var(--danger-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px var(--danger-glow);
+        }
+
+        #confirm-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .container {
+                padding: 12px;
+                /* Even smaller padding */
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .title {
+                font-size: 16px;
+            }
+
+            .message {
+                font-size: 12px;
+                margin-bottom: 16px;
+            }
+
+            /* Keep buttons side-by-side even on small screens */
+            .button-group {
+                flex-direction: row;
+            }
+
+            .button {
+                width: auto;
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            .icon-wrapper {
+                width: 36px;
+                height: 36px;
+                margin-bottom: 8px;
+            }
+
+            .icon-wrapper svg {
+                width: 18px;
+                height: 18px;
+            }
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <div>
-            <div class="title">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>
-                Reset Settings?
+        <div class="card">
+            <div class="icon-wrapper">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z">
+                    </path>
+                </svg>
             </div>
+            <h1 class="title">Reset Settings?</h1>
             <p class="message">This will restore all settings to their defaults. This action cannot be undone.</p>
-        </div>
-        <div class="button-group">
-            <button id="cancel-btn" class="button">Cancel</button>
-            <button id="confirm-btn" class="button">Confirm Reset</button>
+            <div class="button-group">
+                <button id="cancel-btn" class="button">Cancel</button>
+                <button id="confirm-btn" class="button">Confirm Reset</button>
+            </div>
         </div>
     </div>
-<script>
-    document.getElementById('cancel-btn').addEventListener('click', () => window.electronAPI.cancelReset());
-    document.getElementById('confirm-btn').addEventListener('click', () => window.electronAPI.confirmReset());
-</script>
-<script>
-// --- Theme Application Logic ---
-function applyTheme(theme) {
-    if (theme === 'light') {
-        document.documentElement.classList.add('light-mode');
-    } else {
-        document.documentElement.classList.remove('light-mode');
-    }
-}
 
-if (window.electronAPI) {
-    window.electronAPI.theme.getResolved().then(applyTheme);
-    window.electronAPI.theme.onUpdate(applyTheme);
-}
-</script>
+    <script>
+        document.getElementById('cancel-btn').addEventListener('click', () => window.electronAPI.cancelReset());
+        document.getElementById('confirm-btn').addEventListener('click', () => window.electronAPI.confirmReset());
+    </script>
+
+    <script>
+        // --- Theme Application Logic ---
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                document.documentElement.classList.add('light-mode');
+            } else {
+                document.documentElement.classList.remove('light-mode');
+            }
+        }
+
+        if (window.electronAPI) {
+            window.electronAPI.theme.getResolved().then(applyTheme);
+            window.electronAPI.theme.onUpdate(applyTheme);
+        }
+    </script>
 </body>
+
 </html>

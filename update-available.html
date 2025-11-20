@@ -1,419 +1,651 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Cosmic Update Status</title>
+    <title>Update Available</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
         :root {
-            --bg-primary: #020010;
-            --text-primary: #e0eaff;
-            --text-secondary: #9098b0;
-            
-            --glass-bg: rgba(10, 15, 30, 0.4);
-            --glass-border: rgba(0, 234, 255, 0.15);
-            --glass-border-glow: rgba(0, 234, 255, 0.25);
+            /* Colors & Theme Tokens matching settings.html */
+            --bg-primary: #0f111a;
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --text-tertiary: #64748b;
 
-            --glow-primary: #0077ff;   /* Deep Blue */
-            --glow-secondary: #00eaff; /* Vibrant Cyan */
-            --glow-tertiary: #32cd32;  /* LimeGreen (for contrast) */
-            
-            --success-color: #39ff8d;
-            --success-glow: rgba(57, 255, 141, 0.4);
-            --danger-color: #ff4757;
-            --danger-glow: rgba(255, 71, 87, 0.4);
+            /* Glass Effect */
+            --glass-surface: rgba(30, 30, 35, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.05);
 
-            /* For parallax effect */
-            --mouse-x: 0.5;
-            --mouse-y: 0.5;
+            /* Accents */
+            --accent-primary: #818cf8;
+            --accent-secondary: #c084fc;
+            --accent-gradient: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+            --accent-glow: rgba(129, 140, 248, 0.25);
+
+            /* Status */
+            --success: #34d399;
+            --error: #f43f5e;
+
+            /* Spacing & Radius */
+            --radius-lg: 16px;
+            --radius-xl: 24px;
         }
 
         html.light-mode {
-            --bg-primary: #f0f2f5;
-            --text-primary: #1d1d1f;
-            --text-secondary: #6e6e73;
-            
-            --glass-bg: rgba(255, 255, 255, 0.5);
-            --glass-border: rgba(0, 0, 0, 0.1);
-            --glass-border-glow: rgba(0, 0, 0, 0.1);
+            --bg-primary: #f8fafc;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-tertiary: #94a3b8;
 
-            --glow-primary: #007aff;
-            --glow-secondary: #34c759;
-            --glow-tertiary: #ff9500;
-            
-            --success-color: #34c759;
-            --success-glow: rgba(52, 199, 89, 0.4);
-            --danger-color: #ff3b30;
-            --danger-glow: rgba(255, 59, 48, 0.4);
+            --glass-surface: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(0, 0, 0, 0.06);
+            --glass-highlight: rgba(255, 255, 255, 0.5);
+
+            --accent-primary: #6366f1;
+            --accent-secondary: #a855f7;
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --accent-glow: rgba(99, 102, 241, 0.2);
         }
 
-        *, *::before, *::after { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-        html, body {
-            margin: 0; padding: 0;
-            height: 100vh; width: 100vw;
-            background-color: var(--bg-primary);
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-primary);
             color: var(--text-primary);
-            font-family: 'Space Grotesk', sans-serif;
-            display: flex; align-items: center; justify-content: center;
-            overflow: hidden; user-select: none;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
         }
 
-        /* --- Dynamic Backgrounds --- */
-        .background-container {
-            position: absolute; inset: 0;
-            z-index: -1; pointer-events: none;
+        /* Background Ambience */
+        .ambient-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
         }
 
-        .stars, .stars2, .stars3 {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-repeat: repeat;
-            background-position: center;
-            will-change: transform;
-            transition: transform 0.1s linear;
-        }
-        .stars { 
-            background-image: radial-gradient(1px 1px at 25px 25px, #fff, transparent); 
-            background-size: 50px 50px;
-            animation: star-fall 120s linear infinite;
-            transform: translate(calc(var(--mouse-x) * -10px), calc(var(--mouse-y) * -10px));
-        }
-        .stars2 { 
-            background-image: radial-gradient(1px 1px at 30px 30px, #fff, transparent); 
-            background-size: 100px 100px;
-            animation: star-fall 180s linear infinite;
-            transform: translate(calc(var(--mouse-x) * -20px), calc(var(--mouse-y) * -20px));
-        }
-        .stars3 { 
-            background-image: radial-gradient(1.5px 1.5px at 40px 40px, #fff, transparent); 
-            background-size: 150px 150px;
-            animation: star-fall 240s linear infinite;
-            transform: translate(calc(var(--mouse-x) * -40px), calc(var(--mouse-y) * -40px));
-        }
-        @keyframes star-fall { from { background-position-y: 0px; } to { background-position-y: -1500px; } }
-
-        .aurora {
-            position: absolute; inset: -200px;
-            background: 
-                radial-gradient(circle at 15% 25%, var(--glow-primary), transparent 30%), 
-                radial-gradient(circle at 85% 35%, var(--glow-secondary), transparent 30%), 
-                radial-gradient(circle at 50% 95%, var(--glow-tertiary), transparent 30%);
-            filter: blur(150px);
-            opacity: 0.25;
-            animation: aurora-drift 40s ease-in-out infinite alternate;
-        }
-        @keyframes aurora-drift {
-            from { transform: rotate(0deg) scale(1); }
-            to { transform: rotate(360deg) scale(1.5); }
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            animation: float 15s ease-in-out infinite;
         }
 
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: var(--accent-primary);
+            top: -10%;
+            left: -10%;
+        }
 
-        /* --- Holographic Window --- */
-        .window-container {
-            width: 480px; height: 520px;
-            background: var(--glass-bg);
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--accent-secondary);
+            bottom: -10%;
+            right: -10%;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(30px, 30px);
+            }
+        }
+
+        /* Main Card */
+        .update-card {
+            width: 90%;
+            max-width: 600px;
+            height: 90vh;
+            background: var(--glass-surface);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
             border: 1px solid var(--glass-border);
-            backdrop-filter: blur(24px) saturate(150%);
-            -webkit-backdrop-filter: blur(24px) saturate(150%);
-            border-radius: 16px;
-            box-shadow: 0 0 80px rgba(0,0,0,0.5), 0 0 20px var(--glass-border-glow) inset;
+            border-radius: var(--radius-xl);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2), inset 0 0 0 1px var(--glass-highlight);
+            display: flex;
+            flex-direction: column;
             position: relative;
-            clip-path: polygon(0 20px, 20px 0, calc(100% - 20px) 0, 100% 20px, 100% calc(100% - 20px), calc(100% - 20px) 100%, 20px 100%, 0 calc(100% - 20px));
-            padding: 3px;
-            animation: float-in .8s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
-            -webkit-app-region: drag;
-        }
-        @keyframes float-in {
-            from { opacity: 0; transform: scale(0.9) translateY(20px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
+            animation: cardEnter 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+            -webkit-app-region: no-drag;
+            overflow: hidden;
+            /* Hide overflow on the card itself */
         }
 
-        .window-content {
-            background-color: transparent;
-            width: 100%; height: 100%;
+        /* Scrollable Content Wrapper */
+        .content-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 40px;
+            padding-bottom: 100px;
+            /* Space for sticky buttons */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Custom Scrollbar */
+        .content-wrapper::-webkit-scrollbar {
+            width: 6px;
+            /* Thinner scrollbar */
+        }
+
+        .content-wrapper::-webkit-scrollbar-track {
+            background: transparent;
+            margin: 20px 0;
+            /* Add margin to track */
+        }
+
+        .content-wrapper::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+        }
+
+        .content-wrapper::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Drag Area */
+        .drag-handle {
+            height: 30px;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            -webkit-app-region: drag;
+            flex-shrink: 0;
+        }
+
+        @keyframes cardEnter {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* States */
+        .state-view {
+            width: 100%;
+            min-height: 100%;
+            /* Ensure it takes full height */
+            display: none;
+            /* Hidden by default */
+            flex-direction: column;
+            /* Padding moved to content-wrapper */
+        }
+
+        .state-view.active {
+            display: flex;
+            animation: fadeContent 0.4s ease forwards;
+        }
+
+        @keyframes fadeContent {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Header Section (Icon + Title) */
+        .header-section {
+            text-align: center;
+            margin-bottom: 30px;
+            flex-shrink: 0;
+        }
+
+        .status-icon {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 20px;
+            color: var(--accent-primary);
+        }
+
+        .main-title {
+            font-size: 26px;
+            /* Reduced font size */
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .sub-text {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .version-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 16px;
+            background: rgba(129, 140, 248, 0.1);
+            border: 1px solid rgba(129, 140, 248, 0.2);
+            border-radius: 20px;
+            color: var(--accent-primary);
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 12px;
+        }
+
+        /* Release Notes Area - Expanded */
+        .notes-container {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            /* Darker background for contrast */
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 0;
+            /* Removed bottom margin */
+            /* Removed fixed height and overflow to let it grow */
+        }
+
+        .notes-scroll-area {
+            /* Removed nested scrolling */
+            width: 100%;
+        }
+
+        /* Custom Scrollbar */
+        /* Removed custom scrollbar for notes-scroll-area as it's no longer scrolling */
+
+        /* Markdown Content Styling */
+        .notes-content {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .notes-content h1,
+        .notes-content h2,
+        .notes-content h3 {
+            color: var(--text-primary);
+            margin-top: 24px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .notes-content h3:first-child {
+            margin-top: 0;
+        }
+
+        .notes-content ul {
+            padding-left: 20px;
+            margin-bottom: 16px;
+        }
+
+        .notes-content li {
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .notes-content strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .notes-content code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        /* Sticky Action Buttons */
+        .actions {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 40px;
+            background: rgba(15, 17, 26, 0.85);
+            /* Dark semi-transparent background */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            gap: 16px;
+            z-index: 10;
+            border-bottom-left-radius: var(--radius-xl);
+            border-bottom-right-radius: var(--radius-xl);
+        }
+
+        .btn {
+            flex: 1;
+            height: 52px;
+            /* Slightly taller */
+            border: none;
             border-radius: 14px;
+            /* More rounded */
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
             position: relative;
             overflow: hidden;
         }
 
-        /* --- State Management & Transitions --- */
-        .state {
-            position: absolute; inset: 0;
-            padding: 40px;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            text-align: center;
-            
-            /* Animation setup for entrance/exit */
-            --clip-start: polygon(0 0, 100% 0, 100% 0, 0 0);
-            --clip-end: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-            clip-path: var(--clip-start);
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity .5s ease, transform .5s ease, clip-path .5s cubic-bezier(0.65, 0, 0.35, 1);
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
         }
-        .state.active {
-            clip-path: var(--clip-end);
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 30px var(--accent-glow);
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(255, 255, 255, 0.2), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn-primary:hover::after {
             opacity: 1;
-            transform: translateY(0);
-            transition-delay: .3s; /* Delay for new state to enter */
-            pointer-events: all;
-        }
-        .state.exiting {
-            /* Defines how the old state leaves */
-            --clip-start: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
-            --clip-end: polygon(0 100%, 100% 100%, 100% 0, 0 0);
-            clip-path: var(--clip-end);
-            opacity: 0;
-            transform: translateY(-20px);
-            pointer-events: none;
-            transition-delay: 0s;
-        }
-        
-        .state .icon { width: 90px; height: 90px; margin-bottom: 25px; }
-        .state .title { font-size: 28px; font-weight: 700; margin: 0 0 10px; }
-        .state .message { font-size: 16px; color: var(--text-secondary); max-width: 350px; line-height: 1.7; }
-        .button {
-            border: none; padding: 14px 35px; border-radius: 10px; font-size: 16px;
-            font-family: 'Space Grotesk', sans-serif; font-weight: 700;
-            cursor: pointer; transition: all .3s ease; -webkit-app-region: no-drag;
-            margin-top: 35px; letter-spacing: 0.5px;
         }
 
-        /* --- State 1: Checking --- */
-        #checking-state .title {
-            animation: text-flicker 3s linear infinite;
+        /* Centered Layout for Checking/No Update */
+        .center-layout {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
         }
-        @keyframes text-flicker { 0%,19%,22%,25%,53%,57%,100% { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px var(--glow-secondary), 0 0 30px var(--glow-secondary); } 20%,24%,55% { text-shadow: none; } }
-        
-        #checking-icon { animation: rotate-icon 8s linear infinite; }
-        #checking-icon .ring1 { stroke-dasharray: 251; stroke-dashoffset: 251; animation: draw-ring 2s ease-in-out infinite alternate; }
-        #checking-icon .ring2 { stroke-dasharray: 188; stroke-dashoffset: 188; animation: draw-ring 2s ease-in-out .2s infinite alternate; }
-        #checking-icon .scanline { animation: scan 2s ease-in-out infinite; transform-origin: center; }
-        @keyframes draw-ring { to { stroke-dashoffset: 0; } }
-        @keyframes rotate-icon { to { transform: rotate(360deg); } }
-        @keyframes scan { 0%, 100% { transform: scaleY(0); } 50% { transform: scaleY(1); } }
 
-        /* --- State 2: Update Found --- */
-        #update-found-state { justify-content: flex-start; }
-        #update-found-state .title {
-            background: linear-gradient(90deg, var(--glow-primary), var(--glow-secondary), var(--success-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-size: 200% 200%;
-            animation: gradient-flow 3s ease infinite;
+        /* Animations */
+        .spin {
+            animation: spin 2s linear infinite;
         }
-        @keyframes gradient-flow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        #version { font-size: 14px; font-weight: 500; color: var(--text-secondary); margin-top: -5px; }
-        .release-notes-container {
-            background-color: rgba(0,0,0,0.4); border-radius: 12px; padding: 10px 20px;
-            flex-grow: 1; overflow-y: auto; border: 1px solid var(--glass-border);
-            margin: 20px 0; width: 100%; -webkit-app-region: no-drag;
-        }
-        .release-notes-container::-webkit-scrollbar { width: 6px; }
-        .release-notes-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
-        #release-notes ul { padding-left: 20px; margin: 10px 0; list-style-type: '🚀 '; }
-        #release-notes li { margin-bottom: 12px; font-size: 15px; line-height: 1.6; }
-        #release-notes a { color: var(--glow-secondary); text-decoration: none; font-weight: 700; }
-        #release-notes h3 { margin-bottom: 8px; font-size: 16px; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px; }
-        .button-group { display: flex; gap: 15px; -webkit-app-region: no-drag; width: 100%; margin-top: auto; }
-        .button-group .button { flex-grow: 1; margin-top: 0; }
-        #later-btn { background-color: transparent; color: var(--text-secondary); border: 1px solid var(--glass-border); }
-        #later-btn:hover { background-color: var(--glass-border); color: var(--text-primary); }
-        #download-btn {
-            background: linear-gradient(90deg, var(--glow-primary), var(--glow-secondary)); color: #fff;
-            box-shadow: 0 0 25px rgba(0, 120, 255, 0.4); animation: pulse-glow 2.5s infinite;
-        }
-        #download-btn:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 40px rgba(0, 234, 255, 0.5);
-        }
-        @keyframes pulse-glow { 0% { box-shadow: 0 0 25px rgba(0, 120, 255, 0.4); } 50% { box-shadow: 0 0 35px rgba(0, 234, 255, 0.5); } 100% { box-shadow: 0 0 25px rgba(0, 120, 255, 0.4); } }
 
-        /* --- State 3 & 4: No Update & Error --- */
-        .icon-final { stroke-dasharray: 200; stroke-dashoffset: 200; animation: draw-final-icon 1s .5s forwards; }
-        @keyframes draw-final-icon { to { stroke-dashoffset: 0; } }
-        
-        #no-update-state .title { color: var(--success-color); }
-        #close-btn { background-color: var(--success-color); color: var(--bg-primary); }
-        #close-btn:hover { transform: scale(1.05); box-shadow: 0 4px 25px var(--success-glow); }
-
-        #error-state .title { color: var(--danger-color); animation: glitch-error .4s .4s both; }
-        @keyframes glitch-error {
-            0% { transform: translate(0); } 20% { transform: translate(-3px, 3px); }
-            40% { transform: translate(3px, -3px); } 60% { transform: translate(-3px, -3px); }
-            80% { transform: translate(3px, 3px); } 100% { transform: translate(0); }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
-        #error-close-btn { background-color: var(--danger-color); color: var(--bg-primary); }
-        #error-close-btn:hover { transform: scale(1.05); box-shadow: 0 4px 25px var(--danger-glow); }
 
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
     </style>
 </head>
+
 <body>
-    <div class="background-container">
-        <div class="aurora"></div>
-        <div class="stars"></div>
-        <div class="stars2"></div>
-        <div class="stars3"></div>
+    <!-- Ambient Background -->
+    <div class="ambient-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
     </div>
-    
-    <div class="window-container">
-        <div class="window-content">
-            
-            <div id="checking-state" class="state active">
-                <svg id="checking-icon" class="icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle class="ring1" cx="50" cy="50" r="40" stroke="url(#gradient-check)" stroke-width="4"/>
-                    <circle class="ring2" cx="50" cy="50" r="30" stroke="url(#gradient-check)" stroke-width="2" stroke-opacity="0.5"/>
-                    <line class="scanline" x1="50" y1="10" x2="50" y2="90" stroke="url(#gradient-check)" stroke-width="2"/>
-                    <defs>
-                        <linearGradient id="gradient-check" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="var(--glow-secondary)"/>
-                            <stop offset="100%" stop-color="var(--glow-primary)"/>
-                        </linearGradient>
-                    </defs>
-                </svg>
-                <h1 class="title" data-i18n="update-checking-title">Querying the Cosmic Archives...</h1>
-                <p class="message" data-i18n="update-checking-message">Asking the server nicely if it has any fresh bits for us. Hold tight, the server hamsters are just waking up.</p>
-            </div>
 
-            <div id="update-found-state" class="state">
-                <h1 class="title" data-i18n="update-found-title">Great Scott! An Update Has Landed!</h1>
-                <p id="version" data-i18n="update-version-text" data-i18n-version-placeholder="%VERSION%">Version %VERSION% is ready for deployment!</p>
-                <div class="release-notes-container">
-                    <div id="release-notes"></div>
-                </div>
-                <div class="button-group">
-                    <button id="later-btn" class="button" data-i18n="update-later-button">I'll Live Dangerously</button>
-                    <button id="download-btn" class="button" data-i18n="update-download-button">Engage!</button>
-                </div>
-            </div>
-            
-            <div id="no-update-state" class="state">
-                <svg class="icon icon-final" viewBox="0 0 52 52">
-                    <circle style="stroke: var(--success-color);" cx="26" cy="26" r="25" fill="none" stroke-width="4"/>
-                    <path style="stroke: var(--success-color);" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" stroke-width="6" stroke-linecap="round"/>
-                </svg>
-                <h1 class="title" data-i18n="update-not-found-title">Nailed It! You're on the Bleeding Edge.</h1>
-                <p class="message" data-i18n="update-not-found-message">Your version is the freshest of the fresh. No updates needed. Keep being awesome.</p>
-                <button id="close-btn" class="button" data-i18n="update-not-found-button">Rock On!</button>
-            </div>
+    <!-- Main Window -->
+    <div class="update-card">
+        <div class="drag-handle"></div>
 
-            <div id="error-state" class="state">
-                <svg class="icon icon-final" viewBox="0 0 52 52">
-                    <circle style="stroke: var(--danger-color);" cx="26" cy="26" r="25" fill="none" stroke-width="4"/>
-                    <path style="stroke: var(--danger-color);" fill="none" d="M16 16 36 36 M36 16 16 36" stroke-width="6" stroke-linecap="round"/>
+        <!-- 1. Checking State -->
+        <div id="checking-state" class="state-view active">
+            <div class="center-layout">
+                <svg class="status-icon spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
-                <h1 class="title" data-i18n="update-error-title">Houston, We Have a Poodle.</h1>
-                <p id="error-message" class="message" data-i18n="update-error-message">There seems to be a glitch in the Matrix. Check your connection or try again after the robots have had their coffee.</p>
-                <button id="error-close-btn" class="button" data-i18n="update-error-button">Abort Mission</button>
+                <h1 class="main-title" data-i18n="update-checking-title">Checking for Updates</h1>
+                <p class="sub-text pulse" data-i18n="update-checking-message">Connecting to the mothership...</p>
             </div>
         </div>
+
+        <!-- 2. Update Available State -->
+        <div id="update-found-state" class="state-view">
+            <div class="content-wrapper">
+                <div class="header-section">
+                    <div class="status-icon" style="margin: 0 auto 16px auto;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                        </svg>
+                    </div>
+                    <h1 class="main-title" data-i18n="update-found-title">New Version Available</h1>
+                    <div id="version" class="version-pill" data-i18n="update-version-text"
+                        data-i18n-version-placeholder="v%VERSION%">v1.0.0</div>
+                </div>
+
+                <div class="notes-container">
+                    <div id="release-notes" class="notes-content">
+                        <!-- Content injected via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button id="later-btn" class="btn btn-secondary" data-i18n="update-later-button">
+                    Not Now
+                </button>
+                <button id="download-btn" class="btn btn-primary" data-i18n="update-download-button">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download Update
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. Up to Date State -->
+        <div id="no-update-state" class="state-view">
+            <div class="center-layout">
+                <svg class="status-icon" style="color: var(--success);" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h1 class="main-title" data-i18n="update-not-found-title"
+                    style="background: none; -webkit-text-fill-color: var(--success); color: var(--success);">You're Up
+                    to Date</h1>
+                <p class="sub-text" data-i18n="update-not-found-message">You have the latest version installed.</p>
+                <button id="close-btn" class="btn btn-secondary" style="margin-top: 30px; width: 200px;"
+                    data-i18n="update-not-found-button">Close</button>
+            </div>
+        </div>
+
+        <!-- 4. Error State -->
+        <div id="error-state" class="state-view">
+            <div class="center-layout">
+                <svg class="status-icon" style="color: var(--error);" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <h1 class="main-title" data-i18n="update-error-title"
+                    style="background: none; -webkit-text-fill-color: var(--error); color: var(--error);">Update Failed
+                </h1>
+                <p id="error-message" class="sub-text" data-i18n="update-error-message">Something went wrong.</p>
+                <button id="error-close-btn" class="btn btn-secondary" style="margin-top: 30px; width: 200px;"
+                    data-i18n="update-error-button">Close</button>
+            </div>
+        </div>
+
     </div>
 
-<script src="translations.js"></script>
-<script>
-    const states = {
-        checking: document.getElementById('checking-state'),
-        found: document.getElementById('update-found-state'),
-        notFound: document.getElementById('no-update-state'),
-        error: document.getElementById('error-state'),
-    };
-    let currentStateKey = 'checking';
+    <script src="translations.js"></script>
+    <script>
+        // State Management
+        const states = {
+            checking: document.getElementById('checking-state'),
+            found: document.getElementById('update-found-state'),
+            notFound: document.getElementById('no-update-state'),
+            error: document.getElementById('error-state'),
+        };
 
-    function showState(newStateKey) {
-        if (newStateKey === currentStateKey || !states[newStateKey]) return;
-
-        const oldState = states[currentStateKey];
-        const newState = states[newStateKey];
-        
-        if (oldState) {
-            oldState.classList.add('exiting');
-            setTimeout(() => {
-                oldState.classList.remove('active', 'exiting');
-            }, 500);
-        }
-        
-        newState.classList.add('active');
-        currentStateKey = newStateKey;
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const api = window.updateAPI;
-        const mainAppApi = window.electronAPI;
-
-        api.onUpdateInfo((data) => {
-            switch(data.status) {
-                case 'checking':
-                    showState('checking');
-                    break;
-                case 'update-available':
-                    document.getElementById('version').textContent = document.getElementById('version').dataset.i18nVersionPlaceholder.replace('%VERSION%', data.version);
-                    document.getElementById('release-notes').innerHTML = data.releaseNotesHTML;
-                    showState('found');
-                    break;
-                case 'up-to-date':
-                    showState('notFound');
-                    break;
-                case 'error':
-                    if (data.message) {
-                        document.getElementById('error-message').textContent = `The server mumbled something about: "${data.message}". Please try again later.`;
-                    }
-                    showState('error');
-                    break;
+        function showState(stateName) {
+            Object.values(states).forEach(el => el.classList.remove('active'));
+            if (states[stateName]) {
+                states[stateName].classList.add('active');
             }
-        });
+        }
 
-        document.getElementById('download-btn').addEventListener('click', () => mainAppApi.openDownloadPage());
-        document.getElementById('later-btn').addEventListener('click', () => mainAppApi.closeUpdateWindow());
-        document.getElementById('close-btn').addEventListener('click', () => mainAppApi.closeUpdateWindow());
-        document.getElementById('error-close-btn').addEventListener('click', () => mainAppApi.closeUpdateWindow());
+        // API Integration
+        document.addEventListener('DOMContentLoaded', () => {
+            const api = window.updateAPI;
+            const mainAppApi = window.electronAPI;
 
-        document.body.addEventListener('mousemove', (e) => {
-            const { clientX, clientY } = e;
-            const { innerWidth, innerHeight } = window;
-            const x = (clientX / innerWidth) - 0.5;
-            const y = (clientY / innerHeight) - 0.5;
-            document.documentElement.style.setProperty('--mouse-x', x);
-            document.documentElement.style.setProperty('--mouse-y', y);
-        });
+            if (api) {
+                api.onUpdateInfo((data) => {
+                    console.log('Update Info:', data);
+                    switch (data.status) {
+                        case 'checking':
+                            showState('checking');
+                            break;
+                        case 'update-available':
+                            // Update Version
+                            const verEl = document.getElementById('version');
+                            const verTemplate = verEl.dataset.i18nVersionPlaceholder || 'v%VERSION%';
+                            verEl.textContent = verTemplate.replace('%VERSION%', data.version || 'Unknown');
 
-        // --- Translation Logic ---
-        if (window.electronAPI) {
-            const applyTranslations = (lang) => {
-                const dict = translations[lang] || translations.en;
-                document.querySelectorAll('[data-i18n]').forEach(el => {
-                    const key = el.getAttribute('data-i18n');
-                    if (dict[key]) {
-                        el.textContent = dict[key];
+                            // Update Notes
+                            const notesEl = document.getElementById('release-notes');
+                            if (data.releaseNotesHTML) {
+                                notesEl.innerHTML = data.releaseNotesHTML;
+                            } else if (data.releaseNotes) {
+                                // Simple markdown parser
+                                let html = data.releaseNotes
+                                    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                                    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                                    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                                    .replace(/^\* (.*$)/gim, '<ul><li>$1</li></ul>')
+                                    .replace(/^- (.*$)/gim, '<ul><li>$1</li></ul>')
+                                    .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+                                    .replace(/`(.*)`/gim, '<code>$1</code>')
+                                    .replace(/\n/gim, '<br />');
+
+                                // Fix nested lists (basic)
+                                html = html.replace(/<\/ul><br \/><ul>/gim, '');
+                                notesEl.innerHTML = html;
+                            } else {
+                                notesEl.innerHTML = '<p style="text-align:center; opacity:0.6;">No release notes available.</p>';
+                            }
+
+                            showState('found');
+                            break;
+                        case 'up-to-date':
+                            showState('notFound');
+                            break;
+                        case 'error':
+                            const errEl = document.getElementById('error-message');
+                            if (data.message) errEl.textContent = data.message;
+                            showState('error');
+                            break;
                     }
                 });
-                document.documentElement.lang = lang;
-                document.documentElement.dir = ['he', 'ar', 'fa', 'ur'].includes(lang) ? 'rtl' : 'ltr';
-            };
+            }
 
-            window.electronAPI.getSettings().then(settings => {
-                applyTranslations(settings.language || 'en');
-            });
-            window.electronAPI.onLanguageChanged(applyTranslations);
-        }
-    });
-</script>
-<script>
-// --- Theme Application Logic ---
-function applyTheme(theme) {
-    if (theme === 'light') {
-        document.documentElement.classList.add('light-mode');
-    } else {
-        document.documentElement.classList.remove('light-mode');
-    }
-}
+            // Button Handlers
+            document.getElementById('download-btn')?.addEventListener('click', () => mainAppApi?.openDownloadPage());
+            document.getElementById('later-btn')?.addEventListener('click', () => mainAppApi?.closeUpdateWindow());
+            document.getElementById('close-btn')?.addEventListener('click', () => mainAppApi?.closeUpdateWindow());
+            document.getElementById('error-close-btn')?.addEventListener('click', () => mainAppApi?.closeUpdateWindow());
 
-if (window.electronAPI) {
-    window.electronAPI.theme.getResolved().then(applyTheme);
-    window.electronAPI.theme.onUpdate(applyTheme);
-}
-</script>
+            // Translations & Theme
+            if (window.electronAPI) {
+                const applyTranslations = (lang) => {
+                    const dict = translations[lang] || translations.en;
+                    document.querySelectorAll('[data-i18n]').forEach(el => {
+                        const key = el.getAttribute('data-i18n');
+                        if (dict[key]) el.textContent = dict[key];
+                    });
+                    document.documentElement.lang = lang;
+                    document.documentElement.dir = ['he', 'ar'].includes(lang) ? 'rtl' : 'ltr';
+                };
+
+                const applyTheme = (theme) => {
+                    if (theme === 'light') document.documentElement.classList.add('light-mode');
+                    else document.documentElement.classList.remove('light-mode');
+                };
+
+                window.electronAPI.getSettings().then(settings => {
+                    applyTranslations(settings.language || 'en');
+                });
+                window.electronAPI.onLanguageChanged(applyTranslations);
+
+                window.electronAPI.theme.getResolved().then(applyTheme);
+                window.electronAPI.theme.onUpdate(applyTheme);
+            }
+        });
+    </script>
 </body>
+
 </html>

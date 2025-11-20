@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <title>Gemini Chat</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    
+
     <style>
         :root {
             --background-primary: #121212;
@@ -28,10 +29,14 @@
             --border-color: #e0e0e0;
         }
 
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
-        html, body {
-            margin: 0; padding: 0;
+        html,
+        body {
+            margin: 0;
+            padding: 0;
             background: var(--background-primary);
             font-family: 'Poppins', sans-serif;
             overflow: hidden;
@@ -39,35 +44,42 @@
         }
 
         .top-bar {
-            width: 100%; height: 38px;
+            width: 100%;
+            height: 38px;
             -webkit-app-region: drag;
             background: var(--background-secondary);
-            user-select: none; display: flex;
+            user-select: none;
+            display: flex;
             justify-content: space-between;
-            align-items: center; padding: 0 12px;
+            align-items: center;
+            padding: 0 12px;
             border-bottom: 1px solid var(--border-color);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
 
         #chat-title {
-            font-size: 14px; font-weight: 500;
-            color: var(--text-secondary); white-space: nowrap;
-            overflow: hidden; text-overflow: ellipsis;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
             max-width: calc(100% - 150px);
             -webkit-app-region: drag;
             animation: fadeIn 1s ease-in-out;
-            direction: ltr;
-            text-align: left;
-        }
-
-        html[dir="rtl"] #chat-title {
-            direction: rtl;
-            text-align: right;
+            /* Direction will be set dynamically based on content */
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .button-container {
@@ -75,42 +87,60 @@
             align-items: center;
             -webkit-app-region: no-drag;
         }
-        
+
         .icon-button {
             -webkit-app-region: no-drag;
-            width: 30px; height: 30px; border: none;
-            background: none; color: var(--text-secondary);
-            cursor: pointer; font-size: 20px; display: flex;
-            align-items: center; justify-content: center;
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: color 0.3s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative; margin-left: 6px;
+            position: relative;
+            margin-left: 6px;
         }
 
         .icon-button svg {
-            width: 22px; height: 22px;
+            width: 22px;
+            height: 22px;
             transition: stroke 0.3s ease, transform 0.4s ease, fill 0.3s ease;
             stroke: var(--text-secondary);
             stroke-width: 1.5;
         }
 
-        .icon-button#settings-button svg, .icon-button#export-chat-button svg {
-             stroke-width: 0;
-             fill: var(--text-secondary);
+        .icon-button#settings-button svg,
+        .icon-button#export-chat-button svg {
+            stroke-width: 0;
+            fill: var(--text-secondary);
         }
 
         .icon-button::before {
             content: attr(data-tooltip);
-            position: absolute; bottom: 125%; left: 50%;
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
             transform: translateX(-50%) translateY(5px);
-            background: var(--tooltip-background); color: var(--text-primary);
-            padding: 4px 8px; border-radius: 5px; font-size: 12px;
-            font-weight: 500; white-space: nowrap; opacity: 0;
+            background: var(--tooltip-background);
+            color: var(--text-primary);
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease, transform 0.3s ease;
         }
-        
-        .icon-button:hover { transform: scale(1.1); }
-        
+
+        .icon-button:hover {
+            transform: scale(1.1);
+        }
+
         .icon-button:hover svg {
             stroke: var(--accent-glow);
             fill: var(--accent-glow);
@@ -122,8 +152,13 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        #new-window-button:hover svg { transform: rotate(90deg); }
-        #settings-button:hover svg { transform: rotate(90deg) scale(1.1); }
+        #new-window-button:hover svg {
+            transform: rotate(90deg);
+        }
+
+        #settings-button:hover svg {
+            transform: rotate(90deg) scale(1.1);
+        }
 
         html[dir="rtl"] .icon-button {
             margin-left: 0;
@@ -135,181 +170,231 @@
             opacity: 0.4;
             background-color: #444;
         }
+
         .sortable-chosen {
             cursor: grabbing;
         }
+
         .icon-button.sortable-drag {
             cursor: grabbing;
         }
     </style>
 </head>
+
 <body>
 
-<div class="top-bar">
-    <span id="chat-title"></span>
-    <div class="button-container">
-        <button id="new-window-button" class="icon-button" data-tooltip-i18n="tooltip-new-chat">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 4V20M4 12H20" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <button id="minimize-button" class="icon-button" data-tooltip-i18n="tooltip-minimize">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M5 12H19" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </button>
-        <button id="fullscreen-button" class="icon-button" data-tooltip-i18n="tooltip-fullscreen">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path class="enter-fullscreen" d="M16 3h5v5M8 3H3v5M16 21h5v-5M8 21H3v-5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path class="exit-fullscreen" d="M21 8V3h-5M3 8V3h5M21 16v5h-5M3 16v5h5" stroke-linecap="round" stroke-linejoin="round" style="display: none;"/>
-            </svg>
-        </button>
-        <button id="settings-button" class="icon-button" data-tooltip-i18n="tooltip-settings">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.69-1.62-0.92L14.4,2.28c-0.05-0.24-0.27-0.42-0.51-0.42 h-3.8c-0.24,0-0.46,0.18-0.51,0.42l-0.58,2.52C8.41,5.55,7.88,5.86,7.38,6.24l-2.39-0.96c-0.22-0.08-0.47,0-0.59,0.22 l-1.92,3.32c-0.11,0.2-0.06,0.47,0.12,0.61l2.03,1.58C4.02,11.36,4,11.68,4,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.69,1.62,0.92 l0.58,2.52c0.05,0.24,0.27,0.42,0.51,0.42h3.8c0.24,0,0.46,0.18-0.51,0.42l0.58-2.52c0.6-0.23,1.12-0.54,1.62-0.92l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.11-0.2,0.06-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z" fill="currentColor"/></svg>
-        </button>
-        <button id="export-chat-button" class="icon-button" data-tooltip-i18n="tooltip-export" style="display:none;">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 16l4-5h-3V4h-2v7H8l4 5zM5 18v2h14v-2H5z" fill="currentColor"/></svg>
-        </button>
-        <button id="close-window-button" class="icon-button" data-tooltip-i18n="tooltip-close" style="display:none;">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 6L18 18M6 18L18 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
+    <div class="top-bar">
+        <span id="chat-title"></span>
+        <div class="button-container">
+            <button id="new-window-button" class="icon-button" data-tooltip-i18n="tooltip-new-chat">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 4V20M4 12H20" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </button>
+            <button id="minimize-button" class="icon-button" data-tooltip-i18n="tooltip-minimize">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 12H19" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </button>
+            <button id="fullscreen-button" class="icon-button" data-tooltip-i18n="tooltip-fullscreen">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path class="enter-fullscreen" d="M16 3h5v5M8 3H3v5M16 21h5v-5M8 21H3v-5" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path class="exit-fullscreen" d="M21 8V3h-5M3 8V3h5M21 16v5h-5M3 16v5h5" stroke-linecap="round"
+                        stroke-linejoin="round" style="display: none;" />
+                </svg>
+            </button>
+            <button id="settings-button" class="icon-button" data-tooltip-i18n="tooltip-settings">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.69-1.62-0.92L14.4,2.28c-0.05-0.24-0.27-0.42-0.51-0.42 h-3.8c-0.24,0-0.46,0.18-0.51,0.42l-0.58,2.52C8.41,5.55,7.88,5.86,7.38,6.24l-2.39-0.96c-0.22-0.08-0.47,0-0.59,0.22 l-1.92,3.32c-0.11,0.2-0.06,0.47,0.12,0.61l2.03,1.58C4.02,11.36,4,11.68,4,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.69,1.62,0.92 l0.58,2.52c0.05,0.24,0.27,0.42,0.51,0.42h3.8c0.24,0,0.46,0.18-0.51,0.42l0.58-2.52c0.6-0.23,1.12-0.54,1.62-0.92l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.11-0.2,0.06-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"
+                        fill="currentColor" />
+                </svg>
+            </button>
+            <button id="export-chat-button" class="icon-button" data-tooltip-i18n="tooltip-export"
+                style="display:none;">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 16l4-5h-3V4h-2v7H8l4 5zM5 18v2h14v-2H5z" fill="currentColor" />
+                </svg>
+            </button>
+            <button id="close-window-button" class="icon-button" data-tooltip-i18n="tooltip-close"
+                style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 6L18 18M6 18L18 6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </button>
+        </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-<script src="translations.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    if (!window.electronAPI) return;
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script src="translations.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!window.electronAPI) return;
 
-    const settingsButton = document.getElementById('settings-button');
-    const newWindowButton = document.getElementById('new-window-button');
-    const closeButton = document.getElementById('close-window-button');
-    const exportButton = document.getElementById('export-chat-button');
-    const fullscreenButton = document.getElementById('fullscreen-button');
-    const minimizeButton = document.getElementById('minimize-button');
-    const titleElement = document.getElementById('chat-title');
-    const buttonContainer = document.querySelector('.button-container');
+            const settingsButton = document.getElementById('settings-button');
+            const newWindowButton = document.getElementById('new-window-button');
+            const closeButton = document.getElementById('close-window-button');
+            const exportButton = document.getElementById('export-chat-button');
+            const fullscreenButton = document.getElementById('fullscreen-button');
+            const minimizeButton = document.getElementById('minimize-button');
+            const titleElement = document.getElementById('chat-title');
+            const buttonContainer = document.querySelector('.button-container');
 
-    let showChatTitle = true;
-    let latestTitle = '__NEW_CHAT__'; // Use a special key for new chats
-    let sortable = null;
-    const defaultButtonOrder = ['new-window-button', 'minimize-button', 'fullscreen-button', 'settings-button', 'export-chat-button', 'close-window-button'];
+            let showChatTitle = true;
+            let latestTitle = '__NEW_CHAT__'; // Use a special key for new chats
+            let sortable = null;
+            const defaultButtonOrder = ['minimize-button', 'new-window-button', 'fullscreen-button', 'export-chat-button', 'settings-button'];
 
-    const newChatTitles = new Set(Object.values(translations).map(t => t['new-chat']));
+            const newChatTitles = new Set(Object.values(translations).map(t => t['new-chat']));
 
-    function getTranslation(key, lang) {
-        return (translations[lang] && translations[lang][key]) || translations['en'][key];
-    }
+            function getTranslation(key, lang) {
+                return (translations[lang] && translations[lang][key]) || translations['en'][key];
+            }
 
-    function applyTranslations(lang) {
-        document.querySelectorAll('[data-tooltip-i18n]').forEach(el => {
-            const key = el.getAttribute('data-tooltip-i18n');
-            if (key) el.setAttribute('data-tooltip', getTranslation(key, lang));
-        });
-        document.documentElement.lang = lang;
-        document.documentElement.dir = ['he'].includes(lang) ? 'rtl' : 'ltr';
-    }
+            function applyTranslations(lang) {
+                document.querySelectorAll('[data-tooltip-i18n]').forEach(el => {
+                    const key = el.getAttribute('data-tooltip-i18n');
+                    if (key) el.setAttribute('data-tooltip', getTranslation(key, lang));
+                });
+                document.documentElement.lang = lang;
+                document.documentElement.dir = ['he'].includes(lang) ? 'rtl' : 'ltr';
+            }
 
-    function setButtonOrder(order) {
-        const orderToApply = (order && order.length > 0) ? order : defaultButtonOrder;
-        orderToApply.forEach(buttonId => {
-            const button = document.getElementById(buttonId);
-            if (button) buttonContainer.appendChild(button);
-        });
-    }
+            function setButtonOrder(order) {
+                const orderToApply = (order && order.length > 0) ? order : defaultButtonOrder;
+                orderToApply.forEach(buttonId => {
+                    const button = document.getElementById(buttonId);
+                    if (button) buttonContainer.appendChild(button);
+                });
+            }
 
-    function setDraggable(enabled) {
-        if (enabled && !sortable) {
-            sortable = new Sortable(buttonContainer, {
-                animation: 150,
-                ghostClass: 'sortable-ghost',
-                chosenClass: 'sortable-chosen',
-                dragClass: 'sortable-drag',
-                onEnd: (evt) => {
-                    const newOrder = Array.from(buttonContainer.children).map(child => child.id);
-                    window.electronAPI.updateSetting('buttonOrder', newOrder);
-                },
+            function setDraggable(enabled) {
+                if (enabled && !sortable) {
+                    sortable = new Sortable(buttonContainer, {
+                        animation: 150,
+                        ghostClass: 'sortable-ghost',
+                        chosenClass: 'sortable-chosen',
+                        dragClass: 'sortable-drag',
+                        onEnd: (evt) => {
+                            const newOrder = Array.from(buttonContainer.children).map(child => child.id);
+                            window.electronAPI.updateSetting('buttonOrder', newOrder);
+                        },
+                    });
+                } else if (!enabled && sortable) {
+                    sortable.destroy();
+                    sortable = null;
+                }
+            }
+
+            function detectTextDirection(text) {
+                if (!text) return 'ltr';
+
+                // Find the first non-whitespace character
+                const trimmed = text.trim();
+                if (!trimmed) return 'ltr';
+
+                // Check the first few characters (skip whitespace and punctuation)
+                for (let i = 0; i < Math.min(trimmed.length, 10); i++) {
+                    const char = trimmed[i];
+                    const code = char.charCodeAt(0);
+
+                    // Hebrew Unicode range: 0x0590 - 0x05FF
+                    if (code >= 0x0590 && code <= 0x05FF) {
+                        return 'rtl';
+                    }
+
+                    // Latin characters (English, etc.)
+                    if ((code >= 0x0041 && code <= 0x005A) || // A-Z
+                        (code >= 0x0061 && code <= 0x007A)) { // a-z
+                        return 'ltr';
+                    }
+                }
+
+                return 'ltr'; // Default to LTR
+            }
+
+            function updateTitleUI() {
+                const lang = document.documentElement.lang || 'en';
+                let displayTitle = '';
+                if (latestTitle === '__NEW_CHAT__') {
+                    displayTitle = getTranslation('new-chat', lang);
+                } else {
+                    displayTitle = latestTitle;
+                }
+
+                if (showChatTitle) {
+                    titleElement.style.animation = 'none';
+                    void titleElement.offsetWidth;
+                    titleElement.style.animation = 'fadeIn 0.5s ease-in-out';
+                    titleElement.textContent = displayTitle;
+
+                    // Set direction based on content
+                    const direction = detectTextDirection(displayTitle);
+                    titleElement.style.direction = direction;
+                    titleElement.style.textAlign = direction === 'rtl' ? 'right' : 'left';
+                } else {
+                    titleElement.textContent = '';
+                }
+            }
+
+            function handleSettingsUpdate(settings) {
+                const lang = settings.language || 'en';
+                applyTranslations(lang);
+                window.electronAPI.theme.getResolved().then(applyTheme);
+                closeButton.style.display = settings.showCloseButton ? 'flex' : 'none';
+                exportButton.style.display = settings.showExportButton ? 'flex' : 'none';
+                fullscreenButton.style.display = settings.showFullscreenButton !== false ? 'flex' : 'none';
+                newWindowButton.style.display = settings.showNewWindowButton !== false ? 'flex' : 'none';
+                minimizeButton.style.display = settings.showMinimizeButton !== false ? 'flex' : 'none';
+                showChatTitle = settings.showChatTitle !== false;
+                updateTitleUI();
+                setButtonOrder(settings.buttonOrder);
+                setDraggable(settings.draggableButtonsEnabled !== false);
+            }
+
+            window.electronAPI.getSettings().then(handleSettingsUpdate);
+            window.electronAPI.onSettingsUpdated(handleSettingsUpdate);
+
+            settingsButton.addEventListener('click', () => window.electronAPI.openSettingsWindow());
+            newWindowButton.addEventListener('click', () => window.electronAPI.openNewWindow());
+            closeButton.addEventListener('click', () => window.close());
+            exportButton.addEventListener('click', () => window.electronAPI.exportChat());
+            minimizeButton.addEventListener('click', () => window.electronAPI.minimizeWindow());
+
+            fullscreenButton.addEventListener('click', () => {
+                const enterIcon = fullscreenButton.querySelector('.enter-fullscreen');
+                const exitIcon = fullscreenButton.querySelector('.exit-fullscreen');
+                const isEntering = enterIcon.style.display !== 'none';
+                window.electronAPI.toggleFullScreen();
+                enterIcon.style.display = isEntering ? 'none' : 'block';
+                exitIcon.style.display = isEntering ? 'block' : 'none';
+                const newTooltipKey = isEntering ? 'tooltip-exit-fullscreen' : 'tooltip-fullscreen';
+                fullscreenButton.setAttribute('data-tooltip-i18n', newTooltipKey);
+                fullscreenButton.setAttribute('data-tooltip', getTranslation(newTooltipKey, document.documentElement.lang));
             });
-        } else if (!enabled && sortable) {
-            sortable.destroy();
-            sortable = null;
-        }
-    }
 
-    function updateTitleUI() {
-        const lang = document.documentElement.lang || 'en';
-        let displayTitle = '';
-        if (latestTitle === '__NEW_CHAT__') {
-            displayTitle = getTranslation('new-chat', lang);
-        } else {
-            displayTitle = latestTitle;
-        }
+            window.chatAPI.onTitleUpdate((title) => {
+                if (!title || newChatTitles.has(title)) {
+                    latestTitle = '__NEW_CHAT__';
+                } else {
+                    latestTitle = title;
+                }
+                updateTitleUI();
+            });
 
-        if (showChatTitle) {
-            titleElement.style.animation = 'none';
-            void titleElement.offsetWidth;
-            titleElement.style.animation = 'fadeIn 0.5s ease-in-out';
-            titleElement.textContent = displayTitle;
-        } else {
-            titleElement.textContent = '';
-        }
-    }
+            window.electronAPI.onLanguageChanged(async (lang) => {
+                applyTranslations(lang);
+                updateTitleUI();
+            });
 
-    function handleSettingsUpdate(settings) {
-        const lang = settings.language || 'en';
-        applyTranslations(lang);
-        window.electronAPI.theme.getResolved().then(applyTheme);
-        closeButton.style.display = settings.showCloseButton ? 'flex' : 'none';
-        exportButton.style.display = settings.showExportButton ? 'flex' : 'none';
-        fullscreenButton.style.display = settings.showFullscreenButton !== false ? 'flex' : 'none';
-        newWindowButton.style.display = settings.showNewWindowButton !== false ? 'flex' : 'none';
-        minimizeButton.style.display = settings.showMinimizeButton !== false ? 'flex' : 'none';
-        showChatTitle = settings.showChatTitle !== false;
-        updateTitleUI();
-        setButtonOrder(settings.buttonOrder);
-        setDraggable(settings.draggableButtonsEnabled !== false);
-    }
-
-    window.electronAPI.getSettings().then(handleSettingsUpdate);
-    window.electronAPI.onSettingsUpdated(handleSettingsUpdate);
-
-    settingsButton.addEventListener('click', () => window.electronAPI.openSettingsWindow());
-    newWindowButton.addEventListener('click', () => window.electronAPI.openNewWindow());
-    closeButton.addEventListener('click', () => window.close());
-    exportButton.addEventListener('click', () => window.electronAPI.exportChat());
-    minimizeButton.addEventListener('click', () => window.electronAPI.minimizeWindow());
-
-    fullscreenButton.addEventListener('click', () => {
-        const enterIcon = fullscreenButton.querySelector('.enter-fullscreen');
-        const exitIcon = fullscreenButton.querySelector('.exit-fullscreen');
-        const isEntering = enterIcon.style.display !== 'none';
-        window.electronAPI.toggleFullScreen();
-        enterIcon.style.display = isEntering ? 'none' : 'block';
-        exitIcon.style.display = isEntering ? 'block' : 'none';
-        const newTooltipKey = isEntering ? 'tooltip-exit-fullscreen' : 'tooltip-fullscreen';
-        fullscreenButton.setAttribute('data-tooltip-i18n', newTooltipKey);
-        fullscreenButton.setAttribute('data-tooltip', getTranslation(newTooltipKey, document.documentElement.lang));
-    });
-
-    window.chatAPI.onTitleUpdate((title) => {
-        if (!title || newChatTitles.has(title)) {
-            latestTitle = '__NEW_CHAT__';
-        } else {
-            latestTitle = title;
-        }
-        updateTitleUI();
-    });
-
-    window.electronAPI.onLanguageChanged(async (lang) => {
-        applyTranslations(lang);
-        updateTitleUI();
-    });
-
-    function applyTheme(theme) {
-        document.documentElement.classList.toggle('light-mode', theme === 'light');
-    }
-    window.electronAPI.theme.onUpdate(applyTheme);
-});
-</script>
+            function applyTheme(theme) {
+                document.documentElement.classList.toggle('light-mode', theme === 'light');
+            }
+            window.electronAPI.theme.onUpdate(applyTheme);
+        });
+    </script>
 
 </body>
+
 </html>

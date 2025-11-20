@@ -1,10 +1,10 @@
 {
   "name": "gemini-desk",
-  "version": "6.5.0",
+  "version": "8.0.0",
   "description": "Gemini Desktop Wrapper",
   "author": {
     "name": "Hillel BH",
-    "email": "hillelben14@gmail.com"
+    "email": "hillel@example.com"
   },
   "main": "main.js",
   "scripts": {
@@ -22,6 +22,7 @@
     "electron-store": "^8.2.0",
     "electron-updater": "^6.6.2",
     "jsdom": "^24.0.0",
+    "katex": "^0.16.9",
     "marked": "^16.1.2",
     "node-fetch": "^3.3.2"
   },
@@ -41,6 +42,9 @@
       "!**/.github{,/**}",
       "!**/.vscode{,/**}",
       "!node_modules/electron{,/**}"
+    ],
+    "extraResources": [
+      "0.5.8_0/**"
     ],
     "asar": true,
     "compression": "maximum",
