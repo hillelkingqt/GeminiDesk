@@ -53,53 +53,52 @@
 
 GeminiDesk is more than a wrapper. It's a command center, loaded with powerful, exclusive features that will make you wonder how you ever lived without them.
 
+*   **🔌 Model Context Protocol (MCP) Support: The Power of Connection**
+    Connect your AI to your local world. Run local tools, access files, and build powerful workflows with built-in MCP support. The app includes an easy "Do it for me" setup to get your local proxy server running in seconds.
+
 *   **🤖 Your Choice of Playground: Gemini or AI Studio**
     Start your session your way. Choose between the classic **Gemini** chat interface for streamlined conversations or the powerful **AI Studio** for advanced prompt engineering and development.
 
-*   **🗓️ Deep Research Automation: Your AI Autopilot**
-    Schedule complex research tasks to run automatically! Set a day, time, and a detailed prompt. GeminiDesk will launch, switch to the Pro model and execute your "Deep Research" query, all without you lifting a finger.
+*   **🗓️ Deep Research Automation & Scheduler: Your AI Autopilot**
+    Set it and forget it. Schedule complex research tasks to run automatically! Set a day, time, and a detailed prompt. GeminiDesk will wake up, launch, switch to the Pro model, execute your "Deep Research" query, export the results to Google Docs, and notify you when done—all without you lifting a finger.
 
-*   **📄 Flawless PDF Export: Your Chats, Perfected**
-    Export your conversations into beautifully formatted PDF documents. With full support for **Right-to-Left (RTL)** languages like Hebrew and Arabic, and perfect rendering of **KaTeX math equations**, your chats have never looked better on paper.
+*   **🗣️ Voice Assistant Integration: Talk to the Machine**
+    Go hands-free. Seamlessly integrate with the external Voice Assistant module (Shortcut: `Alt+Shift+A`) to have real conversations with your AI.
+
+*   **📤 Ultimate Export Suite: PDF, Markdown, & Math**
+    Your data, your format.
+    *   **PDF:** Beautifully formatted with **KaTeX** for perfect math rendering, **Highlight.js** for code syntax highlighting, and full **RTL (Right-to-Left)** support for Hebrew/Arabic.
+    *   **Markdown:** Direct export to `.md` files for your notes or documentation.
 
 *   **📸 Screenshot to Chat: See It, Snip It, Solve It!**
-    Instantly snip any part of your screen with a hotkey. The image is magically beamed into your chat, ready for Gemini's brilliant analysis. It's like having a conversation with your screen!
+    Instantly snip any part of your screen with a hotkey (`Ctrl+Alt+S`). The image is magically beamed into your chat, ready for Gemini's brilliant analysis.
+
+*   **📋 Clipboard Magic**
+    Paste image files, PDFs, or text files directly from your system clipboard into the chat. No more drag-and-drop dances—it just works.
+
+*   **💡 Share Your Ideas**
+    Have a feature request? Send it directly to the developer through the built-in "Share Ideas" form. We're listening!
 
 *   **⚡️ Instant Model Switching: Flash or Pro? Decide in a Flash.**
     Why click through menus? Use dedicated hotkeys (`Alt+F`, `Alt+P`) to instantly fire up a new chat with either the lightning-fast **Flash** model or the powerhouse **Pro** model. Your workflow just got a nitrous boost.
 
-*   **🔊 Audio Feedback: Never Miss a Beat**
-    Know the second your AI has finished its thought. GeminiDesk plays a subtle, satisfying sound the moment the response is complete, so you can look away and multitask without losing your place.
+*   **🔊 Smart Audio Feedback: Never Miss a Beat**
+    Know the second your AI has finished its thought. GeminiDesk detects when the response is complete and plays a subtle, satisfying sound so you can multitask without losing your flow.
+
+*   **🔔 Smart Notifications**
+    Stay in the loop with a built-in notification system that checks for important server announcements and updates.
 
 *   **🌍 Speak Your Language: Full Internationalization**
-    The entire app interface, from tooltips to the settings menu, is available in multiple languages. Select your preferred language for a truly native experience.
+    The entire app interface, from tooltips to the settings menu, is fully localized into over 20 languages.
 
-*   **🔧 Your Cockpit, Your Rules: Customizable Toolbar**
-    Take control of your workspace. **Drag and drop** the toolbar buttons to reorder them exactly as you like. Don't need a button? Simply hide it in the settings.
-
-*   **🔎 Find Anything, Instantly**
-    Lost a brilliant idea in the chat abyss? Hit `Alt+S` to immediately focus the chat history search bar. Need to find text within the current conversation? `Ctrl+F` brings up a sleek, in-page find bar.
-
-*   **✨ Multi-Window Mania**
-    Who said you can only have one conversation at a time? Open multiple windows and conquer multiple topics simultaneously. It’s organized chaos at its finest.
-
-*   **🎨 Your App, Your Style: Full Theme Control**
-    Choose between a sleek **Dark** mode, a clean **Light** mode, or let the app **sync with your OS**. Your eyes will thank you.
-
-*   **🖼️ Expand Your Mind with Canvas Mode**
+*   **🖼️ Smart Canvas Mode**
     Need more space for a complex thought? The app window automatically expands to a larger, more comfortable "Canvas" size when Gemini enters its immersive panel, perfect for deep dives.
 
-*   **📌 Always-On-Top Mode: Your Unwavering AI Companion**
-    Keep Gemini watching over your shoulder (in a non-creepy way) while you work. Perfect for coding, writing, or just feeling less alone.
-
-*   **⌨️ Your Keys, Your Kingdom: Total Shortcut Customization**
-    Don't like our default hotkeys? No problem! Dive into the settings and remap every single shortcut to fit your unique workflow.
-
-*   **🚀 Run on Startup & Restore Session**
-    Have GeminiDesk greet you the moment your computer boots up. You can also enable "Restore Windows" to have all your previous chat windows reopen exactly where you left them.
+*   **📌 Always-On-Top & System Tray**
+    Keep Gemini watching over your shoulder (in a non-creepy way) while you work. Minimize it to the system tray to keep your taskbar clean, but keep it ready at a moment's notice.
 
 *   **🧠 The Little Things That Matter**
-    We've ironed out all the wrinkles. **Persistent Login** (sign in once!), **Automatic Mic Permissions**, a **Smart Draggable Header** that shows your current chat title, and **Non-Intrusive Updates**. It just works.
+    We've ironed out all the wrinkles. **Persistent Login** (sign in once!), **Automatic Mic Permissions**, a **Smart Draggable Header** that shows your current chat title, and **Non-Intrusive Auto-Updates**. It just works.
 
 ---
 
@@ -111,11 +110,15 @@ Access the magic from anywhere in your OS. (Remember, you can change ALL of thes
 | ----------------------------- | ------------------------------------------- |
 | `Alt` + `G`                   | Toggle App Visibility (Show / Hide)         |
 | `Alt` + `N`                   | **Open a New Window**                       |
+| `Alt` + `Shift` + `N`         | Open a New Chat (Standard)                  |
 | `Alt` + `S`                   | **Search Chat History** Instantly           |
 | `Ctrl` + `F`                  | **Find in Current Page** (Local Shortcut)   |
 | `Ctrl` + `Alt` + `S`          | **Capture Screenshot** & Paste into Chat    |
-| `Alt` + `P`                   | New Chat with **Pro** Model                 |
-| `Alt` + `F`                   | New Chat with **Flash** Model               |
+| `Alt` + `P`                   | Switch to **Pro** Model                     |
+| `Alt` + `F`                   | Switch to **Flash** Model                   |
+| `Alt` + `Shift` + `P`         | New Chat with **Pro** Model                 |
+| `Alt` + `Shift` + `F`         | New Chat with **Flash** Model               |
+| `Alt` + `Shift` + `A`         | Activate **Voice Assistant**                |
 | `Alt` + `R`                   | **Refresh the active View**                 |
 | `Alt` + `Q`                   | Close the Current Window                    |
 | `Alt` + `I`                   | Show Instructions / Onboarding Screen       |
