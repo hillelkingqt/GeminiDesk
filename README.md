@@ -62,9 +62,6 @@ GeminiDesk is more than a wrapper. It's a command center, loaded with powerful, 
 *   **🗓️ Deep Research Automation & Scheduler: Your AI Autopilot**
     Set it and forget it. Schedule complex research tasks to run automatically! Set a day, time, and a detailed prompt. GeminiDesk will wake up, launch, switch to the Pro model, execute your "Deep Research" query, export the results to Google Docs, and notify you when done—all without you lifting a finger.
 
-*   **🗣️ Voice Assistant Integration: Talk to the Machine**
-    Go hands-free. Seamlessly integrate with the external Voice Assistant module (Shortcut: `Alt+Shift+A`) to have real conversations with your AI.
-
 *   **📤 Ultimate Export Suite: PDF, Markdown, & Math**
     Your data, your format.
     *   **PDF:** Beautifully formatted with **KaTeX** for perfect math rendering, **Highlight.js** for code syntax highlighting, and full **RTL (Right-to-Left)** support for Hebrew/Arabic.
