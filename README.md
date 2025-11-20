@@ -34,22 +34,31 @@
 
 <table>
   <tr>
-    <td align="center"><img src="screenshots/Screenshot1.png" alt="Screenshot 1" width="400"></td>
-    <td align="center"><img src="screenshots/screenshot2.png" alt="Screenshot 2" width="400"></td>
+    <td align="center"><img src="screenshots/Notifications.png" alt="Notifications" width="400"></td>
+    <td align="center"><img src="screenshots/Settings.png" alt="Settings" width="400"></td>
   </tr>
   <tr>
-    <td align="center"><img src="screenshots/screenshot3.png" alt="Screenshot 3" width="400"></td>
-    <td align="center"><img src="screenshots/screenshot4.png" alt="Screenshot 4" width="400"></td>
+    <td align="center"><img src="screenshots/Settings2.png" alt="Settings2" width="400"></td>
+    <td align="center"><img src="screenshots/Settings3.png" alt="Settings3" width="400"></td>
   </tr>
   <tr>
-    <td align="center"><img src="screenshots/screenshot5.png" alt="Screenshot 5" width="400"></td>
-    <td align="center"><img src="screenshots/screenshot6.png" alt="Screenshot 6" width="400"></td>
+    <td align="center"><img src="screenshots/Shareideas.png" alt="Shareideas" width="400"></td>
+    <td align="center"><img src="screenshots/app.png" alt="App" width="400"></td>
   </tr>
   <tr>
-    <td align="center"><img src="screenshots/screenshot7.png" alt="Screenshot 7" width="400"></td>
-    <td align="center"><img src="screenshots/screenshot8.png" alt="Screenshot 8" width="400"></td>
+    <td align="center"><img src="screenshots/canvas.png" alt="Canvas" width="400"></td>
+    <td align="center"><img src="screenshots/chosepro.png" alt="Choose Pro" width="400"></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="screenshots/deepre.png" alt="Deep Research" width="400"></td>
+    <td align="center"><img src="screenshots/direction.png" alt="Direction" width="400"></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="screenshots/open.png" alt="Open" width="400"></td>
+    <td align="center"><img src="screenshots/update.png" alt="Update" width="400"></td>
   </tr>
 </table>
+
 
 GeminiDesk is more than a wrapper. It's a command center, loaded with powerful, exclusive features that will make you wonder how you ever lived without them.
 
