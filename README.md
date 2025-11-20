@@ -74,6 +74,7 @@ GeminiDesk is more than a wrapper. It's a command center, loaded with powerful, 
 *   **📤 Ultimate Export Suite: PDF, Markdown, & Math**
     Your data, your format.
     *   **PDF:** Beautifully formatted with **KaTeX** for perfect math rendering, **Highlight.js** for code syntax highlighting, and full **RTL (Right-to-Left)** support for Hebrew/Arabic.
+        [📄 View a sample PDF exported by GeminiDesk](https://github.com/hillelkingqt/GeminiDesk/blob/main/Demonstrating%20Text%20Formatting%20Capabilities.pdf)
     *   **Markdown:** Direct export to `.md` files for your notes or documentation.
 
 *   **📸 Screenshot to Chat: See It, Snip It, Solve It!**
