@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/icon.ico" alt="GeminiDesk Logo" width="150">
 </p>
 
-<h1 align="center">🚀 GeminiDesk - The Unofficial Gemini Desktop Super-App 🚀</h1>
+<h1 align="center">🚀 GeminiDesk - The Ultimate Gemini Desktop Super-App 🚀</h1>
 
 <p align="center">
   <strong>Is Google Gemini just another browser tab in your sea of tabs? We fixed that—and then some.</strong>
@@ -20,8 +20,10 @@
     <a href="https://github.com/hillelkingqt/GeminiDesk/issues">
     <img src="https://img.shields.io/github/issues/hillelkingqt/GeminiDesk?style=for-the-badge&logo=github&color=81c995" alt="Issues">
   </a>
+  <br />
   <img src="https://img.shields.io/badge/platform-Windows-0078D6?style=for-the-badge&logo=windows" alt="Platform: Windows">
   <img src="https://img.shields.io/badge/platform-macOS-lightgrey?style=for-the-badge&logo=apple" alt="Platform: macOS">
+  <img src="https://img.shields.io/badge/platform-Linux-orange?style=for-the-badge&logo=linux" alt="Platform: Linux">
 </p>
 
 <p align="center">
@@ -59,56 +61,43 @@
   </tr>
 </table>
 
-
 GeminiDesk is more than a wrapper. It's a command center, loaded with powerful, exclusive features that will make you wonder how you ever lived without them.
 
-*   **🔌 Model Context Protocol (MCP) Support: The Power of Connection**
-    Connect your AI to your local world. Run local tools, access files, and build powerful workflows with built-in MCP support. The app includes an easy "Do it for me" setup to get your local proxy server running in seconds.
+### 🧠 Advanced AI Features
 
-*   **🤖 Your Choice of Playground: Gemini or AI Studio**
-    Start your session your way. Choose between the classic **Gemini** chat interface for streamlined conversations or the powerful **AI Studio** for advanced prompt engineering and development.
+*   **🔌 Model Context Protocol (MCP) Support:** Connect your AI to your local world. Run local tools, access files, and build powerful workflows with built-in MCP support. The app includes an automatic **"Do it for me"** setup to get your local proxy server running in seconds.
+*   **🗓️ Deep Research Automation & Scheduler:** Set it and forget it. Schedule complex research tasks to run automatically! Set a day, time, and a detailed prompt. GeminiDesk will wake up, launch, switch to the Pro model, execute your "Deep Research" query, and notify you when done.
+*   **📝 Prompt Manager:** Never type the same context twice. Create, edit, and manage a library of custom prompts. **Set a "Default Prompt"** to be automatically sent every time you start a new chat—perfect for setting up persistent personas or coding rules.
+*   **🤖 Dual Modes:** Start your session your way. Choose between the classic **Gemini** chat interface for streamlined conversations or the powerful **AI Studio** for advanced prompt engineering and API development.
 
-*   **🗓️ Deep Research Automation & Scheduler: Your AI Autopilot**
-    Set it and forget it. Schedule complex research tasks to run automatically! Set a day, time, and a detailed prompt. GeminiDesk will wake up, launch, switch to the Pro model, execute your "Deep Research" query, export the results to Google Docs, and notify you when done—all without you lifting a finger.
+### 🛡️ Privacy & Security
 
-*   **📤 Ultimate Export Suite: PDF, Markdown, & Math**
-    Your data, your format.
-    *   **PDF:** Beautifully formatted with **KaTeX** for perfect math rendering, **Highlight.js** for code syntax highlighting, and full **RTL (Right-to-Left)** support for Hebrew/Arabic.
-        [📄 View a sample PDF exported by GeminiDesk](https://github.com/hillelkingqt/GeminiDesk/blob/main/Demonstrating%20Text%20Formatting%20Capabilities.pdf)
-    *   **Markdown:** Direct export to `.md` files for your notes or documentation.
+*   **🔒 Invisibility Mode:** Need privacy during meetings? Activate Invisibility Mode to hide the GeminiDesk window from screen sharing applications (like Zoom, Teams, Discord) and screen recording tools.
+*   **🌐 Proxy Support:** Behind a corporate firewall or need to route your traffic? Configure HTTP, HTTPS, or SOCKS5 proxies directly within the app settings.
 
-*   **📸 Screenshot to Chat: See It, Snip It, Solve It!**
-    Instantly snip any part of your screen with a hotkey (`Ctrl+Alt+S`). The image is magically beamed into your chat, ready for Gemini's brilliant analysis.
+### ⚡ Productivity & Workflow
 
-*   **📋 Clipboard Magic**
-    Paste image files, PDFs, or text files directly from your system clipboard into the chat. No more drag-and-drop dances—it just works.
+*   **📸 Smart Screenshots:**
+    *   **Select Area:** Instantly snip any part of your screen (`Ctrl+Alt+S`).
+    *   **Auto Full-Screen:** Toggle the option to capture the entire screen instantly for faster workflow.
+    *   The image is beamed directly into your chat, ready for analysis.
+*   **📤 Ultimate Export Suite:**
+    *   **PDF:** Beautifully formatted with **KaTeX** for math, **Highlight.js** for code, and full **RTL (Right-to-Left)** support for Hebrew/Arabic.
+    *   **Markdown:** Direct export to `.md` files.
+*   **🖼️ Smart Canvas Mode:** The app window automatically expands to a larger "Canvas" size when Gemini enters its immersive panel, perfect for deep dives and coding tasks.
 
-*   **💡 Share Your Ideas**
-    Have a feature request? Send it directly to the developer through the built-in "Share Ideas" form. We're listening!
+### 🎨 Customization & Accessibility
 
-*   **⚡️ Instant Model Switching: Flash or Pro? Decide in a Flash.**
-    Why click through menus? Use dedicated hotkeys (`Alt+F`, `Alt+P`) to instantly fire up a new chat with either the lightning-fast **Flash** model or the powerhouse **Pro** model. Your workflow just got a nitrous boost.
-
-*   **🔊 Smart Audio Feedback: Never Miss a Beat**
-    Know the second your AI has finished its thought. GeminiDesk detects when the response is complete and plays a subtle, satisfying sound so you can multitask without losing your flow.
-
-*   **🌍 Speak Your Language: Full Internationalization**
-    The entire app interface, from tooltips to the settings menu, is fully localized into over 20 languages.
-
-*   **🖼️ Smart Canvas Mode**
-    Need more space for a complex thought? The app window automatically expands to a larger, more comfortable "Canvas" size when Gemini enters its immersive panel, perfect for deep dives.
-
-*   **📌 Always-On-Top & System Tray**
-    Keep Gemini watching over your shoulder (in a non-creepy way) while you work. Minimize it to the system tray to keep your taskbar clean, but keep it ready at a moment's notice.
-
-*   **🧠 The Little Things That Matter**
-    We've ironed out all the wrinkles. **Persistent Login** (sign in once!), **Automatic Mic Permissions**, a **Smart Draggable Header** that shows your current chat title, and **Non-Intrusive Auto-Updates**. It just works.
+*   **🔊 Smart Audio Feedback:** Know the second your AI has finished its thought. GeminiDesk plays a subtle, satisfying sound upon completion. Choose from multiple sound options in settings.
+*   **🌍 Full Internationalization:** The entire app interface is localized into over 20 languages, with RTL support built into the core.
+*   **⚡️ Instant Model Switching:** Use hotkeys (`Alt+F`, `Alt+P`) to instantly fire up a new chat with either the **Flash** or **Pro** model.
+*   **🎤 Voice Assistant:** Activate the microphone instantly with a shortcut to talk to Gemini hands-free.
 
 ---
 
 ## ⌨️ The Secret Handshakes (Default Shortcuts)
 
-Access the magic from anywhere in your OS. (Remember, you can change ALL of these in the settings!)
+Access the magic from anywhere in your OS. (Fully customizable in Settings!)
 
 | Shortcut                      | Action                                      |
 | ----------------------------- | ------------------------------------------- |
@@ -118,8 +107,8 @@ Access the magic from anywhere in your OS. (Remember, you can change ALL of thes
 | `Alt` + `S`                   | **Search Chat History** Instantly           |
 | `Ctrl` + `F`                  | **Find in Current Page** (Local Shortcut)   |
 | `Ctrl` + `Alt` + `S`          | **Capture Screenshot** & Paste into Chat    |
-| `Alt` + `P`                   | Switch to **Pro** Model                     |
-| `Alt` + `F`                   | Switch to **Flash** Model                   |
+| `Alt` + `P`                   | Switch current chat to **Pro** Model        |
+| `Alt` + `F`                   | Switch current chat to **Flash** Model      |
 | `Alt` + `Shift` + `P`         | New Chat with **Pro** Model                 |
 | `Alt` + `Shift` + `F`         | New Chat with **Flash** Model               |
 | `Alt` + `Shift` + `A`         | Activate **Voice Assistant**                |
@@ -137,28 +126,38 @@ Access the magic from anywhere in your OS. (Remember, you can change ALL of thes
 Getting this slab of awesome onto your machine is laughably simple.
 
 1.  Brave the digital seas and navigate to the [**Latest Release**](https://github.com/hillelkingqt/GeminiDesk/releases/latest) page.
-2.  Download the correct installer for your operating system (`.exe` for Windows, `.dmg` for macOS).
-3.  Run the installer and follow the on-screen prompts. Click 'Next' like you mean it.
+2.  Download the correct installer for your OS.
 
-That's it! GeminiDesk is now ready for action.
+### <img src="https://img.shields.io/badge/-Windows-0078D6?style=flat&logo=windows&logoColor=white" height="20"> Windows
+Download the `.exe` file. Run the installer and follow the on-screen prompts.
 
----
+### <img src="https://img.shields.io/badge/-macOS-000000?style=flat&logo=apple&logoColor=white" height="20"> macOS
+Download the `.dmg` file. Drag GeminiDesk to your Applications folder.
 
-### ⚠️ A Note for macOS Heroes ⚠️
+**Note regarding "Damaged" error:**
+If you see a message saying the app is damaged, it's due to Apple's Gatekeeper. Run this command in Terminal:
+```sh
+xattr -dr com.apple.quarantine /Applications/GeminiDesk.app
+```
 
-Due to Apple's Gatekeeper security, apps not signed with a pricey Apple Developer ID get marked as "quarantined" when downloaded. This can cause a scary (but false) error message: “GeminiDesk is damaged and can’t be opened.”
+### <img src="https://img.shields.io/badge/-Linux-FCC624?style=flat&logo=linux&logoColor=black" height="20"> Linux
+We support major Linux distributions!
 
-**Fear not! Here’s the simple spell to fix it:**
-
-1.  After installing, **do not launch the app yet**.
-2.  Open your `Terminal` app (you can find it via Spotlight search).
-3.  Paste and run this command. It removes the quarantine flag, telling macOS to trust the app:
-    ```sh
-    xattr -dr com.apple.quarantine /Applications/GeminiDesk.app
+**AppImage (Recommended):**
+1.  Download the `.AppImage` file.
+2.  Make it executable:
+    ```bash
+    chmod +x GeminiDesk-8.0.0-linux-x86_64.AppImage
     ```
-4.  Now, launch the app normally from Launchpad or your Applications folder.
+3.  Run it:
+    ```bash
+    ./GeminiDesk-8.0.0-linux-x86_64.AppImage
+    ```
 
-This one-time step is all it takes to get the best Gemini desktop app running smoothly on your Mac.
+**DEB (Debian/Ubuntu/Mint):**
+```bash
+sudo dpkg -i GeminiDesk_8.0.0_amd64.deb
+```
 
 ---
 
@@ -198,7 +197,7 @@ Want to peek under the hood or forge your own version? We admire your courage.
 
 ## 🤝 Let's Build a Dynasty
 
-Contributions are the lifeblood of open source. If you have an idea that's so good it's scary, we want to see it.
+Contributions are the lifeblood of open source. If you have an idea that's so good it's scary, we want to see it. Use the built-in "Share Ideas" button in the app or:
 
 1.  Fork the Project
 2.  Create your Feature Branch (`git checkout -b feature/MindBlowingFeature`)
@@ -211,3 +210,4 @@ Contributions are the lifeblood of open source. If you have an idea that's so go
 ## 📜 License
 
 This project is distributed under the MIT License, which basically means you can do whatever you want with it as long as you give us a little nod. See the full legal mumbo-jumbo in the [LICENSE](LICENSE) file.
+```
