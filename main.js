@@ -1,31 +1,31 @@
 const { app, BrowserWindow, BrowserView, globalShortcut, ipcMain, dialog, screen, shell, session, nativeTheme, clipboard, nativeImage, Menu, Tray } = require('electron');
 
-// Reduce noisy Chromium/extension logs to avoid console spam
+// Enable remote debugging port early so Chromium extensions and devtools work reliably
 try {
+    app.commandLine.appendSwitch('remote-debugging-port', '9222');
+    // Reduce noisy Chromium/extension logs to avoid console spam
     app.commandLine.appendSwitch('disable-logging');
     app.commandLine.appendSwitch('v', '0');
     app.commandLine.appendSwitch('log-level', '3'); // Fatal only
-    // Suppress blink.mojom.WidgetHost errors (benign Chromium internal warnings)
-    app.commandLine.appendSwitch('disable-features', 'WidgetHostMessaging');
 } catch (e) {
-    console.warn('Failed to set command line switches:', e && e.message ? e.message : e);
+    console.warn('Could not set chromium switches:', e && e.message ? e.message : e);
 }
 const https = require('https');
 
 const path = require('path');
 const fs = require('fs');
+const fsp = fs.promises;
 const { spawn, fork } = require('child_process');
+const SecureStore = require('./modules/secure-store');
 const os = require('os');
 const crypto = require('crypto');
-const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+const fetch = require('node-fetch');
 const { autoUpdater } = require('electron-updater');
 const AutoLaunch = require('auto-launch');
 const translations = require('./translations.js');
 
 // Path to unpacked extension root (must point to folder that contains manifest.json)
-const EXT_PATH = app.isPackaged
-    ? path.join(process.resourcesPath, '0.5.8_0')
-    : path.join(__dirname, '0.5.8_0');
+const EXT_PATH = path.join(__dirname, '0.5.8_0');
 
 // Track loaded extension IDs per label so we can attempt removal later
 const loadedExtensions = new Map(); // label -> extensionId
@@ -47,17 +47,7 @@ async function loadExtensionToSession(sess, label) {
 
 async function loadExtensionToAllSessions() {
     try {
-        if (!fs.existsSync(EXT_PATH)) {
-            console.log('MCP Extension folder not found at:', EXT_PATH);
-            return;
-        }
-
-        // Verify manifest.json exists
-        const manifestPath = path.join(EXT_PATH, 'manifest.json');
-        if (!fs.existsSync(manifestPath)) {
-            console.warn('MCP Extension manifest.json not found. Extension cannot be loaded.');
-            return;
-        }
+        if (!fs.existsSync(EXT_PATH)) return;
 
         // default
         await loadExtensionToSession(session.defaultSession, 'default');
@@ -68,6 +58,20 @@ async function loadExtensionToAllSessions() {
             await loadExtensionToSession(mainPart, constants.SESSION_PARTITION);
         }
 
+        // per-account partitions
+        const s = getSettings();
+        if (s && Array.isArray(s.accounts) && s.accounts.length > 0) {
+            for (let i = 0; i < s.accounts.length; i++) {
+                try {
+                    const partName = accountsModule.getAccountPartition(i);
+                    const accSess = session.fromPartition(partName, { cache: true });
+                    await loadExtensionToSession(accSess, partName);
+                } catch (e) {
+                    console.warn('Error loading extension into account partition', e && e.message ? e.message : e);
+                }
+            }
+        }
+
         // sessions attached to existing BrowserViews
         const allWindows = BrowserWindow.getAllWindows();
         allWindows.forEach(win => {
@@ -75,7 +79,7 @@ async function loadExtensionToAllSessions() {
                 const view = win.getBrowserView();
                 if (view && view.webContents && view.webContents.session) {
                     const label = `view:${win.id}`;
-                    loadExtensionToSession(view.webContents.session, label).catch(() => { });
+                    loadExtensionToSession(view.webContents.session, label).catch(() => {});
                 }
             } catch (e) {
                 // ignore
@@ -113,7 +117,7 @@ async function unloadLoadedExtensions() {
                     } catch (e) {
                         // fallback: try defaultSession removal
                         if (typeof session.defaultSession.removeExtension === 'function') {
-                            try { session.defaultSession.removeExtension(extId); } catch (ee) { }
+                            try { session.defaultSession.removeExtension(extId); } catch (ee) {}
                         }
                     }
                 } else if (label.startsWith('view:')) {
@@ -139,20 +143,172 @@ const constants = require('./modules/constants');
 const utils = require('./modules/utils');
 const deepResearchModule = require('./modules/deep-research');
 const accountsModule = require('./modules/accounts');
-app.whenReady().then(async () => {
-    // Conditionally load unpacked extension if user enabled it in settings
+// Helper: open an isolated login window and transfer cookies into a specific account partition
+async function createAndManageLoginWindowForPartition(loginUrl, targetPartition, accountIndex = 0) {
+    let tempWin = new BrowserWindow({
+        width: 700,
+        height: 780,
+        frame: true,
+        autoHideMenuBar: true,
+        alwaysOnTop: true,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            nodeIntegration: false,
+            contextIsolation: true,
+            javascript: true,
+            webSecurity: true,
+            allowRunningInsecureContent: false,
+            experimentalFeatures: false,
+            userAgent: STABLE_USER_AGENT
+        }
+    });
+
     try {
-        const localSettings = settingsModule.getSettings();
-        if (!localSettings || !localSettings.loadUnpackedExtension) {
-            console.log('MCP Extension loading is disabled in settings');
+        await tempWin.webContents.session.clearStorageData({ storages: ['cookies', 'localstorage'], origins: ['https://accounts.google.com', 'https://google.com'] });
+    } catch (e) {}
+
+    tempWin.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+    setupContextMenu(tempWin.webContents);
+    tempWin.loadURL(loginUrl);
+
+    tempWin.on('closed', () => { tempWin = null; });
+
+    tempWin.webContents.on('did-navigate', async (event, navigatedUrl) => {
+        const isLoginSuccess = navigatedUrl.startsWith(GEMINI_URL) || navigatedUrl.startsWith(AISTUDIO_URL);
+        if (!isLoginSuccess) return;
+
+        const isolatedSession = tempWin.webContents.session;
+        let sessionCookieFound = false;
+        for (let i = 0; i < 20; i++) {
+            const criticalCookies = await isolatedSession.cookies.get({ name: '__Secure-1PSID' });
+            if (criticalCookies && criticalCookies.length > 0) { sessionCookieFound = true; break; }
+            await new Promise(r => setTimeout(r, 500));
+        }
+
+        // If we didn't observe a critical session cookie, it likely means the
+        // user hasn't completed the sign-in flow yet (for example they only
+        // provided the email and haven't entered the password). In that case
+        // don't proceed to transfer cookies and close the temporary login
+        // window — leave it open so the user can finish authentication.
+        if (!sessionCookieFound) {
+            console.log('Partitioned login: no critical session cookie found; keeping login window open to allow user to finish sign-in');
             return;
         }
-        console.log('Loading MCP Extension (enabled by user)');
-        await loadExtensionToAllSessions();
-    } catch (e) {
-        console.error('Failed during conditional extension load at startup:', e && e.message ? e.message : e);
-    }
-});
+
+        try {
+            const mainSession = session.fromPartition(targetPartition);
+            const googleCookies = await isolatedSession.cookies.get({ domain: '.google.com' });
+            if (googleCookies && googleCookies.length > 0) {
+                for (const cookie of googleCookies) {
+                    try {
+                        const cookieUrl = `https://${cookie.domain.startsWith('.') ? 'www' : ''}${cookie.domain}${cookie.path}`;
+                        const newCookie = {
+                            url: cookieUrl,
+                            name: cookie.name,
+                            value: cookie.value,
+                            path: cookie.path,
+                            secure: cookie.secure,
+                            httpOnly: cookie.httpOnly,
+                            expirationDate: Math.floor(Date.now() / 1000) + (365 * 24 * 60 * 60),
+                            session: false,
+                            sameSite: cookie.sameSite
+                        };
+                        if (!cookie.name.startsWith('__Host-')) newCookie.domain = cookie.domain;
+                        await mainSession.cookies.set(newCookie);
+                    } catch (e) {
+                        console.warn('Could not transfer cookie:', e && e.message ? e.message : e);
+                    }
+                }
+            }
+
+            try { await mainSession.cookies.flushStore(); } catch (e) {}
+
+            // Extract profile image and account label from the loaded page
+            try {
+                const profileInfo = await tempWin.webContents.executeJavaScript(`(function(){
+                    try {
+                        const a = document.querySelector('a.gb_B') || document.querySelector('a[aria-label^="Google Account:"]') || document.querySelector('.gb_z a');
+                        const img = a && a.querySelector('img') ? (a.querySelector('img').src || null) : (document.querySelector('img.gbii') ? document.querySelector('img.gbii').src : null);
+                        const aria = a ? a.getAttribute('aria-label') : (document.querySelector('a[aria-label^="Google Account:"]') ? document.querySelector('a[aria-label^="Google Account:"]') .getAttribute('aria-label') : null);
+                        return { img, aria };
+                    } catch(e){ return {}; }
+                })();`, true);
+
+                if (profileInfo && profileInfo.img) {
+                    // Save profile image for the new account
+                    await accountsModule.setProfileImageForAccount(accountIndex, profileInfo.img).catch(() => {});
+                    // Try to parse email/name from aria text like "Google Account: Name\n(email)"
+                    if (profileInfo.aria) {
+                        const text = profileInfo.aria.replace(/^Google Account:\s*/i, '').trim();
+                        const lines = text.split('\n').map(s => s.trim()).filter(Boolean);
+                        const email = lines[lines.length - 1] && lines[lines.length - 1].includes('@') ? lines[lines.length - 1] : null;
+                        if (email) accountsModule.updateAccount(accountIndex, { email, name: lines[0] || undefined });
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed to extract profile info:', e && e.message ? e.message : e);
+            }
+
+            if (tempWin && !tempWin.isDestroyed()) tempWin.close();
+
+            try {
+                // Set the newly added account as the current account so the
+                // choice window highlights it. Persist settings immediately.
+                if (typeof settings !== 'undefined') {
+                    settings.currentAccountIndex = accountIndex;
+                    try { saveSettings(settings); } catch (e) { console.warn('Failed to save settings after adding account', e); }
+                }
+
+                // Open the choice window (the small Alt+N style chooser)
+                try {
+                    const choiceWin = createWindow();
+                    if (choiceWin && !choiceWin.isDestroyed()) {
+                        try {
+                            choiceWin.loadFile('choice.html');
+                            const choiceSize = { width: 500, height: 450 };
+                            choiceWin.setResizable(false);
+                            choiceWin.setSize(choiceSize.width, choiceSize.height);
+                            choiceWin.center();
+                            choiceWin.setAlwaysOnTop(true, 'screen-saver');
+                            choiceWin.focus();
+                            choiceWin.show();
+                        } catch (e) {
+                            console.warn('Failed to prepare choice window UI:', e && e.message ? e.message : e);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Failed to open choice window after account add:', e && e.message ? e.message : e);
+                }
+            } catch (err) {
+                console.warn('Error while finalizing account addition:', err && err.message ? err.message : err);
+            }
+
+            // reload existing windows so new account session takes effect
+            BrowserWindow.getAllWindows().forEach(win => {
+                if (win && !win.isDestroyed()) {
+                    const view = win.getBrowserView();
+                    if (view && view.webContents && !view.webContents.isDestroyed()) view.webContents.reload();
+                }
+            });
+
+        } catch (error) {
+            console.error('Error during partitioned login handling:', error);
+        }
+    });
+}
+    app.whenReady().then(async () => {
+        // Conditionally load unpacked extension if user enabled it in settings
+        try {
+            const localSettings = settingsModule.getSettings();
+            if (!localSettings || !localSettings.loadUnpackedExtension) {
+                console.log('loadUnpackedExtension is disabled in settings - skipping automatic extension load at startup');
+                return;
+            }
+            await loadExtensionToAllSessions();
+        } catch (e) {
+            console.error('Failed during conditional extension load at startup:', e && e.message ? e.message : e);
+        }
+    });
 
 const trayModule = require('./modules/tray');
 
@@ -192,6 +348,258 @@ let tray = null;
 let mcpProxyProcess = null; // Background MCP proxy process
 
 const detachedViews = new Map();
+const PROFILE_CAPTURE_COOLDOWN_MS = 60 * 1000;
+const PROFILE_REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000;
+const profileCaptureTimestamps = new Map();
+let avatarDirectoryPath = null;
+
+function getAvatarStorageDir() {
+    if (avatarDirectoryPath) {
+        return avatarDirectoryPath;
+    }
+    const dir = path.join(app.getPath('userData'), 'account-avatars');
+    if (!fs.existsSync(dir)) {
+        try {
+            fs.mkdirSync(dir, { recursive: true });
+        } catch (err) {
+            console.warn('Failed to create avatar storage directory:', err && err.message ? err.message : err);
+        }
+    }
+    avatarDirectoryPath = dir;
+    return dir;
+}
+
+async function downloadAccountAvatar(sourceUrl, accountIndex) {
+    if (!sourceUrl) return '';
+    try {
+        const response = await fetch(sourceUrl);
+        if (!response || !response.ok) {
+            throw new Error(`HTTP ${response ? response.status : 'unknown'}`);
+        }
+        const buffer = await response.buffer();
+        const dir = getAvatarStorageDir();
+        const avatarPath = path.join(dir, `account-${accountIndex}.png`);
+        await fsp.writeFile(avatarPath, buffer);
+        return avatarPath;
+    } catch (error) {
+        console.warn('Failed to download account avatar:', error && error.message ? error.message : error);
+        return '';
+    }
+}
+
+function shouldAttemptProfileCapture(accountIndex, forceAttempt = false) {
+    if (typeof accountIndex !== 'number' || accountIndex < 0) {
+        return false;
+    }
+    if (forceAttempt) {
+        return true;
+    }
+    const now = Date.now();
+    const last = profileCaptureTimestamps.get(accountIndex) || 0;
+    if (now - last < PROFILE_CAPTURE_COOLDOWN_MS) {
+        return false;
+    }
+    profileCaptureTimestamps.set(accountIndex, now);
+    return true;
+}
+
+async function captureAccountProfile(view, accountIndex, forceAttempt = false) {
+    if (!view || !view.webContents || view.webContents.isDestroyed()) {
+        return;
+    }
+    if (!shouldAttemptProfileCapture(accountIndex, forceAttempt)) {
+        return;
+    }
+
+    const currentAccounts = settings.accounts || [];
+    const existingAccount = currentAccounts[accountIndex];
+
+    try {
+        const profile = await view.webContents.executeJavaScript(`(() => {
+            const link = document.querySelector('a[aria-label^="Google Account"], a[aria-label*="@gmail.com"]');
+            const ariaLabel = link ? (link.getAttribute('aria-label') || '') : '';
+            const emailMatch = ariaLabel.match(/\\(([^)]+)\\)/);
+            const email = emailMatch ? (emailMatch[1] || '').trim() : '';
+            const labelParts = ariaLabel.split(':');
+            const displayName = labelParts.length > 1 ? labelParts[1].replace(/\\([^)]*\\)/, '').trim() : '';
+            let avatarUrl = '';
+            let img = link ? link.querySelector('img') : null;
+            if (!img) {
+                img = document.querySelector('img.gbii, img.gb_Q, img[aria-label^="Account"], img[alt*="@"]');
+            }
+            if (img) {
+                avatarUrl = img.getAttribute('src') || '';
+                if (!avatarUrl && img.srcset) {
+                    avatarUrl = img.srcset.split(' ')[0];
+                }
+            }
+            return { avatarUrl, email, displayName };
+        })();`, true);
+
+        if (!profile) {
+            return;
+        }
+
+        const now = Date.now();
+        let avatarFile = existingAccount ? existingAccount.avatarFile : '';
+        const needsDownload = !!profile.avatarUrl && (
+            forceAttempt ||
+            !avatarFile ||
+            !fs.existsSync(avatarFile) ||
+            !existingAccount ||
+            !existingAccount.lastProfileFetch ||
+            (now - existingAccount.lastProfileFetch) > PROFILE_REFRESH_INTERVAL_MS ||
+            (existingAccount.avatarUrl && existingAccount.avatarUrl !== profile.avatarUrl)
+        );
+
+        if (needsDownload) {
+            const downloaded = await downloadAccountAvatar(profile.avatarUrl, accountIndex);
+            if (downloaded) {
+                avatarFile = downloaded;
+            }
+        }
+
+        const updates = {};
+        if (avatarFile && (!existingAccount || existingAccount.avatarFile !== avatarFile)) {
+            updates.avatarFile = avatarFile;
+            updates.avatarUrl = profile.avatarUrl || (existingAccount ? existingAccount.avatarUrl : '');
+            updates.lastProfileFetch = now;
+        }
+
+        if (profile.email && (!existingAccount || existingAccount.email !== profile.email)) {
+            updates.email = profile.email;
+        }
+
+        if (profile.displayName && (
+            !existingAccount ||
+            !existingAccount.name ||
+            existingAccount.name.startsWith('Account ')
+        )) {
+            updates.name = profile.displayName;
+        }
+
+        if (Object.keys(updates).length > 0) {
+            const updatedAccount = updateAccountMetadata(accountIndex, updates);
+            if (updatedAccount) {
+                broadcastToAllWebContents('settings-updated', settings);
+            }
+        }
+    } catch (error) {
+        console.warn('Failed to capture account profile:', error && error.message ? error.message : error);
+    }
+}
+
+function maybeCaptureAccountProfile(view, accountIndex, forceAttempt = false) {
+    if (typeof accountIndex !== 'number' || accountIndex < 0) {
+        return;
+    }
+    captureAccountProfile(view, accountIndex, forceAttempt);
+}
+
+/**
+ * Execute default prompt in a new chat - inserts text and clicks send button
+ * Uses the same approach as deep-research.js for reliable text insertion
+ */
+async function executeDefaultPrompt(view, promptContent, mode) {
+    if (!view || view.webContents.isDestroyed()) {
+        console.log('Prompt Manager: View not available, skipping auto-prompt');
+        return;
+    }
+
+    const script = `
+    (async function() {
+        console.log('Prompt Manager: Starting auto-prompt insertion');
+        
+        const waitForElement = (selector, timeout = 15000) => {
+            return new Promise((resolve, reject) => {
+                const timer = setInterval(() => {
+                    const element = document.querySelector(selector);
+                    if (element && !element.disabled && element.offsetParent !== null) {
+                        clearInterval(timer);
+                        resolve(element);
+                    }
+                }, 100);
+                setTimeout(() => {
+                    clearInterval(timer);
+                    reject(new Error('Element not found: ' + selector));
+                }, timeout);
+            });
+        };
+
+        const simulateClick = (element) => {
+            ['mousedown', 'mouseup', 'click'].forEach(type => {
+                const event = new MouseEvent(type, { bubbles: true, cancelable: true, view: window });
+                element.dispatchEvent(event);
+            });
+        };
+
+        const insertTextSafely = (element, text) => {
+            try {
+                element.focus();
+                document.execCommand('selectAll', false, null);
+                document.execCommand('delete', false, null);
+                document.execCommand('insertText', false, text);
+                console.log('Prompt Manager: Text inserted using execCommand');
+                return true;
+            } catch (e) {
+                console.log('Prompt Manager: execCommand failed, trying alternative');
+            }
+
+            try {
+                element.focus();
+                element.textContent = text;
+                element.dispatchEvent(new InputEvent('input', {
+                    data: text, inputType: 'insertText', bubbles: true, cancelable: true
+                }));
+                console.log('Prompt Manager: Text inserted using textContent');
+                return true;
+            } catch (e) {
+                console.log('Prompt Manager: All text insertion methods failed');
+                return false;
+            }
+        };
+
+        try {
+            console.log('Prompt Manager: Looking for input area');
+            const inputArea = await waitForElement('.ql-editor[contenteditable="true"], rich-textarea .ql-editor, [data-placeholder*="Ask"]');
+            
+            const promptText = \`${promptContent.replace(/`/g, '\\`').replace(/\\/g, '\\\\').replace(/\${/g, '\\${')}\`;
+            
+            console.log('Prompt Manager: Inserting prompt text...');
+            const insertSuccess = insertTextSafely(inputArea, promptText);
+            
+            if (!insertSuccess) {
+                throw new Error('Failed to insert prompt text');
+            }
+            
+            console.log('Prompt Manager: Prompt inserted successfully');
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            console.log('Prompt Manager: Looking for Send button');
+            const sendButton = await waitForElement('button.send-button[jslog*="173899"], button[aria-label="Send message"], button.send-button.submit, button[data-test-id="send-button"]');
+            simulateClick(sendButton);
+            console.log('Prompt Manager: Send button clicked');
+            
+            return { success: true };
+        } catch (error) {
+            console.error('Prompt Manager: Auto-prompt failed:', error);
+            return { success: false, error: error.message };
+        }
+    })();
+    `;
+
+    try {
+        const result = await view.webContents.executeJavaScript(script);
+        if (result.success) {
+            console.log('Prompt Manager: Default prompt sent successfully');
+        } else {
+            console.error('Prompt Manager: Failed to send default prompt:', result.error);
+        }
+    } catch (error) {
+        console.error('Prompt Manager: Script execution failed:', error);
+    }
+}
 
 // ================================================================= //
 // Settings Management (Using Module)
@@ -200,8 +608,56 @@ const detachedViews = new Map();
 const { getSettings, saveSettings, defaultSettings, settingsPath } = settingsModule;
 let settings = getSettings();
 
+// Helper function to apply invisibility mode (content protection) to a window
+// This hides the window from screen capture/sharing apps like Zoom, Teams, Discord
+// Also hides from taskbar/Alt+Tab when invisibility mode is enabled
+function applyInvisibilityMode(win) {
+    if (!win || win.isDestroyed()) return;
+    try {
+        if (settings.invisibilityMode) {
+            win.setContentProtection(true);
+            win.setSkipTaskbar(true); // Also hide from taskbar/Alt+Tab
+            console.log(`Invisibility mode applied to window ${win.id}`);
+        }
+    } catch (e) {
+        console.warn('Failed to apply invisibility mode:', e && e.message ? e.message : e);
+    }
+}
+
 // Initialize utils module with settings
 utils.initialize({ settings });
+
+// --- Ensure extension is loaded into account partitions (if any) ---
+(async () => {
+    try {
+        const extPath = path.join(__dirname, '0.5.8_0');
+        if (!fs.existsSync(extPath)) return;
+        if (!settings || !settings.loadUnpackedExtension) {
+            console.log('Skipping loading extension into account partitions (user disabled loadUnpackedExtension)');
+            return;
+        }
+
+        // If there are accounts defined in settings, load the extension into each account partition
+        if (settings && Array.isArray(settings.accounts) && settings.accounts.length > 0) {
+            for (let i = 0; i < settings.accounts.length; i++) {
+                try {
+                    const partName = accountsModule.getAccountPartition(i);
+                    const accSession = session.fromPartition(partName, { cache: true });
+                    if (accSession && typeof accSession.loadExtension === 'function') {
+                        await accSession.loadExtension(extPath, { allowFileAccess: true });
+                        console.log(`Loaded extension into account partition: ${partName}`);
+                    } else {
+                        console.warn(`Session for partition ${partName} does not support loadExtension`);
+                    }
+                } catch (err) {
+                    console.warn(`Failed to load extension into account partition index ${i}:`, err && err.message ? err.message : err);
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('Error while attempting to load extension into account partitions:', e && e.message ? e.message : e);
+    }
+})();
 
 // ================================================================= //
 // Auto Launch Configuration
@@ -221,6 +677,50 @@ function setAutoLaunch(shouldEnable) {
     }
 }
 
+/**
+ * Apply proxy settings to all browser sessions.
+ * Supports HTTP, HTTPS, and SOCKS5 proxies.
+ */
+async function applyProxySettings() {
+    const proxyEnabled = settings.proxyEnabled || false;
+    const proxyUrl = settings.proxyUrl || '';
+    
+    let proxyConfig = {};
+    
+    if (proxyEnabled && proxyUrl) {
+        // Parse proxy URL to determine protocol
+        // Supports: http://host:port, https://host:port, socks5://host:port
+        proxyConfig = {
+            proxyRules: proxyUrl
+            // No bypass rules - proxy applies to all URLs
+        };
+        console.log(`Applying proxy settings: ${proxyUrl}`);
+    } else {
+        // Disable proxy (use direct connection)
+        proxyConfig = {
+            proxyRules: 'direct://'
+        };
+        console.log('Proxy disabled, using direct connection');
+    }
+    
+    try {
+        // Apply to default session
+        await session.defaultSession.setProxy(proxyConfig);
+        
+        // Apply to all partitioned sessions (accounts)
+        const accounts = getAccounts();
+        for (const account of accounts) {
+            const partition = getAccountPartition(account.id);
+            const accountSession = session.fromPartition(partition);
+            await accountSession.setProxy(proxyConfig);
+        }
+        
+        console.log('Proxy settings applied successfully to all sessions');
+    } catch (error) {
+        console.error('Failed to apply proxy settings:', error);
+    }
+}
+
 // ================================================================= //
 // Deep Research Schedule Functions (Using Module)
 // ================================================================= //
@@ -231,7 +731,7 @@ const { scheduleDeepResearchCheck, checkAndExecuteScheduledResearch, executeSche
 // Multi-Account Support (Using Module)
 // ================================================================= //
 
-const { getAccountPartition, getCurrentAccountPartition, addAccount, switchAccount, createWindowWithAccount, updateTrayContextMenu } = accountsModule;
+const { getAccountPartition, getCurrentAccountPartition, getAccounts, addAccount, switchAccount, createWindowWithAccount, updateTrayContextMenu, updateAccountMetadata } = accountsModule;
 
 // ================================================================= //
 // System Tray Icon (Using Module)
@@ -244,6 +744,83 @@ const { getAccountPartition, getCurrentAccountPartition, addAccount, switchAccou
 // ================================================================= //
 
 const { forceOnTop, broadcastToAllWebContents, broadcastToWindows, reportErrorToServer, playAiCompletionSound, setupContextMenu } = utils;
+
+// ================================================================= //
+// Icon Path Helper
+// ================================================================= //
+
+/**
+ * Get the correct icon path for both dev and production
+ * In production (packaged app), the icon is in extraResources
+ * In dev, it's in the __dirname
+ */
+function getIconPath() {
+    if (app.isPackaged) {
+        // Production: icon is in extraResources folder
+        return path.join(process.resourcesPath, 'icon.ico');
+    } else {
+        // Development: icon is in project root
+        return path.join(__dirname, 'icon.ico');
+    }
+}
+
+// ================================================================= //
+// Taskbar Grouping for Gemini vs AI Studio Windows
+// ================================================================= //
+
+// Different AppUserModelIds for taskbar grouping (Windows only)
+const GEMINI_APP_USER_MODEL_ID = 'com.geminidesk.gemini';
+const AISTUDIO_APP_USER_MODEL_ID = 'com.geminidesk.aistudio';
+
+/**
+ * Update the window's AppUserModelId to group windows by app mode in the taskbar.
+ * On Windows, this separates Gemini windows from AI Studio windows in the taskbar.
+ * @param {BrowserWindow} win - The window to update
+ * @param {string} mode - 'gemini' or 'aistudio'
+ */
+function updateWindowAppUserModelId(win, mode) {
+    if (process.platform !== 'win32') return; // Only relevant on Windows
+    
+    try {
+        const appId = mode === 'aistudio' ? AISTUDIO_APP_USER_MODEL_ID : GEMINI_APP_USER_MODEL_ID;
+        // Set the AppUserModelId for this specific window
+        // Use the same icon for both modes
+        if (win && !win.isDestroyed() && typeof win.setAppDetails === 'function') {
+            win.setAppDetails({
+                appId: appId,
+                appIconPath: getIconPath(),
+                relaunchCommand: '',
+                relaunchDisplayName: mode === 'aistudio' ? 'AI Studio' : 'Gemini'
+            });
+            console.log(`Set AppUserModelId for window ${win.id} to ${appId} (mode: ${mode})`);
+        }
+    } catch (err) {
+        console.warn('Failed to set AppUserModelId:', err && err.message ? err.message : err);
+    }
+}
+
+// ================================================================= //
+// Session Filters for AI Studio Support
+// ================================================================= //
+
+function setupSessionFilters(sess) {
+    if (!sess) return;
+    
+    // Remove restrictive CSP headers for AI Studio
+    sess.webRequest.onHeadersReceived((details, callback) => {
+        const responseHeaders = details.responseHeaders || {};
+        
+        // Remove or modify CSP headers that block resources
+        if (details.url.includes('aistudio.google.com')) {
+            delete responseHeaders['content-security-policy'];
+            delete responseHeaders['Content-Security-Policy'];
+            delete responseHeaders['x-frame-options'];
+            delete responseHeaders['X-Frame-Options'];
+        }
+        
+        callback({ responseHeaders });
+    });
+}
 
 // ================================================================= //
 // Shortcuts Management
@@ -318,7 +895,7 @@ async function clickMicrophoneButton(targetWin, view) {
             }
         })();
     `;
-
+    
     try {
         const result = await view.webContents.executeJavaScript(script);
         if (result.success) {
@@ -346,7 +923,7 @@ const shortcutActions = {
     },
     voiceAssistant: async () => {
         console.log('Voice Assistant activated!');
-
+        
         // FIRST: Use the exact same showHide logic to show windows (like Alt+G)
         const allWindows = BrowserWindow.getAllWindows();
         const userWindows = allWindows.filter(w => !w.__internal);
@@ -398,28 +975,28 @@ const shortcutActions = {
                 }, 100);
             }
         }
-
+        
         // Wait for window to be fully visible and focused
         await new Promise(resolve => setTimeout(resolve, shouldShow ? 1200 : 300));
-
+        
         // NOW click the microphone on the target window
         const targetWin = lastFocusedWindow || userWindows[0];
         if (!targetWin || targetWin.isDestroyed()) {
             console.error('No target window available for voice assistant');
             return;
         }
-
+        
         const view = targetWin.getBrowserView();
         if (!view || view.webContents.isDestroyed()) {
             console.error('No browser view available for voice assistant');
             return;
         }
-
+        
         // Ensure the target window is focused and on top
         if (!targetWin.isVisible()) targetWin.show();
         if (targetWin.isMinimized()) targetWin.restore();
         targetWin.focus();
-
+        
         await clickMicrophoneButton(targetWin, view);
     },
     findInPage: () => {
@@ -711,7 +1288,7 @@ const shortcutActions = {
         const focusedWindow = BrowserWindow.getFocusedWindow();
         if (focusedWindow && !focusedWindow.isDestroyed()) {
             const currentUrl = focusedWindow.webContents.getURL();
-
+            
             // אם אנחנו כבר בעמוד onboarding, נחזיר את ה-view
             if (currentUrl.includes('onboarding.html')) {
                 const view = detachedViews.get(focusedWindow);
@@ -719,15 +1296,15 @@ const shortcutActions = {
                     // טוען את drag.html קודם, ואז מחזיר את ה-view - בדיוק כמו ב-onboarding-complete
                     focusedWindow.loadFile('drag.html').then(() => {
                         focusedWindow.setBrowserView(view);
-                        const bounds = focusedWindow.getBounds();
-                        view.setBounds({ x: 0, y: 30, width: bounds.width, height: bounds.height - 30 });
-
+                        const contentBounds = focusedWindow.getContentBounds();
+                        view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+                        
                         // אל תקרא ל-setCanvasMode כי זה משנה את גודל החלון
                         detachedViews.delete(focusedWindow);
-
+                        
                         focusedWindow.focus();
                         view.webContents.focus();
-
+                        
                         // שלח את הכותרת הנוכחית
                         const sendCurrentTitle = async () => {
                             try {
@@ -784,7 +1361,6 @@ const shortcutActions = {
     screenshot: () => {
         let isScreenshotProcessActive = false;
         let screenshotTargetWindow = null;
-        let wasWindowVisible = false;
 
         if (isQuitting || isScreenshotProcessActive) {
             return;
@@ -807,14 +1383,91 @@ const shortcutActions = {
         }
 
         screenshotTargetWindow = targetWin;
-
-        // Store window visibility state and hide if visible to prevent flicker
-        wasWindowVisible = screenshotTargetWindow.isVisible();
-        if (wasWindowVisible) {
-            screenshotTargetWindow.hide();
+        
+        // Check if auto full-screen screenshot is enabled
+        if (settings.autoScreenshotFullScreen) {
+            proceedWithFullScreenScreenshot();
+        } else {
+            proceedWithScreenshot();
         }
 
-        proceedWithScreenshot();
+        // Full screen screenshot - captures entire screen without selection
+        async function proceedWithFullScreenScreenshot() {
+            try {
+                const { desktopCapturer } = require('electron');
+                
+                // Get the primary display
+                const primaryDisplay = screen.getPrimaryDisplay();
+                const { width, height } = primaryDisplay.size;
+                const scaleFactor = primaryDisplay.scaleFactor;
+                
+                // Hide the target window temporarily for cleaner screenshot
+                const wasVisible = screenshotTargetWindow.isVisible();
+                if (wasVisible) {
+                    screenshotTargetWindow.hide();
+                }
+                
+                // Wait a bit for window to hide
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // Get screen sources
+                const sources = await desktopCapturer.getSources({
+                    types: ['screen'],
+                    thumbnailSize: { 
+                        width: Math.round(width * scaleFactor), 
+                        height: Math.round(height * scaleFactor) 
+                    }
+                });
+                
+                if (sources.length > 0) {
+                    const primarySource = sources[0];
+                    const thumbnail = primarySource.thumbnail;
+                    
+                    // Copy to clipboard
+                    clipboard.writeImage(thumbnail);
+                    console.log('Full screen screenshot captured and copied to clipboard!');
+                    
+                    // Show and focus the target window
+                    if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
+                        if (screenshotTargetWindow.isMinimized()) screenshotTargetWindow.restore();
+                        screenshotTargetWindow.show();
+                        screenshotTargetWindow.setAlwaysOnTop(true);
+                        screenshotTargetWindow.focus();
+                        
+                        const viewInstance = screenshotTargetWindow.getBrowserView();
+                        if (viewInstance && viewInstance.webContents) {
+                            setTimeout(() => {
+                                viewInstance.webContents.focus();
+                                viewInstance.webContents.paste();
+                                console.log('Full screen screenshot pasted!');
+                                setTimeout(() => {
+                                    if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
+                                        screenshotTargetWindow.setAlwaysOnTop(settings.alwaysOnTop);
+                                    }
+                                }, 500);
+                            }, 200);
+                        }
+                    }
+                } else {
+                    console.error('No screen sources found for full screen capture');
+                    // Restore window if capture failed
+                    if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
+                        if (screenshotTargetWindow.isMinimized()) screenshotTargetWindow.restore();
+                        screenshotTargetWindow.show();
+                    }
+                }
+            } catch (err) {
+                console.error('Full screen screenshot failed:', err);
+                // Restore window on error
+                if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
+                    if (screenshotTargetWindow.isMinimized()) screenshotTargetWindow.restore();
+                    screenshotTargetWindow.show();
+                }
+            }
+            
+            isScreenshotProcessActive = false;
+            screenshotTargetWindow = null;
+        }
 
         function proceedWithScreenshot() {
             clipboard.clear();
@@ -834,10 +1487,6 @@ const shortcutActions = {
             snippingTool.on('error', (err) => {
                 console.error('Failed to start snipping tool:', err);
                 isScreenshotProcessActive = false;
-                // Restore window visibility on error
-                if (wasWindowVisible && screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
-                    screenshotTargetWindow.show();
-                }
             });
 
             let checkAttempts = 0;
@@ -847,113 +1496,22 @@ const shortcutActions = {
                 if (!image.isEmpty() && processExited) {
                     clearInterval(intervalId);
                     if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
-                        // Restore window state
                         if (!screenshotTargetWindow.isVisible()) screenshotTargetWindow.show();
                         if (screenshotTargetWindow.isMinimized()) screenshotTargetWindow.restore();
                         screenshotTargetWindow.setAlwaysOnTop(true);
                         screenshotTargetWindow.focus();
-
                         const viewInstance = screenshotTargetWindow.getBrowserView();
                         if (viewInstance && viewInstance.webContents) {
                             setTimeout(() => {
-                                // Focus the view
                                 viewInstance.webContents.focus();
-
-                                // Focus the chat input field explicitly before pasting
-                                const focusInputScript = `
-                                    (async function() {
-                                        try {
-                                            // Helper function to wait for element
-                                            const waitForElement = (selector, timeout = 2000) => {
-                                                return new Promise((resolve, reject) => {
-                                                    const element = document.querySelector(selector);
-                                                    if (element) {
-                                                        resolve(element);
-                                                        return;
-                                                    }
-                                                    
-                                                    const timer = setInterval(() => {
-                                                        const el = document.querySelector(selector);
-                                                        if (el) {
-                                                            clearInterval(timer);
-                                                            resolve(el);
-                                                        }
-                                                    }, 50);
-                                                    
-                                                    setTimeout(() => {
-                                                        clearInterval(timer);
-                                                        reject(new Error('Element not found: ' + selector));
-                                                    }, timeout);
-                                                });
-                                            };
-                                            
-                                            // Try multiple selectors for chat input (Gemini and AI Studio)
-                                            const inputSelectors = [
-                                                'rich-textarea[placeholder*="Enter"]',
-                                                'rich-textarea.input-area',
-                                                'div.ql-editor[contenteditable="true"]',
-                                                'textarea.input-area',
-                                                'div[contenteditable="true"][role="textbox"]',
-                                                '[data-placeholder*="prompt"]',
-                                                'input[type="text"].chat-input',
-                                                '.input-area textarea'
-                                            ];
-                                            
-                                            let inputField = null;
-                                            for (const selector of inputSelectors) {
-                                                try {
-                                                    inputField = await waitForElement(selector, 500);
-                                                    if (inputField) {
-                                                        console.log('Screenshot: Found input field with selector:', selector);
-                                                        break;
-                                                    }
-                                                } catch (e) {
-                                                    // Try next selector
-                                                }
-                                            }
-                                            
-                                            if (inputField) {
-                                                inputField.focus();
-                                                inputField.click();
-                                                console.log('Screenshot: Successfully focused input field');
-                                                return { success: true };
-                                            } else {
-                                                console.warn('Screenshot: Could not find input field');
-                                                return { success: false };
-                                            }
-                                        } catch (error) {
-                                            console.error('Screenshot: Error focusing input:', error);
-                                            return { success: false, error: error.message };
-                                        }
-                                    })();
-                                `;
-
-                                viewInstance.webContents.executeJavaScript(focusInputScript)
-                                    .then((result) => {
-                                        // Wait a bit longer for input to be fully focused
-                                        setTimeout(() => {
-                                            viewInstance.webContents.paste();
-                                            console.log('Screenshot pasted!');
-
-                                            setTimeout(() => {
-                                                if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
-                                                    screenshotTargetWindow.setAlwaysOnTop(settings.alwaysOnTop);
-                                                }
-                                            }, 500);
-                                        }, 150);
-                                    })
-                                    .catch((err) => {
-                                        console.error('Failed to focus input, pasting anyway:', err);
-                                        // Fallback: paste even if focus failed
-                                        viewInstance.webContents.paste();
-
-                                        setTimeout(() => {
-                                            if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
-                                                screenshotTargetWindow.setAlwaysOnTop(settings.alwaysOnTop);
-                                            }
-                                        }, 500);
-                                    });
-                            }, 300);
+                                viewInstance.webContents.paste();
+                                console.log('Screenshot pasted!');
+                                setTimeout(() => {
+                                    if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
+                                        screenshotTargetWindow.setAlwaysOnTop(settings.alwaysOnTop);
+                                    }
+                                }, 500);
+                            }, 200);
                         }
                     }
                     isScreenshotProcessActive = false;
@@ -961,10 +1519,6 @@ const shortcutActions = {
                 } else if (checkAttempts++ > maxAttempts) {
                     clearInterval(intervalId);
                     isScreenshotProcessActive = false;
-                    // Restore window visibility on timeout
-                    if (wasWindowVisible && screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
-                        screenshotTargetWindow.show();
-                    }
                     screenshotTargetWindow = null;
                 }
             }, 500);
@@ -1027,12 +1581,12 @@ function registerShortcuts() {
     // Separate shortcuts based on global/local setting
     for (const action in localShortcuts) {
         if (action === 'findInPage') continue;
-
+        
         // Check per-key setting first, then fall back to global setting
         const isGlobal = settings.shortcutsGlobalPerKey && settings.shortcutsGlobalPerKey.hasOwnProperty(action)
             ? settings.shortcutsGlobalPerKey[action]
             : settings.shortcutsGlobal;
-
+        
         if (isGlobal) {
             globalShortcuts[action] = localShortcuts[action];
         } else {
@@ -1072,6 +1626,71 @@ function registerShortcuts() {
 // Gemini-Specific Functions
 // ================================================================= //
 
+function checkAndSendDefaultPrompt(view, url, mode) {
+    if (!view || view.webContents.isDestroyed()) return;
+    
+    let isNewChat = false;
+
+    try {
+        const urlObj = new URL(url);
+        if (urlObj.hostname === 'gemini.google.com') {
+            // Gemini new chat is /app or /app/
+            // Existing chat is /app/ID
+            if (urlObj.pathname === '/app' || urlObj.pathname === '/app/') {
+                isNewChat = true;
+            }
+        } else if (urlObj.hostname === 'aistudio.google.com') {
+            if (url.includes('/prompts/new_chat')) {
+                isNewChat = true;
+            }
+        }
+    } catch (e) {
+        console.error('Error parsing URL in checkAndSendDefaultPrompt:', e);
+    }
+
+    if (isNewChat) {
+        if (!view.__defaultPromptSent && settings.defaultPromptId && settings.customPrompts) {
+            const defaultPrompt = settings.customPrompts.find(p => p.id === settings.defaultPromptId);
+            if (defaultPrompt && defaultPrompt.content) {
+                view.__defaultPromptSent = true;
+                console.log('Prompt Manager: Auto-sending default prompt:', defaultPrompt.name);
+                // Wait for the page to fully load and then insert the prompt
+                setTimeout(() => {
+                    // Double check we are still on the new chat page
+                    if (!view || view.webContents.isDestroyed()) return;
+                    const currentUrl = view.webContents.getURL();
+                    let stillNewChat = false;
+                    try {
+                        const currentUrlObj = new URL(currentUrl);
+                        if (currentUrlObj.hostname === 'gemini.google.com') {
+                            if (currentUrlObj.pathname === '/app' || currentUrlObj.pathname === '/app/') {
+                                stillNewChat = true;
+                            }
+                        } else if (currentUrlObj.hostname === 'aistudio.google.com') {
+                             if (currentUrl.includes('/prompts/new_chat')) {
+                                stillNewChat = true;
+                            }
+                        }
+                    } catch(e) {}
+
+                    if (stillNewChat) {
+                        executeDefaultPrompt(view, defaultPrompt.content, mode);
+                    } else {
+                        console.log('Prompt Manager: Aborted auto-send, user navigated away from new chat');
+                    }
+                }, 2000);
+            }
+        }
+    } else {
+        // Reset the flag if we are NOT in a new chat, so it can trigger again later
+        if (view.__defaultPromptSent) {
+             view.__defaultPromptSent = false;
+             console.log('Prompt Manager: Resetting default prompt sent flag (navigated to existing chat)');
+        }
+    }
+}
+
+// ...existing code...
 function createNewChatWithModel(modelType) {
     const focusedWindow = BrowserWindow.getFocusedWindow();
     if (!focusedWindow) return;
@@ -1267,7 +1886,7 @@ function createWindow(state = null) {
         alwaysOnTop: settings.alwaysOnTop,
         fullscreenable: false,
         focusable: true,
-        icon: path.join(__dirname, 'icon.ico'),
+        icon: getIconPath(),
         show: true,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
@@ -1276,12 +1895,20 @@ function createWindow(state = null) {
         }
     });
 
+    const initialAccountIndex = state && typeof state.accountIndex === 'number'
+        ? state.accountIndex
+        : (settings.currentAccountIndex || 0);
+    newWin.accountIndex = initialAccountIndex;
+
     if (settings.alwaysOnTop) {
         newWin.setAlwaysOnTop(true, 'screen-saver');
         if (process.platform === 'darwin') {
             newWin.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
         }
     }
+
+    // Apply invisibility mode (content protection) if enabled - hides window from screen sharing
+    applyInvisibilityMode(newWin);
 
     newWin.isCanvasActive = false;
     newWin.prevBounds = null;
@@ -1295,7 +1922,7 @@ function createWindow(state = null) {
     newWin.webContents.on('before-input-event', (event, input) => {
         if (input.control || input.meta) {
             const currentZoom = newWin.webContents.getZoomLevel();
-
+            
             if (input.type === 'keyDown') {
                 // Ctrl + Plus/Equal (zoom in)
                 if (input.key === '=' || input.key === '+') {
@@ -1385,12 +2012,16 @@ function createWindow(state = null) {
     newWin.on('resize', async () => {
         const view = newWin.getBrowserView();
         if (view && view.webContents && !view.webContents.isDestroyed()) {
+            // Update BrowserView bounds on resize using content bounds for accuracy
+            const contentBounds = newWin.getContentBounds();
+            view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+            
             try {
                 const scrollY = await view.webContents.executeJavaScript(
                     `(document.scrollingElement || document.documentElement).scrollTop`
                 );
                 newWin.savedScrollPosition = scrollY;
-
+                
                 // Restore scroll position after resize
                 setTimeout(async () => {
                     if (view && !view.webContents.isDestroyed()) {
@@ -1407,6 +2038,33 @@ function createWindow(state = null) {
                 // Ignore errors
             }
         }
+    });
+
+    // Handle maximize/unmaximize to ensure BrowserView bounds are correct
+    newWin.on('maximize', () => {
+        setTimeout(() => {
+            if (newWin && !newWin.isDestroyed()) {
+                const view = newWin.getBrowserView();
+                if (view) {
+                    const contentBounds = newWin.getContentBounds();
+                    view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+                    console.log('Maximize: Updated BrowserView bounds to', contentBounds.width, 'x', contentBounds.height - 30);
+                }
+            }
+        }, 50);
+    });
+
+    newWin.on('unmaximize', () => {
+        setTimeout(() => {
+            if (newWin && !newWin.isDestroyed()) {
+                const view = newWin.getBrowserView();
+                if (view) {
+                    const contentBounds = newWin.getContentBounds();
+                    view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+                    console.log('Unmaximize: Updated BrowserView bounds to', contentBounds.width, 'x', contentBounds.height - 30);
+                }
+            }
+        }, 50);
     });
 
     // Prevent webContents throttling when window is hidden
@@ -1428,7 +2086,10 @@ function createWindow(state = null) {
 
     if (state) {
         if (state.bounds) newWin.setBounds(state.bounds);
-        loadGemini(state.mode || settings.defaultMode, newWin, state.url);
+        const stateAccountIndex = typeof state.accountIndex === 'number'
+            ? state.accountIndex
+            : newWin.accountIndex;
+        loadGemini(state.mode || settings.defaultMode, newWin, state.url, { accountIndex: stateAccountIndex });
 
         if (state.url && state.url !== GEMINI_URL && state.url !== AISTUDIO_URL) {
             console.log('Restoring window with specific chat URL:', state.url);
@@ -1452,10 +2113,34 @@ function createWindow(state = null) {
     return newWin;
 }
 
-async function loadGemini(mode, targetWin, initialUrl) {
+async function loadGemini(mode, targetWin, initialUrl, options = {}) {
     if (!targetWin || targetWin.isDestroyed()) return;
 
     targetWin.appMode = mode;
+    
+    // Update taskbar grouping based on mode (Windows only)
+    updateWindowAppUserModelId(targetWin, mode);
+    
+    // Notify the drag.html window of the mode change
+    if (targetWin.webContents && !targetWin.webContents.isDestroyed()) {
+        targetWin.webContents.send('app-mode-changed', mode);
+    }
+    
+    const targetAccountIndex = typeof options.accountIndex === 'number'
+        ? options.accountIndex
+        : (typeof targetWin.accountIndex === 'number' ? targetWin.accountIndex : (settings.currentAccountIndex || 0));
+    targetWin.accountIndex = targetAccountIndex;
+    const partitionName = getAccountPartition(targetAccountIndex);
+
+    if (options.resetSession) {
+        try {
+            const targetSession = session.fromPartition(partitionName, { cache: true });
+            await targetSession.clearStorageData({ storages: ['cookies', 'localstorage', 'indexdb', 'serviceworkers'] });
+        } catch (err) {
+            console.warn('Failed to reset session for account', targetAccountIndex, err && err.message ? err.message : err);
+        }
+    }
+
     const url = initialUrl || (mode === 'aistudio' ? AISTUDIO_URL : GEMINI_URL);
 
     if (mode === 'aistudio') {
@@ -1529,7 +2214,7 @@ async function loadGemini(mode, targetWin, initialUrl) {
 
                 try {
                     // Use the current account's partition instead of the default
-                    const mainSession = session.fromPartition(getCurrentAccountPartition());
+                    const mainSession = session.fromPartition(partitionName);
                     const googleCookies = await isolatedSession.cookies.get({ domain: '.google.com' });
 
                     if (googleCookies.length === 0) {
@@ -1571,6 +2256,31 @@ async function loadGemini(mode, targetWin, initialUrl) {
                         console.error('Failed to flush cookies store:', flushErr);
                     }
 
+                    // Try to extract profile image and aria label from the login window
+                    try {
+                        const profileInfo = await loginWin.webContents.executeJavaScript(`(function(){
+                            try {
+                                const a = document.querySelector('a.gb_B') || document.querySelector('a[aria-label^="Google Account:"]') || document.querySelector('.gb_z a');
+                                const img = a && a.querySelector('img') ? (a.querySelector('img').src || null) : (document.querySelector('img.gbii') ? document.querySelector('img.gbii').src : null);
+                                const aria = a ? a.getAttribute('aria-label') : (document.querySelector('a[aria-label^="Google Account:"]') ? document.querySelector('a[aria-label^="Google Account:"]') .getAttribute('aria-label') : null);
+                                return { img, aria };
+                            } catch(e){ return {}; }
+                        })();`, true);
+
+                        if (profileInfo && profileInfo.img) {
+                            const idx = (settings && typeof settings.currentAccountIndex === 'number') ? settings.currentAccountIndex : 0;
+                            await accountsModule.setProfileImageForAccount(idx, profileInfo.img).catch(() => {});
+                            if (profileInfo.aria) {
+                                const text = profileInfo.aria.replace(/^Google Account:\s*/i, '').trim();
+                                const lines = text.split('\n').map(s => s.trim()).filter(Boolean);
+                                const email = lines[lines.length - 1] && lines[lines.length - 1].includes('@') ? lines[lines.length - 1] : null;
+                                if (email) accountsModule.updateAccount(idx, { email, name: lines[0] || undefined });
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Failed to extract profile info from login window:', e && e.message ? e.message : e);
+                    }
+
                     if (loginWin && !loginWin.isDestroyed()) {
                         loginWin.close();
                     }
@@ -1593,22 +2303,59 @@ async function loadGemini(mode, targetWin, initialUrl) {
     };
 
     const existingView = targetWin.getBrowserView();
-    if (existingView) {
+    if (existingView && existingView.__accountPartition === partitionName) {
         existingView.webContents.loadURL(url);
+        
+        existingView.webContents.removeAllListeners('did-finish-load');
+        existingView.webContents.removeAllListeners('did-navigate');
+        existingView.webContents.removeAllListeners('did-navigate-in-page');
+
+        existingView.webContents.on('did-finish-load', () => {
+            const viewUrl = existingView.webContents.getURL() || '';
+            if (viewUrl.startsWith('https://gemini.google.com') || viewUrl.startsWith('https://aistudio.google.com')) {
+                maybeCaptureAccountProfile(existingView, targetAccountIndex, options.forceProfileCapture);
+                checkAndSendDefaultPrompt(existingView, viewUrl, mode);
+            }
+        });
+
+        existingView.webContents.on('did-navigate', (event, url) => {
+            checkAndSendDefaultPrompt(existingView, url, mode);
+        });
+
+        existingView.webContents.on('did-navigate-in-page', (event, url) => {
+            checkAndSendDefaultPrompt(existingView, url, mode);
+        });
+
         return;
+    } else if (existingView) {
+        try {
+            targetWin.removeBrowserView(existingView);
+        } catch (err) {
+            // ignore detach errors
+        }
+        try {
+            existingView.webContents.destroy();
+        } catch (err) {
+            // ignore destroy errors
+        }
     }
 
     targetWin.loadFile('drag.html');
 
     const newView = new BrowserView({
         webPreferences: {
-            partition: getCurrentAccountPartition(),
+            partition: partitionName,
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
             nativeWindowOpen: true,
             backgroundThrottling: false
         }
     });
+
+    // Apply session filters for AI Studio support
+    if (newView.webContents && newView.webContents.session) {
+        setupSessionFilters(newView.webContents.session);
+    }
 
     // Try to ensure the unpacked extension is loaded into this view's session (only if enabled)
     try {
@@ -1617,13 +2364,13 @@ async function loadGemini(mode, targetWin, initialUrl) {
             if (viewSession && typeof viewSession.loadExtension === 'function') {
                 try {
                     await viewSession.loadExtension(EXT_PATH, { allowFileAccess: true });
-                    console.log(`Loaded extension into view session for partition: ${getCurrentAccountPartition()}`);
+                    console.log(`Loaded extension into view session for partition: ${partitionName}`);
                 } catch (err) {
                     // If already loaded or unsupported, warn but continue
                     console.warn('Could not load extension into view session:', err && err.message ? err.message : err);
                 }
             } else {
-                console.warn('viewSession does not support loadExtension for partition', getCurrentAccountPartition());
+                console.warn('viewSession does not support loadExtension for partition', partitionName);
             }
         }
     } catch (e) {
@@ -1632,10 +2379,6 @@ async function loadGemini(mode, targetWin, initialUrl) {
 
     // Prevent webContents from being throttled when window is hidden
     newView.webContents.setBackgroundThrottling(false);
-
-    // Increase max listeners to prevent memory leak warnings
-    // (Multiple event handlers are legitimately needed for navigation, zoom, input, etc.)
-    newView.webContents.setMaxListeners(20);
 
     // Setup context menu for the browser view
     setupContextMenu(newView.webContents);
@@ -1662,7 +2405,7 @@ async function loadGemini(mode, targetWin, initialUrl) {
                 console.log('Sign-out detected. Clearing main application session...');
                 try {
                     // Use the current account's partition instead of the default
-                    const mainSession = session.fromPartition(getCurrentAccountPartition());
+                    const mainSession = session.fromPartition(partitionName);
                     await mainSession.clearStorageData({ storages: ['cookies', 'localstorage'] });
                     try {
                         await mainSession.cookies.flushStore();
@@ -1696,7 +2439,7 @@ async function loadGemini(mode, targetWin, initialUrl) {
     newView.webContents.on('before-input-event', (event, input) => {
         if (input.control || input.meta) {
             const currentZoom = newView.webContents.getZoomLevel();
-
+            
             if (input.type === 'keyDown') {
                 // Ctrl + Plus/Equal (zoom in)
                 if (input.key === '=' || input.key === '+') {
@@ -1729,10 +2472,32 @@ async function loadGemini(mode, targetWin, initialUrl) {
 
     newView.webContents.loadURL(url);
 
+    // Track if default prompt has been sent for this view to avoid duplicates
+    newView.__defaultPromptSent = false;
+
+    newView.webContents.on('did-finish-load', () => {
+        const viewUrl = newView.webContents.getURL() || '';
+        if (viewUrl.startsWith('https://gemini.google.com') || viewUrl.startsWith('https://aistudio.google.com')) {
+            maybeCaptureAccountProfile(newView, targetAccountIndex, options.forceProfileCapture);
+            checkAndSendDefaultPrompt(newView, viewUrl, mode);
+        }
+    });
+
+    newView.webContents.on('did-navigate', (event, url) => {
+        checkAndSendDefaultPrompt(newView, url, mode);
+    });
+
+    newView.webContents.on('did-navigate-in-page', (event, url) => {
+        checkAndSendDefaultPrompt(newView, url, mode);
+    });
+
+    newView.__accountPartition = partitionName;
+    targetWin.__accountPartition = partitionName;
     targetWin.setBrowserView(newView);
 
-    const bounds = targetWin.getBounds();
-    newView.setBounds({ x: 0, y: 30, width: bounds.width, height: bounds.height - 30 });
+    // Use getContentBounds for accurate content area dimensions
+    const contentBounds = targetWin.getContentBounds();
+    newView.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
     newView.setAutoResize({ width: true, height: true });
 
     if (initialUrl && initialUrl !== GEMINI_URL && initialUrl !== AISTUDIO_URL) {
@@ -1824,7 +2589,6 @@ async function loadGemini(mode, targetWin, initialUrl) {
             }
         };
         sendShortcuts();
-        // Use 'on' here because shortcuts need to be resent on every page load
         newView.webContents.on('did-finish-load', sendShortcuts);
     }
 }
@@ -1894,7 +2658,7 @@ async function setCanvasMode(isCanvas, targetWin) {
                 ).catch(console.error);
             }
         };
-
+        
         setTimeout(restoreScroll, 100);
         setTimeout(restoreScroll, 300);
         setTimeout(restoreScroll, 500);
@@ -1972,9 +2736,9 @@ function createNotificationWindow() {
         width: 550,
         height: 450,
         frame: false,
-        alwaysOnTop: true,
         show: false,
         transparent: true,
+        alwaysOnTop: true,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
@@ -1984,7 +2748,10 @@ function createNotificationWindow() {
     notificationWin.loadFile('notification.html');
 
     notificationWin.once('ready-to-show', () => {
-        if (notificationWin) notificationWin.show();
+        if (notificationWin) {
+            notificationWin.show();
+            notificationWin.focus();
+        }
     });
 
     notificationWin.on('closed', () => {
@@ -2006,8 +2773,19 @@ function sendToNotificationWindow(data) {
 async function checkForNotifications(isManualCheck = false) {
     if (isManualCheck) {
         createNotificationWindow();
-        sendToNotificationWindow({ status: 'checking' });
+        if (!notificationWin) return;
     }
+
+    const sendToNotificationWindow = (data) => {
+        if (!notificationWin || notificationWin.isDestroyed()) return;
+        const wc = notificationWin.webContents;
+        const send = () => wc.send('notification-data', data);
+        if (wc.isLoadingMainFrame()) {
+            wc.once('did-finish-load', send);
+        } else {
+            send();
+        }
+    };
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
@@ -2063,6 +2841,7 @@ function scheduleNotificationCheck() {
         clearInterval(notificationIntervalId);
         notificationIntervalId = null;
     }
+
     if (settings.autoCheckNotifications) {
         const halfHourInMs = 30 * 60 * 1000;
         notificationIntervalId = setInterval(checkForNotifications, halfHourInMs);
@@ -2075,10 +2854,6 @@ function scheduleNotificationCheck() {
 
 function scheduleDailyUpdateCheck() {
     const checkForUpdates = async () => {
-        if (settings && settings.disableAutoUpdateCheck) {
-            console.log('Skipping automatic update check (disabled by user)');
-            return;
-        }
         console.log('Checking for updates...');
         try {
             await autoUpdater.checkForUpdates();
@@ -2099,7 +2874,7 @@ function openUpdateWindowAndCheck() {
 
     const parentWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
     updateWin = new BrowserWindow({
-        width: 420, height: 500, frame: false, resizable: false, alwaysOnTop: true,
+        width: 420, height: 500, frame: false, resizable: false,
         show: false, parent: parentWindow, modal: true,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
@@ -2306,6 +3081,10 @@ function handleFileOpen(filePath) {
 }
 
 // ================================================================= //
+// Internal Agent Management
+// ================================================================= //
+
+// ================================================================= //
 // IPC Handlers
 // ================================================================= //
 // Deep Research Schedule Window
@@ -2390,15 +3169,47 @@ ipcMain.on('select-app-mode', (event, mode) => {
         senderWindow.center();
         // ------------------------------------
 
-        loadGemini(mode, senderWindow);
+        // Accept either a mode string or an object { mode: 'gemini'|'aistudio', accountIndex: n }
+        let targetMode = mode;
+        if (mode && typeof mode === 'object') {
+            targetMode = mode.mode;
+            if (typeof mode.accountIndex === 'number') {
+                // switch current account to requested index for this window
+                accountsModule.switchAccount(mode.accountIndex);
+            }
+        }
+
+        loadGemini(targetMode, senderWindow);
     }
+});
+
+// Toggle app mode (switch between Gemini and AI Studio)
+ipcMain.on('toggle-app-mode', (event, newMode) => {
+    const senderWindow = BrowserWindow.fromWebContents(event.sender);
+    if (senderWindow && !senderWindow.isDestroyed()) {
+        const targetMode = newMode || (senderWindow.appMode === 'gemini' ? 'aistudio' : 'gemini');
+        loadGemini(targetMode, senderWindow);
+        // Notify the window of the mode change
+        senderWindow.webContents.send('app-mode-changed', targetMode);
+        // Also update the taskbar grouping
+        updateWindowAppUserModelId(senderWindow, targetMode);
+    }
+});
+
+// Get current app mode for a window
+ipcMain.handle('get-app-mode', (event) => {
+    const senderWindow = BrowserWindow.fromWebContents(event.sender);
+    if (senderWindow && !senderWindow.isDestroyed()) {
+        return senderWindow.appMode || 'gemini';
+    }
+    return 'gemini';
 });
 
 ipcMain.on('toggle-full-screen', async (event) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (win && !win.isDestroyed()) {
         const view = win.getBrowserView();
-
+        
         // Save scroll position before toggling
         let scrollY = 0;
         if (view && view.webContents && !view.webContents.isDestroyed()) {
@@ -2412,26 +3223,33 @@ ipcMain.on('toggle-full-screen', async (event) => {
                 console.log('Fullscreen: Could not save scroll position:', e.message);
             }
         }
-
+        
         // Store current bounds if not maximized (for restoration)
         if (!win.isMaximized()) {
             win.prevNormalBounds = win.getBounds();
         }
-
+        
         if (win.isMaximized()) {
             // Restore from fullscreen/maximized
             win.unmaximize();
-
+            
             // Restore original "always on top" state from settings
             setTimeout(() => {
                 if (win && !win.isDestroyed()) {
                     win.setAlwaysOnTop(settings.alwaysOnTop, 'screen-saver');
                     win.focus();
-
+                    
                     // Restore to saved bounds if available
                     if (win.prevNormalBounds) {
                         win.setBounds(win.prevNormalBounds);
                         win.prevNormalBounds = null;
+                    }
+                    
+                    // Update BrowserView bounds after unmaximize
+                    const view = win.getBrowserView();
+                    if (view) {
+                        const contentBounds = win.getContentBounds();
+                        view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
                     }
                 }
             }, 50);
@@ -2443,10 +3261,21 @@ ipcMain.on('toggle-full-screen', async (event) => {
                 if (win && !win.isDestroyed()) {
                     win.maximize();
                     win.focus();
+                    
+                    // Update BrowserView bounds after maximize to fix scrollbar
+                    setTimeout(() => {
+                        if (win && !win.isDestroyed()) {
+                            const view = win.getBrowserView();
+                            if (view) {
+                                const contentBounds = win.getContentBounds();
+                                view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+                            }
+                        }
+                    }, 100);
                 }
             }, 50);
         }
-
+        
         // Restore scroll position after toggling - multiple attempts with proper timing
         if (view && view.webContents && !view.webContents.isDestroyed()) {
             const restoreScroll = async () => {
@@ -2461,7 +3290,7 @@ ipcMain.on('toggle-full-screen', async (event) => {
                     }
                 }
             };
-
+            
             // Multiple restoration attempts with proper delays for different window states
             setTimeout(restoreScroll, 100);   // Quick restore
             setTimeout(restoreScroll, 300);   // After layout
@@ -2548,7 +3377,7 @@ ipcMain.handle('mcp-setup-doitforme', async () => {
             return { success: true, reused: true, configPath: cfgPath, url: 'http://localhost:3006/sse' };
         }
 
-        // Launch the proxy server in a VISIBLE PowerShell window (so user sees it running)
+        // Launch the proxy server in a VISIBLE terminal window (so user sees it running)
         try {
             const proxyCmd = `npx -y @srbhptl39/mcp-superassistant-proxy@latest --config "${cfgPath}" --outputTransport sse`;
             if (process.platform === 'win32') {
@@ -2561,16 +3390,58 @@ ipcMain.handle('mcp-setup-doitforme', async () => {
                     env: { ...process.env }
                 }).unref();
                 // We cannot reliably track the child PID started via 'start', so do not set mcpProxyProcess
-            } else {
-                // On macOS/Linux, launch visible in user's default terminal is non-trivial; run in shell instead
-                const child = spawn('npx', ['-y', '@srbhptl39/mcp-superassistant-proxy@latest', '--config', cfgPath, '--outputTransport', 'sse'], {
-                    shell: true,
+            } else if (process.platform === 'darwin') {
+                // On macOS, open a visible Terminal.app window with the command
+                // Use osascript to tell Terminal to run the command in a new window
+                const escapedCmd = proxyCmd.replace(/"/g, '\\"');
+                const appleScript = `tell application "Terminal"
+                    activate
+                    do script "${escapedCmd}"
+                end tell`;
+                spawn('osascript', ['-e', appleScript], {
                     detached: true,
                     stdio: 'ignore',
                     env: { ...process.env }
-                });
-                child.unref();
-                mcpProxyProcess = child;
+                }).unref();
+            } else {
+                // On Linux, try common terminal emulators in order of preference
+                const terminals = [
+                    { cmd: 'gnome-terminal', args: ['--', 'bash', '-c', `${proxyCmd}; exec bash`] },
+                    { cmd: 'konsole', args: ['-e', 'bash', '-c', `${proxyCmd}; exec bash`] },
+                    { cmd: 'xfce4-terminal', args: ['-e', `bash -c "${proxyCmd}; exec bash"`] },
+                    { cmd: 'xterm', args: ['-hold', '-e', proxyCmd] }
+                ];
+                
+                let launched = false;
+                for (const term of terminals) {
+                    try {
+                        // Check if terminal exists using 'which'
+                        const which = require('child_process').spawnSync('which', [term.cmd]);
+                        if (which.status === 0) {
+                            spawn(term.cmd, term.args, {
+                                detached: true,
+                                stdio: 'ignore',
+                                env: { ...process.env }
+                            }).unref();
+                            launched = true;
+                            break;
+                        }
+                    } catch (e) {
+                        // Try next terminal
+                    }
+                }
+                
+                // Fallback: run in background if no terminal found
+                if (!launched) {
+                    const child = spawn('npx', ['-y', '@srbhptl39/mcp-superassistant-proxy@latest', '--config', cfgPath, '--outputTransport', 'sse'], {
+                        shell: true,
+                        detached: true,
+                        stdio: 'ignore',
+                        env: { ...process.env }
+                    });
+                    child.unref();
+                    mcpProxyProcess = child;
+                }
             }
         } catch (e) {
             return { success: false, step: 'spawn-proxy', message: e && e.message ? e.message : String(e) };
@@ -2587,7 +3458,10 @@ ipcMain.handle('mcp-setup-doitforme', async () => {
 
 app.whenReady().then(() => {
     syncThemeWithWebsite(settings.theme);
-
+    
+    // Apply proxy settings on startup if configured
+    applyProxySettings();
+    
     // Initialize modules with dependencies
     deepResearchModule.initialize({
         settings,
@@ -2595,7 +3469,7 @@ app.whenReady().then(() => {
         shortcutActions,
         playAiCompletionSound
     });
-
+    
     accountsModule.initialize({
         settings,
         saveSettings,
@@ -2603,38 +3477,43 @@ app.whenReady().then(() => {
         createWindow,
         Menu
     });
-
+    
     trayModule.initialize({
         createWindow,
         forceOnTop
     });
-
+    
     // Create system tray icon
     tray = trayModule.createTray();
     accountsModule.setTray(tray);
     trayModule.setUpdateTrayCallback(updateTrayContextMenu);
-
-    // Enable spell checking
+    
+    // Enable spell checking with multiple languages
     session.defaultSession.setSpellCheckerEnabled(true);
-    session.defaultSession.setSpellCheckerLanguages(['en-US', 'he-IL']);
-
+    // Support common languages: English, Hebrew, German, French, Spanish, Russian, etc.
+    session.defaultSession.setSpellCheckerLanguages(['en-US', 'he-IL', 'de-DE', 'fr-FR', 'es-ES', 'ru-RU', 'it-IT', 'pt-BR', 'nl-NL', 'pl-PL', 'tr-TR']);
+    
     // Initialize first account if none exist
     if (!settings.accounts || settings.accounts.length === 0) {
         addAccount('Default Account');
         settings.currentAccountIndex = 0;
         saveSettings(settings);
     }
-
+    
     // Also enable for Gemini session and set user agent (use current account's partition)
     const gemSession = session.fromPartition(getCurrentAccountPartition());
     gemSession.setSpellCheckerEnabled(true);
-    gemSession.setSpellCheckerLanguages(['en-US', 'he-IL']);
+    gemSession.setSpellCheckerLanguages(['en-US', 'he-IL', 'de-DE', 'fr-FR', 'es-ES', 'ru-RU', 'it-IT', 'pt-BR', 'nl-NL', 'pl-PL', 'tr-TR']);
     gemSession.setUserAgent(REAL_CHROME_UA);
-
+    
+    // Apply session filters for AI Studio support
+    setupSessionFilters(session.defaultSession);
+    setupSessionFilters(gemSession);
+    
     // Disable background throttling globally to keep AI responses working when hidden
     app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
     app.commandLine.appendSwitch('disable-renderer-backgrounding');
-
+    
     // Start Deep Research Schedule monitoring
     scheduleDeepResearchCheck();
 
@@ -2685,6 +3564,7 @@ app.whenReady().then(() => {
     autoUpdater.forceDevUpdateConfig = true; // Good for testing, can remain
 
     // --- 5. Start server notifications system ---
+    checkForNotifications(); // Perform one initial check immediately on app launch
     scheduleNotificationCheck();
 
     // --- 6. Handle file opening via "Open With" ---
@@ -2765,7 +3645,7 @@ ipcMain.on('check-for-updates', () => {
 });
 
 ipcMain.on('manual-check-for-notifications', () => {
-    checkForNotifications(true);
+    checkForNotifications(true); // true = isManualCheck
 });
 ipcMain.on('open-voice-assistant', () => {
     // Open the Voice Assistant GitHub repository in the default browser
@@ -2789,7 +3669,7 @@ function openUpdateWindowAndCheck() {
 
     const parentWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
     updateWin = new BrowserWindow({
-        width: 420, height: 500, frame: false, resizable: false, alwaysOnTop: true,
+        width: 420, height: 500, frame: false, resizable: false,
         show: false, parent: parentWindow, modal: true,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
@@ -2967,6 +3847,14 @@ ipcMain.on('close-download-window', () => {
     }
 });
 
+// Generic close window handler
+ipcMain.on('close-window', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win && !win.isDestroyed()) {
+        win.close();
+    }
+});
+
 ipcMain.on('request-last-notification', async (event) => {
     const senderWebContents = event.sender;
     if (!senderWebContents || senderWebContents.isDestroyed()) return;
@@ -3100,6 +3988,67 @@ ipcMain.on('export-chat', async (event) => {
                         ];
                         thoughtSelectors.forEach(sel => clone.querySelectorAll(sel).forEach(el => el.remove()));
 
+                        // חילוץ LaTeX מקורי לפני שהדפדפן רינדר אותו
+                        clone.querySelectorAll('math-inline, .math-inline, [class*="math-inline"]').forEach(mathEl => {
+                            let latex = mathEl.getAttribute('data-original') || 
+                                        mathEl.getAttribute('data-latex') ||
+                                        mathEl.getAttribute('data-formula');
+                            if (!latex) {
+                                const annotation = mathEl.querySelector('annotation[encoding="application/x-tex"]');
+                                if (annotation) latex = annotation.textContent;
+                            }
+                            if (!latex) {
+                                const semantics = mathEl.querySelector('semantics annotation');
+                                if (semantics) latex = semantics.textContent;
+                            }
+                            if (latex) {
+                                const marker = document.createElement('span');
+                                marker.className = '__latex_preserved__';
+                                marker.setAttribute('data-latex', '$' + latex.trim() + '$');
+                                marker.textContent = '$' + latex.trim() + '$';
+                                mathEl.replaceWith(marker);
+                            }
+                        });
+                        
+                        clone.querySelectorAll('math-block, .math-block, [class*="math-block"]').forEach(mathEl => {
+                            let latex = mathEl.getAttribute('data-original') || 
+                                        mathEl.getAttribute('data-latex') ||
+                                        mathEl.getAttribute('data-formula');
+                            if (!latex) {
+                                const annotation = mathEl.querySelector('annotation[encoding="application/x-tex"]');
+                                if (annotation) latex = annotation.textContent;
+                            }
+                            if (!latex) {
+                                const semantics = mathEl.querySelector('semantics annotation');
+                                if (semantics) latex = semantics.textContent;
+                            }
+                            if (latex) {
+                                const marker = document.createElement('div');
+                                marker.className = '__latex_preserved__';
+                                marker.setAttribute('data-latex', '$$' + latex.trim() + '$$');
+                                marker.textContent = '$$' + latex.trim() + '$$';
+                                mathEl.replaceWith(marker);
+                            }
+                        });
+                        
+                        clone.querySelectorAll('.katex, [class*="katex"]').forEach(katexEl => {
+                            const annotation = katexEl.querySelector('annotation[encoding="application/x-tex"]');
+                            if (annotation) {
+                                const latex = annotation.textContent.trim();
+                                const isDisplay = katexEl.closest('.katex-display') || katexEl.classList.contains('katex-display');
+                                const marker = document.createElement('span');
+                                marker.className = '__latex_preserved__';
+                                if (isDisplay) {
+                                    marker.setAttribute('data-latex', '$$' + latex + '$$');
+                                    marker.textContent = '$$' + latex + '$$';
+                                } else {
+                                    marker.setAttribute('data-latex', '$' + latex + '$');
+                                    marker.textContent = '$' + latex + '$';
+                                }
+                                katexEl.replaceWith(marker);
+                            }
+                        });
+
                         // ניקוי אלמנטים מיותרים/תפעוליים
                         const removeSelectors = [
                             'button', 'ms-chat-turn-options', 'mat-menu', '.actions-container', '.actions',
@@ -3174,6 +4123,78 @@ ipcMain.on('export-chat', async (event) => {
                     const modelResponse = container.querySelector('model-response .markdown');
                     if (modelResponse) {
                         const clone = modelResponse.cloneNode(true);
+
+                        // חילוץ LaTeX מקורי לפני שהדפדפן רינדר אותו
+                        // Gemini שומר את ה-LaTeX המקורי ב-annotation tags או ב-data attributes
+                        clone.querySelectorAll('math-inline, .math-inline, [class*="math-inline"]').forEach(mathEl => {
+                            // נסה למצוא את ה-LaTeX המקורי
+                            let latex = mathEl.getAttribute('data-original') || 
+                                        mathEl.getAttribute('data-latex') ||
+                                        mathEl.getAttribute('data-formula');
+                            
+                            // אם לא מצאנו, נסה בתוך annotation
+                            if (!latex) {
+                                const annotation = mathEl.querySelector('annotation[encoding="application/x-tex"]');
+                                if (annotation) latex = annotation.textContent;
+                            }
+                            
+                            // אם לא מצאנו, נסה ב-semantics
+                            if (!latex) {
+                                const semantics = mathEl.querySelector('semantics annotation');
+                                if (semantics) latex = semantics.textContent;
+                            }
+                            
+                            if (latex) {
+                                const marker = document.createElement('span');
+                                marker.className = '__latex_preserved__';
+                                marker.setAttribute('data-latex', '$' + latex.trim() + '$');
+                                marker.textContent = '$' + latex.trim() + '$';
+                                mathEl.replaceWith(marker);
+                            }
+                        });
+                        
+                        clone.querySelectorAll('math-block, .math-block, [class*="math-block"]').forEach(mathEl => {
+                            let latex = mathEl.getAttribute('data-original') || 
+                                        mathEl.getAttribute('data-latex') ||
+                                        mathEl.getAttribute('data-formula');
+                            
+                            if (!latex) {
+                                const annotation = mathEl.querySelector('annotation[encoding="application/x-tex"]');
+                                if (annotation) latex = annotation.textContent;
+                            }
+                            
+                            if (!latex) {
+                                const semantics = mathEl.querySelector('semantics annotation');
+                                if (semantics) latex = semantics.textContent;
+                            }
+                            
+                            if (latex) {
+                                const marker = document.createElement('div');
+                                marker.className = '__latex_preserved__';
+                                marker.setAttribute('data-latex', '$$' + latex.trim() + '$$');
+                                marker.textContent = '$$' + latex.trim() + '$$';
+                                mathEl.replaceWith(marker);
+                            }
+                        });
+                        
+                        // גם לחפש בתוך katex elements
+                        clone.querySelectorAll('.katex, [class*="katex"]').forEach(katexEl => {
+                            const annotation = katexEl.querySelector('annotation[encoding="application/x-tex"]');
+                            if (annotation) {
+                                const latex = annotation.textContent.trim();
+                                const isDisplay = katexEl.closest('.katex-display') || katexEl.classList.contains('katex-display');
+                                const marker = document.createElement('span');
+                                marker.className = '__latex_preserved__';
+                                if (isDisplay) {
+                                    marker.setAttribute('data-latex', '$$' + latex + '$$');
+                                    marker.textContent = '$$' + latex + '$$';
+                                } else {
+                                    marker.setAttribute('data-latex', '$' + latex + '$');
+                                    marker.textContent = '$' + latex + '$';
+                                }
+                                katexEl.replaceWith(marker);
+                            }
+                        });
 
                         const imageSelectors = [
                             'generated-image img',
@@ -3273,7 +4294,6 @@ function openFormatChoiceWindow(parentWin) {
         height: 450,
         frame: false,
         resizable: false,
-        alwaysOnTop: true,
         show: false,
         parent: parentWin,
         modal: true,
@@ -3314,7 +4334,6 @@ function openPdfDirectionWindow(parentWin) {
         height: 450,
         frame: false,
         resizable: false,
-        alwaysOnTop: true,
         show: false,
         parent: parentWin,
         modal: true,
@@ -3391,38 +4410,237 @@ async function exportToMarkdown(win, title, chatHTML) {
             return;
         }
 
+        // Helper function to convert HTML to Markdown while preserving LaTeX
+        function htmlToMarkdown(html) {
+            let result = html;
+            
+            // Step 1: Extract and preserve LaTeX from annotation tags (MathML)
+            const latexMap = new Map();
+            let latexCounter = 0;
+            
+            // Extract LaTeX from annotation tags (this is where KaTeX stores original LaTeX)
+            result = result.replace(/<annotation[^>]*encoding=["']application\/x-tex["'][^>]*>([\s\S]*?)<\/annotation>/gi, (_, latex) => {
+                const placeholder = `__LATEX_${latexCounter}__`;
+                latexMap.set(placeholder, latex.trim());
+                latexCounter++;
+                return placeholder;
+            });
+            
+            // Extract display math blocks ($$...$$)
+            result = result.replace(/\$\$([\s\S]*?)\$\$/g, (match, latex) => {
+                const placeholder = `__LATEX_DISPLAY_${latexCounter}__`;
+                latexMap.set(placeholder, `$$${latex.trim()}$$`);
+                latexCounter++;
+                return placeholder;
+            });
+            
+            // Extract inline math ($...$) - but not currency like $50
+            result = result.replace(/\$([^\$\n]+?)\$/g, (match, latex) => {
+                // Skip if it looks like currency
+                if (/^\d+([.,]\d+)?$/.test(latex.trim())) return match;
+                const placeholder = `__LATEX_INLINE_${latexCounter}__`;
+                latexMap.set(placeholder, `$${latex.trim()}$`);
+                latexCounter++;
+                return placeholder;
+            });
+            
+            // Extract \[...\] display math
+            result = result.replace(/\\\[([\s\S]*?)\\\]/g, (match, latex) => {
+                const placeholder = `__LATEX_DISPLAY_${latexCounter}__`;
+                latexMap.set(placeholder, `$$${latex.trim()}$$`);
+                latexCounter++;
+                return placeholder;
+            });
+            
+            // Extract \(...\) inline math
+            result = result.replace(/\\\(([\s\S]*?)\\\)/g, (match, latex) => {
+                const placeholder = `__LATEX_INLINE_${latexCounter}__`;
+                latexMap.set(placeholder, `$${latex.trim()}$`);
+                latexCounter++;
+                return placeholder;
+            });
+            
+            // Step 2: Remove MathML/SVG rendered math (keep only our placeholders)
+            result = result.replace(/<math[\s\S]*?<\/math>/gi, '');
+            result = result.replace(/<svg[\s\S]*?<\/svg>/gi, '');
+            result = result.replace(/<span[^>]*class="[^"]*katex[^"]*"[^>]*>[\s\S]*?<\/span>/gi, '');
+            
+            // Step 3: Remove script tags
+            result = result.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+            result = result.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+            
+            // Step 4: Extract images
+            const images = [];
+            const imgRegex = /<img[^>]+src="([^"]+)"[^>]*(?:alt="([^"]*)")?[^>]*>/gi;
+            let imgMatch;
+            while ((imgMatch = imgRegex.exec(result)) !== null) {
+                const imgSrc = imgMatch[1];
+                const imgAlt = imgMatch[2] || 'Image';
+                if (imgSrc && imgSrc.startsWith('http')) {
+                    images.push({ src: imgSrc, alt: imgAlt });
+                }
+            }
+            result = result.replace(/<img[^>]*>/gi, '');
+            
+            // Step 5: Convert code blocks
+            // Handle pre > code blocks with language detection
+            result = result.replace(/<pre[^>]*(?:data-language="([^"]*)")?[^>]*>\s*<code[^>]*(?:class="[^"]*language-([^"]*)[^"]*")?[^>]*>([\s\S]*?)<\/code>\s*<\/pre>/gi, 
+                (_, dataLang, classLang, code) => {
+                    const lang = dataLang || classLang || '';
+                    const cleanCode = code
+                        .replace(/<[^>]+>/g, '')
+                        .replace(/&lt;/g, '<')
+                        .replace(/&gt;/g, '>')
+                        .replace(/&amp;/g, '&')
+                        .replace(/&quot;/g, '"')
+                        .replace(/&#39;/g, "'");
+                    return `\n\`\`\`${lang}\n${cleanCode.trim()}\n\`\`\`\n`;
+                });
+            
+            // Handle standalone pre blocks
+            result = result.replace(/<pre[^>]*>([\s\S]*?)<\/pre>/gi, (_, code) => {
+                const cleanCode = code
+                    .replace(/<[^>]+>/g, '')
+                    .replace(/&lt;/g, '<')
+                    .replace(/&gt;/g, '>')
+                    .replace(/&amp;/g, '&');
+                return `\n\`\`\`\n${cleanCode.trim()}\n\`\`\`\n`;
+            });
+            
+            // Convert inline code
+            result = result.replace(/<code[^>]*>(.*?)<\/code>/gi, (_, code) => {
+                if (code.includes('__LATEX_')) return code;
+                return `\`${code.replace(/<[^>]+>/g, '')}\``;
+            });
+            
+            // Step 6: Convert headers
+            result = result.replace(/<h([1-6])[^>]*>([\s\S]*?)<\/h\1>/gi, (_, level, text) => {
+                const cleanText = text.replace(/<[^>]+>/g, '').trim();
+                return `\n${'#'.repeat(parseInt(level))} ${cleanText}\n\n`;
+            });
+            
+            // Step 7: Convert text formatting
+            result = result.replace(/<(strong|b)[^>]*>([\s\S]*?)<\/\1>/gi, '**$2**');
+            result = result.replace(/<(em|i)[^>]*>([\s\S]*?)<\/\1>/gi, '*$2*');
+            result = result.replace(/<(del|s|strike)[^>]*>([\s\S]*?)<\/\1>/gi, '~~$2~~');
+            result = result.replace(/<u[^>]*>([\s\S]*?)<\/u>/gi, '<u>$1</u>');
+            result = result.replace(/<mark[^>]*>([\s\S]*?)<\/mark>/gi, '==$1==');
+            
+            // Step 8: Convert lists
+            result = result.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, (_, content) => {
+                const cleanContent = content.replace(/<[^>]+>/g, '').trim();
+                return `- ${cleanContent}\n`;
+            });
+            result = result.replace(/<\/?[ou]l[^>]*>/gi, '\n');
+            
+            // Step 9: Convert blockquotes
+            result = result.replace(/<blockquote[^>]*>([\s\S]*?)<\/blockquote>/gi, (_, content) => {
+                const lines = content.replace(/<[^>]+>/g, '').trim().split('\n');
+                return lines.map(line => `> ${line}`).join('\n') + '\n';
+            });
+            
+            // Step 10: Convert tables
+            result = result.replace(/<table[^>]*>([\s\S]*?)<\/table>/gi, (_, tableContent) => {
+                let md = '\n';
+                const rows = tableContent.match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) || [];
+                let isHeader = true;
+                
+                rows.forEach(row => {
+                    const cells = row.match(/<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/gi) || [];
+                    const cellContents = cells.map(cell => {
+                        return cell.replace(/<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/i, '$1')
+                            .replace(/<[^>]+>/g, '')
+                            .trim();
+                    });
+                    
+                    if (cellContents.length > 0) {
+                        md += '| ' + cellContents.join(' | ') + ' |\n';
+                        if (isHeader) {
+                            md += '| ' + cellContents.map(() => '---').join(' | ') + ' |\n';
+                            isHeader = false;
+                        }
+                    }
+                });
+                
+                return md + '\n';
+            });
+            
+            // Step 11: Convert links
+            result = result.replace(/<a[^>]+href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, (_, href, text) => {
+                const cleanText = text.replace(/<[^>]+>/g, '').trim();
+                return `[${cleanText}](${href})`;
+            });
+            
+            // Step 12: Convert line breaks and paragraphs
+            result = result.replace(/<br\s*\/?>/gi, '\n');
+            result = result.replace(/<p[^>]*>([\s\S]*?)<\/p>/gi, '$1\n\n');
+            result = result.replace(/<div[^>]*>([\s\S]*?)<\/div>/gi, '$1\n');
+            
+            // Step 13: Convert horizontal rules
+            result = result.replace(/<hr[^>]*>/gi, '\n---\n');
+            
+            // Step 14: Remove remaining HTML tags
+            result = result.replace(/<[^>]+>/g, '');
+            
+            // Step 15: Decode HTML entities
+            result = result
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&quot;/g, '"')
+                .replace(/&#39;/g, "'")
+                .replace(/&nbsp;/g, ' ')
+                .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code)))
+                .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCharCode(parseInt(code, 16)));
+            
+            // Step 16: Restore LaTeX expressions
+            latexMap.forEach((latex, placeholder) => {
+                // Determine if it should be display or inline
+                if (placeholder.includes('DISPLAY')) {
+                    result = result.replace(new RegExp(placeholder, 'g'), `\n\n${latex}\n\n`);
+                } else {
+                    result = result.replace(new RegExp(placeholder, 'g'), latex.includes('$$') ? latex : `$${latex}$`);
+                }
+            });
+            
+            // Step 17: Clean up whitespace
+            result = result.replace(/\n{3,}/g, '\n\n');
+            result = result.trim();
+            
+            // Prepend images at the start
+            let imagesMd = '';
+            images.forEach(img => {
+                imagesMd += `![${img.alt}](${img.src})\n\n`;
+            });
+            
+            return imagesMd + result;
+        }
+
         let mdContent = `# ${title}\n\n`;
 
         chatHTML.forEach(message => {
             if (message.type === 'user') {
-                mdContent += `## ${userLabel}\n\n${message.text}\n\n---\n\n`;
+                mdContent += `## ${userLabel}\n\n`;
+                mdContent += htmlToMarkdown(message.html);
+                mdContent += '\n\n---\n\n';
             } else {
                 mdContent += `## ${modelLabel}\n\n`;
-
-                // חילוץ תמונות מה-HTML באמצעות regex
-                const imgRegex = /<img[^>]+src="([^"]+)"[^>]*(?:alt="([^"]*)")?[^>]*>/gi;
-                let match;
-                const images = [];
-
-                while ((match = imgRegex.exec(message.html)) !== null) {
-                    const imgSrc = match[1];
-                    const imgAlt = match[2] || 'Generated image';
-                    if (imgSrc && imgSrc.startsWith('http')) {
-                        images.push({ src: imgSrc, alt: imgAlt });
-                    }
-                }
-
-                // הוספת תמונות לפני הטקסט
-                images.forEach(img => {
-                    mdContent += `![${img.alt}](${img.src})\n\n`;
-                });
-
-                mdContent += `${message.text}\n\n---\n\n`;
+                mdContent += htmlToMarkdown(message.html);
+                mdContent += '\n\n---\n\n';
             }
         });
 
         fs.writeFileSync(filePath, mdContent, 'utf-8');
-
+        
+        console.log(`MD successfully saved to ${filePath}`);
+        
+        // Check if user wants to open file after export
+        if (settings.openFileAfterExport) {
+            shell.openPath(filePath).catch(err => {
+                console.error('Failed to open MD file:', err);
+            });
+        }
+        
         dialog.showMessageBox(win, {
             type: 'info',
             title: 'Export Successful',
@@ -3465,7 +4683,7 @@ ipcMain.on('select-pdf-direction', async (event, direction) => {
 
         // שלב 2: יצירת קובץ HTML זמני עם KaTeX
         const tempHtmlPath = path.join(app.getPath('temp'), `gemini-chat-${Date.now()}.html`);
-
+        
         // --- KaTeX inline (ללא רשת) ---
         const katexCssPath = require.resolve('katex/dist/katex.min.css');
         const katexJsPath = require.resolve('katex/dist/katex.min.js');
@@ -3491,17 +4709,17 @@ ipcMain.on('select-pdf-direction', async (event, direction) => {
         const katexCSS = inlineKatexFonts(fs.readFileSync(katexCssPath, 'utf8'));
         const katexJS = fs.readFileSync(katexJsPath, 'utf8');
         const katexAuto = fs.readFileSync(katexAutoPath, 'utf8');
-
+        
         // Get user's language for labels
         const userLang = settings.language || 'en';
         const t = translations[userLang] || translations.en;
         const userLabel = t['pdf-user-label'] || 'You:';
         const modelLabel = t['pdf-model-label'] || 'Gemini:';
-
+        
         const isRTL = direction === 'rtl';
         const borderSide = isRTL ? 'border-right' : 'border-left';
         const textAlign = isRTL ? 'right' : 'left';
-
+        
         let htmlContent = `<!DOCTYPE html>
 <html dir="${direction}">
 <head>
@@ -4276,12 +5494,12 @@ ipcMain.on('select-pdf-direction', async (event, direction) => {
         });
 
         // הוספת footer
-        const currentDate = new Date().toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
+        const currentDate = new Date().toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
         });
-
+        
         htmlContent += `
     <div class="pdf-footer">
         <p>Exported from <a href="https://github.com/hillelkingqt/GeminiDesk" target="_blank" style="color: #1967d2; text-decoration: none; font-weight: 600;">GeminiDesk</a> • ${currentDate}</p>
@@ -4452,7 +5670,7 @@ ipcMain.on('select-pdf-direction', async (event, direction) => {
                 offscreen: false
             }
         });
-
+        
         // סימון שזה חלון פנימי כדי שלא יוצג ב-Alt+G
         pdfWin.__internal = true;
 
@@ -4496,7 +5714,15 @@ ipcMain.on('select-pdf-direction', async (event, direction) => {
         fs.unlinkSync(tempHtmlPath);
 
         console.log(`PDF successfully saved to ${filePath}`);
-        shell.showItemInFolder(filePath);
+        
+        // Check if user wants to open file after export
+        if (settings.openFileAfterExport) {
+            shell.openPath(filePath).catch(err => {
+                console.error('Failed to open PDF file:', err);
+            });
+        } else {
+            shell.showItemInFolder(filePath);
+        }
 
         dialog.showMessageBox(win, {
             type: 'info',
@@ -4543,8 +5769,8 @@ ipcMain.on('onboarding-complete', (event) => {
             senderWindow.loadFile('drag.html').then(() => {
                 // After the bar is loaded, restore the Gemini view
                 senderWindow.setBrowserView(existingView);
-                const bounds = senderWindow.getBounds();
-                existingView.setBounds({ x: 0, y: 30, width: bounds.width, height: bounds.height - 30 });
+                const contentBounds = senderWindow.getContentBounds();
+                existingView.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
 
                 // Replace the sendCurrentTitle function in the onboarding-complete handler
                 const sendCurrentTitle = async () => {
@@ -4682,14 +5908,68 @@ ipcMain.handle('get-settings', async () => {
     return getSettings();
 });
 
-ipcMain.handle('write-clipboard', async (event, text) => {
+ipcMain.handle('add-google-account', async () => {
     try {
-        const { clipboard } = require('electron');
-        clipboard.writeText(text);
-        return { success: true };
-    } catch (error) {
-        console.error('Failed to write to clipboard:', error);
-        return { success: false, error: error.message };
+        // Pre-check current account count and inform user if limit reached
+        try {
+            const currentSettings = getSettings();
+            const allAccounts = (currentSettings && Array.isArray(currentSettings.accounts)) ? currentSettings.accounts : [];
+            // Count only real signed-in accounts (have email or an image) to avoid counting placeholders.
+            // Support multiple possible field names used by different account module versions.
+            const currentCount = allAccounts.filter(a => a && (
+                (a.email && a.email.length > 0) ||
+                (a.localImagePath && a.localImagePath.length > 0) ||
+                (a.profileImageUrl && a.profileImageUrl.length > 0) ||
+                (a.avatarFile && a.avatarFile.length > 0) ||
+                (a.avatarUrl && a.avatarUrl.length > 0)
+            )).length;
+            if (currentCount >= 4) {
+                try {
+                    await dialog.showMessageBox({
+                        type: 'info',
+                        buttons: ['OK'],
+                        title: 'Accounts Limit',
+                        message: 'Maximum number of accounts (4) reached. Please remove an account before adding a new one.'
+                    });
+                } catch (e) {
+                    console.warn('Could not show message box for account limit:', e && e.message ? e.message : e);
+                }
+                return { success: false, error: 'Maximum number of accounts (4) reached' };
+            }
+        } catch (e) {
+            console.warn('Could not determine current account count before adding:', e && e.message ? e.message : e);
+        }
+
+        let newIndex = -1;
+        // Try to reuse an existing placeholder account (no email/avatar) if present
+        try {
+            const placeholders = allAccounts.map((a, i) => ({ a, i })).filter(item => {
+                const acc = item.a || {};
+                return !( (acc.email && acc.email.length>0) || (acc.localImagePath && acc.localImagePath.length>0) || (acc.profileImageUrl && acc.profileImageUrl.length>0) || (acc.avatarFile && acc.avatarFile.length>0) || (acc.avatarUrl && acc.avatarUrl.length>0) );
+            });
+            if (placeholders.length > 0) {
+                newIndex = placeholders[0].i;
+                // ensure placeholder exists and reset minimal fields
+                try { accountsModule.updateAccountMetadata(newIndex, { name: `Account ${newIndex+1}` }); } catch (e) {}
+            }
+        } catch (e) {
+            console.warn('Error while searching for placeholder accounts:', e && e.message ? e.message : e);
+        }
+
+        // If no placeholder reused, add a new account
+        if (newIndex === -1) {
+            newIndex = accountsModule.addAccount();
+            if (typeof newIndex === 'number' && newIndex === -1) {
+                return { success: false, error: 'Maximum number of accounts (4) reached' };
+            }
+        }
+        const part = accountsModule.getAccountPartition(newIndex);
+        // Open login flow targeted to this new account partition
+        await createAndManageLoginWindowForPartition(GEMINI_URL, part, newIndex);
+        return { success: true, index: newIndex };
+    } catch (e) {
+        console.error('Failed to add google account:', e && e.message ? e.message : e);
+        return { success: false, error: e && e.message ? e.message : String(e) };
     }
 });
 
@@ -4715,9 +5995,152 @@ ipcMain.handle('request-current-title', async (event) => {
     }
 });
 
+// Execute JavaScript in the main BrowserView
+ipcMain.handle('execute-in-main-view', async (event, code) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const view = win ? win.getBrowserView() : null;
+    if (!view || view.webContents.isDestroyed()) {
+        return null;
+    }
+
+    try {
+        const result = await view.webContents.executeJavaScript(code);
+        return result;
+    } catch (error) {
+        console.error('Failed to execute code in main view:', error);
+        return null;
+    }
+});
+
+// ================================================================= //
+// Prompt Manager IPC Handlers
+// ================================================================= //
+
+// Get all custom prompts
+ipcMain.handle('get-custom-prompts', async () => {
+    return settings.customPrompts || [];
+});
+
+// Add a new custom prompt
+ipcMain.handle('add-custom-prompt', async (event, prompt) => {
+    if (!settings.customPrompts) {
+        settings.customPrompts = [];
+    }
+    const newPrompt = {
+        id: Date.now().toString(),
+        name: prompt.name || 'Untitled Prompt',
+        content: prompt.content || '',
+        isDefault: prompt.isDefault || false
+    };
+    
+    // If this prompt is set as default, clear default from others
+    if (newPrompt.isDefault) {
+        settings.customPrompts.forEach(p => p.isDefault = false);
+        settings.defaultPromptId = newPrompt.id;
+    }
+    
+    settings.customPrompts.push(newPrompt);
+    saveSettings(settings);
+    broadcastToWindows('settings-updated', settings);
+    return newPrompt;
+});
+
+// Update an existing custom prompt
+ipcMain.handle('update-custom-prompt', async (event, prompt) => {
+    if (!settings.customPrompts) return null;
+    
+    const index = settings.customPrompts.findIndex(p => p.id === prompt.id);
+    if (index === -1) return null;
+    
+    // If this prompt is being set as default, clear default from others
+    if (prompt.isDefault) {
+        settings.customPrompts.forEach(p => p.isDefault = false);
+        settings.defaultPromptId = prompt.id;
+    } else if (settings.defaultPromptId === prompt.id) {
+        settings.defaultPromptId = null;
+    }
+    
+    settings.customPrompts[index] = { ...settings.customPrompts[index], ...prompt };
+    saveSettings(settings);
+    broadcastToWindows('settings-updated', settings);
+    return settings.customPrompts[index];
+});
+
+// Delete a custom prompt
+ipcMain.handle('delete-custom-prompt', async (event, promptId) => {
+    if (!settings.customPrompts) return false;
+    
+    const index = settings.customPrompts.findIndex(p => p.id === promptId);
+    if (index === -1) return false;
+    
+    // If deleting the default prompt, clear the default
+    if (settings.defaultPromptId === promptId) {
+        settings.defaultPromptId = null;
+    }
+    
+    settings.customPrompts.splice(index, 1);
+    saveSettings(settings);
+    broadcastToWindows('settings-updated', settings);
+    return true;
+});
+
+// Set a prompt as the default
+ipcMain.handle('set-default-prompt', async (event, promptId) => {
+    if (!settings.customPrompts) return false;
+    
+    // Clear default from all prompts
+    settings.customPrompts.forEach(p => p.isDefault = false);
+    
+    if (promptId) {
+        const prompt = settings.customPrompts.find(p => p.id === promptId);
+        if (prompt) {
+            prompt.isDefault = true;
+            settings.defaultPromptId = promptId;
+        } else {
+            settings.defaultPromptId = null;
+        }
+    } else {
+        settings.defaultPromptId = null;
+    }
+    
+    saveSettings(settings);
+    broadcastToWindows('settings-updated', settings);
+    return true;
+});
+
+// Open Prompt Manager window
+let promptManagerWin = null;
+ipcMain.on('open-prompt-manager-window', (event) => {
+    if (promptManagerWin && !promptManagerWin.isDestroyed()) {
+        promptManagerWin.focus();
+        return;
+    }
+    
+    promptManagerWin = new BrowserWindow({
+        width: 700,
+        height: 600,
+        frame: false,
+        resizable: true,
+        alwaysOnTop: true,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true
+        }
+    });
+    
+    promptManagerWin.__internal = true;
+    promptManagerWin.loadFile('prompt-manager.html');
+    
+    promptManagerWin.on('closed', () => {
+        promptManagerWin = null;
+    });
+});
+
 ipcMain.on('update-setting', (event, key, value) => {
     // **Fix:** We don't call getSettings() again.
     // We directly modify the global settings object that exists in memory.
+
+    console.log(`Updating setting: ${key} = ${value}`);
 
     if (key.startsWith('shortcuts.')) {
         const subKey = key.split('.')[1];
@@ -4729,6 +6152,7 @@ ipcMain.on('update-setting', (event, key, value) => {
         scheduleDeepResearchCheck(); // Restart schedule monitoring
     }
     saveSettings(settings); // Save the updated global object
+    console.log(`Setting ${key} saved successfully`);
 
     // Apply settings immediately
     if (key === 'alwaysOnTop') {
@@ -4746,11 +6170,46 @@ ipcMain.on('update-setting', (event, key, value) => {
             }
         });
     }
+    if (key === 'invisibilityMode') {
+        // Apply content protection to hide window from screen sharing apps (Zoom, Teams, Discord, etc.)
+        // Also hide from taskbar/Alt+Tab when invisibility mode is enabled
+        BrowserWindow.getAllWindows().forEach(w => {
+            if (!w.isDestroyed() && w !== personalMessageWin) {
+                try {
+                    // setContentProtection prevents the window from being captured by screen sharing
+                    w.setContentProtection(value);
+                    // When invisibility mode is ON, always hide from taskbar (regardless of showInTaskbar setting)
+                    // When invisibility mode is OFF, restore the user's showInTaskbar preference
+                    w.setSkipTaskbar(value ? true : !settings.showInTaskbar);
+                    console.log(`Invisibility mode ${value ? 'enabled' : 'disabled'} for window ${w.id}`);
+                } catch (e) {
+                    console.warn('Failed to set content protection:', e && e.message ? e.message : e);
+                }
+            }
+        });
+    }
     if (key === 'autoStart') {
         setAutoLaunch(value);
     }
     if (key === 'autoCheckNotifications') {
         scheduleNotificationCheck(); // Update the timer
+    }
+    if (key === 'proxyEnabled' || key === 'proxyUrl') {
+        // Apply proxy settings to all sessions and reload all pages
+        applyProxySettings().then(() => {
+            // Reload all BrowserViews to apply new proxy settings
+            BrowserWindow.getAllWindows().forEach(w => {
+                try {
+                    const view = w.getBrowserView();
+                    if (view && view.webContents && !view.webContents.isDestroyed()) {
+                        console.log('Reloading view after proxy change for window', w.id);
+                        view.webContents.reload();
+                    }
+                } catch (e) {
+                    // ignore
+                }
+            });
+        });
     }
     if (key === 'loadUnpackedExtension') {
         // User toggled whether the unpacked extension should be auto-loaded
@@ -4810,41 +6269,41 @@ ipcMain.on('update-setting', (event, key, value) => {
                         }
                     }
 
-                    // Do NOT call removeExtension at runtime (can crash Chromium).
-                    // Instead: restore views and ask the user to restart the app to fully unload the extension.
-                    for (const item of restores) {
-                        try {
-                            if (item.orig && item.orig !== 'about:blank') {
-                                item.view.webContents.loadURL(item.orig).catch(() => { });
-                                console.log('Restored view for window', item.winId, 'to', item.orig);
+                            // Do NOT call removeExtension at runtime (can crash Chromium).
+                            // Instead: restore views and ask the user to restart the app to fully unload the extension.
+                            for (const item of restores) {
+                                try {
+                                    if (item.orig && item.orig !== 'about:blank') {
+                                        item.view.webContents.loadURL(item.orig).catch(() => {});
+                                        console.log('Restored view for window', item.winId, 'to', item.orig);
+                                    }
+                                } catch (e) {
+                                    // ignore
+                                }
                             }
-                        } catch (e) {
-                            // ignore
-                        }
-                    }
 
-                    // Clear our in-memory map so we won't attempt removeExtension again in this session
-                    loadedExtensions.clear();
+                            // Clear our in-memory map so we won't attempt removeExtension again in this session
+                            loadedExtensions.clear();
 
-                    // Prompt the user to restart the app to fully unload the extension from all sessions
-                    try {
-                        const focused = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
-                        const result = await dialog.showMessageBox(focused, {
-                            type: 'question',
-                            buttons: ['Restart Now', 'Later'],
-                            defaultId: 0,
-                            cancelId: 1,
-                            title: 'Restart required',
-                            message: 'To completely unload the extension from all browser sessions a restart is required. Restart now?'
-                        });
-                        if (result.response === 0) {
-                            // Relaunch the app; on startup we check settings and will skip loading the extension
-                            app.relaunch();
-                            app.exit(0);
-                        }
-                    } catch (e) {
-                        console.warn('Failed to prompt for restart after disabling extension:', e && e.message ? e.message : e);
-                    }
+                            // Prompt the user to restart the app to fully unload the extension from all sessions
+                            try {
+                                const focused = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+                                const result = await dialog.showMessageBox(focused, {
+                                    type: 'question',
+                                    buttons: ['Restart Now', 'Later'],
+                                    defaultId: 0,
+                                    cancelId: 1,
+                                    title: 'Restart required',
+                                    message: 'To completely unload the extension from all browser sessions a restart is required. Restart now?'
+                                });
+                                if (result.response === 0) {
+                                    // Relaunch the app; on startup we check settings and will skip loading the extension
+                                    app.relaunch();
+                                    app.exit(0);
+                                }
+                            } catch (e) {
+                                console.warn('Failed to prompt for restart after disabling extension:', e && e.message ? e.message : e);
+                            }
                 } catch (err) {
                     console.warn('Failed safe-unload sequence for unpacked extension:', err && err.message ? err.message : err);
                 }
@@ -4892,7 +6351,10 @@ ipcMain.on('open-settings-window', (event) => {
     settingsWin.loadFile('settings.html');
 
     settingsWin.once('ready-to-show', () => {
-        if (settingsWin) settingsWin.show();
+        if (settingsWin) {
+            applyInvisibilityMode(settingsWin);
+            settingsWin.show();
+        }
     });
 
     settingsWin.on('closed', () => {
@@ -4978,17 +6440,17 @@ function openMcpSetupWindow(parent) {
 
         // Open external links in default browser
         mcpSetupWin.webContents.setWindowOpenHandler(({ url }) => {
-            try { shell.openExternal(url); } catch (e) { }
+            try { shell.openExternal(url); } catch (e) {}
             return { action: 'deny' };
         });
         mcpSetupWin.webContents.on('will-navigate', (e, url) => {
             if (!url.startsWith('file://')) {
                 e.preventDefault();
-                try { shell.openExternal(url); } catch (err) { }
+                try { shell.openExternal(url); } catch (err) {}
             }
         });
 
-        mcpSetupWin.loadFile('mcp-setup.html');
+    mcpSetupWin.loadFile('mcp-setup.html');
 
         mcpSetupWin.once('ready-to-show', () => {
             if (mcpSetupWin) {
@@ -5008,7 +6470,7 @@ function openMcpSetupWindow(parent) {
 // Open external URL from renderer on demand
 ipcMain.on('open-external', (_event, url) => {
     if (typeof url === 'string' && /^https?:\/\//i.test(url)) {
-        try { shell.openExternal(url); } catch (_) { }
+        try { shell.openExternal(url); } catch (_) {}
     }
 });
 
@@ -5024,4 +6486,3 @@ ipcMain.on('open-mcp-setup-window', () => {
 ipcMain.on('log-to-main', (event, message) => {
     console.log('GeminiDesk:', message);
 });
-

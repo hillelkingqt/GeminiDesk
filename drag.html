@@ -119,22 +119,9 @@
             fill: var(--text-secondary);
         }
 
-        .icon-button::before {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 125%;
-            left: 50%;
-            transform: translateX(-50%) translateY(5px);
-            background: var(--tooltip-background);
-            color: var(--text-primary);
-            padding: 4px 8px;
-            border-radius: 5px;
-            font-size: 12px;
-            font-weight: 500;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease, transform 0.3s ease;
+        .icon-button#mode-toggle-button svg {
+            stroke-width: 0;
+            stroke: none;
         }
 
         .icon-button:hover {
@@ -147,9 +134,9 @@
             filter: drop-shadow(0 0 5px var(--accent-glow));
         }
 
-        .icon-button:hover::before {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
+        /* Override generic hover for mode toggle - it has its own colors */
+        .icon-button#mode-toggle-button:hover svg {
+            stroke: none;
         }
 
         #new-window-button:hover svg {
@@ -178,6 +165,55 @@
         .icon-button.sortable-drag {
             cursor: grabbing;
         }
+
+        /* Mode Toggle Button Styles */
+        #mode-toggle-button {
+            position: relative;
+        }
+
+        #mode-toggle-button .mode-icon {
+            display: none;
+        }
+
+        #mode-toggle-button .mode-icon.active {
+            display: block;
+        }
+
+        #mode-toggle-button .gemini-icon {
+            fill: #8ab4f8;
+        }
+
+        #mode-toggle-button .aistudio-icon {
+            fill: #81c995;
+        }
+
+        #mode-toggle-button:hover .gemini-icon {
+            fill: #8ab4f8;
+            filter: drop-shadow(0 0 5px #8ab4f8);
+        }
+
+        #mode-toggle-button:hover .aistudio-icon {
+            fill: #81c995;
+            filter: drop-shadow(0 0 5px #81c995);
+        }
+
+        html.light-mode #mode-toggle-button .gemini-icon {
+            fill: #1a73e8;
+        }
+
+        html.light-mode #mode-toggle-button .aistudio-icon {
+            fill: #1e8e3e;
+        }
+
+        html.light-mode #mode-toggle-button:hover .gemini-icon {
+            fill: #1a73e8;
+            filter: drop-shadow(0 0 5px #1a73e8);
+        }
+
+        html.light-mode #mode-toggle-button:hover .aistudio-icon {
+            fill: #1e8e3e;
+            filter: drop-shadow(0 0 5px #1e8e3e);
+        }
     </style>
 </head>
 
@@ -186,6 +222,17 @@
     <div class="top-bar">
         <span id="chat-title"></span>
         <div class="button-container">
+            <button id="mode-toggle-button" class="icon-button" data-tooltip="Switch to AI Studio mode">
+                <!-- Gemini Icon (Sparkle) - shown when in Gemini mode, click to switch to AI Studio -->
+                <svg class="mode-icon gemini-icon active" viewBox="0 0 65 65" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M57.8647 29.0109C52.865 26.8587 48.4905 23.9061 44.7393 20.1567C40.99 16.4074 38.0373 12.031 35.8851 7.03132C35.0589 5.11516 34.395 3.14552 33.886 1.12608C33.72 0.465846 33.128 0.00109863 32.4475 0.00109863C31.7669 0.00109863 31.1749 0.465846 31.009 1.12608C30.4999 3.14552 29.836 5.11332 29.0098 7.03132C26.8576 12.031 23.905 16.4074 20.1556 20.1567C16.4063 23.9061 12.0299 26.8587 7.03022 29.0109C5.11406 29.8371 3.14442 30.501 1.12498 31.0101C0.464747 31.176 0 31.768 0 32.4486C0 33.1291 0.464747 33.7211 1.12498 33.8871C3.14442 34.3961 5.11222 35.06 7.03022 35.8862C12.0299 38.0384 16.4045 40.9911 20.1556 44.7404C23.9068 48.4897 26.8576 52.8661 29.0098 57.8658C29.836 59.782 30.4999 61.7516 31.009 63.771C31.1749 64.4313 31.7669 64.896 32.4475 64.896C33.128 64.896 33.72 64.4313 33.886 63.771C34.395 61.7516 35.0589 59.7838 35.8851 57.8658C38.0373 52.8661 40.99 48.4916 44.7393 44.7404C48.4886 40.9911 52.865 38.0384 57.8647 35.8862C59.7809 35.06 61.7505 34.3961 63.7699 33.8871C64.4302 33.7211 64.8949 33.1291 64.8949 32.4486C64.8949 31.768 64.4302 31.176 63.7699 31.0101C61.7505 30.501 59.7827 29.8371 57.8647 29.0109Z" fill="currentColor"></path>
+                </svg>
+                <!-- AI Studio Icon - shown when in AI Studio mode, click to switch to Gemini -->
+                <svg class="mode-icon aistudio-icon" aria-label="Google AI Studio logo" viewBox="0 0 299 310" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M125.365 32C120.691 38.5727 116.782 45.7277 113.766 53.334H64C40.4361 53.3342 21.3342 72.4361 21.334 96V245.334C21.3344 268.898 40.4362 288 64 288H213.334C236.898 288 256 268.898 256 245.334V179.93C263.778 175.739 270.945 170.561 277.334 164.563V245.334C277.334 280.68 248.68 309.334 213.334 309.334H64C28.6542 309.334 0.00038177 280.68 0 245.334V96C0.000171479 60.654 28.654 32.0002 64 32H125.365Z" fill="currentColor"></path>
+                    <path d="M281.333 71.5244C269.006 66.218 258.221 58.9383 248.972 49.6942C239.728 40.4502 232.448 29.6601 227.142 17.3332C225.105 12.6088 223.468 7.75264 222.213 2.77367C221.804 1.14585 220.344 0 218.666 0C216.988 0 215.529 1.14585 215.12 2.77367C213.865 7.75264 212.228 12.6043 210.191 17.3332C204.884 29.6601 197.605 40.4502 188.36 49.6942C179.116 58.9383 168.326 66.218 155.999 71.5244C151.275 73.5614 146.419 75.1984 141.44 76.4533C139.812 76.8626 138.666 78.3222 138.666 80C138.666 81.6778 139.812 83.1374 141.44 83.5467C146.419 84.8016 151.271 86.4386 155.999 88.4756C168.326 93.782 179.112 101.062 188.36 110.306C197.609 119.55 204.884 130.34 210.191 142.667C212.228 147.391 213.865 152.247 215.12 157.226C215.529 158.854 216.988 160 218.666 160C220.344 160 221.804 158.854 222.213 157.226C223.468 152.247 225.105 147.396 227.142 142.667C232.448 130.34 239.728 119.554 248.972 110.306C258.216 101.062 269.006 93.782 281.333 88.4756C286.057 86.4386 290.914 84.8016 295.893 83.5467C297.52 83.1374 298.666 81.6778 298.666 80C298.666 78.3222 297.52 76.8626 295.893 76.4533C290.914 75.1984 286.062 73.5614 281.333 71.5244Z" fill="currentColor"></path>
+                </svg>
+            </button>
             <button id="new-window-button" class="icon-button" data-tooltip-i18n="tooltip-new-chat">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 4V20M4 12H20" stroke-linecap="round" stroke-linejoin="round" />
@@ -232,19 +279,203 @@
         document.addEventListener('DOMContentLoaded', () => {
             if (!window.electronAPI) return;
 
+            // Tooltip system - shows tooltips in main view
+            let tooltipTimeout = null;
+            let currentTooltip = null;
+
+            async function showTooltipInMainView(text, buttonRect) {
+                if (!text) return;
+                
+                // Calculate position - tooltip appears below the drag bar
+                const x = buttonRect.left + buttonRect.width / 2;
+                const isLightMode = document.documentElement.classList.contains('light-mode');
+                
+                const code = `
+                    (() => {
+                        // Remove existing tooltip
+                        const existing = document.getElementById('gemini-floating-tooltip');
+                        if (existing) existing.remove();
+                        
+                        // Detect light mode from the page
+                        const isLight = ${isLightMode} || document.documentElement.classList.contains('light-mode') || 
+                                        document.body.style.backgroundColor === 'rgb(255, 255, 255)' ||
+                                        window.getComputedStyle(document.body).backgroundColor === 'rgb(255, 255, 255)';
+                        
+                        // Create tooltip element
+                        const tooltip = document.createElement('div');
+                        tooltip.id = 'gemini-floating-tooltip';
+                        tooltip.textContent = '${text.replace(/'/g, "\\'")}';
+                        
+                        // Theme-aware styles
+                        const bgGradient = isLight 
+                            ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(0, 122, 255, 0.08) 100%)'
+                            : 'linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(0, 191, 255, 0.15) 100%)';
+                        const textColor = isLight ? '#1a1a1a' : '#E0E0E0';
+                        const shadowColor = isLight 
+                            ? '0 8px 32px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 122, 255, 0.2)'
+                            : '0 8px 32px rgba(0, 191, 255, 0.3), 0 0 0 1px rgba(0, 191, 255, 0.2)';
+                        const pulseColors = isLight
+                            ? ['0 8px 32px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 122, 255, 0.2)', '0 8px 40px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(0, 122, 255, 0.35)', '0 8px 32px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 122, 255, 0.2)']
+                            : ['0 8px 32px rgba(0, 191, 255, 0.3), 0 0 0 1px rgba(0, 191, 255, 0.2)', '0 8px 40px rgba(0, 191, 255, 0.5), 0 0 0 2px rgba(0, 191, 255, 0.3)', '0 8px 32px rgba(0, 191, 255, 0.3), 0 0 0 1px rgba(0, 191, 255, 0.2)'];
+                        
+                        tooltip.style.cssText = \`
+                            position: fixed;
+                            top: 8px;
+                            left: ${x}px;
+                            transform: translateX(-50%) translateY(0) scale(0.8);
+                            background: \${bgGradient};
+                            color: \${textColor};
+                            padding: 10px 16px;
+                            border-radius: 12px;
+                            font-size: 12px;
+                            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+                            font-weight: 500;
+                            white-space: nowrap;
+                            opacity: 0;
+                            pointer-events: none;
+                            z-index: 999999;
+                            box-shadow: \${shadowColor};
+                            backdrop-filter: blur(12px);
+                            letter-spacing: 0.4px;
+                            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                        \`;
+                        
+                        document.body.appendChild(tooltip);
+                        
+                        // Check if tooltip overflows and adjust position
+                        requestAnimationFrame(() => {
+                            const tooltipRect = tooltip.getBoundingClientRect();
+                            const windowWidth = window.innerWidth;
+                            
+                            let adjustedX = ${x};
+                            
+                            // Check right overflow - add more padding
+                            if (tooltipRect.right > windowWidth - 20) {
+                                adjustedX = windowWidth - tooltipRect.width / 2 - 25;
+                                tooltip.style.left = adjustedX + 'px';
+                            }
+                            
+                            // Check left overflow - add more padding
+                            if (tooltipRect.left < 20) {
+                                adjustedX = tooltipRect.width / 2 + 25;
+                                tooltip.style.left = adjustedX + 'px';
+                            }
+                            
+                            tooltip.style.opacity = '1';
+                            tooltip.style.transform = 'translateX(-50%) translateY(0) scale(1)';
+                        });
+                        
+                        // Add pulse animation
+                        tooltip.animate([
+                            { boxShadow: pulseColors[0] },
+                            { boxShadow: pulseColors[1] },
+                            { boxShadow: pulseColors[2] }
+                        ], {
+                            duration: 2000,
+                            iterations: Infinity,
+                            easing: 'ease-in-out'
+                        });
+                        
+                        return true;
+                    })()
+                `;
+                
+                try {
+                    await window.electronAPI.executeInMainView(code);
+                    currentTooltip = text;
+                } catch (err) {
+                    console.error('Error showing tooltip:', err);
+                }
+            }
+
+            async function hideTooltipInMainView() {
+                if (!currentTooltip) return;
+                
+                const code = `
+                    (() => {
+                        const tooltip = document.getElementById('gemini-floating-tooltip');
+                        if (tooltip) {
+                            tooltip.style.opacity = '0';
+                            tooltip.style.transform = 'translateX(-50%) translateY(-10px) scale(0.8)';
+                            setTimeout(() => tooltip.remove(), 300);
+                        }
+                        return true;
+                    })()
+                `;
+                
+                try {
+                    await window.electronAPI.executeInMainView(code);
+                    currentTooltip = null;
+                } catch (err) {
+                    console.error('Error hiding tooltip:', err);
+                }
+            }
+
+            // Add tooltip handlers to all icon buttons
+            function setupTooltipHandlers() {
+                document.querySelectorAll('.icon-button').forEach(button => {
+                    button.addEventListener('mouseenter', (e) => {
+                        const tooltipText = button.getAttribute('data-tooltip');
+                        if (tooltipText) {
+                            clearTimeout(tooltipTimeout);
+                            tooltipTimeout = setTimeout(() => {
+                                const rect = button.getBoundingClientRect();
+                                showTooltipInMainView(tooltipText, rect);
+                            }, 200);
+                        }
+                    });
+                    
+                    button.addEventListener('mouseleave', () => {
+                        clearTimeout(tooltipTimeout);
+                        hideTooltipInMainView();
+                    });
+                    
+                    // Hide tooltip when clicking a button (important for buttons that trigger actions)
+                    button.addEventListener('click', () => {
+                        clearTimeout(tooltipTimeout);
+                        hideTooltipInMainView();
+                    });
+                    
+                    // Also handle mousedown to hide tooltip immediately when user starts clicking
+                    button.addEventListener('mousedown', () => {
+                        clearTimeout(tooltipTimeout);
+                        hideTooltipInMainView();
+                    });
+                });
+                
+                // Hide tooltip when mouse leaves the button container entirely
+                const buttonContainer = document.querySelector('.button-container');
+                if (buttonContainer) {
+                    buttonContainer.addEventListener('mouseleave', () => {
+                        clearTimeout(tooltipTimeout);
+                        hideTooltipInMainView();
+                    });
+                }
+                
+                // Global check - hide tooltip if mouse is not over any button
+                document.addEventListener('mouseover', (e) => {
+                    if (!e.target.closest('.icon-button')) {
+                        clearTimeout(tooltipTimeout);
+                        hideTooltipInMainView();
+                    }
+                });
+            }
+
             const settingsButton = document.getElementById('settings-button');
             const newWindowButton = document.getElementById('new-window-button');
             const closeButton = document.getElementById('close-window-button');
             const exportButton = document.getElementById('export-chat-button');
             const fullscreenButton = document.getElementById('fullscreen-button');
             const minimizeButton = document.getElementById('minimize-button');
+            const modeToggleButton = document.getElementById('mode-toggle-button');
             const titleElement = document.getElementById('chat-title');
             const buttonContainer = document.querySelector('.button-container');
 
             let showChatTitle = true;
             let latestTitle = '__NEW_CHAT__'; // Use a special key for new chats
             let sortable = null;
-            const defaultButtonOrder = ['minimize-button', 'new-window-button', 'fullscreen-button', 'export-chat-button', 'settings-button'];
+            let currentAppMode = 'gemini'; // Track current mode
+            const defaultButtonOrder = ['mode-toggle-button', 'minimize-button', 'new-window-button', 'fullscreen-button', 'export-chat-button', 'settings-button'];
 
             const newChatTitles = new Set(Object.values(translations).map(t => t['new-chat']));
 
@@ -356,6 +587,9 @@
             window.electronAPI.getSettings().then(handleSettingsUpdate);
             window.electronAPI.onSettingsUpdated(handleSettingsUpdate);
 
+            // Setup tooltip handlers after DOM is ready
+            setupTooltipHandlers();
+
             settingsButton.addEventListener('click', () => window.electronAPI.openSettingsWindow());
             newWindowButton.addEventListener('click', () => window.electronAPI.openNewWindow());
             closeButton.addEventListener('click', () => window.close());
@@ -372,6 +606,40 @@
                 const newTooltipKey = isEntering ? 'tooltip-exit-fullscreen' : 'tooltip-fullscreen';
                 fullscreenButton.setAttribute('data-tooltip-i18n', newTooltipKey);
                 fullscreenButton.setAttribute('data-tooltip', getTranslation(newTooltipKey, document.documentElement.lang));
+            });
+
+            // Mode toggle button - switch between Gemini and AI Studio
+            function updateModeToggleUI(mode) {
+                currentAppMode = mode;
+                const geminiIcon = modeToggleButton.querySelector('.gemini-icon');
+                const aistudioIcon = modeToggleButton.querySelector('.aistudio-icon');
+                
+                if (mode === 'aistudio') {
+                    // Currently in AI Studio mode - show AI Studio icon, click will switch to Gemini
+                    geminiIcon.classList.remove('active');
+                    aistudioIcon.classList.add('active');
+                    modeToggleButton.setAttribute('data-tooltip', 'Switch to Gemini mode');
+                } else {
+                    // Currently in Gemini mode - show Gemini icon, click will switch to AI Studio
+                    geminiIcon.classList.add('active');
+                    aistudioIcon.classList.remove('active');
+                    modeToggleButton.setAttribute('data-tooltip', 'Switch to AI Studio mode');
+                }
+            }
+
+            modeToggleButton.addEventListener('click', () => {
+                const newMode = currentAppMode === 'gemini' ? 'aistudio' : 'gemini';
+                window.electronAPI.toggleAppMode(newMode);
+            });
+
+            // Get initial app mode
+            window.electronAPI.getAppMode().then(mode => {
+                if (mode) updateModeToggleUI(mode);
+            });
+
+            // Listen for app mode updates
+            window.electronAPI.onAppModeChanged((mode) => {
+                updateModeToggleUI(mode);
             });
 
             window.chatAPI.onTitleUpdate((title) => {
@@ -392,6 +660,53 @@
                 document.documentElement.classList.toggle('light-mode', theme === 'light');
             }
             window.electronAPI.theme.onUpdate(applyTheme);
+
+            // Sync drag bar color with main site background
+            let lastBackgroundColor = null;
+            
+            async function syncBackgroundColor() {
+                try {
+                    // Query multiple possible background colors from the main site
+                    const bgColor = await window.electronAPI.executeInMainView(`
+                        (() => {
+                            const root = document.documentElement;
+                            const body = document.body;
+                            const header = document.querySelector('header, .header, [role="banner"], .top-bar, .app-bar');
+                            
+                            // Try to get the most visible background color
+                            const rootBg = window.getComputedStyle(root).backgroundColor;
+                            const bodyBg = window.getComputedStyle(body).backgroundColor;
+                            const headerBg = header ? window.getComputedStyle(header).backgroundColor : null;
+                            
+                            // Return the first non-transparent color
+                            if (headerBg && headerBg !== 'rgba(0, 0, 0, 0)' && headerBg !== 'transparent') {
+                                return headerBg;
+                            }
+                            if (bodyBg && bodyBg !== 'rgba(0, 0, 0, 0)' && bodyBg !== 'transparent') {
+                                return bodyBg;
+                            }
+                            return rootBg;
+                        })()
+                    `);
+                    
+                    if (bgColor && bgColor !== lastBackgroundColor) {
+                        console.log('Updating drag bar background color to:', bgColor);
+                        const topBar = document.querySelector('.top-bar');
+                        if (topBar) {
+                            topBar.style.backgroundColor = bgColor;
+                            lastBackgroundColor = bgColor;
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error syncing background color:', err);
+                }
+            }
+
+            // Initial sync after page loads
+            setTimeout(syncBackgroundColor, 500);
+
+            // Check every 500ms for color changes
+            setInterval(syncBackgroundColor, 500);
         });
     </script>
 

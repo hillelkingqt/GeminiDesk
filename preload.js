@@ -113,6 +113,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onNotificationCheckStatus: (callback) =>
         ipcRenderer.on('notification-check-status', (_event, result) => callback(result)),
 
+    // Login handling
+    addGoogleAccount: () => ipcRenderer.invoke('add-google-account'),
+    switchAccount: (index) => ipcRenderer.send('accounts-switch', index),
+
     // Event listeners
     onUpdateStatus: (callback) => ipcRenderer.on('update-status', (event, ...args) => callback(...args)),
     onSettingsUpdated: (callback) => ipcRenderer.on('settings-updated', (event, ...args) => callback(...args)),
@@ -124,6 +128,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     // App mode selection
     selectAppMode: (mode) => ipcRenderer.send('select-app-mode', mode),
+    toggleAppMode: (mode) => ipcRenderer.send('toggle-app-mode', mode),
+    getAppMode: () => ipcRenderer.invoke('get-app-mode'),
+    onAppModeChanged: (callback) => ipcRenderer.on('app-mode-changed', (_event, mode) => callback(mode)),
 
     // Update window controls
     openDownloadPage: () => ipcRenderer.send('open-download-page'),
@@ -141,8 +148,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
     closeUpdateWindow: () => ipcRenderer.send('close-update-window'),
     logToMain: (message) => ipcRenderer.send('log-to-main', message),
 
-    // Clipboard operations
-    writeClipboard: (text) => ipcRenderer.invoke('write-clipboard', text)
+    // Execute JavaScript in main view (BrowserView)
+    executeInMainView: (code) => ipcRenderer.invoke('execute-in-main-view', code),
+
+    // Prompt Manager
+    openPromptManagerWindow: () => ipcRenderer.send('open-prompt-manager-window'),
+    getCustomPrompts: () => ipcRenderer.invoke('get-custom-prompts'),
+    addCustomPrompt: (prompt) => ipcRenderer.invoke('add-custom-prompt', prompt),
+    updateCustomPrompt: (prompt) => ipcRenderer.invoke('update-custom-prompt', prompt),
+    deleteCustomPrompt: (promptId) => ipcRenderer.invoke('delete-custom-prompt', promptId),
+    setDefaultPrompt: (promptId) => ipcRenderer.invoke('set-default-prompt', promptId),
+    closeWindow: () => ipcRenderer.send('close-window')
 });
 
 // ================================================================
@@ -495,12 +511,12 @@ function checkAiResponseCompletion() {
     try {
         let isAiGenerating = false;
         let detectionMethod = null;
-
-
+        
+        
         // Method 1: Look for the send button and check its state directly
         const allButtons = document.querySelectorAll('button[mat-icon-button]');
         let sendButton = null;
-
+        
         for (const btn of allButtons) {
             const ariaLabel = btn.getAttribute('aria-label')?.toLowerCase() || '';
             if (ariaLabel.includes('send') || ariaLabel.includes('stop')) {
@@ -508,21 +524,21 @@ function checkAiResponseCompletion() {
                 break;
             }
         }
-
+        
         // Alternative search methods
         if (!sendButton) {
             sendButton = document.querySelector('.send-button-container button') ||
-                document.querySelector('button[aria-label*="Send"]') ||
-                document.querySelector('button[aria-label*="Stop"]') ||
-                document.querySelector('button.send-button') ||
-                document.querySelector('button.stop');
+                        document.querySelector('button[aria-label*="Send"]') ||
+                        document.querySelector('button[aria-label*="Stop"]') ||
+                        document.querySelector('button.send-button') ||
+                        document.querySelector('button.stop');
         }
-
+        
         if (sendButton) {
             const ariaLabel = sendButton.getAttribute('aria-label')?.toLowerCase() || '';
             const classList = sendButton.classList.toString();
             const hasStopIcon = sendButton.querySelector('.stop-icon, .blue-circle');
-
+            
             // Check if button indicates AI is generating
             if (ariaLabel.includes('stop')) {
                 isAiGenerating = true;
@@ -535,17 +551,17 @@ function checkAiResponseCompletion() {
                 detectionMethod = 'stop-icon';
             }
         }
-
+        
         // Method 2: Check for mic button visibility
         if (!isAiGenerating) {
             const micButton = document.querySelector('.mic-button-container, button[aria-label*="microphone" i], button[aria-label*="mic" i]');
             if (micButton) {
                 const micStyle = window.getComputedStyle(micButton);
-                const micVisible = !micButton.classList.contains('hidden') &&
-                    micStyle.display !== 'none' &&
-                    micStyle.visibility !== 'hidden' &&
-                    micStyle.opacity !== '0';
-
+                const micVisible = !micButton.classList.contains('hidden') && 
+                                 micStyle.display !== 'none' && 
+                                 micStyle.visibility !== 'hidden' &&
+                                 micStyle.opacity !== '0';
+                
                 // If mic is visible and no stop button found, AI is not generating
                 if (micVisible && !sendButton?.getAttribute('aria-label')?.toLowerCase().includes('stop')) {
                     isAiGenerating = false;
@@ -553,18 +569,18 @@ function checkAiResponseCompletion() {
                 }
             }
         }
-
-        // Method 3: Check for visible stop icons anywhere in the page
+        
+                // Method 3: Check for visible stop icons anywhere in the page
         if (!isAiGenerating) {
             const stopIcons = document.querySelectorAll('[class*="stop"], [class*="generating"]');
-
+            
             for (const icon of stopIcons) {
                 const style = window.getComputedStyle(icon);
-                const isVisible = style.display !== 'none' &&
-                    style.visibility !== 'hidden' &&
-                    style.opacity !== '0' &&
-                    !icon.classList.contains('hidden');
-
+                const isVisible = style.display !== 'none' && 
+                                style.visibility !== 'hidden' && 
+                                style.opacity !== '0' &&
+                                !icon.classList.contains('hidden');
+                
                 if (isVisible) {
                     isAiGenerating = true;
                     detectionMethod = 'stop-icon-scan';
@@ -572,11 +588,11 @@ function checkAiResponseCompletion() {
                 }
             }
         }
-
+        
         // Method 4: Look for any streaming/generating indicators
         if (!isAiGenerating) {
             const streamingIndicators = document.querySelectorAll('[class*="generating"], [class*="streaming"], [class*="typing"]');
-
+            
             for (const indicator of streamingIndicators) {
                 const style = window.getComputedStyle(indicator);
                 if (style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0') {
@@ -586,19 +602,19 @@ function checkAiResponseCompletion() {
                 }
             }
         }
-
+        
         // Log state changes only
         if (isAiGenerating !== lastButtonState) {
             console.log(`🔄 GeminiDesk: AI state changed - Generating: ${isAiGenerating}`);
         }
-
+        
         // If we detect AI started generating, reset notification flag
         if (isAiGenerating && lastButtonState !== true) {
             hasNotifiedCompletion = false;
             console.log('🤖 GeminiDesk: AI STARTED generating response');
             console.log('🤖 Detection method:', detectionMethod);
         }
-
+        
         // If we were generating and now we're not, AI completed response
         if (lastButtonState === true && !isAiGenerating && !hasNotifiedCompletion) {
             console.log('✅ GeminiDesk: AI COMPLETED generating response!');
@@ -606,9 +622,9 @@ function checkAiResponseCompletion() {
             ipcRenderer.send('ai-response-completed');
             hasNotifiedCompletion = true;
         }
-
+        
         lastButtonState = isAiGenerating;
-
+        
     } catch (error) {
         console.error('❌ GeminiDesk: Error checking AI response completion:', error);
     }
@@ -625,25 +641,25 @@ function initializeAiResponseDetection() {
     responseObserver = new MutationObserver((mutations) => {
         // Check if any mutations affect button-related elements
         let shouldCheck = false;
-
+        
         mutations.forEach(mutation => {
-            if (mutation.type === 'attributes' &&
-                (mutation.attributeName === 'class' ||
-                    mutation.attributeName === 'style' ||
-                    mutation.attributeName === 'aria-label')) {
+            if (mutation.type === 'attributes' && 
+                (mutation.attributeName === 'class' || 
+                 mutation.attributeName === 'style' ||
+                 mutation.attributeName === 'aria-label')) {
                 const target = mutation.target;
-                if (target.classList &&
+                if (target.classList && 
                     (target.classList.contains('send-button-container') ||
-                        target.classList.contains('mic-button-container') ||
-                        target.classList.contains('stop-icon') ||
-                        target.classList.contains('send-button-icon') ||
-                        target.classList.contains('blue-circle') ||
-                        target.classList.contains('stop') ||
-                        target.matches('[class*="send-button"]') ||
-                        target.matches('[class*="mic-button"]') ||
-                        target.querySelector &&
-                        (target.querySelector('.send-button-container') ||
-                            target.querySelector('.mic-button-container')))) {
+                     target.classList.contains('mic-button-container') ||
+                     target.classList.contains('stop-icon') ||
+                     target.classList.contains('send-button-icon') ||
+                     target.classList.contains('blue-circle') ||
+                     target.classList.contains('stop') ||
+                     target.matches('[class*="send-button"]') ||
+                     target.matches('[class*="mic-button"]') ||
+                     target.querySelector && 
+                     (target.querySelector('.send-button-container') ||
+                      target.querySelector('.mic-button-container')))) {
                     shouldCheck = true;
                 }
             } else if (mutation.type === 'childList') {
@@ -651,8 +667,8 @@ function initializeAiResponseDetection() {
                 const checkNodes = (nodes) => {
                     return Array.from(nodes).some(node => {
                         if (node.nodeType === Node.ELEMENT_NODE) {
-                            return node.classList &&
-                                (node.classList.contains('send-button-container') ||
+                            return node.classList && 
+                                   (node.classList.contains('send-button-container') ||
                                     node.classList.contains('mic-button-container') ||
                                     node.matches('[class*="send-button"]') ||
                                     node.matches('[class*="mic-button"]') ||
@@ -664,13 +680,13 @@ function initializeAiResponseDetection() {
                         return false;
                     });
                 };
-
+                
                 if (checkNodes(mutation.addedNodes) || checkNodes(mutation.removedNodes)) {
                     shouldCheck = true;
                 }
             }
         });
-
+        
         if (shouldCheck) {
             // Small delay to let the DOM settle
             setTimeout(() => {

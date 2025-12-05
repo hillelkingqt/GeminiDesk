@@ -1,14 +1,15 @@
 {
   "name": "gemini-desk",
-  "version": "8.0.0",
+  "version": "8.1.0",
   "description": "Gemini Desktop Wrapper",
   "author": {
     "name": "Hillel BH",
-    "email": "hillel@example.com"
+    "email": "geminidesksupport@proton.me"
   },
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "browse": "node browser.js",
     "build": "electron-builder"
   },
   "devDependencies": {
@@ -16,7 +17,6 @@
     "electron-builder": "^26.0.12"
   },
   "dependencies": {
-    "pdfkit": "^0.14.0",
     "archiver": "^5.3.2",
     "auto-launch": "^5.0.6",
     "electron-store": "^8.2.0",
@@ -24,7 +24,9 @@
     "jsdom": "^24.0.0",
     "katex": "^0.16.9",
     "marked": "^16.1.2",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^2.7.0",
+    "pdfkit": "^0.14.0",
+    "sound-play": "^1.1.0"
   },
   "build": {
     "appId": "com.hillel.geminiapp",
@@ -44,7 +46,8 @@
       "!node_modules/electron{,/**}"
     ],
     "extraResources": [
-      "0.5.8_0/**"
+      "0.5.8_0/**",
+      "icon.ico"
     ],
     "asar": true,
     "compression": "maximum",

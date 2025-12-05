@@ -5,78 +5,77 @@
     <meta charset="UTF-8">
     <title>GeminiDesk Settings</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
 
         :root {
-            /* Premium Dark Palette (Default) */
-            --bg-root: #0f0f13;
-            --glass-surface: rgba(20, 20, 25, 0.95);
+            /* Gemini Dark Palette (Default) */
+            --bg-root: #131314;
+            --glass-surface: #1e1f20;
             --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-highlight: rgba(255, 255, 255, 0.05);
+            --glass-highlight: rgba(255, 255, 255, 0.03);
 
-            --text-primary: #ffffff;
-            --text-secondary: #9ca3af;
-            --text-tertiary: #6b7280;
+            --text-primary: #e3e3e3;
+            --text-secondary: #9aa0a6;
+            --text-tertiary: #5f6368;
 
-            --accent-primary: #818cf8;
-            --accent-glow: rgba(129, 140, 248, 0.4);
-            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --accent-primary: #8ab4f8;
+            --accent-glow: rgba(138, 180, 248, 0.3);
+            --accent-gradient: linear-gradient(135deg, #8ab4f8 0%, #c58af9 100%);
 
-            --input-bg: rgba(255, 255, 255, 0.03);
-            --input-border: rgba(255, 255, 255, 0.08);
+            --input-bg: #282a2c;
+            --input-border: rgba(255, 255, 255, 0.1);
 
-            --danger-color: #f43f5e;
-            --success-color: #22c55e;
+            --danger-color: #f28b82;
+            --success-color: #81c995;
 
-            --radius-xl: 24px;
-            --radius-lg: 16px;
+            --radius-xl: 28px;
+            --radius-lg: 20px;
             --radius-md: 12px;
             --radius-sm: 8px;
 
-            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-            --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.4);
+            --shadow-glow: 0 0 16px rgba(138, 180, 248, 0.2);
 
             --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
             --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 
             /* Component Variables */
-            --item-bg: rgba(255, 255, 255, 0.02);
-            --item-hover-bg: rgba(255, 255, 255, 0.04);
-            --button-bg: rgba(255, 255, 255, 0.05);
-            --button-hover-bg: rgba(255, 255, 255, 0.08);
-            --search-input-bg: rgba(0, 0, 0, 0.2);
+            --item-bg: #282a2c;
+            --item-hover-bg: #353739;
+            --button-bg: #282a2c;
+            --button-hover-bg: #3c4043;
+            --search-input-bg: #282a2c;
         }
 
         html.light-mode {
-            --bg-root: #f1f5f9;
-            --glass-surface: rgba(255, 255, 255, 0.85);
+            --bg-root: #ffffff;
+            --glass-surface: #f8f9fa;
             --glass-border: rgba(0, 0, 0, 0.08);
             --glass-highlight: rgba(255, 255, 255, 0.8);
 
-            --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --text-tertiary: #94a3b8;
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --text-tertiary: #9aa0a6;
 
-            --accent-primary: #6366f1;
-            --accent-glow: rgba(99, 102, 241, 0.25);
-            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            --accent-primary: #1a73e8;
+            --accent-glow: rgba(26, 115, 232, 0.2);
+            --accent-gradient: linear-gradient(135deg, #1a73e8 0%, #8430ce 100%);
 
-            --input-bg: rgba(0, 0, 0, 0.04);
+            --input-bg: #f1f3f4;
             --input-border: rgba(0, 0, 0, 0.1);
 
-            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+            --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.1);
 
-            --item-bg: rgba(255, 255, 255, 0.6);
-            --item-hover-bg: rgba(255, 255, 255, 0.9);
-            --button-bg: rgba(0, 0, 0, 0.04);
-            --button-hover-bg: rgba(0, 0, 0, 0.08);
-            --search-input-bg: rgba(0, 0, 0, 0.05);
+            --item-bg: #f1f3f4;
+            --item-hover-bg: #e8eaed;
+            --button-bg: #f1f3f4;
+            --button-hover-bg: #e8eaed;
+            --search-input-bg: #f1f3f4;
         }
 
         html.light-mode body::before {
-            background: radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.08), transparent 60%),
-                radial-gradient(circle at 90% 90%, rgba(168, 85, 247, 0.08), transparent 60%);
+            display: none;
         }
 
         html,
@@ -86,96 +85,81 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Google Sans', 'Segoe UI', Roboto, sans-serif;
             background: var(--bg-root);
             color: var(--text-primary);
             user-select: none;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Background Effects */
+        /* Background Effects - Subtle */
         body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            pointer-events: none;
-            background: radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.12), transparent 60%),
-                radial-gradient(circle at 90% 90%, rgba(168, 85, 247, 0.12), transparent 60%);
-            opacity: 1;
+            display: none;
         }
 
         body::after {
-            content: '';
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            pointer-events: none;
-            opacity: 0.04;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            display: none;
         }
 
         .drag-bar {
             position: relative;
             z-index: 10;
             width: 100%;
-            height: 44px;
+            height: 48px;
             -webkit-app-region: drag;
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.03), transparent);
-            backdrop-filter: blur(20px);
+            background: var(--bg-root);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 20px;
+            padding: 0 16px;
             box-sizing: border-box;
             border-bottom: 1px solid var(--glass-border);
         }
 
         .drag-bar h2 {
-            font-size: 15px;
+            font-size: 16px;
             margin: 0;
-            font-weight: 600;
+            font-weight: 500;
             color: var(--text-primary);
-            letter-spacing: 0.01em;
+            letter-spacing: 0;
             -webkit-app-region: drag;
         }
 
         #close-button {
             -webkit-app-region: no-drag;
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            border: 1px solid transparent;
-            border: 1px solid transparent;
-            background: var(--button-bg);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
             color: var(--text-secondary);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
             font-size: 20px;
             line-height: 1;
             padding: 0;
         }
 
         #close-button:hover {
-            background: var(--danger-color);
-            color: white;
-            transform: rotate(90deg);
-            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
+            background: var(--item-hover-bg);
+            color: var(--text-primary);
+            transform: none;
+            box-shadow: none;
         }
 
         .content {
             position: relative;
             z-index: 1;
-            padding: clamp(16px, 2vw, 24px);
-            padding-bottom: clamp(48px, 8vh, 96px);
+            padding: 16px;
+            padding-bottom: 80px;
             overflow-y: auto;
-            height: calc(100vh - 44px);
+            height: calc(100vh - 48px);
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-            gap: clamp(14px, 2vw, 20px);
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 16px;
             overscroll-behavior: contain;
             scroll-padding-bottom: 64px;
         }
@@ -186,7 +170,7 @@
             height: 28px;
         }
 
-        /* Modern custom scrollbar */
+        /* Gemini-style scrollbar */
         .content::-webkit-scrollbar {
             width: 8px;
         }
@@ -196,46 +180,35 @@
         }
 
         .content::-webkit-scrollbar-thumb {
-            background: rgba(129, 140, 248, 0.3);
+            background: var(--text-tertiary);
             border-radius: 10px;
-            transition: background 0.2s ease;
         }
 
         .content::-webkit-scrollbar-thumb:hover {
-            background: rgba(129, 140, 248, 0.5);
+            background: var(--text-secondary);
         }
 
         .setting-category {
             position: relative;
             margin: 0;
             background: var(--glass-surface);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg), inset 0 1px 0 var(--glass-highlight);
-            padding: clamp(12px, 1.4vw, 18px);
+            padding: 16px;
             display: flex;
             flex-direction: column;
         }
 
         .setting-category::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            z-index: -1;
-            pointer-events: none;
-            background: radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.08), transparent 60%),
-                radial-gradient(circle at 90% 90%, rgba(168, 85, 247, 0.08), transparent 60%);
-            opacity: 1;
+            display: none;
         }
 
         .setting-category-title {
-            font-weight: 600;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--accent-primary);
+            font-weight: 500;
+            font-size: 14px;
+            text-transform: none;
+            letter-spacing: 0;
+            color: var(--text-primary);
             margin-bottom: 16px;
             padding-bottom: 12px;
             border-bottom: 1px solid var(--glass-border);
@@ -244,29 +217,30 @@
         }
 
         .setting-category-title svg {
-            width: 16px;
-            height: 16px;
-            margin-right: 8px;
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            color: var(--accent-primary);
         }
 
         .setting-item {
-            background: var(--item-bg);
+            background: transparent;
             border-radius: var(--radius-md);
-            padding: 16px;
+            padding: 12px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
-            border: 1px solid var(--glass-border);
-            transition: all 0.2s ease;
+            margin-bottom: 4px;
+            border: none;
+            transition: background 0.15s ease;
             flex-shrink: 0;
         }
 
         .setting-item:hover {
-            background: var(--item-hover-bg);
-            border-color: rgba(129, 140, 248, 0.3);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            transform: translateY(-1px);
+            background: var(--item-bg);
+            border-color: transparent;
+            box-shadow: none;
+            transform: none;
         }
 
         .setting-item:last-child {
@@ -276,11 +250,11 @@
         .setting-label {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 2px;
         }
 
         .setting-label strong {
-            font-weight: 500;
+            font-weight: 400;
             font-size: 14px;
             color: var(--text-primary);
         }
@@ -294,8 +268,8 @@
         .toggle-switch {
             position: relative;
             display: inline-block;
-            width: 50px;
-            height: 28px;
+            width: 52px;
+            height: 32px;
             flex-shrink: 0;
         }
 
@@ -307,90 +281,90 @@
             position: absolute;
             cursor: pointer;
             inset: 0;
-            background: rgba(255, 255, 255, 0.1);
-            transition: .3s ease;
+            background: #5f6368;
+            transition: .2s ease;
             border-radius: 999px;
-            border: 1px solid var(--glass-border);
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+            border: none;
+            box-shadow: none;
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 22px;
-            width: 22px;
-            left: 2px;
-            bottom: 2px;
-            background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
-            transition: .3s ease;
+            height: 24px;
+            width: 24px;
+            left: 4px;
+            bottom: 4px;
+            background: #ffffff;
+            transition: .2s ease;
             border-radius: 50%;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         input:checked+.slider {
-            background: var(--accent-gradient);
+            background: var(--accent-primary);
             border-color: transparent;
-            box-shadow: 0 0 12px var(--accent-glow);
+            box-shadow: none;
         }
 
         input:checked+.slider:before {
-            transform: translateX(22px);
-            background: #ffffff;
+            transform: translateX(20px);
+            background: #131314;
         }
 
         .record-button,
         .action-button {
-            background: var(--button-bg);
+            background: transparent;
             border: 1px solid var(--glass-border);
-            color: var(--text-primary);
-            padding: 10px 16px;
-            border-radius: var(--radius-md);
+            color: var(--accent-primary);
+            padding: 8px 16px;
+            border-radius: 20px;
             cursor: pointer;
-            font-family: 'Outfit', sans-serif;
-            font-size: 13px;
+            font-family: 'Google Sans', 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
             font-weight: 500;
-            min-width: 130px;
+            min-width: 100px;
             text-align: center;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.15s ease;
+            box-shadow: none;
         }
 
         .record-button:hover,
         .action-button:hover {
-            background: var(--button-hover-bg);
+            background: rgba(138, 180, 248, 0.1);
             border-color: var(--accent-primary);
             color: var(--accent-primary);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(129, 140, 248, 0.2);
+            transform: none;
+            box-shadow: none;
         }
 
         .record-button.is-recording {
-            background: var(--accent-gradient);
+            background: var(--accent-primary);
             border-color: transparent;
-            color: #fff;
-            font-weight: 600;
+            color: #131314;
+            font-weight: 500;
             cursor: default;
-            box-shadow: 0 4px 16px var(--accent-glow);
+            box-shadow: none;
         }
 
         #reset-button {
             border: 1px solid var(--danger-color);
-            background: rgba(244, 63, 94, 0.1);
+            background: transparent;
             color: var(--danger-color);
-            padding: 10px 16px;
-            border-radius: var(--radius-md);
+            padding: 8px 16px;
+            border-radius: 20px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 500;
-            transition: all 0.2s ease;
-            font-family: 'Outfit', sans-serif;
+            transition: all 0.15s ease;
+            font-family: 'Google Sans', 'Segoe UI', Roboto, sans-serif;
         }
 
         #reset-button:hover {
-            background: var(--danger-color);
-            color: #fff;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(244, 63, 94, 0.3);
+            background: rgba(242, 139, 130, 0.1);
+            color: var(--danger-color);
+            transform: none;
+            box-shadow: none;
         }
 
         #notification-status-text {
@@ -478,12 +452,12 @@
         .option-group {
             display: flex;
             flex-wrap: nowrap;
-            gap: 0;
+            gap: 8px;
             max-width: 100%;
-            background: var(--button-bg);
-            border-radius: var(--radius-md);
-            border: 1px solid var(--glass-border);
-            overflow: hidden;
+            background: transparent;
+            border-radius: 0;
+            border: none;
+            overflow: visible;
         }
 
         .option-group input[type="radio"] {
@@ -491,37 +465,40 @@
         }
 
         .option-group label {
-            padding: 10px 14px;
-            flex: 1 1 0;
+            padding: 8px 16px;
+            flex: 0 0 auto;
             text-align: center;
             white-space: nowrap;
             min-width: 0;
             margin: 0;
             cursor: pointer;
-            color: var(--text-secondary);
-            font-size: 13px;
-            font-weight: 400;
-            transition: all 0.2s ease;
-            border-right: 1px solid var(--glass-border);
+            color: var(--accent-primary);
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.15s ease;
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            background: transparent;
         }
 
         .option-group label:first-of-type {
-            border-left: none;
+            border-left: 1px solid var(--glass-border);
         }
 
         .option-group label:last-of-type {
-            border-right: none;
+            border-right: 1px solid var(--glass-border);
         }
 
         .option-group input[type="radio"]:checked+label {
-            background: var(--accent-gradient);
-            color: #fff;
+            background: rgba(138, 180, 248, 0.15);
+            color: var(--accent-primary);
             font-weight: 500;
-            box-shadow: 0 2px 8px var(--accent-glow);
+            border-color: var(--accent-primary);
+            box-shadow: none;
         }
 
         .option-group label:hover {
-            background: var(--button-hover-bg);
+            background: rgba(138, 180, 248, 0.08);
         }
 
         html[dir="rtl"] .option-group {
@@ -529,12 +506,12 @@
         }
 
         html[dir="rtl"] .option-group label {
-            border-left: none;
+            border-left: 1px solid var(--glass-border);
             border-right: 1px solid var(--glass-border);
         }
 
         html[dir="rtl"] .option-group label:first-of-type {
-            border-right: none;
+            border-right: 1px solid var(--glass-border);
         }
 
         html[dir="rtl"] .option-group label:last-of-type {
@@ -561,30 +538,29 @@
         .language-selector {
             position: relative;
             width: fit-content;
-            min-width: 120px;
+            min-width: 140px;
         }
 
         .language-selector-button {
             width: 100%;
-            background: var(--button-bg);
-            border: 1px solid var(--glass-border);
+            background: var(--input-bg);
+            border: 1px solid transparent;
             color: var(--text-primary);
-            padding: 10px 12px;
-            border-radius: var(--radius-md);
+            padding: 10px 14px;
+            border-radius: 8px;
             cursor: pointer;
-            font-family: 'Outfit', sans-serif;
-            font-size: 13px;
+            font-family: 'Google Sans', 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
             box-sizing: border-box;
             direction: ltr;
         }
 
         .language-selector-button:hover {
-            background: var(--button-hover-bg);
-            border-color: var(--accent-primary);
+            background: var(--item-hover-bg);
         }
 
         .language-selector-button span {
@@ -598,11 +574,45 @@
 
         .language-selector-button svg {
             flex-shrink: 0;
-            transition: transform 0.2s ease;
+            transition: transform 0.15s ease;
+            color: var(--text-secondary);
         }
 
         .language-selector-button.open svg {
             transform: rotate(180deg);
+        }
+
+        /* Text Input Styling */
+        .text-input {
+            background: var(--input-bg);
+            border: 1px solid transparent;
+            color: var(--text-primary);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-family: 'Google Sans', 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.15s ease;
+            box-sizing: border-box;
+        }
+
+        .text-input:hover {
+            background: var(--item-hover-bg);
+        }
+
+        .text-input:focus {
+            border-color: var(--accent-primary);
+            background: var(--input-bg);
+            box-shadow: none;
+        }
+
+        .text-input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .text-input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .language-dropdown {
@@ -610,31 +620,29 @@
             bottom: 100%;
             left: 0;
             right: 0;
-            background: var(--glass-surface);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            background: #282a2c;
             border: 1px solid var(--glass-border);
-            border-radius: var(--radius-md);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             max-height: 300px;
             z-index: 1000;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             display: none;
             overflow: hidden;
             direction: ltr;
             transform-origin: bottom center;
-            animation: dropdownSlideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: dropdownSlideUp 0.15s ease-out;
         }
 
         @keyframes dropdownSlideUp {
             from {
                 opacity: 0;
-                transform: translateY(10px) scale(0.98);
+                transform: translateY(8px);
             }
 
             to {
                 opacity: 1;
-                transform: translateY(0) scale(1);
+                transform: translateY(0);
             }
         }
 
@@ -643,31 +651,30 @@
         }
 
         .language-search {
-            padding: 10px;
+            padding: 12px;
             border-bottom: 1px solid var(--glass-border);
-            background: var(--item-bg);
+            background: transparent;
         }
 
         .language-search input {
             width: 100%;
-            padding: 8px 12px;
-            background: var(--search-input-bg);
+            padding: 10px 14px;
+            background: var(--input-bg);
             border: 1px solid transparent;
             color: var(--text-primary);
-            border-radius: var(--radius-sm);
-            font-family: 'Outfit', sans-serif;
-            font-size: 13px;
+            border-radius: 8px;
+            font-family: 'Google Sans', 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
             box-sizing: border-box;
             outline: none;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
             direction: ltr;
             text-align: left;
         }
 
         .language-search input:focus {
-            background: rgba(0, 0, 0, 0.3);
+            background: #353739;
             border-color: var(--accent-primary);
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
         }
 
         .language-search input::placeholder {
@@ -677,9 +684,9 @@
 
         .language-list {
             list-style: none;
-            padding: 0;
+            padding: 4px;
             margin: 0;
-            max-height: 180px;
+            max-height: 200px;
             overflow-y: auto;
         }
 
@@ -692,43 +699,43 @@
         }
 
         .language-list::-webkit-scrollbar-thumb {
-            background: rgba(129, 140, 248, 0.3);
+            background: var(--text-tertiary);
             border-radius: 3px;
         }
 
         .language-list::-webkit-scrollbar-thumb:hover {
-            background: rgba(129, 140, 248, 0.5);
+            background: var(--text-secondary);
         }
 
         .language-list li {
             padding: 10px 14px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 14px;
             color: var(--text-secondary);
-            transition: all 0.15s ease;
-            border-bottom: 1px solid transparent;
+            transition: background 0.1s ease;
+            border-bottom: none;
             text-align: left;
             direction: ltr;
-            margin: 2px 4px;
-            border-radius: var(--radius-sm);
+            margin: 2px 0;
+            border-radius: 8px;
         }
 
         .language-list li:last-child {
             border-bottom: none;
-            margin-bottom: 4px;
+            margin-bottom: 0;
         }
 
         .language-list li:hover {
-            background: var(--button-hover-bg);
+            background: var(--item-hover-bg);
             color: var(--text-primary);
-            transform: translateX(2px);
+            transform: none;
         }
 
         .language-list li.selected {
-            background: var(--accent-gradient);
-            color: #fff;
+            background: rgba(138, 180, 248, 0.15);
+            color: var(--accent-primary);
             font-weight: 500;
-            box-shadow: 0 2px 8px var(--accent-glow);
+            box-shadow: none;
         }
 
         .language-list li.hidden {
@@ -845,6 +852,7 @@
                 </div>
             </div>
         </div>
+
         <div class="setting-category">
             <h3 class="setting-category-title">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -902,10 +910,16 @@
                 <label class="toggle-switch"><input type="checkbox" id="setting-alwaysOnTop"><span
                         class="slider"></span></label>
             </div>
-            <div class="setting-item">
+            <div class="setting-item" id="showInTaskbar-setting">
                 <div class="setting-label"><strong data-i18n="showInTaskbar-label">Show in Taskbar</strong><span
                         data-i18n="showInTaskbar-desc">Let the app icon appear in the taskbar.</span></div>
                 <label class="toggle-switch"><input type="checkbox" id="setting-showInTaskbar"><span
+                        class="slider"></span></label>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="invisibilityMode-label">🔒 Invisibility Mode</strong><span
+                        data-i18n="invisibilityMode-desc">Hide app from screen sharing apps (Zoom, Teams, Discord). Window becomes invisible to screen capture.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-invisibilityMode"><span
                         class="slider"></span></label>
             </div>
             <div class="setting-item">
@@ -1312,6 +1326,39 @@
                     </label>
                 </div>
             </div>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <strong data-i18n="openFileAfterExport-label">Open File After Export</strong>
+                    <span data-i18n="openFileAfterExport-desc">Automatically open the exported file after saving.</span>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-openFileAfterExport"><span
+                        class="slider"></span></label>
+            </div>
+        </div>
+        <div class="setting-category">
+            <h3 class="setting-category-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+                <span data-i18n="proxy">Proxy</span>
+            </h3>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <strong data-i18n="proxyEnabled-label">Enable Proxy</strong>
+                    <span data-i18n="proxyEnabled-desc">Use a proxy server to connect to Gemini and AI Studio.</span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="setting-proxyEnabled">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item" id="proxy-url-setting">
+                <div class="setting-label">
+                    <strong data-i18n="proxyUrl-label">Proxy URL</strong>
+                    <span data-i18n="proxyUrl-desc">Enter proxy address (e.g., http://127.0.0.1:7890 or socks5://127.0.0.1:1080)</span>
+                </div>
+                <input type="text" id="setting-proxyUrl" class="text-input" placeholder="http://127.0.0.1:7890" style="width: 250px;">
+            </div>
         </div>
         <div class="setting-category">
             <h3 class="setting-category-title">
@@ -1356,6 +1403,50 @@
                     Schedule</button>
             </div>
         </div>
+
+        <!-- Prompt Manager Section -->
+        <div class="setting-category">
+            <h3 class="setting-category-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                </svg>
+                <span data-i18n="promptManager">Prompt Manager</span>
+            </h3>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <strong data-i18n="promptManager-label">Custom Prompts</strong>
+                    <span data-i18n="promptManager-desc">Create prompts that automatically send when you start a new chat.</span>
+                </div>
+                <button id="open-prompt-manager" class="action-button" data-i18n="managePrompts">Manage Prompts</button>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <strong data-i18n="defaultPrompt-label">Default Prompt Status</strong>
+                    <span id="default-prompt-status" data-i18n="defaultPrompt-desc">No default prompt set.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screenshot Settings Section -->
+        <div class="setting-category">
+            <h3 class="setting-category-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M21 3H3C2 3 1 4 1 5v14c0 1.1.9 2 2 2h18c1 0 2-1 2-2V5c0-1-1-2-2-2zM5 17l3.5-4.5 2.5 3.01L14.5 11l4.5 6H5z"/>
+                </svg>
+                <span data-i18n="screenshotSettings">Screenshot Settings</span>
+            </h3>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <strong data-i18n="autoScreenshotFullScreen-label">Auto Full-Screen Screenshot</strong>
+                    <span data-i18n="autoScreenshotFullScreen-desc">Capture entire screen automatically instead of selecting an area. Faster workflow for visual tasks.</span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="setting-autoScreenshotFullScreen">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
         <div class="setting-category">
             <h3 class="setting-category-title">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -1583,12 +1674,28 @@
                     document.getElementById('setting-autoCheckNotifications').checked = settings.autoCheckNotifications || false;
                     document.getElementById('setting-disableAutoUpdateCheck').checked = settings.disableAutoUpdateCheck || false;
                     document.getElementById('setting-enableCanvasResizing').checked = settings.enableCanvasResizing || false;
+                    document.getElementById('setting-invisibilityMode').checked = settings.invisibilityMode || false;
+                    
+                    // Gray out "Show in Taskbar" when invisibility mode is enabled
+                    const showInTaskbarSetting = document.getElementById('showInTaskbar-setting');
+                    const showInTaskbarCheckbox = document.getElementById('setting-showInTaskbar');
+                    if (showInTaskbarSetting && showInTaskbarCheckbox) {
+                        showInTaskbarSetting.style.opacity = settings.invisibilityMode ? '0.5' : '1';
+                        showInTaskbarCheckbox.disabled = settings.invisibilityMode || false;
+                    }
+                    
                     // Load unpacked extension setting (English-only)
                     const loadExtEl = document.getElementById('setting-loadUnpackedExtension');
                     if (loadExtEl) loadExtEl.checked = !!settings.loadUnpackedExtension;
                     document.getElementById('setting-shortcutsGlobal').checked = settings.shortcutsGlobal !== false;
                     document.getElementById('setting-showAdvancedShortcutOptions').checked = settings.showAdvancedShortcutOptions || false;
                     document.getElementById('setting-showChatTitle').checked = settings.showChatTitle !== false;
+
+                    // Proxy settings
+                    document.getElementById('setting-proxyEnabled').checked = settings.proxyEnabled || false;
+                    document.getElementById('setting-proxyUrl').value = settings.proxyUrl || '';
+                    document.getElementById('proxy-url-setting').style.opacity = settings.proxyEnabled ? '1' : '0.5';
+                    document.getElementById('setting-proxyUrl').disabled = !settings.proxyEnabled;
 
                     // Handle per-key global toggles visibility
                     const advancedToggles = document.querySelectorAll('.shortcut-global-toggle');
@@ -1644,6 +1751,39 @@
                         exportRadio.checked = true;
                     }
 
+                    // Set open file after export checkbox
+                    const openFileCheckbox = document.getElementById('setting-openFileAfterExport');
+                    if (openFileCheckbox) {
+                        openFileCheckbox.checked = settings.openFileAfterExport || false;
+                        console.log('Set openFileAfterExport checkbox to:', settings.openFileAfterExport);
+                    } else {
+                        console.error('setting-openFileAfterExport element not found!');
+                    }
+
+                    // Auto-Screenshot Full Screen setting
+                    const autoScreenshotCheckbox = document.getElementById('setting-autoScreenshotFullScreen');
+                    if (autoScreenshotCheckbox) {
+                        autoScreenshotCheckbox.checked = settings.autoScreenshotFullScreen || false;
+                    }
+
+                    // Update default prompt status
+                    const defaultPromptStatus = document.getElementById('default-prompt-status');
+                    if (defaultPromptStatus) {
+                        if (settings.defaultPromptId && settings.customPrompts) {
+                            const defaultPrompt = settings.customPrompts.find(p => p.id === settings.defaultPromptId);
+                            if (defaultPrompt) {
+                                defaultPromptStatus.textContent = `Active: "${defaultPrompt.name}"`;
+                                defaultPromptStatus.style.color = 'var(--success-color)';
+                            } else {
+                                defaultPromptStatus.textContent = 'No default prompt set.';
+                                defaultPromptStatus.style.color = '';
+                            }
+                        } else {
+                            defaultPromptStatus.textContent = 'No default prompt set.';
+                            defaultPromptStatus.style.color = '';
+                        }
+                    }
+
                     document.getElementById(`mode-${settings.defaultMode || 'ask'}`).checked = true;
                     applyTranslations(settings.language || 'en');
                     document.querySelectorAll('.record-button').forEach(button => {
@@ -1691,6 +1831,28 @@
                 electronAPI.openDeepResearchScheduleWindow();
             });
 
+            // --- Prompt Manager ---
+            document.getElementById('open-prompt-manager').addEventListener('click', () => {
+                electronAPI.openPromptManagerWindow();
+            });
+
+            // --- Auto-Screenshot Full Screen ---
+            document.getElementById('setting-autoScreenshotFullScreen').addEventListener('change', (e) => {
+                electronAPI.updateSetting('autoScreenshotFullScreen', e.target.checked);
+            });
+
+            // --- Proxy Settings ---
+            document.getElementById('setting-proxyEnabled').addEventListener('change', (e) => {
+                electronAPI.updateSetting('proxyEnabled', e.target.checked);
+                // Show/hide proxy URL field based on enabled state
+                document.getElementById('proxy-url-setting').style.opacity = e.target.checked ? '1' : '0.5';
+                document.getElementById('setting-proxyUrl').disabled = !e.target.checked;
+            });
+
+            document.getElementById('setting-proxyUrl').addEventListener('change', (e) => {
+                electronAPI.updateSetting('proxyUrl', e.target.value.trim());
+            });
+
             // --- Toggle Switches ---
             document.getElementById('setting-autoStart').addEventListener('change', (e) => {
                 electronAPI.updateSetting('autoStart', e.target.checked);
@@ -1714,6 +1876,17 @@
 
             document.getElementById('setting-enableCanvasResizing').addEventListener('change', (e) => {
                 electronAPI.updateSetting('enableCanvasResizing', e.target.checked);
+            });
+
+            document.getElementById('setting-invisibilityMode').addEventListener('change', (e) => {
+                electronAPI.updateSetting('invisibilityMode', e.target.checked);
+                // Gray out "Show in Taskbar" when invisibility mode is enabled
+                const showInTaskbarSetting = document.getElementById('showInTaskbar-setting');
+                const showInTaskbarCheckbox = document.getElementById('setting-showInTaskbar');
+                if (showInTaskbarSetting && showInTaskbarCheckbox) {
+                    showInTaskbarSetting.style.opacity = e.target.checked ? '0.5' : '1';
+                    showInTaskbarCheckbox.disabled = e.target.checked;
+                }
             });
 
             // Load Unpacked Extension toggle (English-only feature)
@@ -1807,6 +1980,16 @@
                     electronAPI.updateSetting('exportFormat', e.target.value);
                 });
             });
+
+            const openFileCheckbox = document.getElementById('setting-openFileAfterExport');
+            if (openFileCheckbox) {
+                openFileCheckbox.addEventListener('change', (e) => {
+                    console.log('openFileAfterExport changed to:', e.target.checked);
+                    electronAPI.updateSetting('openFileAfterExport', e.target.checked);
+                });
+            } else {
+                console.error('setting-openFileAfterExport not found when adding event listener!');
+            }
 
             // --- Manual Action Buttons ---
             document.getElementById('manual-check-for-updates-button').addEventListener('click', () => {
