@@ -309,28 +309,30 @@ After implementing changes:
 
 ---
 
-## Timeline
+## Recommended Implementation Timeline
 
 **Immediate (This Week):**
-- ✅ Fix npm audit vulnerabilities (glob, js-yaml, tmp)
-- [ ] Add PRIVACY.md
-- [ ] Update README with extension information
-- [ ] Add SECURITY.md
+- Fix npm audit vulnerabilities (glob, js-yaml, tmp) - COMPLETED
+- Add PRIVACY.md
+- Update README with extension information
+- Add SECURITY.md
 
 **Short-term (This Month):**
-- [ ] Implement analytics opt-out
-- [ ] Add extension consent dialog
-- [ ] Disable remote debugging in production
+- Implement analytics opt-out
+- Add extension consent dialog
+- Disable remote debugging in production
 
 **Medium-term (3 Months):**
-- [ ] Upgrade to Electron 35.7.5+
-- [ ] Implement Content Security Policy
-- [ ] Set up automated security scanning
+- Upgrade to Electron 35.7.5+
+- Implement Content Security Policy
+- Set up automated security scanning
 
 **Long-term (6+ Months):**
-- [ ] Code signing for all platforms
-- [ ] Third-party security audit
-- [ ] Consider in-house MCP implementation
+- Code signing for all platforms
+- Third-party security audit
+- Consider in-house MCP implementation
+
+Note: Track progress on these items in GitHub Issues rather than modifying this document.
 
 ---
 

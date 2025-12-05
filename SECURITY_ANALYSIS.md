@@ -64,7 +64,7 @@ The application bundles a Chrome extension called "MCP SuperAssistant" (version 
 
 **Service:** Google Analytics 4 (GA4)  
 **Measurement ID:** G-6ENY3Y3H9X  
-**API Secret:** I0PHa_CWTbuTlXSb3T-kXg
+**API Secret:** I0PHa_CWTbuTlXSb3T-kXg (Note: This is already public in the bundled extension code)
 
 #### Data Collected by Extension:
 
