@@ -1887,7 +1887,7 @@ function createWindow(state = null) {
         skipTaskbar: !settings.showInTaskbar,
         frame: false,
         backgroundColor: '#1E1E1E',
-        alwaysOnTop: settings.alwaysOnTop,
+        alwaysOnTop: false, // Will be set explicitly below with platform-specific logic
         fullscreenable: false,
         focusable: true,
         icon: getIconPath(),
@@ -1906,13 +1906,11 @@ function createWindow(state = null) {
 
     // Handle alwaysOnTop with special macOS configuration for fullscreen windows
     // Credit: https://github.com/astron8t-voyagerx
-    const shouldBeOnTop = !!settings.alwaysOnTop;
-    
-    if (process.platform === 'darwin' && shouldBeOnTop) {
+    if (process.platform === 'darwin' && settings.alwaysOnTop) {
         newWin.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
         newWin.setAlwaysOnTop(true, 'screen-saver');
     } else {
-        newWin.setAlwaysOnTop(shouldBeOnTop);
+        newWin.setAlwaysOnTop(settings.alwaysOnTop);
     }
 
     // Apply invisibility mode (content protection) if enabled - hides window from screen sharing
@@ -6185,6 +6183,9 @@ ipcMain.on('update-setting', (event, key, value) => {
                 if (process.platform === 'darwin' && value) {
                     w.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
                     w.setAlwaysOnTop(true, 'screen-saver');
+                } else if (process.platform === 'darwin' && !value) {
+                    w.setVisibleOnAllWorkspaces(false);
+                    w.setAlwaysOnTop(false);
                 } else {
                     w.setAlwaysOnTop(value);
                 }
