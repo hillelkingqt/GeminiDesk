@@ -1904,11 +1904,18 @@ function createWindow(state = null) {
         : (settings.currentAccountIndex || 0);
     newWin.accountIndex = initialAccountIndex;
 
-    if (settings.alwaysOnTop) {
-        newWin.setAlwaysOnTop(true, 'screen-saver');
-        if (process.platform === 'darwin') {
+    // Credit: https://github.com/astron8t-voyagerx
+    const shouldBeOnTop = !!settings.alwaysOnTop;
+
+    if (process.platform === 'darwin') {
+        if (shouldBeOnTop) {
             newWin.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+            newWin.setAlwaysOnTop(true, 'screen-saver');
+        } else {
+            newWin.setAlwaysOnTop(shouldBeOnTop);
         }
+    } else {
+        newWin.setAlwaysOnTop(shouldBeOnTop, 'screen-saver');
     }
 
     // Apply invisibility mode (content protection) if enabled - hides window from screen sharing
@@ -3518,6 +3525,11 @@ app.whenReady().then(() => {
     app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
     app.commandLine.appendSwitch('disable-renderer-backgrounding');
     
+    // Credit: https://github.com/astron8t-voyagerx
+    if (process.platform === 'darwin' && settings.alwaysOnTop) {
+        app.dock.hide();
+    }
+
     // Start Deep Research Schedule monitoring
     scheduleDeepResearchCheck();
 
@@ -6160,9 +6172,27 @@ ipcMain.on('update-setting', (event, key, value) => {
 
     // Apply settings immediately
     if (key === 'alwaysOnTop') {
+        // Credit: https://github.com/astron8t-voyagerx
+        if (process.platform === 'darwin') {
+            if (value) {
+                app.dock.hide();
+            } else {
+                app.dock.show();
+            }
+        }
         BrowserWindow.getAllWindows().forEach(w => {
             if (!w.isDestroyed()) {
-                w.setAlwaysOnTop(value);
+                const shouldBeOnTop = !!value;
+                if (process.platform === 'darwin') {
+                    if (shouldBeOnTop) {
+                        w.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+                        w.setAlwaysOnTop(true, 'screen-saver');
+                    } else {
+                        w.setAlwaysOnTop(shouldBeOnTop);
+                    }
+                } else {
+                    w.setAlwaysOnTop(shouldBeOnTop, 'screen-saver');
+                }
             }
         });
     }
