@@ -16,7 +16,6 @@ const path = require('path');
 const fs = require('fs');
 const fsp = fs.promises;
 const { spawn, fork } = require('child_process');
-const SecureStore = require('./modules/secure-store');
 const os = require('os');
 const crypto = require('crypto');
 const fetch = require('node-fetch');
