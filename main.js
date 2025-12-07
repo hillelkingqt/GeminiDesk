@@ -627,7 +627,19 @@ function applyInvisibilityMode(win) {
     }
 }
 
-// Helper function to apply alwaysOnTop setting with platform-specific configuration
+/**
+ * Helper function to apply alwaysOnTop setting with platform-specific configuration.
+ * 
+ * On macOS, this function uses special configuration to ensure the window appears
+ * on top of fullscreen applications by calling setVisibleOnAllWorkspaces with
+ * visibleOnFullScreen option and setting the alwaysOnTop level to 'screen-saver'.
+ * 
+ * On other platforms (Windows, Linux), it simply calls setAlwaysOnTop with the
+ * boolean value.
+ * 
+ * @param {BrowserWindow} win - The Electron BrowserWindow to apply the setting to
+ * @param {boolean} shouldBeOnTop - Whether the window should be always on top
+ */
 function applyAlwaysOnTopSetting(win, shouldBeOnTop) {
     if (!win || win.isDestroyed()) return;
     try {
