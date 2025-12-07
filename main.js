@@ -745,9 +745,9 @@ async function applyProxySettings() {
         await session.defaultSession.setProxy(proxyConfig);
         
         // Apply to all partitioned sessions (accounts)
-        const accounts = getAccounts();
-        for (const account of accounts) {
-            const partition = getAccountPartition(account.id);
+        const accounts = settings.accounts || [];
+        for (let i = 0; i < accounts.length; i++) {
+            const partition = accountsModule.getAccountPartition(i);
             const accountSession = session.fromPartition(partition);
             await accountSession.setProxy(proxyConfig);
         }
@@ -3588,7 +3588,7 @@ app.whenReady().then(() => {
                 setTimeout(() => {
                     if (win && !win.isDestroyed()) {
                         // Restore original "always on top" setting from settings
-                        win.setAlwaysOnTop(settings.alwaysOnTop, 'screen-saver');
+                        applyAlwaysOnTopSetting(win, settings.alwaysOnTop);
                     }
                 }, 3000); // Restore state after 3 seconds
             }
