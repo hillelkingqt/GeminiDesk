@@ -3547,23 +3547,6 @@ app.whenReady().then(() => {
         }
     });
 
-    // --- 2. Fix for Windows screenshot bug causing windows to disappear ---
-    const preventWindowHiding = () => {
-        const allWindows = BrowserWindow.getAllWindows();
-        allWindows.forEach(win => {
-            if (win && !win.isDestroyed() && win.isVisible()) {
-                // Temporarily set window to "always on top" to prevent it from hiding
-                win.setAlwaysOnTop(true);
-                setTimeout(() => {
-                    if (win && !win.isDestroyed()) {
-                        // Restore original "always on top" setting from settings
-                        win.setAlwaysOnTop(settings.alwaysOnTop, 'screen-saver');
-                    }
-                }, 3000); // Restore state after 3 seconds
-            }
-        });
-    };
-
     // --- 3. Register shortcuts and startup settings ---
     registerShortcuts();
     if (settings.autoStart) {

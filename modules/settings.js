@@ -80,6 +80,8 @@ function getSettings() {
                     ...defaultSettings,
                     ...savedSettings,
                     shortcuts: { ...defaultSettings.shortcuts, ...savedSettings.shortcuts },
+                    // Explicitly handle alwaysOnTop to ensure it persists correctly
+                    alwaysOnTop: savedSettings.hasOwnProperty('alwaysOnTop') ? savedSettings.alwaysOnTop : defaultSettings.alwaysOnTop,
                     showInTaskbar: savedSettings.showInTaskbar === undefined ? false : savedSettings.showInTaskbar,
                     // CRITICAL: Force loadUnpackedExtension to false unless explicitly set to true by user
                     loadUnpackedExtension: savedSettings.loadUnpackedExtension === true ? true : false,
