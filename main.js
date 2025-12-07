@@ -627,6 +627,40 @@ function applyInvisibilityMode(win) {
     }
 }
 
+/**
+ * Helper function to apply alwaysOnTop setting with platform-specific configuration.
+ * 
+ * On macOS, this function uses special configuration to ensure the window appears
+ * on top of fullscreen applications by calling setVisibleOnAllWorkspaces with
+ * visibleOnFullScreen option and setting the alwaysOnTop level to 'screen-saver'.
+ * 
+ * On other platforms (Windows, Linux), it simply calls setAlwaysOnTop with the
+ * boolean value.
+ * 
+ * @param {BrowserWindow} win - The Electron BrowserWindow to apply the setting to
+ * @param {boolean} shouldBeOnTop - Whether the window should be always on top
+ */
+function applyAlwaysOnTopSetting(win, shouldBeOnTop) {
+    if (!win || win.isDestroyed()) return;
+    try {
+        if (process.platform === 'darwin') {
+            if (shouldBeOnTop) {
+                // macOS-specific configuration for fullscreen window support
+                win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+                win.setAlwaysOnTop(true, 'screen-saver');
+            } else {
+                // Disable alwaysOnTop and restore normal workspace behavior
+                win.setVisibleOnAllWorkspaces(false);
+                win.setAlwaysOnTop(false);
+            }
+        } else {
+            win.setAlwaysOnTop(shouldBeOnTop);
+        }
+    } catch (e) {
+        console.warn('Failed to apply alwaysOnTop setting:', e && e.message ? e.message : e);
+    }
+}
+
 // Initialize utils module with settings
 utils.initialize({ settings });
 
@@ -1445,7 +1479,7 @@ const shortcutActions = {
                                 console.log('Full screen screenshot pasted!');
                                 setTimeout(() => {
                                     if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
-                                        screenshotTargetWindow.setAlwaysOnTop(settings.alwaysOnTop);
+                                        applyAlwaysOnTopSetting(screenshotTargetWindow, settings.alwaysOnTop);
                                     }
                                 }, 500);
                             }, 200);
@@ -1511,7 +1545,7 @@ const shortcutActions = {
                                 console.log('Screenshot pasted!');
                                 setTimeout(() => {
                                     if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
-                                        screenshotTargetWindow.setAlwaysOnTop(settings.alwaysOnTop);
+                                        applyAlwaysOnTopSetting(screenshotTargetWindow, settings.alwaysOnTop);
                                     }
                                 }, 500);
                             }, 200);
@@ -1905,12 +1939,7 @@ function createWindow(state = null) {
 
     // Handle alwaysOnTop with special macOS configuration for fullscreen windows
     // Credit: https://github.com/astron8t-voyagerx
-    if (process.platform === 'darwin' && settings.alwaysOnTop) {
-        newWin.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-        newWin.setAlwaysOnTop(true, 'screen-saver');
-    } else {
-        newWin.setAlwaysOnTop(settings.alwaysOnTop);
-    }
+    applyAlwaysOnTopSetting(newWin, settings.alwaysOnTop);
 
     // Apply invisibility mode (content protection) if enabled - hides window from screen sharing
     applyInvisibilityMode(newWin);
@@ -1972,7 +2001,9 @@ function createWindow(state = null) {
     });
 
     newWin.on('focus', () => {
-        if (settings.alwaysOnTop) newWin.setAlwaysOnTop(true);
+        if (settings.alwaysOnTop) {
+            applyAlwaysOnTopSetting(newWin, true);
+        }
         setTimeout(() => {
             if (newWin && !newWin.isDestroyed() && newWin.isFocused()) {
                 const view = newWin.getBrowserView();
@@ -3069,7 +3100,7 @@ function handleFileOpen(filePath) {
 
                 setTimeout(() => {
                     if (targetWin && !targetWin.isDestroyed()) {
-                        targetWin.setAlwaysOnTop(settings.alwaysOnTop);
+                        applyAlwaysOnTopSetting(targetWin, settings.alwaysOnTop);
                     }
                 }, 200);
             }
@@ -3080,7 +3111,7 @@ function handleFileOpen(filePath) {
         console.error('Failed to process file for pasting:', error);
         dialog.showErrorBox('File Error', 'Could not copy the selected file to the clipboard.');
         if (targetWin) {
-            targetWin.setAlwaysOnTop(settings.alwaysOnTop);
+            applyAlwaysOnTopSetting(targetWin, settings.alwaysOnTop);
         }
     }
 }
@@ -5908,7 +5939,7 @@ ipcMain.on('confirm-reset-action', () => {
     setAutoLaunch(settings.autoStart);
     BrowserWindow.getAllWindows().forEach(w => {
         if (!w.isDestroyed()) {
-            w.setAlwaysOnTop(settings.alwaysOnTop);
+            applyAlwaysOnTopSetting(w, settings.alwaysOnTop);
             w.webContents.send('settings-updated', settings);
         }
     });
@@ -6178,16 +6209,7 @@ ipcMain.on('update-setting', (event, key, value) => {
         }
         BrowserWindow.getAllWindows().forEach(w => {
             if (!w.isDestroyed()) {
-                // Apply macOS-specific configuration when enabling alwaysOnTop
-                if (process.platform === 'darwin' && value) {
-                    w.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-                    w.setAlwaysOnTop(true, 'screen-saver');
-                } else if (process.platform === 'darwin' && !value) {
-                    w.setVisibleOnAllWorkspaces(false);
-                    w.setAlwaysOnTop(false);
-                } else {
-                    w.setAlwaysOnTop(value);
-                }
+                applyAlwaysOnTopSetting(w, value);
             }
         });
     }
