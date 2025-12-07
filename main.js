@@ -25,7 +25,11 @@ const AutoLaunch = require('auto-launch');
 const translations = require('./translations.js');
 
 // Path to unpacked extension root (must point to folder that contains manifest.json)
-const EXT_PATH = path.join(__dirname, '0.5.8_0');
+// In production (packaged app), use process.resourcesPath which points to resources/
+// In dev, use __dirname which is the project root
+const EXT_PATH = app.isPackaged 
+    ? path.join(process.resourcesPath, '0.5.8_0')
+    : path.join(__dirname, '0.5.8_0');
 
 // Track loaded extension IDs per label so we can attempt removal later
 const loadedExtensions = new Map(); // label -> extensionId
