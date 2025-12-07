@@ -2138,8 +2138,8 @@ function createWindow(state = null) {
         newWin.setResizable(false);
         newWin.setSize(choiceSize.width, choiceSize.height);
         newWin.center();
-        // Make sure choice window appears on top
-        newWin.setAlwaysOnTop(true, 'screen-saver');
+        // Ensure the window respects the saved always-on-top preference even in choice mode
+        applyAlwaysOnTopSetting(newWin, settings.alwaysOnTop);
         newWin.focus();
         newWin.show();
     } else {
