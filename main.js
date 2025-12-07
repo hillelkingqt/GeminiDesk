@@ -3272,7 +3272,7 @@ ipcMain.on('toggle-full-screen', async (event) => {
             // Restore original "always on top" state from settings
             setTimeout(() => {
                 if (win && !win.isDestroyed()) {
-                    win.setAlwaysOnTop(settings.alwaysOnTop, 'screen-saver');
+                    applyAlwaysOnTopSetting(win, settings.alwaysOnTop);
                     win.focus();
                     
                     // Restore to saved bounds if available
