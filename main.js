@@ -3517,6 +3517,11 @@ app.whenReady().then(() => {
     // Disable background throttling globally to keep AI responses working when hidden
     app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
     app.commandLine.appendSwitch('disable-renderer-backgrounding');
+
+    // Credit to https://github.com/astron8t-voyagerx for the macOS fullscreen fix
+    if (process.platform === 'darwin' && settings.alwaysOnTop) {
+        app.dock.hide();
+    }
     
     // Start Deep Research Schedule monitoring
     scheduleDeepResearchCheck();
@@ -6160,6 +6165,13 @@ ipcMain.on('update-setting', (event, key, value) => {
 
     // Apply settings immediately
     if (key === 'alwaysOnTop') {
+        if (process.platform === 'darwin') {
+            if (value) {
+                app.dock.hide();
+            } else {
+                app.dock.show();
+            }
+        }
         BrowserWindow.getAllWindows().forEach(w => {
             if (!w.isDestroyed()) {
                 w.setAlwaysOnTop(value);

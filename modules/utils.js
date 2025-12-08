@@ -15,11 +15,14 @@ function forceOnTop(win) {
 
     const shouldBeOnTop = !!settings.alwaysOnTop;
 
-    if (process.platform === 'darwin') {
+    // Credit to https://github.com/astron8t-voyagerx for the macOS fullscreen fix
+    if (process.platform === 'darwin' && shouldBeOnTop) {
         win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+        win.setAlwaysOnTop(true, 'screen-saver');
+    } else {
+        win.setAlwaysOnTop(shouldBeOnTop);
     }
 
-    win.setAlwaysOnTop(shouldBeOnTop);
     win.show();
     if (typeof win.moveTop === 'function') win.moveTop();
     win.focus();
