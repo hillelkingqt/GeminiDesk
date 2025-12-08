@@ -1906,6 +1906,7 @@ function createWindow(state = null) {
 
     const shouldBeOnTop = !!settings.alwaysOnTop;
 
+    // Credit to https://github.com/astron8t-voyagerx for the idea
     if (process.platform === 'darwin') {
         if (shouldBeOnTop) {
             newWin.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
