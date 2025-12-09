@@ -4005,13 +4005,74 @@ autoUpdater.on('update-available', async (info) => {
         // Auto-install mode: Start downloading immediately
         console.log('Auto-install enabled, starting download...');
         
-        // Close update window if it's open (in case of manual check)
-        if (updateWin) {
-            updateWin.close();
+        // If update window is open (manual check), show brief update found message before transitioning
+        if (updateWin && !updateWin.isDestroyed()) {
+            // First, show the update-available state to inform user
+            try {
+                const { marked } = await import('marked');
+                const options = {
+                    hostname: 'api.github.com',
+                    path: '/repos/hillelkingqt/GeminiDesk/releases/latest',
+                    method: 'GET',
+                    headers: { 'User-Agent': 'GeminiDesk-App' }
+                };
+                const req = https.request(options, (res) => {
+                    let data = '';
+                    res.on('data', (chunk) => { data += chunk; });
+                    res.on('end', () => {
+                        let releaseNotesHTML = '<p>Could not load release notes.</p>';
+                        try {
+                            const releaseInfo = JSON.parse(data);
+                            if (releaseInfo.body) {
+                                releaseNotesHTML = marked.parse(releaseInfo.body);
+                            }
+                        } catch (e) {
+                            console.error('Failed to parse release notes JSON:', e);
+                        }
+
+                        if (updateWin && !updateWin.isDestroyed()) {
+                            // Show update available briefly
+                            updateWin.webContents.send('update-info', {
+                                status: 'update-available',
+                                version: info.version,
+                                releaseNotesHTML: releaseNotesHTML
+                            });
+                            
+                            // After 1.5 seconds, close updateWin and open installUpdateWin
+                            setTimeout(() => {
+                                if (updateWin && !updateWin.isDestroyed()) {
+                                    updateWin.close();
+                                }
+                                openInstallUpdateWindow();
+                                autoUpdater.downloadUpdate();
+                            }, 1500);
+                        }
+                    });
+                });
+                req.on('error', (e) => {
+                    console.error('Failed to fetch release notes for auto-install:', e);
+                    // If we fail to get release notes, just proceed with download
+                    if (updateWin && !updateWin.isDestroyed()) {
+                        updateWin.close();
+                    }
+                    openInstallUpdateWindow();
+                    autoUpdater.downloadUpdate();
+                });
+                req.end();
+            } catch (importError) {
+                console.error('Failed to import marked for auto-install:', importError);
+                // If we fail to import, just proceed with download
+                if (updateWin && !updateWin.isDestroyed()) {
+                    updateWin.close();
+                }
+                openInstallUpdateWindow();
+                autoUpdater.downloadUpdate();
+            }
+        } else {
+            // No update window open (automatic background check)
+            openInstallUpdateWindow();
+            autoUpdater.downloadUpdate();
         }
-        
-        openInstallUpdateWindow();
-        autoUpdater.downloadUpdate();
     } else {
         // Manual mode: Show the update available dialog
         if (!updateWin) {
@@ -4223,7 +4284,9 @@ ipcMain.on('install-update-now', () => {
     settings.pendingUpdateInfo = null;
     saveSettings(settings);
     
-    autoUpdater.quitAndInstall();
+    // Use silent install (isSilent=true) and force run after (isForceRunAfter=true)
+    // This will install the update silently without showing the NSIS wizard
+    autoUpdater.quitAndInstall(true, true);
 });
 
 ipcMain.on('remind-later-update', () => {
