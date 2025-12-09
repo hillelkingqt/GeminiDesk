@@ -3111,6 +3111,73 @@ function openInstallUpdateWindow() {
     });
 }
 
+async function showInstallConfirmation() {
+    if (!updateInfo) return;
+    
+    openInstallUpdateWindow();
+    
+    // Fetch release notes and show install confirmation
+    try {
+        const { marked } = await import('marked');
+        const options = { hostname: 'api.github.com', path: '/repos/hillelkingqt/GeminiDesk/releases/latest', method: 'GET', headers: { 'User-Agent': 'GeminiDesk-App' } };
+        const req = https.request(options, (res) => {
+            let data = '';
+            res.on('data', (chunk) => { data += chunk; });
+            res.on('end', () => {
+                let releaseNotesHTML = '<p>Could not load release notes.</p>';
+                try {
+                    const releaseInfo = JSON.parse(data);
+                    if (releaseInfo.body) { releaseNotesHTML = marked.parse(releaseInfo.body); }
+                } catch (e) { console.error('Failed to parse release notes JSON:', e); }
+
+                if (installUpdateWin && !installUpdateWin.isDestroyed()) {
+                    installUpdateWin.webContents.send('install-update-info', {
+                        status: 'ready-to-install',
+                        version: updateInfo.version,
+                        releaseNotesHTML: releaseNotesHTML
+                    });
+                }
+            });
+        });
+        req.on('error', (e) => {
+            if (installUpdateWin && !installUpdateWin.isDestroyed()) {
+                installUpdateWin.webContents.send('install-update-info', { status: 'error', message: e.message });
+            }
+        });
+        req.end();
+    } catch (importError) {
+        if (installUpdateWin && !installUpdateWin.isDestroyed()) {
+            installUpdateWin.webContents.send('install-update-info', { status: 'error', message: 'Failed to load modules.' });
+        }
+    }
+}
+
+function checkAndShowPendingUpdateReminder() {
+    // Check if there's a pending update reminder from a previous session
+    if (settings.updateInstallReminderTime && updateInfo) {
+        const reminderTime = new Date(settings.updateInstallReminderTime);
+        const now = new Date();
+        
+        if (now >= reminderTime) {
+            // Reminder time has passed, show the install confirmation
+            console.log('Showing pending update reminder from previous session');
+            showInstallConfirmation();
+            // Clear the reminder
+            settings.updateInstallReminderTime = null;
+            saveSettings(settings);
+        } else {
+            // Schedule the reminder for the future
+            const delay = reminderTime.getTime() - now.getTime();
+            console.log(`Scheduling update reminder in ${Math.round(delay / 1000 / 60)} minutes`);
+            reminderTimeoutId = setTimeout(() => {
+                showInstallConfirmation();
+                settings.updateInstallReminderTime = null;
+                saveSettings(settings);
+            }, delay);
+        }
+    }
+}
+
 const sendUpdateStatus = (status, data = {}) => {
     const allWindows = BrowserWindow.getAllWindows();
     allWindows.forEach(win => {
@@ -3721,6 +3788,9 @@ app.whenReady().then(() => {
     autoUpdater.autoDownload = false;
     autoUpdater.forceDevUpdateConfig = true; // Good for testing, can remain
 
+    // --- 4b. Check for pending update reminders from previous session ---
+    checkAndShowPendingUpdateReminder();
+
     // --- 5. Start server notifications system ---
     checkForNotifications(); // Perform one initial check immediately on app launch
     scheduleNotificationCheck();
@@ -3971,39 +4041,7 @@ autoUpdater.on('update-downloaded', async () => {
     
     // If auto-install window is open, show install confirmation with changelog
     if (installUpdateWin && !installUpdateWin.isDestroyed() && updateInfo) {
-        try {
-            const { marked } = await import('marked');
-            const options = { hostname: 'api.github.com', path: '/repos/hillelkingqt/GeminiDesk/releases/latest', method: 'GET', headers: { 'User-Agent': 'GeminiDesk-App' } };
-            const req = https.request(options, (res) => {
-                let data = '';
-                res.on('data', (chunk) => { data += chunk; });
-                res.on('end', () => {
-                    let releaseNotesHTML = '<p>Could not load release notes.</p>';
-                    try {
-                        const releaseInfo = JSON.parse(data);
-                        if (releaseInfo.body) { releaseNotesHTML = marked.parse(releaseInfo.body); }
-                    } catch (e) { console.error('Failed to parse release notes JSON:', e); }
-
-                    if (installUpdateWin && !installUpdateWin.isDestroyed()) {
-                        installUpdateWin.webContents.send('install-update-info', {
-                            status: 'ready-to-install',
-                            version: updateInfo.version,
-                            releaseNotesHTML: releaseNotesHTML
-                        });
-                    }
-                });
-            });
-            req.on('error', (e) => {
-                if (installUpdateWin && !installUpdateWin.isDestroyed()) {
-                    installUpdateWin.webContents.send('install-update-info', { status: 'error', message: e.message });
-                }
-            });
-            req.end();
-        } catch (importError) {
-            if (installUpdateWin && !installUpdateWin.isDestroyed()) {
-                installUpdateWin.webContents.send('install-update-info', { status: 'error', message: 'Failed to load modules.' });
-            }
-        }
+        showInstallConfirmation();
     }
 });
 
@@ -4121,6 +4159,7 @@ ipcMain.on('remind-later-update', () => {
     // Clear any existing reminder
     if (reminderTimeoutId) {
         clearTimeout(reminderTimeoutId);
+        reminderTimeoutId = null;
     }
     
     // Close the install update window
@@ -4128,17 +4167,23 @@ ipcMain.on('remind-later-update', () => {
         installUpdateWin.close();
     }
     
+    // Calculate reminder time (1 hour from now)
+    const reminderTime = new Date();
+    reminderTime.setHours(reminderTime.getHours() + 1);
+    
+    // Save reminder time to settings for persistence across restarts
+    settings.updateInstallReminderTime = reminderTime.toISOString();
+    saveSettings(settings);
+    
     // Set a reminder for 1 hour (3600000 milliseconds)
     reminderTimeoutId = setTimeout(() => {
-        // Reopen the install confirmation dialog after 1 hour
-        if (updateInfo) {
-            openInstallUpdateWindow();
-            // Trigger the ready-to-install state again
-            autoUpdater.emit('update-downloaded');
-        }
+        showInstallConfirmation();
+        // Clear the reminder from settings
+        settings.updateInstallReminderTime = null;
+        saveSettings(settings);
     }, 3600000); // 1 hour
     
-    console.log('Update reminder set for 1 hour from now');
+    console.log('Update reminder set for 1 hour from now:', reminderTime.toISOString());
 });
 
 ipcMain.on('close-install-update-window', () => {
