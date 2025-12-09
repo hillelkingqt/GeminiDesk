@@ -340,7 +340,6 @@ let confirmWin = null;
 let assisWin = null;
 
 let updateWin = null;
-let downloadWin = null;
 let installUpdateWin = null;
 let notificationWin = null;
 let personalMessageWin = null;
@@ -3107,7 +3106,6 @@ function openInstallUpdateWindow() {
     installUpdateWin.once('ready-to-show', () => {
         if (!installUpdateWin) return;
         installUpdateWin.show();
-        installUpdateWin.webContents.send('install-update-info', { status: 'downloading', percent: 0 });
     });
 
     installUpdateWin.on('closed', () => {
@@ -3788,10 +3786,16 @@ app.whenReady().then(() => {
     // Start Deep Research Schedule monitoring
     scheduleDeepResearchCheck();
 
-    if (settings.restoreWindows && Array.isArray(settings.savedWindows) && settings.savedWindows.length) {
-        settings.savedWindows.forEach(state => createWindow(state));
-    } else {
-        createWindow();
+    // Check if we have windows to restore from update (this takes priority)
+    const hasPreUpdateWindows = settings.preUpdateWindowStates && Array.isArray(settings.preUpdateWindowStates) && settings.preUpdateWindowStates.length > 0;
+    
+    if (!hasPreUpdateWindows) {
+        // Only create windows from normal restore/new if we're not restoring from update
+        if (settings.restoreWindows && Array.isArray(settings.savedWindows) && settings.savedWindows.length) {
+            settings.savedWindows.forEach(state => createWindow(state));
+        } else {
+            createWindow();
+        }
     }
 
     // --- 1. Handle permission requests (like microphone) ---
@@ -3833,8 +3837,31 @@ app.whenReady().then(() => {
     // --- 4. Auto-updater system settings ---
     autoUpdater.autoDownload = false;
     autoUpdater.forceDevUpdateConfig = true; // Good for testing, can remain
+    autoUpdater.disableDifferentialDownload = true; // Disable differential downloads to avoid ENOENT errors
 
-    // --- 4b. Check for pending update reminders from previous session ---
+    // --- 4b. Restore windows from previous session if app was relaunched after update ---
+    let restoredFromUpdate = false;
+    if (settings.preUpdateWindowStates && Array.isArray(settings.preUpdateWindowStates) && settings.preUpdateWindowStates.length > 0) {
+        console.log('Restoring windows after update:', settings.preUpdateWindowStates.length, 'windows');
+        restoredFromUpdate = true;
+        
+        // Small delay to ensure app is fully ready
+        setTimeout(() => {
+            settings.preUpdateWindowStates.forEach((state, index) => {
+                try {
+                    createWindow(state);
+                } catch (e) {
+                    console.warn('Failed to restore window', index, ':', e);
+                }
+            });
+            
+            // Clear the saved states
+            settings.preUpdateWindowStates = null;
+            saveSettings(settings);
+        }, 1000);
+    }
+    
+    // --- 4c. Check for pending update reminders from previous session ---
     checkAndShowPendingUpdateReminder();
 
     // --- 5. Start server notifications system ---
@@ -3859,6 +3886,13 @@ app.whenReady().then(() => {
 
     // --- 7. Schedule daily update check ---
     scheduleDailyUpdateCheck();
+    
+    // Clear any stale preUpdateWindowStates that might exist
+    if (!restoredFromUpdate && settings.preUpdateWindowStates) {
+        console.log('Clearing stale preUpdateWindowStates');
+        settings.preUpdateWindowStates = null;
+        saveSettings(settings);
+    }
 });
 
 app.on('before-quit', () => {
@@ -3967,7 +4001,19 @@ function openUpdateWindowAndCheck() {
         updateWin.webContents.send('update-info', { status: 'checking' });
         try {
             // Step 2: Only now, start the check process in background
-            await autoUpdater.checkForUpdates();
+            const result = await autoUpdater.checkForUpdates();
+            // Check if update was already downloaded
+            if (result && result.downloadedFile) {
+                console.log('Update has already been downloaded, showing install window');
+                if (updateWin && !updateWin.isDestroyed()) {
+                    updateWin.close();
+                }
+                // Store update info and show install confirmation
+                if (result.updateInfo) {
+                    updateInfo = result.updateInfo;
+                    showInstallConfirmation();
+                }
+            }
         } catch (error) {
             console.error('Manual update check failed:', error.message);
             if (updateWin && !updateWin.isDestroyed()) {
@@ -4037,7 +4083,7 @@ autoUpdater.on('update-available', async (info) => {
         } else {
             // No update window open (automatic background check)
             try {
-                openInstallUpdateWindow();
+                console.log('Starting background update download...');
                 autoUpdater.downloadUpdate();
             } catch (error) {
                 console.error('Error starting auto-update download (background):', error);
@@ -4116,15 +4162,15 @@ autoUpdater.on('error', (err) => {
 });
 
 autoUpdater.on('download-progress', (progressObj) => {
-    sendUpdateStatus('downloading', { percent: Math.round(progressObj.percent) });
+    const progress = {
+        percent: Math.round(progressObj.percent),
+        transferred: progressObj.transferred,
+        total: progressObj.total,
+        bytesPerSecond: progressObj.bytesPerSecond
+    };
     
-    // Send progress to install update window if it exists
-    if (installUpdateWin && !installUpdateWin.isDestroyed()) {
-        installUpdateWin.webContents.send('install-update-info', {
-            status: 'downloading',
-            percent: Math.round(progressObj.percent)
-        });
-    }
+    console.log(`Download progress: ${progress.percent}%`);
+    sendUpdateStatus('downloading', progress);
 });
 
 autoUpdater.on('update-downloaded', async () => {
@@ -4162,30 +4208,10 @@ ipcMain.on('close-update-window', () => {
 });
 
 ipcMain.on('start-download-update', () => {
-    const parentWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
     if (updateWin) {
         updateWin.close();
     }
-    if (downloadWin) {
-        downloadWin.focus();
-    } else {
-        downloadWin = new BrowserWindow({
-            width: 360,
-            height: 180,
-            frame: false,
-            resizable: false,
-            parent: parentWindow,
-            modal: true,
-            webPreferences: {
-                preload: path.join(__dirname, 'preload.js'),
-                contextIsolation: true,
-            }
-        });
-        downloadWin.loadFile('download-progress.html');
-        downloadWin.on('closed', () => {
-            downloadWin = null;
-        });
-    }
+    console.log('Starting update download...');
     autoUpdater.downloadUpdate();
 });
 
@@ -4249,13 +4275,40 @@ ipcMain.on('request-last-notification', async (event) => {
 });
 
 ipcMain.on('install-update-now', () => {
+    // Save current window state before updating
+    try {
+        const openWindows = BrowserWindow.getAllWindows().filter(w => 
+            !w.isDestroyed() && 
+            w !== updateWin && 
+            w !== installUpdateWin && 
+            w !== notificationWin && 
+            w !== personalMessageWin
+        );
+        
+        const windowStates = openWindows.map(win => {
+            const bounds = win.getBounds();
+            const view = win.getBrowserView();
+            return {
+                bounds,
+                isMaximized: win.isMaximized(),
+                isMinimized: win.isMinimized(),
+                url: view && view.webContents ? view.webContents.getURL() : null
+            };
+        });
+        
+        settings.preUpdateWindowStates = windowStates;
+        console.log('Saved window states before update:', windowStates.length, 'windows');
+    } catch (e) {
+        console.warn('Failed to save window states:', e);
+    }
+    
     // Clear pending update info and reminder
     settings.updateInstallReminderTime = null;
     settings.pendingUpdateInfo = null;
     saveSettings(settings);
     
     // Use silent install (isSilent=true) and force run after (isForceRunAfter=true)
-    // This will install the update silently without showing the NSIS wizard
+    // This will install the update silently and automatically relaunch the app
     autoUpdater.quitAndInstall(true, true);
 });
 

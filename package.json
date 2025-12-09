@@ -58,6 +58,8 @@
         "repo": "GeminiDesk"
       }
     ],
+    "updaterCacheDirName": "gemini-desk-updater",
+    "disableWebInstaller": true,
     "mac": {
       "target": [
         "dmg",
@@ -93,8 +95,9 @@
       "artifactName": "${productName}-Setup-${version}.${ext}"
     },
     "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
+      "oneClick": true,
+      "perMachine": false,
+      "allowElevation": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "runAfterFinish": true,
