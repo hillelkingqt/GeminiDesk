@@ -4007,67 +4007,21 @@ autoUpdater.on('update-available', async (info) => {
         
         // If update window is open (manual check), show brief update found message before transitioning
         if (updateWin && !updateWin.isDestroyed()) {
-            // First, show the update-available state to inform user
-            try {
-                const { marked } = await import('marked');
-                const options = {
-                    hostname: 'api.github.com',
-                    path: '/repos/hillelkingqt/GeminiDesk/releases/latest',
-                    method: 'GET',
-                    headers: { 'User-Agent': 'GeminiDesk-App' }
-                };
-                const req = https.request(options, (res) => {
-                    let data = '';
-                    res.on('data', (chunk) => { data += chunk; });
-                    res.on('end', () => {
-                        let releaseNotesHTML = '<p>Could not load release notes.</p>';
-                        try {
-                            const releaseInfo = JSON.parse(data);
-                            if (releaseInfo.body) {
-                                releaseNotesHTML = marked.parse(releaseInfo.body);
-                            }
-                        } catch (e) {
-                            console.error('Failed to parse release notes JSON:', e);
-                        }
-
-                        if (updateWin && !updateWin.isDestroyed()) {
-                            // Show update available briefly
-                            updateWin.webContents.send('update-info', {
-                                status: 'update-available',
-                                version: info.version,
-                                releaseNotesHTML: releaseNotesHTML
-                            });
-                            
-                            // After 1.5 seconds, close updateWin and open installUpdateWin
-                            setTimeout(() => {
-                                if (updateWin && !updateWin.isDestroyed()) {
-                                    updateWin.close();
-                                }
-                                openInstallUpdateWindow();
-                                autoUpdater.downloadUpdate();
-                            }, 1500);
-                        }
-                    });
-                });
-                req.on('error', (e) => {
-                    console.error('Failed to fetch release notes for auto-install:', e);
-                    // If we fail to get release notes, just proceed with download
-                    if (updateWin && !updateWin.isDestroyed()) {
-                        updateWin.close();
-                    }
-                    openInstallUpdateWindow();
-                    autoUpdater.downloadUpdate();
-                });
-                req.end();
-            } catch (importError) {
-                console.error('Failed to import marked for auto-install:', importError);
-                // If we fail to import, just proceed with download
+            // Show update available message briefly to inform user
+            updateWin.webContents.send('update-info', {
+                status: 'update-available',
+                version: info.version,
+                releaseNotesHTML: `<p>Automatic download will start shortly...</p>`
+            });
+            
+            // After 1.5 seconds, close updateWin and open installUpdateWin
+            setTimeout(() => {
                 if (updateWin && !updateWin.isDestroyed()) {
                     updateWin.close();
                 }
                 openInstallUpdateWindow();
                 autoUpdater.downloadUpdate();
-            }
+            }, 1500);
         } else {
             // No update window open (automatic background check)
             openInstallUpdateWindow();
