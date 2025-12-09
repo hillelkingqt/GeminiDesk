@@ -1397,7 +1397,6 @@ const shortcutActions = {
     refresh: () => reloadFocusedView(),
     screenshot: () => {
         let isScreenshotProcessActive = false;
-        let screenshotTargetWindow = null;
 
         if (isQuitting || isScreenshotProcessActive) {
             return;
@@ -1418,8 +1417,6 @@ const shortcutActions = {
             isScreenshotProcessActive = false;
             return;
         }
-
-        screenshotTargetWindow = targetWin;
         
         // Check if auto full-screen screenshot is enabled
         if (settings.autoScreenshotFullScreen) {
@@ -1430,6 +1427,7 @@ const shortcutActions = {
 
         // Full screen screenshot - captures entire screen without selection
         async function proceedWithFullScreenScreenshot() {
+            const screenshotTargetWindow = targetWin;
             try {
                 const { desktopCapturer } = require('electron');
                 
@@ -1464,6 +1462,12 @@ const shortcutActions = {
                     clipboard.writeImage(thumbnail);
                     console.log('Full screen screenshot captured and copied to clipboard!');
                     
+                    // Verify clipboard has the image
+                    const verifyImage = clipboard.readImage();
+                    if (verifyImage.isEmpty()) {
+                        console.error('Failed to copy image to clipboard!');
+                    }
+                    
                     // Show and focus the target window
                     if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
                         if (screenshotTargetWindow.isMinimized()) screenshotTargetWindow.restore();
@@ -1473,16 +1477,48 @@ const shortcutActions = {
                         
                         const viewInstance = screenshotTargetWindow.getBrowserView();
                         if (viewInstance && viewInstance.webContents) {
-                            setTimeout(() => {
-                                viewInstance.webContents.focus();
-                                viewInstance.webContents.paste();
-                                console.log('Full screen screenshot pasted!');
-                                setTimeout(() => {
-                                    if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
-                                        applyAlwaysOnTopSetting(screenshotTargetWindow, settings.alwaysOnTop);
+                            // Multiple paste attempts with retry logic
+                            let pasteAttempts = 0;
+                            const maxPasteAttempts = 3;
+                            
+                            const attemptPaste = () => {
+                                pasteAttempts++;
+                                console.log(`Full screen paste attempt ${pasteAttempts}/${maxPasteAttempts}`);
+                                
+                                try {
+                                    viewInstance.webContents.focus();
+                                    
+                                    setTimeout(() => {
+                                        viewInstance.webContents.paste();
+                                        console.log('Full screen screenshot paste() called');
+                                        
+                                        // Second attempt shortly after
+                                        setTimeout(() => {
+                                            const imgCheck = clipboard.readImage();
+                                            if (!imgCheck.isEmpty()) {
+                                                viewInstance.webContents.paste();
+                                                console.log('Full screen second paste() attempt');
+                                            }
+                                        }, 100);
+                                    }, 150);
+                                    
+                                    // Retry if needed
+                                    if (pasteAttempts < maxPasteAttempts) {
+                                        setTimeout(attemptPaste, 400);
+                                    } else {
+                                        // Final cleanup
+                                        setTimeout(() => {
+                                            if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
+                                                applyAlwaysOnTopSetting(screenshotTargetWindow, settings.alwaysOnTop);
+                                            }
+                                        }, 800);
                                     }
-                                }, 500);
-                            }, 200);
+                                } catch (err) {
+                                    console.error('Full screen paste attempt failed:', err);
+                                }
+                            };
+                            
+                            attemptPaste();
                         }
                     }
                 } else {
@@ -1503,10 +1539,10 @@ const shortcutActions = {
             }
             
             isScreenshotProcessActive = false;
-            screenshotTargetWindow = null;
         }
 
         function proceedWithScreenshot() {
+            const screenshotTargetWindow = targetWin;
             clipboard.clear();
             let cmd, args;
             if (process.platform === 'win32') {
@@ -1520,45 +1556,141 @@ const shortcutActions = {
             snippingTool.unref();
 
             let processExited = false;
-            snippingTool.on('exit', () => { processExited = true; });
+            let imageFoundOnce = false;
+            
+            snippingTool.on('exit', () => { 
+                processExited = true; 
+                console.log('Screenshot tool exited');
+            });
+            
             snippingTool.on('error', (err) => {
                 console.error('Failed to start snipping tool:', err);
                 isScreenshotProcessActive = false;
             });
 
             let checkAttempts = 0;
-            const maxAttempts = 60;
+            const maxAttempts = 100; // Increased from 60 to 100 (50 seconds)
+            
+            // Start checking immediately, more frequently at first
+            const fastCheckDuration = 20; // Check every 250ms for first 5 seconds
+            
             const intervalId = setInterval(() => {
-                const image = clipboard.readImage();
-                if (!image.isEmpty() && processExited) {
-                    clearInterval(intervalId);
-                    if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
-                        if (!screenshotTargetWindow.isVisible()) screenshotTargetWindow.show();
-                        if (screenshotTargetWindow.isMinimized()) screenshotTargetWindow.restore();
-                        screenshotTargetWindow.setAlwaysOnTop(true);
-                        screenshotTargetWindow.focus();
-                        const viewInstance = screenshotTargetWindow.getBrowserView();
-                        if (viewInstance && viewInstance.webContents) {
-                            setTimeout(() => {
-                                viewInstance.webContents.focus();
-                                viewInstance.webContents.paste();
-                                console.log('Screenshot pasted!');
-                                setTimeout(() => {
-                                    if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
-                                        applyAlwaysOnTopSetting(screenshotTargetWindow, settings.alwaysOnTop);
-                                    }
-                                }, 500);
-                            }, 200);
-                        }
+                checkAttempts++;
+                
+                try {
+                    const image = clipboard.readImage();
+                    const hasImage = !image.isEmpty();
+                    
+                    // Log every 10 attempts for debugging
+                    if (checkAttempts % 10 === 0) {
+                        console.log(`Screenshot check attempt ${checkAttempts}/${maxAttempts}, processExited: ${processExited}, hasImage: ${hasImage}`);
                     }
-                    isScreenshotProcessActive = false;
-                    screenshotTargetWindow = null;
-                } else if (checkAttempts++ > maxAttempts) {
-                    clearInterval(intervalId);
-                    isScreenshotProcessActive = false;
-                    screenshotTargetWindow = null;
+                    
+                    // Found image - try to paste it
+                    if (hasImage) {
+                        if (!imageFoundOnce) {
+                            console.log('Image found in clipboard!');
+                            imageFoundOnce = true;
+                        }
+                        
+                        // Try pasting even if process hasn't exited yet (user might be done)
+                        // Wait at least 1 second before attempting paste
+                        if (checkAttempts > 4 || processExited) {
+                            clearInterval(intervalId);
+                            
+                            if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
+                                console.log('Preparing to paste screenshot...');
+                                
+                                // Restore and show window immediately
+                                if (screenshotTargetWindow.isMinimized()) {
+                                    screenshotTargetWindow.restore();
+                                }
+                                if (!screenshotTargetWindow.isVisible()) {
+                                    screenshotTargetWindow.show();
+                                }
+                                
+                                screenshotTargetWindow.setAlwaysOnTop(true);
+                                screenshotTargetWindow.focus();
+                                
+                                const viewInstance = screenshotTargetWindow.getBrowserView();
+                                if (viewInstance && viewInstance.webContents) {
+                                    // Single robust paste attempt
+                                    const performPaste = () => {
+                                        console.log('Performing screenshot paste...');
+                                        try {
+                                            // Check if window still exists
+                                            if (!screenshotTargetWindow || screenshotTargetWindow.isDestroyed()) {
+                                                console.error('Screenshot target window was destroyed');
+                                                return;
+                                            }
+                                            
+                                            // Double-check window state before paste
+                                            if (screenshotTargetWindow.isMinimized()) {
+                                                screenshotTargetWindow.restore();
+                                            }
+                                            if (!screenshotTargetWindow.isVisible()) {
+                                                screenshotTargetWindow.show();
+                                            }
+                                            
+                                            // Force focus
+                                            screenshotTargetWindow.setAlwaysOnTop(true);
+                                            screenshotTargetWindow.focus();
+                                            screenshotTargetWindow.moveTop();
+                                            viewInstance.webContents.focus();
+                                            
+                                            // Focus the text input field in the page
+                                            viewInstance.webContents.executeJavaScript(`
+                                                (function() {
+                                                    try {
+                                                        const textArea = document.querySelector('rich-textarea[aria-label*="prompt"], rich-textarea, textarea[aria-label*="prompt"], textarea[placeholder*="Gemini"], .ql-editor, [contenteditable="true"]');
+                                                        if (textArea) {
+                                                            textArea.focus();
+                                                            console.log('Text input focused for screenshot paste');
+                                                            return true;
+                                                        }
+                                                    } catch(e) {
+                                                        console.error('Failed to focus text input:', e);
+                                                    }
+                                                    return false;
+                                                })();
+                                            `).catch(err => console.error('Failed to execute focus script:', err));
+                                            
+                                            // Wait for focus to settle then paste
+                                            setTimeout(() => {
+                                                if (!viewInstance.webContents.isDestroyed()) {
+                                                    viewInstance.webContents.paste();
+                                                    console.log('Screenshot paste() executed');
+                                                }
+                                                
+                                                // Restore original AlwaysOnTop setting after a delay
+                                                setTimeout(() => {
+                                                    if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
+                                                        applyAlwaysOnTopSetting(screenshotTargetWindow, settings.alwaysOnTop);
+                                                    }
+                                                }, 1000);
+                                            }, 400);
+                                        } catch (err) {
+                                            console.error('Paste failed:', err);
+                                        }
+                                    };
+                                    
+                                    // Wait longer for window to fully restore and get focus
+                                    setTimeout(performPaste, 500);
+                                }
+                            }
+                            
+                            isScreenshotProcessActive = false;
+                        }
+                    } else if (checkAttempts > maxAttempts) {
+                        // Timeout - no image found
+                        clearInterval(intervalId);
+                        console.log('Screenshot timeout - no image found after max attempts');
+                        isScreenshotProcessActive = false;
+                    }
+                } catch (err) {
+                    console.error('Error checking clipboard:', err);
                 }
-            }, 500);
+            }, checkAttempts < fastCheckDuration ? 250 : 500); // Fast checks for first 5s, then slower
         }
     }
 };
