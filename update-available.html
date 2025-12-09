@@ -240,7 +240,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
                     </div>
-                    <h1 data-i18n="update-found-title">Update Available</h1>
+                    <h1 id="update-title" data-i18n="update-found-title">Update Available</h1>
+                    <p id="downloading-message" style="display:none;" data-i18n="update-downloading-message">Downloading update...</p>
                     <div id="version" class="version-badge" data-i18n="update-version-text" data-i18n-version-placeholder="v%VERSION%">v1.0.0</div>
                 </div>
 
@@ -302,6 +303,8 @@
             }
         }
 
+        let isReadyToInstall = false;
+
         // API Integration
         document.addEventListener('DOMContentLoaded', () => {
             const api = window.updateAPI;
@@ -314,11 +317,23 @@
                         case 'checking':
                             showState('checking');
                             break;
+                        case 'downloading':
+                            showState('found');
+                            document.getElementById('downloading-message').style.display = 'block';
+                            document.getElementById('download-btn').style.display = 'none';
+                            // Optional: Show percentage if available
+                            if (data.percent) {
+                                document.getElementById('downloading-message').textContent = `Downloading update... ${data.percent}%`;
+                            }
+                            break;
                         case 'update-available':
+                        case 'ready-to-install':
                             // Update Version
                             const verEl = document.getElementById('version');
-                            const verTemplate = verEl.dataset.i18nVersionPlaceholder || 'v%VERSION%';
-                            verEl.textContent = verTemplate.replace('%VERSION%', data.version || 'Unknown');
+                            if (data.version) {
+                                const verTemplate = verEl.dataset.i18nVersionPlaceholder || 'v%VERSION%';
+                                verEl.textContent = verTemplate.replace('%VERSION%', data.version || 'Unknown');
+                            }
 
                             // Update Notes
                             const notesEl = document.getElementById('release-notes');
@@ -339,11 +354,28 @@
                                 // Fix nested lists (basic)
                                 html = html.replace(/<\/ul><br \/><ul>/gim, '');
                                 notesEl.innerHTML = html;
-                            } else {
+                            } else if (!notesEl.innerHTML.trim()) {
                                 notesEl.innerHTML = '<p style="text-align:center; opacity:0.6;">No release notes available.</p>';
                             }
 
                             showState('found');
+
+                            if (data.status === 'ready-to-install') {
+                                isReadyToInstall = true;
+                                const titleEl = document.getElementById('update-title');
+                                titleEl.setAttribute('data-i18n', 'update-ready-to-install-title');
+                                titleEl.textContent = 'Update Ready!'; // Fallback
+
+                                document.getElementById('downloading-message').style.display = 'none';
+
+                                const btn = document.getElementById('download-btn');
+                                btn.style.display = 'flex';
+                                btn.setAttribute('data-i18n', 'update-install-button');
+                                btn.textContent = 'Install Update Now'; // Fallback
+
+                                // Re-apply translations if possible to catch the new key
+                                if (window.applyTranslations) window.applyTranslations();
+                            }
                             break;
                         case 'up-to-date':
                             showState('notFound');
@@ -358,8 +390,20 @@
             }
 
             // Button Handlers
-            document.getElementById('download-btn')?.addEventListener('click', () => mainAppApi?.openDownloadPage());
-            document.getElementById('later-btn')?.addEventListener('click', () => mainAppApi?.closeUpdateWindow());
+            document.getElementById('download-btn')?.addEventListener('click', () => {
+                if (isReadyToInstall) {
+                    mainAppApi?.installUpdateNow();
+                } else {
+                    mainAppApi?.openDownloadPage();
+                }
+            });
+            document.getElementById('later-btn')?.addEventListener('click', () => {
+                if (isReadyToInstall) {
+                    mainAppApi?.installLater();
+                } else {
+                    mainAppApi?.closeUpdateWindow();
+                }
+            });
             document.getElementById('close-btn')?.addEventListener('click', () => mainAppApi?.closeUpdateWindow());
             document.getElementById('error-close-btn')?.addEventListener('click', () => mainAppApi?.closeUpdateWindow());
 

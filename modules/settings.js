@@ -61,7 +61,8 @@ const defaultSettings = {
     aiCompletionSound: true,
     geminiApiKey: '',
     aiCompletionSoundFile: 'new-notification-09-352705.mp3',
-    exportFormat: 'ask' // 'pdf', 'md', or 'ask'
+    exportFormat: 'ask', // 'pdf', 'md', or 'ask'
+    updateMode: 'auto' // 'auto' or 'manual'
 };
 
 // Whether to automatically load the unpacked MCP SuperAssistant extension
@@ -83,7 +84,8 @@ function getSettings() {
                     showInTaskbar: savedSettings.showInTaskbar === undefined ? false : savedSettings.showInTaskbar,
                     // CRITICAL: Force loadUnpackedExtension to false unless explicitly set to true by user
                     loadUnpackedExtension: savedSettings.loadUnpackedExtension === true ? true : false,
-                    disableAutoUpdateCheck: savedSettings.disableAutoUpdateCheck === true ? true : false
+                    disableAutoUpdateCheck: savedSettings.disableAutoUpdateCheck === true ? true : false,
+                    updateMode: savedSettings.updateMode || defaultSettings.updateMode
                 };
                 return combinedSettings;
             }

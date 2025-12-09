@@ -136,6 +136,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     openDownloadPage: () => ipcRenderer.send('open-download-page'),
     startDownloadUpdate: () => ipcRenderer.send('start-download-update'),
     installUpdateNow: () => ipcRenderer.send('install-update-now'),
+    installLater: () => ipcRenderer.send('install-later'),
     closeDownloadWindow: () => ipcRenderer.send('close-download-window'),
     openVoiceAssistant: () => ipcRenderer.send('open-voice-assistant'),
     openShareIdeasWindow: () => ipcRenderer.send('open-share-ideas-window'),

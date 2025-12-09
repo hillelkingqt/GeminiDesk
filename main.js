@@ -3741,7 +3741,7 @@ app.whenReady().then(() => {
     }
 
     // --- 4. Auto-updater system settings ---
-    autoUpdater.autoDownload = false;
+    autoUpdater.autoDownload = settings.updateMode === 'auto';
     autoUpdater.forceDevUpdateConfig = true; // Good for testing, can remain
 
     // --- 5. Start server notifications system ---
@@ -3888,54 +3888,65 @@ autoUpdater.on('checking-for-update', () => {
     sendUpdateStatus('checking');
 });
 
-autoUpdater.on('update-available', async (info) => {
-    if (!updateWin) {
-        // If window wasn't manually opened, open it now (in case of automatic check)
-        openUpdateWindowAndCheck();
-        return; // Function will call itself again after window is ready
-    }
-
+async function fetchReleaseNotes() {
     try {
         const { marked } = await import('marked');
-        const options = {
-            hostname: 'api.github.com',
-            path: '/repos/hillelkingqt/GeminiDesk/releases/latest',
-            method: 'GET',
-            headers: { 'User-Agent': 'GeminiDesk-App' }
-        };
-        const req = https.request(options, (res) => {
-            let data = '';
-            res.on('data', (chunk) => { data += chunk; });
-            res.on('end', () => {
-                let releaseNotesHTML = '<p>Could not load release notes.</p>';
-                try {
-                    const releaseInfo = JSON.parse(data);
-                    if (releaseInfo.body) {
-                        releaseNotesHTML = marked.parse(releaseInfo.body);
+        return new Promise((resolve) => {
+            const options = {
+                hostname: 'api.github.com',
+                path: '/repos/hillelkingqt/GeminiDesk/releases/latest',
+                method: 'GET',
+                headers: { 'User-Agent': 'GeminiDesk-App' }
+            };
+            const req = https.request(options, (res) => {
+                let data = '';
+                res.on('data', (chunk) => { data += chunk; });
+                res.on('end', () => {
+                    let releaseNotesHTML = '<p>Could not load release notes.</p>';
+                    try {
+                        const releaseInfo = JSON.parse(data);
+                        if (releaseInfo.body) {
+                            releaseNotesHTML = marked.parse(releaseInfo.body);
+                        }
+                    } catch (e) {
+                        console.error('Failed to parse release notes JSON:', e);
                     }
-                } catch (e) {
-                    console.error('Failed to parse release notes JSON:', e);
-                }
-
-                if (updateWin) {
-                    updateWin.webContents.send('update-info', {
-                        status: 'update-available',
-                        version: info.version,
-                        releaseNotesHTML: releaseNotesHTML
-                    });
-                }
+                    resolve(releaseNotesHTML);
+                });
             });
+            req.on('error', (e) => {
+                resolve('<p>Error loading notes.</p>');
+            });
+            req.end();
         });
-        req.on('error', (e) => {
-            if (updateWin) {
-                updateWin.webContents.send('update-info', { status: 'error', message: e.message });
-            }
-        });
-        req.end();
-    } catch (importError) {
+    } catch (e) {
+        return '<p>Error loading markdown module.</p>';
+    }
+}
+
+autoUpdater.on('update-available', async (info) => {
+    // If auto-download is ON, show downloading status in existing window or wait for download
+    if (settings.updateMode === 'auto') {
         if (updateWin) {
-            updateWin.webContents.send('update-info', { status: 'error', message: 'Failed to load modules.' });
+             updateWin.webContents.send('update-info', { status: 'downloading' });
         }
+        // No need to open window if it's not open (background check), just let it download
+        return;
+    }
+
+    // Manual mode logic
+    if (!updateWin) {
+        openUpdateWindowAndCheck();
+        return;
+    }
+
+    const releaseNotesHTML = await fetchReleaseNotes();
+    if (updateWin) {
+        updateWin.webContents.send('update-info', {
+            status: 'update-available',
+            version: info.version,
+            releaseNotesHTML: releaseNotesHTML
+        });
     }
 });
 
@@ -3957,10 +3968,67 @@ autoUpdater.on('error', (err) => {
 
 autoUpdater.on('download-progress', (progressObj) => {
     sendUpdateStatus('downloading', { percent: Math.round(progressObj.percent) });
+    if (updateWin && settings.updateMode === 'auto') {
+        updateWin.webContents.send('update-info', {
+            status: 'downloading',
+            percent: Math.round(progressObj.percent)
+        });
+    }
 });
 
-autoUpdater.on('update-downloaded', () => {
+let installReminderTimeout = null;
+
+function promptToInstall(releaseNotesHTML) {
+    if (updateWin) {
+        updateWin.focus();
+    } else {
+        const parentWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+        updateWin = new BrowserWindow({
+            width: 420, height: 500, frame: false, resizable: false,
+            show: false, parent: parentWindow, modal: true,
+            webPreferences: {
+                preload: path.join(__dirname, 'preload.js'),
+                contextIsolation: true,
+            }
+        });
+        updateWin.loadFile('update-available.html');
+        updateWin.on('closed', () => { updateWin = null; });
+    }
+
+    // Function to send data once window is ready
+    const sendData = () => {
+        if (!updateWin || updateWin.isDestroyed()) return;
+        updateWin.show();
+        updateWin.webContents.send('update-info', {
+            status: 'ready-to-install',
+            releaseNotesHTML: releaseNotesHTML
+        });
+    };
+
+    if (updateWin.webContents.isLoading()) {
+        updateWin.once('ready-to-show', sendData);
+    } else {
+        sendData();
+    }
+}
+
+autoUpdater.on('update-downloaded', async () => {
     sendUpdateStatus('downloaded');
+
+    if (settings.updateMode === 'auto') {
+        const releaseNotesHTML = await fetchReleaseNotes();
+        promptToInstall(releaseNotesHTML);
+    }
+});
+
+ipcMain.on('install-later', () => {
+    if (updateWin) updateWin.close();
+    // Schedule reminder in 1 hour
+    if (installReminderTimeout) clearTimeout(installReminderTimeout);
+    installReminderTimeout = setTimeout(async () => {
+        const releaseNotesHTML = await fetchReleaseNotes();
+        promptToInstall(releaseNotesHTML);
+    }, 60 * 60 * 1000); // 1 hour
 });
 
 // ================================================================= //
@@ -6383,6 +6451,9 @@ ipcMain.on('update-setting', (event, key, value) => {
     }
     if (key === 'autoCheckNotifications') {
         scheduleNotificationCheck(); // Update the timer
+    }
+    if (key === 'updateMode') {
+        autoUpdater.autoDownload = value === 'auto';
     }
     if (key === 'proxyEnabled' || key === 'proxyUrl') {
         // Apply proxy settings to all sessions and reload all pages
