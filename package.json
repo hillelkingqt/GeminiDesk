@@ -58,7 +58,6 @@
         "repo": "GeminiDesk"
       }
     ],
-    "updaterCacheDirName": "gemini-desk-updater",
     "mac": {
       "target": [
         "dmg",
