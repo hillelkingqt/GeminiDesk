@@ -356,6 +356,7 @@ const PROFILE_CAPTURE_COOLDOWN_MS = 60 * 1000;
 const PROFILE_REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const UPDATE_REMINDER_DELAY_MS = 60 * 60 * 1000; // 1 hour
 const UPDATER_INITIALIZATION_DELAY_MS = 5 * 1000; // 5 seconds
+const UPDATE_FOUND_DISPLAY_DURATION_MS = 1500; // 1.5 seconds - how long to show "update available" message before starting download
 const MAX_UPDATE_CHECK_RETRIES = 3; // Maximum retries for update check when reminder is pending
 const profileCaptureTimestamps = new Map();
 let avatarDirectoryPath = null;
@@ -4014,18 +4015,33 @@ autoUpdater.on('update-available', async (info) => {
                 releaseNotesHTML: `<p>Automatic download will start shortly...</p>`
             });
             
-            // After 1.5 seconds, close updateWin and open installUpdateWin
+            // After configured duration, close updateWin and open installUpdateWin
             setTimeout(() => {
-                if (updateWin && !updateWin.isDestroyed()) {
-                    updateWin.close();
+                try {
+                    if (updateWin && !updateWin.isDestroyed()) {
+                        updateWin.close();
+                    }
+                    openInstallUpdateWindow();
+                    autoUpdater.downloadUpdate();
+                } catch (error) {
+                    console.error('Error starting auto-update download:', error);
+                    // If download fails, show error in update window if it still exists
+                    if (updateWin && !updateWin.isDestroyed()) {
+                        updateWin.webContents.send('update-info', {
+                            status: 'error',
+                            message: 'Failed to start download: ' + (error.message || 'Unknown error')
+                        });
+                    }
                 }
-                openInstallUpdateWindow();
-                autoUpdater.downloadUpdate();
-            }, 1500);
+            }, UPDATE_FOUND_DISPLAY_DURATION_MS);
         } else {
             // No update window open (automatic background check)
-            openInstallUpdateWindow();
-            autoUpdater.downloadUpdate();
+            try {
+                openInstallUpdateWindow();
+                autoUpdater.downloadUpdate();
+            } catch (error) {
+                console.error('Error starting auto-update download (background):', error);
+            }
         }
     } else {
         // Manual mode: Show the update available dialog
