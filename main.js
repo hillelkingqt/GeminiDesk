@@ -341,6 +341,7 @@ let assisWin = null;
 
 let updateWin = null;
 let downloadWin = null;
+let installUpdateWin = null;
 let notificationWin = null;
 let personalMessageWin = null;
 let lastFetchedMessageId = null;
@@ -353,6 +354,7 @@ let mcpProxyProcess = null; // Background MCP proxy process
 const detachedViews = new Map();
 const PROFILE_CAPTURE_COOLDOWN_MS = 60 * 1000;
 const PROFILE_REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000;
+const UPDATE_REMINDER_DELAY_MS = 60 * 60 * 1000; // 1 hour
 const profileCaptureTimestamps = new Map();
 let avatarDirectoryPath = null;
 
@@ -3081,25 +3083,41 @@ function openUpdateWindowAndCheck() {
     });
 }
 
-const sendUpdateStatus = (status, data = {}) => {
-    const allWindows = BrowserWindow.getAllWindows();
-    allWindows.forEach(win => {
-        if (!win.isDestroyed()) {
-            win.webContents.send('update-status', { status, ...data });
-        }
-    });
-};
-
-autoUpdater.on('checking-for-update', () => {
-    sendUpdateStatus('checking');
-});
-
-autoUpdater.on('update-available', async (info) => {
-    if (!updateWin) {
-        openUpdateWindowAndCheck();
+function openInstallUpdateWindow() {
+    if (installUpdateWin) {
+        installUpdateWin.focus();
         return;
     }
 
+    const parentWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+    installUpdateWin = new BrowserWindow({
+        width: 420, height: 500, frame: false, resizable: false,
+        show: false, parent: parentWindow, modal: true,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+        }
+    });
+
+    installUpdateWin.loadFile('install-update-confirm.html');
+
+    installUpdateWin.once('ready-to-show', () => {
+        if (!installUpdateWin) return;
+        installUpdateWin.show();
+        installUpdateWin.webContents.send('install-update-info', { status: 'downloading', percent: 0 });
+    });
+
+    installUpdateWin.on('closed', () => {
+        installUpdateWin = null;
+    });
+}
+
+async function showInstallConfirmation() {
+    if (!updateInfo) return;
+    
+    openInstallUpdateWindow();
+    
+    // Fetch release notes and show install confirmation
     try {
         const { marked } = await import('marked');
         const options = { hostname: 'api.github.com', path: '/repos/hillelkingqt/GeminiDesk/releases/latest', method: 'GET', headers: { 'User-Agent': 'GeminiDesk-App' } };
@@ -3113,41 +3131,78 @@ autoUpdater.on('update-available', async (info) => {
                     if (releaseInfo.body) { releaseNotesHTML = marked.parse(releaseInfo.body); }
                 } catch (e) { console.error('Failed to parse release notes JSON:', e); }
 
-                if (updateWin) {
-                    updateWin.webContents.send('update-info', {
-                        status: 'update-available',
-                        version: info.version,
+                if (installUpdateWin && !installUpdateWin.isDestroyed()) {
+                    installUpdateWin.webContents.send('install-update-info', {
+                        status: 'ready-to-install',
+                        version: updateInfo.version,
                         releaseNotesHTML: releaseNotesHTML
                     });
                 }
             });
         });
-        req.on('error', (e) => { if (updateWin) { updateWin.webContents.send('update-info', { status: 'error', message: e.message }); } });
+        req.on('error', (e) => {
+            if (installUpdateWin && !installUpdateWin.isDestroyed()) {
+                installUpdateWin.webContents.send('install-update-info', { status: 'error', message: e.message });
+            }
+        });
         req.end();
-    } catch (importError) { if (updateWin) { updateWin.webContents.send('update-info', { status: 'error', message: 'Failed to load modules.' }); } }
-});
-
-autoUpdater.on('update-not-available', (info) => {
-    if (updateWin) {
-        updateWin.webContents.send('update-info', { status: 'up-to-date' });
+    } catch (importError) {
+        if (installUpdateWin && !installUpdateWin.isDestroyed()) {
+            installUpdateWin.webContents.send('install-update-info', { status: 'error', message: 'Failed to load modules.' });
+        }
     }
-    sendUpdateStatus('up-to-date');
-});
+}
 
-autoUpdater.on('error', (err) => {
-    if (updateWin) {
-        updateWin.webContents.send('update-info', { status: 'error', message: err.message });
+function checkAndShowPendingUpdateReminder() {
+    // Check if there's a pending update reminder from a previous session
+    if (settings.updateInstallReminderTime && updateInfo) {
+        // Validate the timestamp
+        const reminderTime = new Date(settings.updateInstallReminderTime);
+        
+        // Check if the date is valid
+        if (isNaN(reminderTime.getTime())) {
+            console.error('Invalid update reminder timestamp, clearing it');
+            settings.updateInstallReminderTime = null;
+            saveSettings(settings);
+            return;
+        }
+        
+        const now = new Date();
+        
+        if (now >= reminderTime) {
+            // Reminder time has passed, show the install confirmation
+            console.log('Showing pending update reminder from previous session');
+            showInstallConfirmation();
+            // Clear the reminder
+            settings.updateInstallReminderTime = null;
+            saveSettings(settings);
+        } else {
+            // Schedule the reminder for the future
+            const delay = reminderTime.getTime() - now.getTime();
+            console.log(`Scheduling update reminder in ${Math.round(delay / 1000 / 60)} minutes`);
+            reminderTimeoutId = setTimeout(() => {
+                showInstallConfirmation();
+                settings.updateInstallReminderTime = null;
+                saveSettings(settings);
+            }, delay);
+        }
     }
-    sendUpdateStatus('error', { message: err.message });
-});
+}
 
-autoUpdater.on('download-progress', (progressObj) => {
-    sendUpdateStatus('downloading', { percent: Math.round(progressObj.percent) });
-});
+const sendUpdateStatus = (status, data = {}) => {
+    const allWindows = BrowserWindow.getAllWindows();
+    allWindows.forEach(win => {
+        if (!win.isDestroyed()) {
+            win.webContents.send('update-status', { status, ...data });
+        }
+    });
+};
 
-autoUpdater.on('update-downloaded', () => {
-    sendUpdateStatus('downloaded');
-});
+// Store update info for later use
+let updateInfo = null;
+
+// Reminder timeout ID for "remind me in 1 hour"
+let reminderTimeoutId = null;
 
 // ================================================================= //
 // File Handling
@@ -3744,6 +3799,9 @@ app.whenReady().then(() => {
     autoUpdater.autoDownload = false;
     autoUpdater.forceDevUpdateConfig = true; // Good for testing, can remain
 
+    // --- 4b. Check for pending update reminders from previous session ---
+    checkAndShowPendingUpdateReminder();
+
     // --- 5. Start server notifications system ---
     checkForNotifications(); // Perform one initial check immediately on app launch
     scheduleNotificationCheck();
@@ -3889,52 +3947,71 @@ autoUpdater.on('checking-for-update', () => {
 });
 
 autoUpdater.on('update-available', async (info) => {
-    if (!updateWin) {
-        // If window wasn't manually opened, open it now (in case of automatic check)
-        openUpdateWindowAndCheck();
-        return; // Function will call itself again after window is ready
-    }
+    updateInfo = info; // Store update info
+    
+    // Check if auto-install is enabled
+    const autoInstall = settings.autoInstallUpdates !== false;
+    
+    if (autoInstall) {
+        // Auto-install mode: Start downloading immediately
+        console.log('Auto-install enabled, starting download...');
+        
+        // Close update window if it's open (in case of manual check)
+        if (updateWin) {
+            updateWin.close();
+        }
+        
+        openInstallUpdateWindow();
+        autoUpdater.downloadUpdate();
+    } else {
+        // Manual mode: Show the update available dialog
+        if (!updateWin) {
+            // If window wasn't manually opened, open it now (in case of automatic check)
+            openUpdateWindowAndCheck();
+            return; // Function will call itself again after window is ready
+        }
 
-    try {
-        const { marked } = await import('marked');
-        const options = {
-            hostname: 'api.github.com',
-            path: '/repos/hillelkingqt/GeminiDesk/releases/latest',
-            method: 'GET',
-            headers: { 'User-Agent': 'GeminiDesk-App' }
-        };
-        const req = https.request(options, (res) => {
-            let data = '';
-            res.on('data', (chunk) => { data += chunk; });
-            res.on('end', () => {
-                let releaseNotesHTML = '<p>Could not load release notes.</p>';
-                try {
-                    const releaseInfo = JSON.parse(data);
-                    if (releaseInfo.body) {
-                        releaseNotesHTML = marked.parse(releaseInfo.body);
+        try {
+            const { marked } = await import('marked');
+            const options = {
+                hostname: 'api.github.com',
+                path: '/repos/hillelkingqt/GeminiDesk/releases/latest',
+                method: 'GET',
+                headers: { 'User-Agent': 'GeminiDesk-App' }
+            };
+            const req = https.request(options, (res) => {
+                let data = '';
+                res.on('data', (chunk) => { data += chunk; });
+                res.on('end', () => {
+                    let releaseNotesHTML = '<p>Could not load release notes.</p>';
+                    try {
+                        const releaseInfo = JSON.parse(data);
+                        if (releaseInfo.body) {
+                            releaseNotesHTML = marked.parse(releaseInfo.body);
+                        }
+                    } catch (e) {
+                        console.error('Failed to parse release notes JSON:', e);
                     }
-                } catch (e) {
-                    console.error('Failed to parse release notes JSON:', e);
-                }
 
+                    if (updateWin) {
+                        updateWin.webContents.send('update-info', {
+                            status: 'update-available',
+                            version: info.version,
+                            releaseNotesHTML: releaseNotesHTML
+                        });
+                    }
+                });
+            });
+            req.on('error', (e) => {
                 if (updateWin) {
-                    updateWin.webContents.send('update-info', {
-                        status: 'update-available',
-                        version: info.version,
-                        releaseNotesHTML: releaseNotesHTML
-                    });
+                    updateWin.webContents.send('update-info', { status: 'error', message: e.message });
                 }
             });
-        });
-        req.on('error', (e) => {
+            req.end();
+        } catch (importError) {
             if (updateWin) {
-                updateWin.webContents.send('update-info', { status: 'error', message: e.message });
+                updateWin.webContents.send('update-info', { status: 'error', message: 'Failed to load modules.' });
             }
-        });
-        req.end();
-    } catch (importError) {
-        if (updateWin) {
-            updateWin.webContents.send('update-info', { status: 'error', message: 'Failed to load modules.' });
         }
     }
 });
@@ -3952,15 +4029,31 @@ autoUpdater.on('error', (err) => {
     if (updateWin) {
         updateWin.webContents.send('update-info', { status: 'error', message: err.message });
     }
+    if (installUpdateWin && !installUpdateWin.isDestroyed()) {
+        installUpdateWin.webContents.send('install-update-info', { status: 'error', message: err.message });
+    }
     sendUpdateStatus('error', { message: err.message });
 });
 
 autoUpdater.on('download-progress', (progressObj) => {
     sendUpdateStatus('downloading', { percent: Math.round(progressObj.percent) });
+    
+    // Send progress to install update window if it exists
+    if (installUpdateWin && !installUpdateWin.isDestroyed()) {
+        installUpdateWin.webContents.send('install-update-info', {
+            status: 'downloading',
+            percent: Math.round(progressObj.percent)
+        });
+    }
 });
 
-autoUpdater.on('update-downloaded', () => {
+autoUpdater.on('update-downloaded', async () => {
     sendUpdateStatus('downloaded');
+    
+    // If auto-install window is open, show install confirmation with changelog
+    if (installUpdateWin && !installUpdateWin.isDestroyed() && updateInfo) {
+        showInstallConfirmation();
+    }
 });
 
 // ================================================================= //
@@ -4071,6 +4164,43 @@ ipcMain.on('request-last-notification', async (event) => {
 
 ipcMain.on('install-update-now', () => {
     autoUpdater.quitAndInstall();
+});
+
+ipcMain.on('remind-later-update', () => {
+    // Clear any existing reminder
+    if (reminderTimeoutId) {
+        clearTimeout(reminderTimeoutId);
+        reminderTimeoutId = null;
+    }
+    
+    // Close the install update window
+    if (installUpdateWin) {
+        installUpdateWin.close();
+    }
+    
+    // Calculate reminder time (1 hour from now)
+    const reminderTime = new Date();
+    reminderTime.setTime(reminderTime.getTime() + UPDATE_REMINDER_DELAY_MS);
+    
+    // Save reminder time to settings for persistence across restarts
+    settings.updateInstallReminderTime = reminderTime.toISOString();
+    saveSettings(settings);
+    
+    // Set a reminder for 1 hour
+    reminderTimeoutId = setTimeout(() => {
+        showInstallConfirmation();
+        // Clear the reminder from settings
+        settings.updateInstallReminderTime = null;
+        saveSettings(settings);
+    }, UPDATE_REMINDER_DELAY_MS);
+    
+    console.log('Update reminder set for 1 hour from now:', reminderTime.toISOString());
+});
+
+ipcMain.on('close-install-update-window', () => {
+    if (installUpdateWin) {
+        installUpdateWin.close();
+    }
 });
 
 ipcMain.on('open-new-window', () => {

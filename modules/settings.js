@@ -68,6 +68,8 @@ const defaultSettings = {
 // Default: off (user must opt-in via Settings)
 defaultSettings.loadUnpackedExtension = false;
 defaultSettings.disableAutoUpdateCheck = false;
+defaultSettings.autoInstallUpdates = true; // Automatically download and install updates
+defaultSettings.updateInstallReminderTime = null; // Timestamp for "remind me in 1 hour"
 
 function getSettings() {
     try {
@@ -83,7 +85,9 @@ function getSettings() {
                     showInTaskbar: savedSettings.showInTaskbar === undefined ? false : savedSettings.showInTaskbar,
                     // CRITICAL: Force loadUnpackedExtension to false unless explicitly set to true by user
                     loadUnpackedExtension: savedSettings.loadUnpackedExtension === true ? true : false,
-                    disableAutoUpdateCheck: savedSettings.disableAutoUpdateCheck === true ? true : false
+                    disableAutoUpdateCheck: savedSettings.disableAutoUpdateCheck === true ? true : false,
+                    autoInstallUpdates: savedSettings.autoInstallUpdates === undefined ? true : savedSettings.autoInstallUpdates,
+                    updateInstallReminderTime: savedSettings.updateInstallReminderTime || null
                 };
                 return combinedSettings;
             }

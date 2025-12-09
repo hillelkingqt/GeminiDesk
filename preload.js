@@ -137,6 +137,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     startDownloadUpdate: () => ipcRenderer.send('start-download-update'),
     installUpdateNow: () => ipcRenderer.send('install-update-now'),
     closeDownloadWindow: () => ipcRenderer.send('close-download-window'),
+    remindLaterUpdate: () => ipcRenderer.send('remind-later-update'),
+    closeInstallUpdateWindow: () => ipcRenderer.send('close-install-update-window'),
     openVoiceAssistant: () => ipcRenderer.send('open-voice-assistant'),
     openShareIdeasWindow: () => ipcRenderer.send('open-share-ideas-window'),
     closeShareIdeasWindow: () => ipcRenderer.send('close-share-ideas-window'),
@@ -173,6 +175,13 @@ contextBridge.exposeInMainWorld('chatAPI', {
 // ================================================================
 contextBridge.exposeInMainWorld('updateAPI', {
     onUpdateInfo: (callback) => ipcRenderer.on('update-info', (_event, value) => callback(value)),
+});
+
+// ================================================================
+// Install Update API
+// ================================================================
+contextBridge.exposeInMainWorld('installUpdateAPI', {
+    onInstallUpdateInfo: (callback) => ipcRenderer.on('install-update-info', (_event, value) => callback(value)),
 });
 
 // ================================================================
