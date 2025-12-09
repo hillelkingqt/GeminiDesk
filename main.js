@@ -355,6 +355,8 @@ const detachedViews = new Map();
 const PROFILE_CAPTURE_COOLDOWN_MS = 60 * 1000;
 const PROFILE_REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const UPDATE_REMINDER_DELAY_MS = 60 * 60 * 1000; // 1 hour
+const UPDATER_INITIALIZATION_DELAY_MS = 5 * 1000; // 5 seconds
+const MAX_UPDATE_CHECK_RETRIES = 3; // Maximum retries for update check when reminder is pending
 const profileCaptureTimestamps = new Map();
 let avatarDirectoryPath = null;
 
@@ -3153,7 +3155,7 @@ async function showInstallConfirmation() {
     }
 }
 
-function checkAndShowPendingUpdateReminder() {
+function checkAndShowPendingUpdateReminder(retryCount = 0) {
     // Check if there's a pending update reminder from a previous session
     if (settings.updateInstallReminderTime) {
         // Validate the timestamp
@@ -3175,20 +3177,27 @@ function checkAndShowPendingUpdateReminder() {
         
         // If we still don't have updateInfo, we need to check for updates first
         if (!updateInfo) {
-            console.log('No update info available, checking for updates before showing reminder');
+            if (retryCount >= MAX_UPDATE_CHECK_RETRIES) {
+                console.error(`Max update check retries (${MAX_UPDATE_CHECK_RETRIES}) reached, clearing reminder`);
+                settings.updateInstallReminderTime = null;
+                saveSettings(settings);
+                return;
+            }
+            
+            console.log(`No update info available, checking for updates before showing reminder (attempt ${retryCount + 1}/${MAX_UPDATE_CHECK_RETRIES})`);
             // Schedule a check after autoUpdater is ready
             setTimeout(async () => {
                 try {
                     await autoUpdater.checkForUpdates();
-                    // After update check, re-run this function
-                    checkAndShowPendingUpdateReminder();
+                    // After update check, re-run this function with incremented retry count
+                    checkAndShowPendingUpdateReminder(retryCount + 1);
                 } catch (error) {
                     console.error('Failed to check for updates for pending reminder:', error.message);
                     // Clear the reminder if we can't check for updates
                     settings.updateInstallReminderTime = null;
                     saveSettings(settings);
                 }
-            }, 5000); // Wait 5 seconds for app to fully initialize
+            }, UPDATER_INITIALIZATION_DELAY_MS);
             return;
         }
         
