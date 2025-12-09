@@ -241,7 +241,7 @@
                         </svg>
                     </div>
                     <h1 data-i18n="update-found-title">Update Available</h1>
-                    <div id="version" class="version-badge" data-i18n="update-version-text" data-i18n-version-placeholder="v%VERSION%">v1.0.0</div>
+                    <div id="version" class="version-badge">v1.0.0</div>
                 </div>
 
                 <div class="notes-wrapper">
@@ -277,7 +277,7 @@
                         </svg>
                     </div>
                     <h1 data-i18n="update-error-title">Update Failed</h1>
-                    <p id="error-message" data-i18n="update-error-message">Something went wrong.</p>
+                    <p id="error-message">Something went wrong.</p>
                     <button id="error-close-btn" class="btn btn-secondary" style="margin-top: 32px; width: 100%;" data-i18n="update-error-button">Close</button>
                 </div>
             </div>
@@ -317,8 +317,7 @@
                         case 'update-available':
                             // Update Version
                             const verEl = document.getElementById('version');
-                            const verTemplate = verEl.dataset.i18nVersionPlaceholder || 'v%VERSION%';
-                            verEl.textContent = verTemplate.replace('%VERSION%', data.version || 'Unknown');
+                            verEl.textContent = 'v' + (data.version || 'Unknown');
 
                             // Update Notes
                             const notesEl = document.getElementById('release-notes');
@@ -350,7 +349,13 @@
                             break;
                         case 'error':
                             const errEl = document.getElementById('error-message');
-                            if (data.message) errEl.textContent = data.message;
+                            if (data.message) {
+                                errEl.textContent = data.message;
+                            } else {
+                                // Use default translated error message if no custom message
+                                const dict = translations[document.documentElement.lang] || translations.en;
+                                errEl.textContent = dict['update-error-message'] || 'Something went wrong.';
+                            }
                             showState('error');
                             break;
                     }
