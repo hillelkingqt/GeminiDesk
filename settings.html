@@ -899,6 +899,12 @@
                         class="slider"></span></label>
             </div>
             <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="autoInstallUpdates-label">Automatically Install Updates</strong><span
+                        data-i18n="autoInstallUpdates-desc">When enabled, updates will be downloaded and installed automatically. When disabled, you'll see the update dialog to choose when to install.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-autoInstallUpdates"><span
+                        class="slider"></span></label>
+            </div>
+            <div class="setting-item">
                 <div class="setting-label"><strong data-i18n="autoStart-label">Run on System Startup</strong><span
                         data-i18n="autoStart-desc">Start GeminiDesk automatically.</span></div>
                 <label class="toggle-switch"><input type="checkbox" id="setting-autoStart"><span
@@ -1673,6 +1679,7 @@
                     document.getElementById('setting-alwaysOnTop').checked = settings.alwaysOnTop || false;
                     document.getElementById('setting-autoCheckNotifications').checked = settings.autoCheckNotifications || false;
                     document.getElementById('setting-disableAutoUpdateCheck').checked = settings.disableAutoUpdateCheck || false;
+                    document.getElementById('setting-autoInstallUpdates').checked = settings.autoInstallUpdates !== false;
                     document.getElementById('setting-enableCanvasResizing').checked = settings.enableCanvasResizing || false;
                     document.getElementById('setting-invisibilityMode').checked = settings.invisibilityMode || false;
                     
@@ -1872,6 +1879,10 @@
 
             document.getElementById('setting-disableAutoUpdateCheck').addEventListener('change', (e) => {
                 electronAPI.updateSetting('disableAutoUpdateCheck', e.target.checked);
+            });
+
+            document.getElementById('setting-autoInstallUpdates').addEventListener('change', (e) => {
+                electronAPI.updateSetting('autoInstallUpdates', e.target.checked);
             });
 
             document.getElementById('setting-enableCanvasResizing').addEventListener('change', (e) => {

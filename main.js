@@ -341,6 +341,7 @@ let assisWin = null;
 
 let updateWin = null;
 let downloadWin = null;
+let installUpdateWin = null;
 let notificationWin = null;
 let personalMessageWin = null;
 let lastFetchedMessageId = null;
@@ -3081,6 +3082,35 @@ function openUpdateWindowAndCheck() {
     });
 }
 
+function openInstallUpdateWindow() {
+    if (installUpdateWin) {
+        installUpdateWin.focus();
+        return;
+    }
+
+    const parentWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+    installUpdateWin = new BrowserWindow({
+        width: 420, height: 500, frame: false, resizable: false,
+        show: false, parent: parentWindow, modal: true,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+        }
+    });
+
+    installUpdateWin.loadFile('install-update-confirm.html');
+
+    installUpdateWin.once('ready-to-show', () => {
+        if (!installUpdateWin) return;
+        installUpdateWin.show();
+        installUpdateWin.webContents.send('install-update-info', { status: 'downloading', percent: 0 });
+    });
+
+    installUpdateWin.on('closed', () => {
+        installUpdateWin = null;
+    });
+}
+
 const sendUpdateStatus = (status, data = {}) => {
     const allWindows = BrowserWindow.getAllWindows();
     allWindows.forEach(win => {
@@ -3090,64 +3120,11 @@ const sendUpdateStatus = (status, data = {}) => {
     });
 };
 
-autoUpdater.on('checking-for-update', () => {
-    sendUpdateStatus('checking');
-});
+// Store update info for later use
+let updateInfo = null;
 
-autoUpdater.on('update-available', async (info) => {
-    if (!updateWin) {
-        openUpdateWindowAndCheck();
-        return;
-    }
-
-    try {
-        const { marked } = await import('marked');
-        const options = { hostname: 'api.github.com', path: '/repos/hillelkingqt/GeminiDesk/releases/latest', method: 'GET', headers: { 'User-Agent': 'GeminiDesk-App' } };
-        const req = https.request(options, (res) => {
-            let data = '';
-            res.on('data', (chunk) => { data += chunk; });
-            res.on('end', () => {
-                let releaseNotesHTML = '<p>Could not load release notes.</p>';
-                try {
-                    const releaseInfo = JSON.parse(data);
-                    if (releaseInfo.body) { releaseNotesHTML = marked.parse(releaseInfo.body); }
-                } catch (e) { console.error('Failed to parse release notes JSON:', e); }
-
-                if (updateWin) {
-                    updateWin.webContents.send('update-info', {
-                        status: 'update-available',
-                        version: info.version,
-                        releaseNotesHTML: releaseNotesHTML
-                    });
-                }
-            });
-        });
-        req.on('error', (e) => { if (updateWin) { updateWin.webContents.send('update-info', { status: 'error', message: e.message }); } });
-        req.end();
-    } catch (importError) { if (updateWin) { updateWin.webContents.send('update-info', { status: 'error', message: 'Failed to load modules.' }); } }
-});
-
-autoUpdater.on('update-not-available', (info) => {
-    if (updateWin) {
-        updateWin.webContents.send('update-info', { status: 'up-to-date' });
-    }
-    sendUpdateStatus('up-to-date');
-});
-
-autoUpdater.on('error', (err) => {
-    if (updateWin) {
-        updateWin.webContents.send('update-info', { status: 'error', message: err.message });
-    }
-    sendUpdateStatus('error', { message: err.message });
-});
-
-autoUpdater.on('download-progress', (progressObj) => {
-    sendUpdateStatus('downloading', { percent: Math.round(progressObj.percent) });
-});
-
-autoUpdater.on('update-downloaded', () => {
-    sendUpdateStatus('downloaded');
-});
+// Reminder timeout ID for "remind me in 1 hour"
+let reminderTimeoutId = null;
 
 // ================================================================= //
 // File Handling
@@ -3889,52 +3866,65 @@ autoUpdater.on('checking-for-update', () => {
 });
 
 autoUpdater.on('update-available', async (info) => {
-    if (!updateWin) {
-        // If window wasn't manually opened, open it now (in case of automatic check)
-        openUpdateWindowAndCheck();
-        return; // Function will call itself again after window is ready
-    }
+    updateInfo = info; // Store update info
+    
+    // Check if auto-install is enabled
+    const autoInstall = settings.autoInstallUpdates !== false;
+    
+    if (autoInstall) {
+        // Auto-install mode: Start downloading immediately
+        console.log('Auto-install enabled, starting download...');
+        openInstallUpdateWindow();
+        autoUpdater.downloadUpdate();
+    } else {
+        // Manual mode: Show the update available dialog
+        if (!updateWin) {
+            // If window wasn't manually opened, open it now (in case of automatic check)
+            openUpdateWindowAndCheck();
+            return; // Function will call itself again after window is ready
+        }
 
-    try {
-        const { marked } = await import('marked');
-        const options = {
-            hostname: 'api.github.com',
-            path: '/repos/hillelkingqt/GeminiDesk/releases/latest',
-            method: 'GET',
-            headers: { 'User-Agent': 'GeminiDesk-App' }
-        };
-        const req = https.request(options, (res) => {
-            let data = '';
-            res.on('data', (chunk) => { data += chunk; });
-            res.on('end', () => {
-                let releaseNotesHTML = '<p>Could not load release notes.</p>';
-                try {
-                    const releaseInfo = JSON.parse(data);
-                    if (releaseInfo.body) {
-                        releaseNotesHTML = marked.parse(releaseInfo.body);
+        try {
+            const { marked } = await import('marked');
+            const options = {
+                hostname: 'api.github.com',
+                path: '/repos/hillelkingqt/GeminiDesk/releases/latest',
+                method: 'GET',
+                headers: { 'User-Agent': 'GeminiDesk-App' }
+            };
+            const req = https.request(options, (res) => {
+                let data = '';
+                res.on('data', (chunk) => { data += chunk; });
+                res.on('end', () => {
+                    let releaseNotesHTML = '<p>Could not load release notes.</p>';
+                    try {
+                        const releaseInfo = JSON.parse(data);
+                        if (releaseInfo.body) {
+                            releaseNotesHTML = marked.parse(releaseInfo.body);
+                        }
+                    } catch (e) {
+                        console.error('Failed to parse release notes JSON:', e);
                     }
-                } catch (e) {
-                    console.error('Failed to parse release notes JSON:', e);
-                }
 
+                    if (updateWin) {
+                        updateWin.webContents.send('update-info', {
+                            status: 'update-available',
+                            version: info.version,
+                            releaseNotesHTML: releaseNotesHTML
+                        });
+                    }
+                });
+            });
+            req.on('error', (e) => {
                 if (updateWin) {
-                    updateWin.webContents.send('update-info', {
-                        status: 'update-available',
-                        version: info.version,
-                        releaseNotesHTML: releaseNotesHTML
-                    });
+                    updateWin.webContents.send('update-info', { status: 'error', message: e.message });
                 }
             });
-        });
-        req.on('error', (e) => {
+            req.end();
+        } catch (importError) {
             if (updateWin) {
-                updateWin.webContents.send('update-info', { status: 'error', message: e.message });
+                updateWin.webContents.send('update-info', { status: 'error', message: 'Failed to load modules.' });
             }
-        });
-        req.end();
-    } catch (importError) {
-        if (updateWin) {
-            updateWin.webContents.send('update-info', { status: 'error', message: 'Failed to load modules.' });
         }
     }
 });
@@ -3952,15 +3942,63 @@ autoUpdater.on('error', (err) => {
     if (updateWin) {
         updateWin.webContents.send('update-info', { status: 'error', message: err.message });
     }
+    if (installUpdateWin && !installUpdateWin.isDestroyed()) {
+        installUpdateWin.webContents.send('install-update-info', { status: 'error', message: err.message });
+    }
     sendUpdateStatus('error', { message: err.message });
 });
 
 autoUpdater.on('download-progress', (progressObj) => {
     sendUpdateStatus('downloading', { percent: Math.round(progressObj.percent) });
+    
+    // Send progress to install update window if it exists
+    if (installUpdateWin && !installUpdateWin.isDestroyed()) {
+        installUpdateWin.webContents.send('install-update-info', {
+            status: 'downloading',
+            percent: Math.round(progressObj.percent)
+        });
+    }
 });
 
-autoUpdater.on('update-downloaded', () => {
+autoUpdater.on('update-downloaded', async () => {
     sendUpdateStatus('downloaded');
+    
+    // If auto-install window is open, show install confirmation with changelog
+    if (installUpdateWin && !installUpdateWin.isDestroyed() && updateInfo) {
+        try {
+            const { marked } = await import('marked');
+            const options = { hostname: 'api.github.com', path: '/repos/hillelkingqt/GeminiDesk/releases/latest', method: 'GET', headers: { 'User-Agent': 'GeminiDesk-App' } };
+            const req = https.request(options, (res) => {
+                let data = '';
+                res.on('data', (chunk) => { data += chunk; });
+                res.on('end', () => {
+                    let releaseNotesHTML = '<p>Could not load release notes.</p>';
+                    try {
+                        const releaseInfo = JSON.parse(data);
+                        if (releaseInfo.body) { releaseNotesHTML = marked.parse(releaseInfo.body); }
+                    } catch (e) { console.error('Failed to parse release notes JSON:', e); }
+
+                    if (installUpdateWin && !installUpdateWin.isDestroyed()) {
+                        installUpdateWin.webContents.send('install-update-info', {
+                            status: 'ready-to-install',
+                            version: updateInfo.version,
+                            releaseNotesHTML: releaseNotesHTML
+                        });
+                    }
+                });
+            });
+            req.on('error', (e) => {
+                if (installUpdateWin && !installUpdateWin.isDestroyed()) {
+                    installUpdateWin.webContents.send('install-update-info', { status: 'error', message: e.message });
+                }
+            });
+            req.end();
+        } catch (importError) {
+            if (installUpdateWin && !installUpdateWin.isDestroyed()) {
+                installUpdateWin.webContents.send('install-update-info', { status: 'error', message: 'Failed to load modules.' });
+            }
+        }
+    }
 });
 
 // ================================================================= //
@@ -4071,6 +4109,36 @@ ipcMain.on('request-last-notification', async (event) => {
 
 ipcMain.on('install-update-now', () => {
     autoUpdater.quitAndInstall();
+});
+
+ipcMain.on('remind-later-update', () => {
+    // Clear any existing reminder
+    if (reminderTimeoutId) {
+        clearTimeout(reminderTimeoutId);
+    }
+    
+    // Close the install update window
+    if (installUpdateWin) {
+        installUpdateWin.close();
+    }
+    
+    // Set a reminder for 1 hour (3600000 milliseconds)
+    reminderTimeoutId = setTimeout(() => {
+        // Reopen the install confirmation dialog after 1 hour
+        if (updateInfo) {
+            openInstallUpdateWindow();
+            // Trigger the ready-to-install state again
+            autoUpdater.emit('update-downloaded');
+        }
+    }, 3600000); // 1 hour
+    
+    console.log('Update reminder set for 1 hour from now');
+});
+
+ipcMain.on('close-install-update-window', () => {
+    if (installUpdateWin) {
+        installUpdateWin.close();
+    }
 });
 
 ipcMain.on('open-new-window', () => {

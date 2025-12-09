@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Install Update</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
+
+        :root {
+            /* Gemini Dark Palette (Matching Settings) */
+            --bg-root: #131314;
+            --glass-surface: #1e1f20;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            
+            --text-primary: #e3e3e3;
+            --text-secondary: #9aa0a6;
+            
+            --accent-primary: #8ab4f8;
+            --accent-gradient: linear-gradient(135deg, #8ab4f8 0%, #c58af9 100%);
+            
+            --success-color: #81c995;
+            --error-color: #f28b82;
+            
+            --radius-xl: 28px;
+            --radius-lg: 20px;
+            
+            --shadow-lg: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        html.light-mode {
+            --bg-root: #ffffff;
+            --glass-surface: #f8f9fa;
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --accent-primary: #1a73e8;
+            --accent-gradient: linear-gradient(135deg, #1a73e8 0%, #8430ce 100%);
+            --shadow-lg: 0 20px 50px rgba(0,0,0,0.15);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+
+        body {
+            font-family: 'Google Sans', sans-serif;
+            background: transparent; /* Transparent for window transparency */
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .window-frame {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-root);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 1px solid var(--glass-border);
+        }
+
+        .drag-region {
+            height: 32px;
+            width: 100%;
+            -webkit-app-region: drag;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+            overflow: hidden;
+        }
+
+        /* States */
+        .state-view {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            animation: slideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .state-view.active { display: flex; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Typography & Icons */
+        .icon-box {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(138, 180, 248, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            color: var(--accent-primary);
+        }
+        
+        .icon-box svg { width: 40px; height: 40px; }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-align: center;
+            line-height: 1.5;
+            max-width: 80%;
+            margin: 0 auto;
+        }
+
+        /* Release Notes */
+        .notes-wrapper {
+            flex: 1;
+            background: var(--glass-surface);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin: 24px 0;
+            overflow-y: auto;
+        }
+        
+        .notes-wrapper::-webkit-scrollbar { width: 8px; }
+        .notes-wrapper::-webkit-scrollbar-track { background: transparent; }
+        .notes-wrapper::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+        .notes-content { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+        .notes-content h1, .notes-content h2 { font-size: 16px; color: var(--text-primary); margin: 16px 0 8px; text-align: left; }
+        .notes-content ul { padding-left: 20px; text-align: left; }
+        .notes-content li { margin-bottom: 6px; }
+
+        /* Buttons */
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        .btn {
+            flex: 1;
+            height: 48px;
+            border: none;
+            border-radius: 24px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s, filter 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:active { transform: scale(0.96); }
+
+        .btn-secondary {
+            background: var(--glass-surface);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.05); }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: #000; /* Contrast for light blue */
+            font-weight: 600;
+        }
+        html.light-mode .btn-primary { color: #fff; }
+        
+        .btn-primary:hover { filter: brightness(1.1); }
+
+        /* Center Layout */
+        .center-layout {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        /* Animations */
+        .spin { animation: spin 1.5s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .version-badge {
+            background: rgba(138, 180, 248, 0.15);
+            color: var(--accent-primary);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 8px;
+            display: inline-block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--glass-surface);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-primary);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="window-frame">
+        <div class="drag-region"></div>
+        
+        <div class="content-area">
+            
+            <!-- Downloading State -->
+            <div id="downloading-state" class="state-view active">
+                <div class="center-layout">
+                    <div class="icon-box">
+                        <svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                    </div>
+                    <h1 data-i18n="install-downloading-title">Downloading Update</h1>
+                    <p data-i18n="install-downloading-message">Please wait while we download the latest version...</p>
+                    <div class="progress-bar">
+                        <div id="progress-fill" class="progress-fill"></div>
+                    </div>
+                    <p id="progress-text" style="font-size: 12px; margin-top: 8px;">0%</p>
+                </div>
+            </div>
+
+            <!-- Install Confirmation -->
+            <div id="install-confirm-state" class="state-view">
+                <div style="text-align: center;">
+                    <div class="icon-box" style="width: 60px; height: 60px; margin-bottom: 16px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                    </div>
+                    <h1 data-i18n="install-ready-title">Update Ready to Install</h1>
+                    <div id="version" class="version-badge" data-i18n="update-version-text" data-i18n-version-placeholder="v%VERSION%">v1.0.0</div>
+                </div>
+
+                <div class="notes-wrapper">
+                    <div id="release-notes" class="notes-content"></div>
+                </div>
+
+                <div class="actions">
+                    <button id="later-btn" class="btn btn-secondary" data-i18n="install-later-button">Remind Me in 1 Hour</button>
+                    <button id="install-btn" class="btn btn-primary" data-i18n="install-now-button">Install Now</button>
+                </div>
+            </div>
+
+            <!-- Error -->
+            <div id="error-state" class="state-view">
+                <div class="center-layout">
+                    <div class="icon-box" style="color: var(--error-color); background: rgba(242, 139, 130, 0.1);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <h1 data-i18n="install-error-title">Download Failed</h1>
+                    <p id="error-message" data-i18n="install-error-message">Something went wrong while downloading the update.</p>
+                    <button id="error-close-btn" class="btn btn-secondary" style="margin-top: 32px; width: 100%;" data-i18n="install-error-button">Close</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="translations.js"></script>
+    <script>
+        // State Management
+        const states = {
+            downloading: document.getElementById('downloading-state'),
+            confirm: document.getElementById('install-confirm-state'),
+            error: document.getElementById('error-state'),
+        };
+
+        function showState(stateName) {
+            Object.values(states).forEach(el => el.classList.remove('active'));
+            if (states[stateName]) {
+                states[stateName].classList.add('active');
+            }
+        }
+
+        // API Integration
+        document.addEventListener('DOMContentLoaded', () => {
+            const api = window.installUpdateAPI;
+            const mainAppApi = window.electronAPI;
+
+            if (api) {
+                api.onInstallUpdateInfo((data) => {
+                    console.log('Install Update Info:', data);
+                    switch (data.status) {
+                        case 'downloading':
+                            showState('downloading');
+                            if (data.percent !== undefined) {
+                                const progressFill = document.getElementById('progress-fill');
+                                const progressText = document.getElementById('progress-text');
+                                progressFill.style.width = data.percent + '%';
+                                progressText.textContent = data.percent + '%';
+                            }
+                            break;
+                        case 'ready-to-install':
+                            // Update Version
+                            const verEl = document.getElementById('version');
+                            const verTemplate = verEl.dataset.i18nVersionPlaceholder || 'v%VERSION%';
+                            verEl.textContent = verTemplate.replace('%VERSION%', data.version || 'Unknown');
+
+                            // Update Notes
+                            const notesEl = document.getElementById('release-notes');
+                            if (data.releaseNotesHTML) {
+                                notesEl.innerHTML = data.releaseNotesHTML;
+                            } else if (data.releaseNotes) {
+                                // Simple markdown parser
+                                let html = data.releaseNotes
+                                    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                                    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                                    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                                    .replace(/^\* (.*$)/gim, '<ul><li>$1</li></ul>')
+                                    .replace(/^- (.*$)/gim, '<ul><li>$1</li></ul>')
+                                    .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+                                    .replace(/`(.*)`/gim, '<code>$1</code>')
+                                    .replace(/\n/gim, '<br />');
+
+                                // Fix nested lists (basic)
+                                html = html.replace(/<\/ul><br \/><ul>/gim, '');
+                                notesEl.innerHTML = html;
+                            } else {
+                                notesEl.innerHTML = '<p style="text-align:center; opacity:0.6;">No release notes available.</p>';
+                            }
+
+                            showState('confirm');
+                            break;
+                        case 'error':
+                            const errEl = document.getElementById('error-message');
+                            if (data.message) errEl.textContent = data.message;
+                            showState('error');
+                            break;
+                    }
+                });
+            }
+
+            // Button Handlers
+            document.getElementById('install-btn')?.addEventListener('click', () => mainAppApi?.installUpdateNow());
+            document.getElementById('later-btn')?.addEventListener('click', () => mainAppApi?.remindLaterUpdate());
+            document.getElementById('error-close-btn')?.addEventListener('click', () => mainAppApi?.closeInstallUpdateWindow());
+
+            // Translations & Theme
+            if (window.electronAPI) {
+                const applyTranslations = (lang) => {
+                    const dict = translations[lang] || translations.en;
+                    document.querySelectorAll('[data-i18n]').forEach(el => {
+                        const key = el.getAttribute('data-i18n');
+                        if (dict[key]) el.textContent = dict[key];
+                    });
+                    document.documentElement.lang = lang;
+                    document.documentElement.dir = ['he', 'ar'].includes(lang) ? 'rtl' : 'ltr';
+                };
+
+                const applyTheme = (theme) => {
+                    if (theme === 'light') document.documentElement.classList.add('light-mode');
+                    else document.documentElement.classList.remove('light-mode');
+                };
+
+                window.electronAPI.getSettings().then(settings => {
+                    applyTranslations(settings.language || 'en');
+                });
+                window.electronAPI.onLanguageChanged(applyTranslations);
+
+                window.electronAPI.theme.getResolved().then(applyTheme);
+                window.electronAPI.theme.onUpdate(applyTheme);
+            }
+        });
+    </script>
+</body>
+
+</html>
