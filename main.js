@@ -356,6 +356,7 @@ const PROFILE_CAPTURE_COOLDOWN_MS = 60 * 1000;
 const PROFILE_REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const UPDATE_REMINDER_DELAY_MS = 60 * 60 * 1000; // 1 hour
 const UPDATER_INITIALIZATION_DELAY_MS = 5 * 1000; // 5 seconds
+const UPDATE_FOUND_DISPLAY_DURATION_MS = 1500; // 1.5 seconds - how long to show "update available" message before starting download
 const MAX_UPDATE_CHECK_RETRIES = 3; // Maximum retries for update check when reminder is pending
 const profileCaptureTimestamps = new Map();
 let avatarDirectoryPath = null;
@@ -4005,13 +4006,43 @@ autoUpdater.on('update-available', async (info) => {
         // Auto-install mode: Start downloading immediately
         console.log('Auto-install enabled, starting download...');
         
-        // Close update window if it's open (in case of manual check)
-        if (updateWin) {
-            updateWin.close();
+        // If update window is open (manual check), show brief update found message before transitioning
+        if (updateWin && !updateWin.isDestroyed()) {
+            // Show update available message briefly to inform user
+            updateWin.webContents.send('update-info', {
+                status: 'update-available',
+                version: info.version,
+                releaseNotesHTML: `<p>Automatic download will start shortly...</p>`
+            });
+            
+            // After configured duration, close updateWin and open installUpdateWin
+            setTimeout(() => {
+                try {
+                    if (updateWin && !updateWin.isDestroyed()) {
+                        updateWin.close();
+                    }
+                    openInstallUpdateWindow();
+                    autoUpdater.downloadUpdate();
+                } catch (error) {
+                    console.error('Error starting auto-update download:', error);
+                    // If download fails, show error in update window if it still exists
+                    if (updateWin && !updateWin.isDestroyed()) {
+                        updateWin.webContents.send('update-info', {
+                            status: 'error',
+                            message: 'Failed to start download: ' + (error.message || 'Unknown error')
+                        });
+                    }
+                }
+            }, UPDATE_FOUND_DISPLAY_DURATION_MS);
+        } else {
+            // No update window open (automatic background check)
+            try {
+                openInstallUpdateWindow();
+                autoUpdater.downloadUpdate();
+            } catch (error) {
+                console.error('Error starting auto-update download (background):', error);
+            }
         }
-        
-        openInstallUpdateWindow();
-        autoUpdater.downloadUpdate();
     } else {
         // Manual mode: Show the update available dialog
         if (!updateWin) {
@@ -4223,7 +4254,9 @@ ipcMain.on('install-update-now', () => {
     settings.pendingUpdateInfo = null;
     saveSettings(settings);
     
-    autoUpdater.quitAndInstall();
+    // Use silent install (isSilent=true) and force run after (isForceRunAfter=true)
+    // This will install the update silently without showing the NSIS wizard
+    autoUpdater.quitAndInstall(true, true);
 });
 
 ipcMain.on('remind-later-update', () => {
