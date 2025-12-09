@@ -892,6 +892,17 @@
                 </div>
             </div>
             <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="updateMode-label">Update Installation</strong><span
+                        data-i18n="updateMode-desc">Choose how updates are installed.</span></div>
+                <div id="update-mode-options" class="option-group">
+                    <input type="radio" id="updateMode-auto" name="updateMode" value="auto">
+                    <label for="updateMode-auto" data-i18n="updateMode-auto">Automatic</label>
+
+                    <input type="radio" id="updateMode-manual" name="updateMode" value="manual">
+                    <label for="updateMode-manual" data-i18n="updateMode-manual">Manual</label>
+                </div>
+            </div>
+            <div class="setting-item">
                 <div class="setting-label"><strong data-i18n="disableAutoUpdate-label">Disable Automatic Daily
                         Updates</strong><span data-i18n="disableAutoUpdate-desc">Do not check for updates
                         automatically.</span></div>
@@ -1851,6 +1862,13 @@
 
             document.getElementById('setting-proxyUrl').addEventListener('change', (e) => {
                 electronAPI.updateSetting('proxyUrl', e.target.value.trim());
+            });
+
+            // --- Update Mode Selection ---
+            document.querySelectorAll('input[name="updateMode"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    electronAPI.updateSetting('updateMode', e.target.value);
+                });
             });
 
             // --- Toggle Switches ---
