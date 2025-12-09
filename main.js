@@ -3155,7 +3155,7 @@ async function showInstallConfirmation() {
 
 function checkAndShowPendingUpdateReminder() {
     // Check if there's a pending update reminder from a previous session
-    if (settings.updateInstallReminderTime && updateInfo) {
+    if (settings.updateInstallReminderTime) {
         // Validate the timestamp
         const reminderTime = new Date(settings.updateInstallReminderTime);
         
@@ -3164,6 +3164,31 @@ function checkAndShowPendingUpdateReminder() {
             console.error('Invalid update reminder timestamp, clearing it');
             settings.updateInstallReminderTime = null;
             saveSettings(settings);
+            return;
+        }
+        
+        // Restore updateInfo from settings if available
+        if (!updateInfo && settings.pendingUpdateInfo) {
+            updateInfo = settings.pendingUpdateInfo;
+            console.log('Restored pending update info from settings:', updateInfo.version);
+        }
+        
+        // If we still don't have updateInfo, we need to check for updates first
+        if (!updateInfo) {
+            console.log('No update info available, checking for updates before showing reminder');
+            // Schedule a check after autoUpdater is ready
+            setTimeout(async () => {
+                try {
+                    await autoUpdater.checkForUpdates();
+                    // After update check, re-run this function
+                    checkAndShowPendingUpdateReminder();
+                } catch (error) {
+                    console.error('Failed to check for updates for pending reminder:', error.message);
+                    // Clear the reminder if we can't check for updates
+                    settings.updateInstallReminderTime = null;
+                    saveSettings(settings);
+                }
+            }, 5000); // Wait 5 seconds for app to fully initialize
             return;
         }
         
@@ -3846,6 +3871,13 @@ app.on('before-quit', () => {
 app.on('will-quit', () => {
     isQuitting = true;
     globalShortcut.unregisterAll();
+    
+    // Clear update reminder timeout
+    if (reminderTimeoutId) {
+        clearTimeout(reminderTimeoutId);
+        reminderTimeoutId = null;
+    }
+    
     try {
         if (mcpProxyProcess && !mcpProxyProcess.killed) {
             process.kill(mcpProxyProcess.pid);
@@ -3949,6 +3981,14 @@ autoUpdater.on('checking-for-update', () => {
 autoUpdater.on('update-available', async (info) => {
     updateInfo = info; // Store update info
     
+    // Persist updateInfo to settings for recovery after restart
+    settings.pendingUpdateInfo = {
+        version: info.version,
+        releaseNotes: info.releaseNotes || '',
+        releaseDate: info.releaseDate || ''
+    };
+    saveSettings(settings);
+    
     // Check if auto-install is enabled
     const autoInstall = settings.autoInstallUpdates !== false;
     
@@ -4050,9 +4090,15 @@ autoUpdater.on('download-progress', (progressObj) => {
 autoUpdater.on('update-downloaded', async () => {
     sendUpdateStatus('downloaded');
     
-    // If auto-install window is open, show install confirmation with changelog
-    if (installUpdateWin && !installUpdateWin.isDestroyed() && updateInfo) {
+    // Show install confirmation with changelog
+    if (updateInfo) {
+        // Make sure install window exists
+        if (!installUpdateWin || installUpdateWin.isDestroyed()) {
+            openInstallUpdateWindow();
+        }
         showInstallConfirmation();
+    } else {
+        console.error('Update downloaded but no update info available');
     }
 });
 
@@ -4163,6 +4209,11 @@ ipcMain.on('request-last-notification', async (event) => {
 });
 
 ipcMain.on('install-update-now', () => {
+    // Clear pending update info and reminder
+    settings.updateInstallReminderTime = null;
+    settings.pendingUpdateInfo = null;
+    saveSettings(settings);
+    
     autoUpdater.quitAndInstall();
 });
 
