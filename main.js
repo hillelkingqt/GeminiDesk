@@ -3874,6 +3874,12 @@ autoUpdater.on('update-available', async (info) => {
     if (autoInstall) {
         // Auto-install mode: Start downloading immediately
         console.log('Auto-install enabled, starting download...');
+        
+        // Close update window if it's open (in case of manual check)
+        if (updateWin) {
+            updateWin.close();
+        }
+        
         openInstallUpdateWindow();
         autoUpdater.downloadUpdate();
     } else {
