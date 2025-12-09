@@ -2181,19 +2181,25 @@ function createWindow(state = null) {
         }
     });
 
-    newWin.on('resize', async () => {
+    // Helper function to update BrowserView bounds
+    const updateViewBounds = async (saveScroll = true, restoreScroll = true) => {
         const view = newWin.getBrowserView();
         if (view && view.webContents && !view.webContents.isDestroyed()) {
-            // Update BrowserView bounds on resize using content bounds for accuracy
             const contentBounds = newWin.getContentBounds();
             view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
             
-            try {
-                const scrollY = await view.webContents.executeJavaScript(
-                    `(document.scrollingElement || document.documentElement).scrollTop`
-                );
-                newWin.savedScrollPosition = scrollY;
-                
+            if (saveScroll) {
+                try {
+                    const scrollY = await view.webContents.executeJavaScript(
+                        `(document.scrollingElement || document.documentElement).scrollTop`
+                    );
+                    newWin.savedScrollPosition = scrollY;
+                } catch (e) {
+                    // Ignore errors
+                }
+            }
+            
+            if (restoreScroll) {
                 // Restore scroll position after resize
                 setTimeout(async () => {
                     if (view && !view.webContents.isDestroyed()) {
@@ -2206,10 +2212,41 @@ function createWindow(state = null) {
                         }
                     }
                 }, 100);
-            } catch (e) {
-                // Ignore errors
             }
         }
+    };
+
+    // Handle resize event (fires during resize)
+    newWin.on('resize', () => {
+        updateViewBounds(true, true);
+    });
+
+    // Handle resized event (fires after resize completes - crucial for Windows snap with Win+Arrow keys)
+    newWin.on('resized', () => {
+        updateViewBounds(false, true);
+    });
+
+    // Handle moved event (fires after window position changes - may accompany snap operations)
+    newWin.on('moved', () => {
+        const view = newWin.getBrowserView();
+        if (view && view.webContents && !view.webContents.isDestroyed()) {
+            const contentBounds = newWin.getContentBounds();
+            view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+        }
+    });
+
+    // Handle will-resize event (fires before resize - immediate bounds update for Windows snap)
+    newWin.on('will-resize', (event, newBounds) => {
+        // Force immediate update during resize to prevent blank content
+        setTimeout(() => {
+            if (newWin && !newWin.isDestroyed()) {
+                const view = newWin.getBrowserView();
+                if (view) {
+                    const contentBounds = newWin.getContentBounds();
+                    view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+                }
+            }
+        }, 0);
     });
 
     // Handle maximize/unmaximize to ensure BrowserView bounds are correct
@@ -2234,6 +2271,20 @@ function createWindow(state = null) {
                     const contentBounds = newWin.getContentBounds();
                     view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
                     console.log('Unmaximize: Updated BrowserView bounds to', contentBounds.width, 'x', contentBounds.height - 30);
+                }
+            }
+        }, 50);
+    });
+
+    // Handle focus event to ensure BrowserView bounds are correct after snap operations
+    newWin.on('focus', () => {
+        // Small delay to allow Windows snap animation to complete
+        setTimeout(() => {
+            if (newWin && !newWin.isDestroyed()) {
+                const view = newWin.getBrowserView();
+                if (view) {
+                    const contentBounds = newWin.getContentBounds();
+                    view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
                 }
             }
         }, 50);
