@@ -59,7 +59,6 @@
       }
     ],
     "updaterCacheDirName": "gemini-desk-updater",
-    "disableWebInstaller": true,
     "mac": {
       "target": [
         "dmg",
