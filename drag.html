@@ -66,8 +66,34 @@
             text-overflow: ellipsis;
             max-width: calc(100% - 150px);
             -webkit-app-region: drag;
-            animation: fadeIn 1s ease-in-out;
-            /* Direction will be set dynamically based on content */
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        #chat-title.fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        #chat-title.generating {
+            font-style: italic;
+            color: var(--accent-glow);
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        #chat-title.loading {
+            font-weight: 500;
+            color: var(--accent-glow);
+            animation: loadingDots 1.4s infinite ease-in-out;
+            position: relative;
+        }
+
+        #chat-title.loading::after {
+            content: '...';
+            position: absolute;
+            animation: dots 1.4s infinite steps(4);
+        }
+
+        #chat-title.slide-in {
+            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         @keyframes fadeIn {
@@ -79,6 +105,37 @@
             to {
                 opacity: 1;
                 transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        @keyframes loadingDots {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+
+        @keyframes fadeUp {
+            0% {
+                opacity: 0;
+                transform: translateY(15px) scale(0.98);
+                filter: blur(2px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
             }
         }
 
@@ -478,6 +535,24 @@
             const defaultButtonOrder = ['mode-toggle-button', 'minimize-button', 'new-window-button', 'fullscreen-button', 'export-chat-button', 'settings-button'];
 
             const newChatTitles = new Set(Object.values(translations).map(t => t['new-chat']));
+            
+            // Save color before window closes
+            window.addEventListener('beforeunload', () => {
+                if (lastBackgroundColor && currentAppMode) {
+                    saveColor(currentAppMode, lastBackgroundColor);
+                    console.log(`Saving ${currentAppMode} color before window close:`, lastBackgroundColor);
+                }
+            });
+            
+            // Handle Ctrl+W to save color before closing
+            window.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'w') {
+                    if (lastBackgroundColor && currentAppMode) {
+                        saveColor(currentAppMode, lastBackgroundColor);
+                        console.log(`Saving ${currentAppMode} color on Ctrl+W:`, lastBackgroundColor);
+                    }
+                }
+            });
 
             function getTranslation(key, lang) {
                 return (translations[lang] && translations[lang][key]) || translations['en'][key];
@@ -610,6 +685,11 @@
 
             // Mode toggle button - switch between Gemini and AI Studio
             function updateModeToggleUI(mode) {
+                // Save current mode color before switching
+                if (lastBackgroundColor && currentAppMode) {
+                    saveColor(currentAppMode, lastBackgroundColor);
+                }
+                
                 currentAppMode = mode;
                 const geminiIcon = modeToggleButton.querySelector('.gemini-icon');
                 const aistudioIcon = modeToggleButton.querySelector('.aistudio-icon');
@@ -625,6 +705,9 @@
                     aistudioIcon.classList.remove('active');
                     modeToggleButton.setAttribute('data-tooltip', 'Switch to AI Studio mode');
                 }
+                
+                // Apply saved color for new mode
+                setTimeout(applySavedColor, 100);
             }
 
             modeToggleButton.addEventListener('click', () => {
@@ -643,12 +726,41 @@
             });
 
             window.chatAPI.onTitleUpdate((title) => {
-                if (!title || newChatTitles.has(title)) {
-                    latestTitle = '__NEW_CHAT__';
-                } else {
-                    latestTitle = title;
+                const titleEl = document.getElementById('chat-title');
+                
+                if (title === 'Generating title...') {
+                    // Use translation if available, or default
+                    const lang = document.documentElement.lang || 'en';
+                    const generatingText = getTranslation('generating-title', lang) || 'Generating title...';
+                    
+                    // Only update if different
+                    if (titleEl.textContent !== generatingText) {
+                        titleEl.textContent = generatingText;
+                        titleEl.classList.add('generating');
+                        titleEl.classList.remove('fade-in');
+                    }
+                    return;
                 }
-                updateTitleUI();
+
+                titleEl.classList.remove('generating');
+
+                if (!title || newChatTitles.has(title)) {
+                    if (latestTitle !== '__NEW_CHAT__') {
+                        latestTitle = '__NEW_CHAT__';
+                        updateTitleUI();
+                    }
+                } else {
+                    // Only update if title actually changed
+                    if (latestTitle !== title) {
+                        latestTitle = title;
+                        updateTitleUI();
+                        
+                        // Trigger animation if title changed
+                        titleEl.classList.remove('fade-in');
+                        void titleEl.offsetWidth; // trigger reflow
+                        titleEl.classList.add('fade-in');
+                    }
+                }
             });
 
             window.electronAPI.onLanguageChanged(async (lang) => {
@@ -663,6 +775,47 @@
 
             // Sync drag bar color with main site background
             let lastBackgroundColor = null;
+            let savedColors = {
+                gemini: null,
+                aistudio: null
+            };
+            
+            // Load saved colors from localStorage
+            function loadSavedColors() {
+                try {
+                    const saved = localStorage.getItem('savedBackgroundColors');
+                    if (saved) {
+                        savedColors = JSON.parse(saved);
+                        console.log('Loaded saved colors:', savedColors);
+                    }
+                } catch (err) {
+                    console.error('Error loading saved colors:', err);
+                }
+            }
+            
+            // Save colors to localStorage
+            function saveColor(mode, color) {
+                try {
+                    savedColors[mode] = color;
+                    localStorage.setItem('savedBackgroundColors', JSON.stringify(savedColors));
+                    console.log(`Saved ${mode} color:`, color);
+                } catch (err) {
+                    console.error('Error saving color:', err);
+                }
+            }
+            
+            // Apply saved color on startup if available
+            function applySavedColor() {
+                const savedColor = savedColors[currentAppMode];
+                if (savedColor) {
+                    console.log(`Applying saved ${currentAppMode} color:`, savedColor);
+                    const topBar = document.querySelector('.top-bar');
+                    if (topBar) {
+                        topBar.style.backgroundColor = savedColor;
+                        lastBackgroundColor = savedColor;
+                    }
+                }
+            }
             
             async function syncBackgroundColor() {
                 try {
@@ -695,18 +848,409 @@
                         if (topBar) {
                             topBar.style.backgroundColor = bgColor;
                             lastBackgroundColor = bgColor;
+                            // Save the color for the current mode
+                            saveColor(currentAppMode, bgColor);
                         }
                     }
                 } catch (err) {
                     console.error('Error syncing background color:', err);
                 }
             }
+            
+            // Random interval save function
+            function scheduleRandomSave() {
+                // Random interval between 30-60 seconds
+                const randomInterval = 30000 + Math.random() * 30000;
+                setTimeout(() => {
+                    if (lastBackgroundColor) {
+                        saveColor(currentAppMode, lastBackgroundColor);
+                        console.log(`Random save of ${currentAppMode} color:`, lastBackgroundColor);
+                    }
+                    scheduleRandomSave(); // Schedule next random save
+                }, randomInterval);
+            }
+            
+            // Load saved colors on startup
+            loadSavedColors();
+            
+            // Apply saved color immediately if available
+            setTimeout(applySavedColor, 100);
 
             // Initial sync after page loads
             setTimeout(syncBackgroundColor, 500);
 
             // Check every 500ms for color changes
             setInterval(syncBackgroundColor, 500);
+            
+            // Start random save scheduler
+            scheduleRandomSave();
+
+            // ========== SMART CHAT TITLE MONITORING SYSTEM ==========
+            // This system monitors the Gemini page title in real-time and updates drag.html automatically
+            // It works alongside the old system as a backup
+            
+            let lastMonitoredTitle = null;
+            let isWaitingForTitle = false;
+            let messageSendDetected = false;
+            let titleMonitoringInterval = null;
+            let isInitialLoad = true; // Track if this is the first load
+
+            // Function to get title directly from the Gemini page (primary method - span.conversation-title)
+            async function getTitleFromGeminiPage() {
+                try {
+                    const title = await window.electronAPI.executeInMainView(`
+                        (() => {
+                            try {
+                                // PRIMARY: Look for the conversation title span element
+                                const titleSpan = document.querySelector('span.conversation-title');
+                                if (titleSpan) {
+                                    const text = titleSpan.textContent.trim();
+                                    if (text) return text;
+                                }
+                                
+                                return null;
+                            } catch (e) {
+                                return null;
+                            }
+                        })()
+                    `);
+                    
+                    return title;
+                } catch (err) {
+                    console.error('Error getting title from Gemini page:', err);
+                    return null;
+                }
+            }
+
+            // Function to get title from nav bar (fallback method)
+            async function getTitleFromNavBar() {
+                try {
+                    const title = await window.electronAPI.executeInMainView(`
+                        (() => {
+                            try {
+                                // Fallback: Look in nav bar and other locations
+                                const selectors = [
+                                    '.conversation-title',
+                                    '[data-test-id="conversation-title"]',
+                                    'h1.conversation-title',
+                                    '.chat-title'
+                                ];
+                                
+                                for (const selector of selectors) {
+                                    const el = document.querySelector(selector);
+                                    if (el) {
+                                        const t = (el.textContent || el.innerText || '').trim();
+                                        if (t) return t;
+                                    }
+                                }
+                                
+                                return null;
+                            } catch (e) {
+                                return null;
+                            }
+                        })()
+                    `);
+                    
+                    return title;
+                } catch (err) {
+                    console.error('Error getting title from nav bar:', err);
+                    return null;
+                }
+            }
+
+            // Detect if user sent a message (using MutationObserver on chat history)
+            async function detectMessageSend() {
+                try {
+                    await window.electronAPI.executeInMainView(`
+                        (() => {
+                            if (window.__titleMonitorInstalled) return;
+                            window.__titleMonitorInstalled = true;
+                            
+                            // 1. Watch for new user messages in the chat history
+                            const observeChatHistory = () => {
+                                // Find the chat history container
+                                const historyContainer = document.querySelector('infinite-scroller, .chat-history, ms-autoscroll-container');
+                                
+                                if (historyContainer && !historyContainer.__titleMonitorObserver) {
+                                    console.log('Attaching observer to chat history');
+                                    
+                                    const observer = new MutationObserver((mutations) => {
+                                        for (const mutation of mutations) {
+                                            if (mutation.addedNodes.length) {
+                                                // Check if added node is a user query
+                                                const added = mutation.addedNodes[0];
+                                                if (added && added.nodeType === 1) {
+                                                    // Check for user query classes or attributes
+                                                    if (added.tagName === 'USER-QUERY' || 
+                                                        added.classList?.contains('user-query-container') ||
+                                                        added.querySelector?.('.user-query-container') ||
+                                                        added.querySelector?.('.query-text')) {
+                                                        
+                                                        window.__messageSent = true;
+                                                        console.log('Message send detected via DOM mutation');
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    });
+                                    
+                                    observer.observe(historyContainer, { childList: true, subtree: true });
+                                    historyContainer.__titleMonitorObserver = observer;
+                                }
+                            };
+                            
+                            // 2. Watch for URL changes (often happens when new chat is created)
+                            let lastUrl = location.href;
+                            setInterval(() => {
+                                if (location.href !== lastUrl) {
+                                    lastUrl = location.href;
+                                    // If URL changed from /app to /app/..., it might be a new chat creation
+                                    if (lastUrl.includes('/app/')) {
+                                        // We don't set messageSent here, but we could trigger a title check
+                                    }
+                                }
+                                // Re-attach observer if lost (e.g. navigation)
+                                observeChatHistory();
+                            }, 1000);
+                            
+                            // 3. Fallback: Watch for Enter key in input areas (keep this as backup)
+                            const checkTextInput = () => {
+                                const textarea = document.querySelector('rich-textarea .ql-editor, .text-input-field textarea, [contenteditable="true"][role="textbox"]');
+                                if (textarea && !textarea.__titleMonitorListener) {
+                                    textarea.__titleMonitorListener = true;
+                                    textarea.addEventListener('keydown', (e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            window.__messageSent = true;
+                                            console.log('Message send detected via Enter key');
+                                        }
+                                    });
+                                }
+                            };
+                            
+                            // 4. Fallback: Watch for send button clicks
+                            const checkSendButton = () => {
+                                const sendButton = document.querySelector('button.send-button, button[aria-label*="Send"]');
+                                if (sendButton && !sendButton.__titleMonitorListener) {
+                                    sendButton.__titleMonitorListener = true;
+                                    sendButton.addEventListener('click', () => {
+                                        window.__messageSent = true;
+                                        console.log('Message send detected via button');
+                                    });
+                                }
+                            };
+                            
+                            // Initial setup
+                            observeChatHistory();
+                            checkTextInput();
+                            checkSendButton();
+                            
+                            // Periodic checks
+                            setInterval(() => {
+                                checkTextInput();
+                                checkSendButton();
+                            }, 2000);
+                        })()
+                    `);
+                } catch (err) {
+                    console.error('Error setting up message send detection:', err);
+                }
+            }
+
+            // Check if message was sent
+            async function checkMessageSent() {
+                try {
+                    const wasSent = await window.electronAPI.executeInMainView(`
+                        (() => {
+                            const sent = window.__messageSent || false;
+                            window.__messageSent = false; // Reset
+                            return sent;
+                        })()
+                    `);
+                    return wasSent;
+                } catch (err) {
+                    return false;
+                }
+            }
+
+            // Update title with animation
+            function updateTitleWithAnimation(newTitle, isFromLoading = false) {
+                const titleEl = document.getElementById('chat-title');
+                
+                // Use the new title
+                const displayTitle = newTitle || getTranslation('new-chat', document.documentElement.lang || 'en');
+                
+                // Check if the title is actually different from current
+                const currentTitle = titleEl.textContent;
+                if (currentTitle === displayTitle) {
+                    console.log('Title unchanged, skipping animation:', displayTitle);
+                    return; // Don't animate if it's the same title
+                }
+                
+                console.log('Title changed from "' + currentTitle + '" to "' + displayTitle + '", animating...');
+                
+                // Remove all animation classes
+                titleEl.classList.remove('generating', 'loading', 'fade-in', 'slide-in');
+                
+                // Set the new title
+                titleEl.textContent = displayTitle;
+                
+                // Apply appropriate animation
+                if (isFromLoading) {
+                    // Slide in animation when coming from loading state
+                    void titleEl.offsetWidth; // Force reflow
+                    titleEl.classList.add('slide-in');
+                } else {
+                    // Fade in for regular updates
+                    void titleEl.offsetWidth; // Force reflow
+                    titleEl.classList.add('fade-in');
+                }
+                
+                // Update direction based on content
+                const direction = detectTextDirection(displayTitle);
+                titleEl.style.direction = direction;
+            }
+
+            // Main monitoring function
+            async function monitorTitleChanges() {
+                // Ensure detection script is installed (in case of page reload/navigation)
+                await detectMessageSend();
+
+                // Check if message was sent
+                const wasSent = await checkMessageSent();
+                
+                if (wasSent && !isWaitingForTitle) {
+                    const currentTitle = await getTitleFromGeminiPage();
+                    
+                    // Check if we're on a "New chat" and user sent a message
+                    if (currentTitle === 'New chat' || newChatTitles.has(currentTitle) || !currentTitle) {
+                        console.log('Message sent on new chat - showing loading state and waiting 5 seconds for span.conversation-title');
+                        isWaitingForTitle = true;
+                        messageSendDetected = true;
+                        
+                        // Show loading state
+                        const titleEl = document.getElementById('chat-title');
+                        titleEl.classList.remove('fade-in', 'slide-in');
+                        titleEl.classList.add('loading');
+                        const lang = document.documentElement.lang || 'en';
+                        const loadingText = getTranslation('generating-title', lang) || 'Loading';
+                        titleEl.textContent = loadingText;
+                        
+                        // Wait 5 seconds, then try fallback if still waiting
+                        setTimeout(async () => {
+                            if (isWaitingForTitle) {
+                                console.log('5 seconds passed, trying nav bar fallback...');
+                                const fallbackTitle = await getTitleFromNavBar();
+                                if (fallbackTitle && !newChatTitles.has(fallbackTitle) && fallbackTitle !== 'New chat') {
+                                    console.log('Found title via nav bar fallback:', fallbackTitle);
+                                    isWaitingForTitle = false;
+                                    messageSendDetected = false;
+                                    lastMonitoredTitle = fallbackTitle;
+                                    updateTitleWithAnimation(fallbackTitle, true);
+                                    latestTitle = fallbackTitle;
+                                }
+                            }
+                        }, 5000);
+                    }
+                }
+                
+                // Get current title from Gemini page (primary method only)
+                const currentTitle = await getTitleFromGeminiPage();
+                
+                // Check if title changed
+                if (currentTitle && currentTitle !== lastMonitoredTitle) {
+                    // Ignore "New chat" titles unless we're not in loading state
+                    const isNewChat = currentTitle === 'New chat' || newChatTitles.has(currentTitle);
+                    
+                    if (!isNewChat || !isWaitingForTitle) {
+                        console.log('Title changed from', lastMonitoredTitle, 'to', currentTitle);
+                        
+                        if (!isNewChat && isWaitingForTitle) {
+                            // We got a real title after loading state!
+                            console.log('Real title appeared after loading:', currentTitle);
+                            lastMonitoredTitle = currentTitle;
+                            isWaitingForTitle = false;
+                            messageSendDetected = false;
+                            updateTitleWithAnimation(currentTitle, true);
+                            
+                            // Update the old system too
+                            latestTitle = currentTitle;
+                        } else if (!isWaitingForTitle) {
+                            // Regular title update - only if it's truly different and not a "New chat"
+                            if (!isNewChat) {
+                                lastMonitoredTitle = currentTitle;
+                                updateTitleWithAnimation(currentTitle, false);
+                                latestTitle = currentTitle;
+                            }
+                        }
+                    } else if (isNewChat && !isWaitingForTitle) {
+                        // Reset to new chat when not waiting for title - but don't overwrite if we already have a real title
+                        if (latestTitle === '__NEW_CHAT__' || lastMonitoredTitle === null) {
+                            lastMonitoredTitle = currentTitle;
+                            latestTitle = '__NEW_CHAT__';
+                            updateTitleUI();
+                        }
+                    }
+                }
+            }
+
+            // Start the monitoring system
+            function startTitleMonitoring() {
+                console.log('Starting smart title monitoring system...');
+                
+                // Set up message send detection
+                detectMessageSend();
+                
+                // Monitor title changes every 500ms
+                if (titleMonitoringInterval) {
+                    clearInterval(titleMonitoringInterval);
+                }
+                
+                titleMonitoringInterval = setInterval(monitorTitleChanges, 500);
+                
+                // Initial check - but only set to "New chat" on first load if no title exists
+                setTimeout(async () => {
+                    if (isInitialLoad) {
+                        const currentTitle = await getTitleFromGeminiPage();
+                        const isNewChat = !currentTitle || currentTitle === 'New chat' || newChatTitles.has(currentTitle);
+                        
+                        if (isNewChat) {
+                            // First load with new chat - set to "New chat"
+                            console.log('Initial load: Setting to New chat');
+                            lastMonitoredTitle = 'New chat';
+                            latestTitle = '__NEW_CHAT__';
+                            updateTitleUI();
+                        } else {
+                            // First load with existing chat - use that title
+                            console.log('Initial load: Found existing chat title:', currentTitle);
+                            lastMonitoredTitle = currentTitle;
+                            latestTitle = currentTitle;
+                            updateTitleWithAnimation(currentTitle, false);
+                        }
+                        
+                        isInitialLoad = false;
+                    }
+                    
+                    monitorTitleChanges();
+                }, 1000);
+            }
+
+            // Initialize monitoring system when page loads
+            setTimeout(() => {
+                if (window.electronAPI && window.electronAPI.executeInMainView) {
+                    startTitleMonitoring();
+                    console.log('✓ Smart title monitoring system initialized');
+                }
+            }, 1500);
+
+            // Re-initialize if window regains focus
+            window.addEventListener('focus', () => {
+                if (titleMonitoringInterval && window.electronAPI) {
+                    console.log('Window focused - refreshing title monitoring');
+                    monitorTitleChanges();
+                }
+            });
+
+            // ========== END SMART TITLE MONITORING SYSTEM ==========
         });
     </script>
 

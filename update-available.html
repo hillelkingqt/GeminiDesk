@@ -5,540 +5,284 @@
     <meta charset="UTF-8">
     <title>Update Available</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
 
         :root {
-            /* Colors & Theme Tokens matching settings.html */
-            --bg-primary: #0f111a;
-            --text-primary: #ffffff;
-            --text-secondary: #94a3b8;
-            --text-tertiary: #64748b;
-
-            /* Glass Effect */
-            --glass-surface: rgba(30, 30, 35, 0.7);
+            /* Gemini Dark Palette (Matching Settings) */
+            --bg-root: #131314;
+            --glass-surface: #1e1f20;
             --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-highlight: rgba(255, 255, 255, 0.05);
-
-            /* Accents */
-            --accent-primary: #818cf8;
-            --accent-secondary: #c084fc;
-            --accent-gradient: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
-            --accent-glow: rgba(129, 140, 248, 0.25);
-
-            /* Status */
-            --success: #34d399;
-            --error: #f43f5e;
-
-            /* Spacing & Radius */
-            --radius-lg: 16px;
-            --radius-xl: 24px;
+            
+            --text-primary: #e3e3e3;
+            --text-secondary: #9aa0a6;
+            
+            --accent-primary: #8ab4f8;
+            --accent-gradient: linear-gradient(135deg, #8ab4f8 0%, #c58af9 100%);
+            
+            --success-color: #81c995;
+            --error-color: #f28b82;
+            
+            --radius-xl: 28px;
+            --radius-lg: 20px;
+            
+            --shadow-lg: 0 20px 50px rgba(0,0,0,0.5);
         }
 
         html.light-mode {
-            --bg-primary: #f8fafc;
-            --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --text-tertiary: #94a3b8;
-
-            --glass-surface: rgba(255, 255, 255, 0.75);
-            --glass-border: rgba(0, 0, 0, 0.06);
-            --glass-highlight: rgba(255, 255, 255, 0.5);
-
-            --accent-primary: #6366f1;
-            --accent-secondary: #a855f7;
-            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-            --accent-glow: rgba(99, 102, 241, 0.2);
+            --bg-root: #ffffff;
+            --glass-surface: #f8f9fa;
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --accent-primary: #1a73e8;
+            --accent-gradient: linear-gradient(135deg, #1a73e8 0%, #8430ce 100%);
+            --shadow-lg: 0 20px 50px rgba(0,0,0,0.15);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
 
         body {
-            font-family: 'Outfit', sans-serif;
-            background: var(--bg-primary);
+            font-family: 'Google Sans', sans-serif;
+            background: transparent; /* Transparent for window transparency */
             color: var(--text-primary);
             height: 100vh;
-            width: 100vw;
-            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            user-select: none;
+            overflow: hidden;
         }
 
-        /* Background Ambience */
-        .ambient-bg {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.15;
-            animation: float 15s ease-in-out infinite;
-        }
-
-        .orb-1 {
-            width: 500px;
-            height: 500px;
-            background: var(--accent-primary);
-            top: -10%;
-            left: -10%;
-        }
-
-        .orb-2 {
-            width: 400px;
-            height: 400px;
-            background: var(--accent-secondary);
-            bottom: -10%;
-            right: -10%;
-            animation-delay: -5s;
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translate(0, 0);
-            }
-
-            50% {
-                transform: translate(30px, 30px);
-            }
-        }
-
-        /* Main Card */
-        .update-card {
-            width: 90%;
-            max-width: 600px;
-            height: 90vh;
-            background: var(--glass-surface);
-            backdrop-filter: blur(40px) saturate(180%);
-            -webkit-backdrop-filter: blur(40px) saturate(180%);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-xl);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2), inset 0 0 0 1px var(--glass-highlight);
+        .window-frame {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-root);
             display: flex;
             flex-direction: column;
             position: relative;
-            animation: cardEnter 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
-            -webkit-app-region: no-drag;
-            overflow: hidden;
-            /* Hide overflow on the card itself */
+            border: 1px solid var(--glass-border);
         }
 
-        /* Scrollable Content Wrapper */
-        .content-wrapper {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 40px;
-            padding-bottom: 100px;
-            /* Space for sticky buttons */
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Custom Scrollbar */
-        .content-wrapper::-webkit-scrollbar {
-            width: 6px;
-            /* Thinner scrollbar */
-        }
-
-        .content-wrapper::-webkit-scrollbar-track {
-            background: transparent;
-            margin: 20px 0;
-            /* Add margin to track */
-        }
-
-        .content-wrapper::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
-        }
-
-        .content-wrapper::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        /* Drag Area */
-        .drag-handle {
-            height: 30px;
+        .drag-region {
+            height: 32px;
             width: 100%;
+            -webkit-app-region: drag;
             position: absolute;
             top: 0;
             left: 0;
             z-index: 100;
-            -webkit-app-region: drag;
-            flex-shrink: 0;
         }
 
-        @keyframes cardEnter {
-            from {
-                opacity: 0;
-                transform: scale(0.95) translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+            overflow: hidden;
         }
 
         /* States */
         .state-view {
-            width: 100%;
-            min-height: 100%;
-            /* Ensure it takes full height */
             display: none;
-            /* Hidden by default */
             flex-direction: column;
-            /* Padding moved to content-wrapper */
+            height: 100%;
+            animation: slideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .state-view.active { display: flex; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .state-view.active {
+        /* Typography & Icons */
+        .icon-box {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(138, 180, 248, 0.1);
             display: flex;
-            animation: fadeContent 0.4s ease forwards;
-        }
-
-        @keyframes fadeContent {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Header Section (Icon + Title) */
-        .header-section {
-            text-align: center;
-            margin-bottom: 30px;
-            flex-shrink: 0;
-        }
-
-        .status-icon {
-            width: 64px;
-            height: 64px;
-            margin-bottom: 20px;
-            color: var(--accent-primary);
-        }
-
-        .main-title {
-            font-size: 26px;
-            /* Reduced font size */
-            font-weight: 700;
-            margin-bottom: 8px;
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.5px;
-        }
-
-        .sub-text {
-            font-size: 16px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-        }
-
-        .version-pill {
-            display: inline-flex;
             align-items: center;
-            padding: 6px 16px;
-            background: rgba(129, 140, 248, 0.1);
-            border: 1px solid rgba(129, 140, 248, 0.2);
-            border-radius: 20px;
+            justify-content: center;
+            margin: 0 auto 24px;
             color: var(--accent-primary);
-            font-weight: 600;
-            font-size: 14px;
-            margin-top: 12px;
+        }
+        
+        .icon-box svg { width: 40px; height: 40px; }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            text-align: center;
         }
 
-        /* Release Notes Area - Expanded */
-        .notes-container {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.2);
-            /* Darker background for contrast */
+        p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-align: center;
+            line-height: 1.5;
+            max-width: 80%;
+            margin: 0 auto;
+        }
+
+        /* Release Notes */
+        .notes-wrapper {
+            flex: 1;
+            background: var(--glass-surface);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius-lg);
             padding: 20px;
-            margin-bottom: 0;
-            /* Removed bottom margin */
-            /* Removed fixed height and overflow to let it grow */
+            margin: 24px 0;
+            overflow-y: auto;
         }
+        
+        .notes-wrapper::-webkit-scrollbar { width: 8px; }
+        .notes-wrapper::-webkit-scrollbar-track { background: transparent; }
+        .notes-wrapper::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
-        .notes-scroll-area {
-            /* Removed nested scrolling */
-            width: 100%;
-        }
+        .notes-content { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+        .notes-content h1, .notes-content h2 { font-size: 16px; color: var(--text-primary); margin: 16px 0 8px; text-align: left; }
+        .notes-content ul { padding-left: 20px; text-align: left; }
+        .notes-content li { margin-bottom: 6px; }
 
-        /* Custom Scrollbar */
-        /* Removed custom scrollbar for notes-scroll-area as it's no longer scrolling */
-
-        /* Markdown Content Styling */
-        .notes-content {
-            color: var(--text-secondary);
-            font-size: 15px;
-            line-height: 1.7;
-        }
-
-        .notes-content h1,
-        .notes-content h2,
-        .notes-content h3 {
-            color: var(--text-primary);
-            margin-top: 24px;
-            margin-bottom: 12px;
-            font-weight: 600;
-        }
-
-        .notes-content h3:first-child {
-            margin-top: 0;
-        }
-
-        .notes-content ul {
-            padding-left: 20px;
-            margin-bottom: 16px;
-        }
-
-        .notes-content li {
-            margin-bottom: 8px;
-            position: relative;
-        }
-
-        .notes-content strong {
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-
-        .notes-content code {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 0.9em;
-        }
-
-        /* Sticky Action Buttons */
+        /* Buttons */
         .actions {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 20px 40px;
-            background: rgba(15, 17, 26, 0.85);
-            /* Dark semi-transparent background */
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid var(--glass-border);
             display: flex;
-            gap: 16px;
-            z-index: 10;
-            border-bottom-left-radius: var(--radius-xl);
-            border-bottom-right-radius: var(--radius-xl);
+            gap: 12px;
+            margin-top: auto;
         }
 
         .btn {
             flex: 1;
-            height: 52px;
-            /* Slightly taller */
+            height: 48px;
             border: none;
-            border-radius: 14px;
-            /* More rounded */
+            border-radius: 24px;
             font-family: inherit;
-            font-size: 15px;
-            font-weight: 600;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.2s, filter 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            position: relative;
-            overflow: hidden;
+            gap: 8px;
         }
+
+        .btn:active { transform: scale(0.96); }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--glass-border);
-            color: var(--text-secondary);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--glass-surface);
             color: var(--text-primary);
-            border-color: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
+            border: 1px solid var(--glass-border);
         }
+        .btn-secondary:hover { background: rgba(255,255,255,0.05); }
 
         .btn-primary {
-            background: var(--accent-gradient);
-            color: white;
-            box-shadow: 0 4px 20px var(--accent-glow);
+            background: var(--accent-primary);
+            color: #000; /* Contrast for light blue */
+            font-weight: 600;
         }
+        html.light-mode .btn-primary { color: #fff; }
+        
+        .btn-primary:hover { filter: brightness(1.1); }
 
-        .btn-primary:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 8px 30px var(--accent-glow);
-        }
-
-        .btn-primary::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(rgba(255, 255, 255, 0.2), transparent);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .btn-primary:hover::after {
-            opacity: 1;
-        }
-
-        /* Centered Layout for Checking/No Update */
+        /* Center Layout */
         .center-layout {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100%;
-            text-align: center;
         }
 
         /* Animations */
-        .spin {
-            animation: spin 2s linear infinite;
-        }
+        .spin { animation: spin 1.5s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .pulse {
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.6;
-            }
+        .version-badge {
+            background: rgba(138, 180, 248, 0.15);
+            color: var(--accent-primary);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 8px;
+            display: inline-block;
         }
     </style>
 </head>
 
 <body>
-    <!-- Ambient Background -->
-    <div class="ambient-bg">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-    </div>
-
-    <!-- Main Window -->
-    <div class="update-card">
-        <div class="drag-handle"></div>
-
-        <!-- 1. Checking State -->
-        <div id="checking-state" class="state-view active">
-            <div class="center-layout">
-                <svg class="status-icon spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                <h1 class="main-title" data-i18n="update-checking-title">Checking for Updates</h1>
-                <p class="sub-text pulse" data-i18n="update-checking-message">Connecting to the mothership...</p>
-            </div>
-        </div>
-
-        <!-- 2. Update Available State -->
-        <div id="update-found-state" class="state-view">
-            <div class="content-wrapper">
-                <div class="header-section">
-                    <div class="status-icon" style="margin: 0 auto 16px auto;">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+    <div class="window-frame">
+        <div class="drag-region"></div>
+        
+        <div class="content-area">
+            
+            <!-- Checking -->
+            <div id="checking-state" class="state-view active">
+                <div class="center-layout">
+                    <div class="icon-box">
+                        <svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2" />
                         </svg>
                     </div>
-                    <h1 class="main-title" data-i18n="update-found-title">New Version Available</h1>
-                    <div id="version" class="version-pill" data-i18n="update-version-text"
-                        data-i18n-version-placeholder="v%VERSION%">v1.0.0</div>
+                    <h1 data-i18n="update-checking-title">Checking for Updates</h1>
+                    <p data-i18n="update-checking-message">We're looking for the latest version...</p>
                 </div>
+            </div>
 
-                <div class="notes-container">
-                    <div id="release-notes" class="notes-content">
-                        <!-- Content injected via JS -->
+            <!-- Found -->
+            <div id="update-found-state" class="state-view">
+                <div style="text-align: center;">
+                    <div class="icon-box" style="width: 60px; height: 60px; margin-bottom: 16px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
                     </div>
+                    <h1 data-i18n="update-found-title">Update Available</h1>
+                    <div id="version" class="version-badge" data-i18n="update-version-text" data-i18n-version-placeholder="v%VERSION%">v1.0.0</div>
+                </div>
+
+                <div class="notes-wrapper">
+                    <div id="release-notes" class="notes-content"></div>
+                </div>
+
+                <div class="actions">
+                    <button id="later-btn" class="btn btn-secondary" data-i18n="update-later-button">Later</button>
+                    <button id="download-btn" class="btn btn-primary" data-i18n="update-download-button">Update Now</button>
                 </div>
             </div>
 
-            <div class="actions">
-                <button id="later-btn" class="btn btn-secondary" data-i18n="update-later-button">
-                    Not Now
-                </button>
-                <button id="download-btn" class="btn btn-primary" data-i18n="update-download-button">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Download Update
-                </button>
+            <!-- No Update -->
+            <div id="no-update-state" class="state-view">
+                <div class="center-layout">
+                    <div class="icon-box" style="color: var(--success-color); background: rgba(129, 201, 149, 0.1);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <h1 data-i18n="update-not-found-title">You're Up to Date</h1>
+                    <p data-i18n="update-not-found-message">Gemini is running the latest version.</p>
+                    <button id="close-btn" class="btn btn-secondary" style="margin-top: 32px; width: 100%;" data-i18n="update-not-found-button">Close</button>
+                </div>
             </div>
-        </div>
 
-        <!-- 3. Up to Date State -->
-        <div id="no-update-state" class="state-view">
-            <div class="center-layout">
-                <svg class="status-icon" style="color: var(--success);" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <h1 class="main-title" data-i18n="update-not-found-title"
-                    style="background: none; -webkit-text-fill-color: var(--success); color: var(--success);">You're Up
-                    to Date</h1>
-                <p class="sub-text" data-i18n="update-not-found-message">You have the latest version installed.</p>
-                <button id="close-btn" class="btn btn-secondary" style="margin-top: 30px; width: 200px;"
-                    data-i18n="update-not-found-button">Close</button>
+            <!-- Error -->
+            <div id="error-state" class="state-view">
+                <div class="center-layout">
+                    <div class="icon-box" style="color: var(--error-color); background: rgba(242, 139, 130, 0.1);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <h1 data-i18n="update-error-title">Update Failed</h1>
+                    <p id="error-message" data-i18n="update-error-message">Something went wrong.</p>
+                    <button id="error-close-btn" class="btn btn-secondary" style="margin-top: 32px; width: 100%;" data-i18n="update-error-button">Close</button>
+                </div>
             </div>
-        </div>
 
-        <!-- 4. Error State -->
-        <div id="error-state" class="state-view">
-            <div class="center-layout">
-                <svg class="status-icon" style="color: var(--error);" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <h1 class="main-title" data-i18n="update-error-title"
-                    style="background: none; -webkit-text-fill-color: var(--error); color: var(--error);">Update Failed
-                </h1>
-                <p id="error-message" class="sub-text" data-i18n="update-error-message">Something went wrong.</p>
-                <button id="error-close-btn" class="btn btn-secondary" style="margin-top: 30px; width: 200px;"
-                    data-i18n="update-error-button">Close</button>
-            </div>
         </div>
-
     </div>
 
     <script src="translations.js"></script>

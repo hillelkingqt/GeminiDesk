@@ -2889,6 +2889,12 @@ function scheduleNotificationCheck() {
 // ================================================================= //
 
 function scheduleDailyUpdateCheck() {
+    // Check if daily update check is disabled in settings
+    if (settings.disableAutoUpdateCheck) {
+        console.log('Automatic update checks are disabled in settings.');
+        return;
+    }
+
     const checkForUpdates = async () => {
         console.log('Checking for updates...');
         try {
@@ -2899,7 +2905,8 @@ function scheduleDailyUpdateCheck() {
     };
 
     checkForUpdates();
-    setInterval(checkForUpdates, 30 * 60 * 1000);
+    // Check for updates once every 24 hours (24 * 60 * 60 * 1000 milliseconds)
+    setInterval(checkForUpdates, 24 * 60 * 60 * 1000);
 }
 
 function openUpdateWindowAndCheck() {
