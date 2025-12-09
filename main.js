@@ -354,6 +354,7 @@ let mcpProxyProcess = null; // Background MCP proxy process
 const detachedViews = new Map();
 const PROFILE_CAPTURE_COOLDOWN_MS = 60 * 1000;
 const PROFILE_REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000;
+const UPDATE_REMINDER_DELAY_MS = 60 * 60 * 1000; // 1 hour
 const profileCaptureTimestamps = new Map();
 let avatarDirectoryPath = null;
 
@@ -3155,7 +3156,17 @@ async function showInstallConfirmation() {
 function checkAndShowPendingUpdateReminder() {
     // Check if there's a pending update reminder from a previous session
     if (settings.updateInstallReminderTime && updateInfo) {
+        // Validate the timestamp
         const reminderTime = new Date(settings.updateInstallReminderTime);
+        
+        // Check if the date is valid
+        if (isNaN(reminderTime.getTime())) {
+            console.error('Invalid update reminder timestamp, clearing it');
+            settings.updateInstallReminderTime = null;
+            saveSettings(settings);
+            return;
+        }
+        
         const now = new Date();
         
         if (now >= reminderTime) {
@@ -4169,19 +4180,19 @@ ipcMain.on('remind-later-update', () => {
     
     // Calculate reminder time (1 hour from now)
     const reminderTime = new Date();
-    reminderTime.setHours(reminderTime.getHours() + 1);
+    reminderTime.setTime(reminderTime.getTime() + UPDATE_REMINDER_DELAY_MS);
     
     // Save reminder time to settings for persistence across restarts
     settings.updateInstallReminderTime = reminderTime.toISOString();
     saveSettings(settings);
     
-    // Set a reminder for 1 hour (3600000 milliseconds)
+    // Set a reminder for 1 hour
     reminderTimeoutId = setTimeout(() => {
         showInstallConfirmation();
         // Clear the reminder from settings
         settings.updateInstallReminderTime = null;
         saveSettings(settings);
-    }, 3600000); // 1 hour
+    }, UPDATE_REMINDER_DELAY_MS);
     
     console.log('Update reminder set for 1 hour from now:', reminderTime.toISOString());
 });

@@ -86,7 +86,8 @@ function getSettings() {
                     // CRITICAL: Force loadUnpackedExtension to false unless explicitly set to true by user
                     loadUnpackedExtension: savedSettings.loadUnpackedExtension === true ? true : false,
                     disableAutoUpdateCheck: savedSettings.disableAutoUpdateCheck === true ? true : false,
-                    autoInstallUpdates: savedSettings.autoInstallUpdates === undefined ? true : savedSettings.autoInstallUpdates
+                    autoInstallUpdates: savedSettings.autoInstallUpdates === undefined ? true : savedSettings.autoInstallUpdates,
+                    updateInstallReminderTime: savedSettings.updateInstallReminderTime || null
                 };
                 return combinedSettings;
             }
