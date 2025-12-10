@@ -2231,22 +2231,23 @@ function createWindow(state = null) {
         const view = newWin.getBrowserView();
         if (view && view.webContents && !view.webContents.isDestroyed()) {
             const contentBounds = newWin.getContentBounds();
-            view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+            if (contentBounds.width > 0 && contentBounds.height > 30) {
+                view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+            }
         }
     });
 
     // Handle will-resize event (fires before resize - immediate bounds update for Windows snap)
     newWin.on('will-resize', (event, newBounds) => {
-        // Force immediate update during resize to prevent blank content
-        setTimeout(() => {
-            if (newWin && !newWin.isDestroyed()) {
-                const view = newWin.getBrowserView();
-                if (view) {
-                    const contentBounds = newWin.getContentBounds();
-                    view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
-                }
+        // Force immediate update to target bounds to prevent blank content or clipping
+        if (newWin && !newWin.isDestroyed()) {
+            const view = newWin.getBrowserView();
+            // Ensure bounds are valid (avoid negative height)
+            if (view && newBounds.width > 0 && newBounds.height > 30) {
+                // Since frame: false, newBounds (window bounds) is roughly content bounds
+                view.setBounds({ x: 0, y: 30, width: newBounds.width, height: newBounds.height - 30 });
             }
-        }, 0);
+        }
     });
 
     // Handle maximize/unmaximize to ensure BrowserView bounds are correct
