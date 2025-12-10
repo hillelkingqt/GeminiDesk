@@ -21,14 +21,14 @@ const crypto = require('crypto');
 const fetch = require('node-fetch');
 const { autoUpdater } = require('electron-updater');
 const AutoLaunch = require('auto-launch');
-const translations = require('./translations.js');
+const translations = require('./translations');
 
 // Path to unpacked extension root (must point to folder that contains manifest.json)
 // In production (packaged app), use process.resourcesPath which points to resources/
-// In dev, use __dirname which is the project root
+// In dev, use __dirname which is the src directory, so we need to go up one level
 const EXT_PATH = app.isPackaged 
-    ? path.join(process.resourcesPath, '0.5.8_0')
-    : path.join(__dirname, '0.5.8_0');
+    ? path.join(process.resourcesPath, 'extension')
+    : path.join(__dirname, '..', 'extension');
 
 // Track loaded extension IDs per label so we can attempt removal later
 const loadedExtensions = new Map(); // label -> extensionId
@@ -267,7 +267,7 @@ async function createAndManageLoginWindowForPartition(loginUrl, targetPartition,
                     const choiceWin = createWindow();
                     if (choiceWin && !choiceWin.isDestroyed()) {
                         try {
-                            choiceWin.loadFile('html/choice.html');
+                            choiceWin.loadFile('src/renderer/choice.html');
                             const choiceSize = { width: 500, height: 450 };
                             choiceWin.setResizable(false);
                             choiceWin.setSize(choiceSize.width, choiceSize.height);
@@ -671,7 +671,7 @@ utils.initialize({ settings });
 // --- Ensure extension is loaded into account partitions (if any) ---
 (async () => {
     try {
-        const extPath = path.join(__dirname, '0.5.8_0');
+        const extPath = path.join(__dirname, '..', 'extension');
         if (!fs.existsSync(extPath)) return;
         if (!settings || !settings.loadUnpackedExtension) {
             console.log('Skipping loading extension into account partitions (user disabled loadUnpackedExtension)');
@@ -1331,11 +1331,11 @@ const shortcutActions = {
             const currentUrl = focusedWindow.webContents.getURL();
             
             // אם אנחנו כבר בעמוד onboarding, נחזיר את ה-view
-            if (currentUrl.includes('html/onboarding.html')) {
+            if (currentUrl.includes('src/renderer/onboarding.html')) {
                 const view = detachedViews.get(focusedWindow);
                 if (view && !view.webContents.isDestroyed()) {
                     // טוען את drag.html קודם, ואז מחזיר את ה-view - בדיוק כמו ב-onboarding-complete
-                    focusedWindow.loadFile('html/drag.html').then(() => {
+                    focusedWindow.loadFile('src/renderer/drag.html').then(() => {
                         focusedWindow.setBrowserView(view);
                         const contentBounds = focusedWindow.getContentBounds();
                         view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
@@ -1399,7 +1399,7 @@ const shortcutActions = {
                     focusedWindow.removeBrowserView(view);
                     detachedViews.set(focusedWindow, view);
                 }
-                focusedWindow.loadFile('html/onboarding.html');
+                focusedWindow.loadFile('src/renderer/onboarding.html');
                 setCanvasMode(false, focusedWindow);
             }
         }
@@ -2387,9 +2387,9 @@ function createWindow(state = null) {
             console.log('Restoring window with specific chat URL:', state.url);
         }
     } else if (!settings.onboardingShown) {
-        newWin.loadFile('html/onboarding.html');
+        newWin.loadFile('src/renderer/onboarding.html');
     } else if (settings.defaultMode === 'ask') {
-        newWin.loadFile('html/choice.html');
+        newWin.loadFile('src/renderer/choice.html');
         const choiceSize = { width: 500, height: 450 };
         newWin.setResizable(false);
         newWin.setSize(choiceSize.width, choiceSize.height);
@@ -2632,7 +2632,7 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
         }
     }
 
-    targetWin.loadFile('html/drag.html');
+    targetWin.loadFile('src/renderer/drag.html');
 
     const newView = new BrowserView({
         webPreferences: {
@@ -3051,7 +3051,7 @@ function createNotificationWindow() {
         }
     });
 
-    notificationWin.loadFile('html/notification.html');
+    notificationWin.loadFile('src/renderer/notification.html');
 
     notificationWin.once('ready-to-show', () => {
         if (notificationWin) {
@@ -3195,7 +3195,7 @@ function openUpdateWindowAndCheck() {
         }
     });
 
-    updateWin.loadFile('html/update-available.html');
+    updateWin.loadFile('src/renderer/update-available.html');
 
     updateWin.once('ready-to-show', async () => {
         if (!updateWin) return;
@@ -3235,7 +3235,7 @@ function openInstallUpdateWindow() {
         }
     });
 
-    installUpdateWin.loadFile('html/install-update-confirm.html');
+    installUpdateWin.loadFile('src/renderer/install-update-confirm.html');
 
     installUpdateWin.once('ready-to-show', () => {
         if (!installUpdateWin) return;
@@ -3512,7 +3512,7 @@ ipcMain.on('open-deep-research-schedule-window', () => {
         }
     });
 
-    deepResearchScheduleWin.loadFile('html/deep-research-schedule.html');
+    deepResearchScheduleWin.loadFile('src/renderer/deep-research-schedule.html');
 
     deepResearchScheduleWin.once('ready-to-show', () => {
         if (deepResearchScheduleWin) deepResearchScheduleWin.show();
@@ -4142,7 +4142,7 @@ function openUpdateWindowAndCheck() {
         }
     });
 
-    updateWin.loadFile('html/update-available.html');
+    updateWin.loadFile('src/renderer/update-available.html');
 
     updateWin.once('ready-to-show', async () => {
         if (!updateWin) return;
@@ -4910,7 +4910,7 @@ function openFormatChoiceWindow(parentWin) {
         }
     });
 
-    exportFormatWin.loadFile('html/export-format-choice.html');
+    exportFormatWin.loadFile('src/renderer/export-format-choice.html');
 
     exportFormatWin.once('ready-to-show', () => {
         if (exportFormatWin) exportFormatWin.show();
@@ -4950,7 +4950,7 @@ function openPdfDirectionWindow(parentWin) {
         }
     });
 
-    pdfDirectionWin.loadFile('html/pdf-direction-choice.html');
+    pdfDirectionWin.loadFile('src/renderer/pdf-direction-choice.html');
 
     pdfDirectionWin.once('ready-to-show', () => {
         if (pdfDirectionWin) pdfDirectionWin.show();
@@ -6373,7 +6373,7 @@ ipcMain.on('onboarding-complete', (event) => {
 
         if (existingView) {
             // Fix: Reload the top bar before restoring the view
-            senderWindow.loadFile('html/drag.html').then(() => {
+            senderWindow.loadFile('src/renderer/drag.html').then(() => {
                 // After the bar is loaded, restore the Gemini view
                 senderWindow.setBrowserView(existingView);
                 const contentBounds = senderWindow.getContentBounds();
@@ -6487,7 +6487,7 @@ ipcMain.on('show-confirm-reset', () => {
             contextIsolation: true,
         }
     });
-    confirmWin.loadFile('html/confirm-reset.html');
+    confirmWin.loadFile('src/renderer/confirm-reset.html');
     confirmWin.once('ready-to-show', () => {
         if (confirmWin) confirmWin.show();
     });
@@ -6742,7 +6742,7 @@ ipcMain.on('open-prompt-manager-window', (event) => {
     });
     
     promptManagerWin.__internal = true;
-    promptManagerWin.loadFile('html/prompt-manager.html');
+    promptManagerWin.loadFile('src/renderer/prompt-manager.html');
     
     promptManagerWin.on('closed', () => {
         promptManagerWin = null;
@@ -6970,7 +6970,7 @@ ipcMain.on('open-settings-window', (event) => {
     });
 
     setupContextMenu(settingsWin.webContents);
-    settingsWin.loadFile('html/settings.html');
+    settingsWin.loadFile('src/renderer/settings.html');
 
     settingsWin.once('ready-to-show', () => {
         if (settingsWin) {
@@ -7013,7 +7013,7 @@ ipcMain.on('open-share-ideas-window', (event) => {
     });
 
     setupContextMenu(shareIdeasWin.webContents);
-    shareIdeasWin.loadFile('html/share-ideas.html');
+    shareIdeasWin.loadFile('src/renderer/share-ideas.html');
 
     shareIdeasWin.once('ready-to-show', () => {
         if (shareIdeasWin) shareIdeasWin.show();
@@ -7072,7 +7072,7 @@ function openMcpSetupWindow(parent) {
             }
         });
 
-    mcpSetupWin.loadFile('html/mcp-setup.html');
+    mcpSetupWin.loadFile('src/renderer/mcp-setup.html');
 
         mcpSetupWin.once('ready-to-show', () => {
             if (mcpSetupWin) {

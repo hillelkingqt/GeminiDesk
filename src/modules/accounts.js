@@ -45,7 +45,7 @@ function addAccount(accountName) {
         const path = require('path');
         const fs = require('fs');
         const { session } = require('electron');
-        const extPath = path.join(__dirname, '..', '0.5.8_0');
+        const extPath = path.join(__dirname, '..', '..', 'extension');
         if (fs.existsSync(extPath)) {
             const partName = getAccountPartition(newAccount.index);
             const accSession = session.fromPartition(partName, { cache: true });
