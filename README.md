@@ -193,6 +193,17 @@ Want to peek under the hood or forge your own version? We admire your courage.
     npm run build
     ```
 
+### Project Structure
+
+The repository is now organized with a clean, professional structure:
+- **`src/`** - All source code (main.js, preload.js, modules, renderer HTML files, styles)
+- **`assets/`** - Static resources (logos, sounds, screenshots)
+- **`extension/`** - Chrome extension (MCP SuperAssistant)
+- **`build/`** - Build configuration files
+- **`docs/`** - Documentation files
+
+See [STRUCTURE.md](STRUCTURE.md) for detailed information about the repository organization.
+
 ---
 
 ## 🤝 Let's Build a Dynasty
