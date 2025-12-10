@@ -39,172 +39,24 @@ const profileModule = require('./modules/profile');
 // Use extension module functions
 const { loadExtensionToSession, loadExtensionToAllSessions, unloadLoadedExtensions, getExtPath } = extensionsModule;
 const EXT_PATH = getExtPath();
-// Placeholder - will be replaced with module import
-async function createAndManageLoginWindowForPartition(loginUrl, targetPartition, accountIndex = 0) {
-    let tempWin = new BrowserWindow({
-        width: 700,
-        height: 780,
-        frame: true,
-        autoHideMenuBar: true,
-        alwaysOnTop: true,
-        webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
-            nodeIntegration: false,
-            contextIsolation: true,
-            javascript: true,
-            webSecurity: true,
-            allowRunningInsecureContent: false,
-            experimentalFeatures: false,
-            userAgent: STABLE_USER_AGENT
-        }
-    });
 
+// Use login module function
+const { createAndManageLoginWindowForPartition } = loginModule;
+
+// Initialize extensions module after constants are loaded
+app.whenReady().then(async () => {
+    // Conditionally load unpacked extension if user enabled it in settings
     try {
-        await tempWin.webContents.session.clearStorageData({ storages: ['cookies', 'localstorage'], origins: ['https://accounts.google.com', 'https://google.com'] });
-    } catch (e) {}
-
-    tempWin.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
-    setupContextMenu(tempWin.webContents);
-    tempWin.loadURL(loginUrl);
-
-    tempWin.on('closed', () => { tempWin = null; });
-
-    tempWin.webContents.on('did-navigate', async (event, navigatedUrl) => {
-        const isLoginSuccess = navigatedUrl.startsWith(GEMINI_URL) || navigatedUrl.startsWith(AISTUDIO_URL);
-        if (!isLoginSuccess) return;
-
-        const isolatedSession = tempWin.webContents.session;
-        let sessionCookieFound = false;
-        for (let i = 0; i < 20; i++) {
-            const criticalCookies = await isolatedSession.cookies.get({ name: '__Secure-1PSID' });
-            if (criticalCookies && criticalCookies.length > 0) { sessionCookieFound = true; break; }
-            await new Promise(r => setTimeout(r, 500));
-        }
-
-        // If we didn't observe a critical session cookie, it likely means the
-        // user hasn't completed the sign-in flow yet (for example they only
-        // provided the email and haven't entered the password). In that case
-        // don't proceed to transfer cookies and close the temporary login
-        // window — leave it open so the user can finish authentication.
-        if (!sessionCookieFound) {
-            console.log('Partitioned login: no critical session cookie found; keeping login window open to allow user to finish sign-in');
+        const localSettings = settingsModule.getSettings();
+        if (!localSettings || !localSettings.loadUnpackedExtension) {
+            console.log('loadUnpackedExtension is disabled in settings - skipping automatic extension load at startup');
             return;
         }
-
-        try {
-            const mainSession = session.fromPartition(targetPartition);
-            const googleCookies = await isolatedSession.cookies.get({ domain: '.google.com' });
-            if (googleCookies && googleCookies.length > 0) {
-                for (const cookie of googleCookies) {
-                    try {
-                        const cookieUrl = `https://${cookie.domain.startsWith('.') ? 'www' : ''}${cookie.domain}${cookie.path}`;
-                        const newCookie = {
-                            url: cookieUrl,
-                            name: cookie.name,
-                            value: cookie.value,
-                            path: cookie.path,
-                            secure: cookie.secure,
-                            httpOnly: cookie.httpOnly,
-                            expirationDate: Math.floor(Date.now() / 1000) + (365 * 24 * 60 * 60),
-                            session: false,
-                            sameSite: cookie.sameSite
-                        };
-                        if (!cookie.name.startsWith('__Host-')) newCookie.domain = cookie.domain;
-                        await mainSession.cookies.set(newCookie);
-                    } catch (e) {
-                        console.warn('Could not transfer cookie:', e && e.message ? e.message : e);
-                    }
-                }
-            }
-
-            try { await mainSession.cookies.flushStore(); } catch (e) {}
-
-            // Extract profile image and account label from the loaded page
-            try {
-                const profileInfo = await tempWin.webContents.executeJavaScript(`(function(){
-                    try {
-                        const a = document.querySelector('a.gb_B') || document.querySelector('a[aria-label^="Google Account:"]') || document.querySelector('.gb_z a');
-                        const img = a && a.querySelector('img') ? (a.querySelector('img').src || null) : (document.querySelector('img.gbii') ? document.querySelector('img.gbii').src : null);
-                        const aria = a ? a.getAttribute('aria-label') : (document.querySelector('a[aria-label^="Google Account:"]') ? document.querySelector('a[aria-label^="Google Account:"]') .getAttribute('aria-label') : null);
-                        return { img, aria };
-                    } catch(e){ return {}; }
-                })();`, true);
-
-                if (profileInfo && profileInfo.img) {
-                    // Save profile image for the new account
-                    await accountsModule.setProfileImageForAccount(accountIndex, profileInfo.img).catch(() => {});
-                    // Try to parse email/name from aria text like "Google Account: Name\n(email)"
-                    if (profileInfo.aria) {
-                        const text = profileInfo.aria.replace(/^Google Account:\s*/i, '').trim();
-                        const lines = text.split('\n').map(s => s.trim()).filter(Boolean);
-                        const email = lines[lines.length - 1] && lines[lines.length - 1].includes('@') ? lines[lines.length - 1] : null;
-                        if (email) accountsModule.updateAccount(accountIndex, { email, name: lines[0] || undefined });
-                    }
-                }
-            } catch (e) {
-                console.warn('Failed to extract profile info:', e && e.message ? e.message : e);
-            }
-
-            if (tempWin && !tempWin.isDestroyed()) tempWin.close();
-
-            try {
-                // Set the newly added account as the current account so the
-                // choice window highlights it. Persist settings immediately.
-                if (typeof settings !== 'undefined') {
-                    settings.currentAccountIndex = accountIndex;
-                    try { saveSettings(settings); } catch (e) { console.warn('Failed to save settings after adding account', e); }
-                }
-
-                // Open the choice window (the small Alt+N style chooser)
-                try {
-                    const choiceWin = createWindow();
-                    if (choiceWin && !choiceWin.isDestroyed()) {
-                        try {
-                            choiceWin.loadFile('choice.html');
-                            const choiceSize = { width: 500, height: 450 };
-                            choiceWin.setResizable(false);
-                            choiceWin.setSize(choiceSize.width, choiceSize.height);
-                            choiceWin.center();
-                            choiceWin.setAlwaysOnTop(true, 'screen-saver');
-                            choiceWin.focus();
-                            choiceWin.show();
-                        } catch (e) {
-                            console.warn('Failed to prepare choice window UI:', e && e.message ? e.message : e);
-                        }
-                    }
-                } catch (e) {
-                    console.warn('Failed to open choice window after account add:', e && e.message ? e.message : e);
-                }
-            } catch (err) {
-                console.warn('Error while finalizing account addition:', err && err.message ? err.message : err);
-            }
-
-            // reload existing windows so new account session takes effect
-            BrowserWindow.getAllWindows().forEach(win => {
-                if (win && !win.isDestroyed()) {
-                    const view = win.getBrowserView();
-                    if (view && view.webContents && !view.webContents.isDestroyed()) view.webContents.reload();
-                }
-            });
-
-        } catch (error) {
-            console.error('Error during partitioned login handling:', error);
-        }
-    });
-}
-    app.whenReady().then(async () => {
-        // Conditionally load unpacked extension if user enabled it in settings
-        try {
-            const localSettings = settingsModule.getSettings();
-            if (!localSettings || !localSettings.loadUnpackedExtension) {
-                console.log('loadUnpackedExtension is disabled in settings - skipping automatic extension load at startup');
-                return;
-            }
-            await loadExtensionToAllSessions();
-        } catch (e) {
-            console.error('Failed during conditional extension load at startup:', e && e.message ? e.message : e);
-        }
-    });
+        await loadExtensionToAllSessions();
+    } catch (e) {
+        console.error('Failed during conditional extension load at startup:', e && e.message ? e.message : e);
+    }
+});
 
 const trayModule = require('./modules/tray');
 
@@ -216,6 +68,13 @@ app.disableHardwareAcceleration();
 
 // Use constants from module
 const { REAL_CHROME_UA, STABLE_USER_AGENT, SESSION_PARTITION, GEMINI_URL, AISTUDIO_URL, isMac, execPath, launcherPath, margin, originalSize, canvasSize } = constants;
+
+// Initialize extensions module
+extensionsModule.initialize({
+    constants,
+    accountsModule,
+    getSettings: settingsModule.getSettings
+});
 
 // Allow third-party/partitioned cookies used by Google Sign-In
 app.commandLine.appendSwitch('enable-features', 'ThirdPartyStoragePartitioning');
@@ -244,157 +103,14 @@ let tray = null;
 let mcpProxyProcess = null; // Background MCP proxy process
 
 const detachedViews = new Map();
-const PROFILE_CAPTURE_COOLDOWN_MS = 60 * 1000;
-const PROFILE_REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const UPDATE_REMINDER_DELAY_MS = 60 * 60 * 1000; // 1 hour
 const UPDATER_INITIALIZATION_DELAY_MS = 5 * 1000; // 5 seconds
 const UPDATE_FOUND_DISPLAY_DURATION_MS = 1500; // 1.5 seconds - how long to show "update available" message before starting download
 const MAX_UPDATE_CHECK_RETRIES = 3; // Maximum retries for update check when reminder is pending
-const profileCaptureTimestamps = new Map();
-let avatarDirectoryPath = null;
 
-function getAvatarStorageDir() {
-    if (avatarDirectoryPath) {
-        return avatarDirectoryPath;
-    }
-    const dir = path.join(app.getPath('userData'), 'account-avatars');
-    if (!fs.existsSync(dir)) {
-        try {
-            fs.mkdirSync(dir, { recursive: true });
-        } catch (err) {
-            console.warn('Failed to create avatar storage directory:', err && err.message ? err.message : err);
-        }
-    }
-    avatarDirectoryPath = dir;
-    return dir;
-}
-
-async function downloadAccountAvatar(sourceUrl, accountIndex) {
-    if (!sourceUrl) return '';
-    try {
-        const response = await fetch(sourceUrl);
-        if (!response || !response.ok) {
-            throw new Error(`HTTP ${response ? response.status : 'unknown'}`);
-        }
-        const buffer = await response.buffer();
-        const dir = getAvatarStorageDir();
-        const avatarPath = path.join(dir, `account-${accountIndex}.png`);
-        await fsp.writeFile(avatarPath, buffer);
-        return avatarPath;
-    } catch (error) {
-        console.warn('Failed to download account avatar:', error && error.message ? error.message : error);
-        return '';
-    }
-}
-
-function shouldAttemptProfileCapture(accountIndex, forceAttempt = false) {
-    if (typeof accountIndex !== 'number' || accountIndex < 0) {
-        return false;
-    }
-    if (forceAttempt) {
-        return true;
-    }
-    const now = Date.now();
-    const last = profileCaptureTimestamps.get(accountIndex) || 0;
-    if (now - last < PROFILE_CAPTURE_COOLDOWN_MS) {
-        return false;
-    }
-    profileCaptureTimestamps.set(accountIndex, now);
-    return true;
-}
-
-async function captureAccountProfile(view, accountIndex, forceAttempt = false) {
-    if (!view || !view.webContents || view.webContents.isDestroyed()) {
-        return;
-    }
-    if (!shouldAttemptProfileCapture(accountIndex, forceAttempt)) {
-        return;
-    }
-
-    const currentAccounts = settings.accounts || [];
-    const existingAccount = currentAccounts[accountIndex];
-
-    try {
-        const profile = await view.webContents.executeJavaScript(`(() => {
-            const link = document.querySelector('a[aria-label^="Google Account"], a[aria-label*="@gmail.com"]');
-            const ariaLabel = link ? (link.getAttribute('aria-label') || '') : '';
-            const emailMatch = ariaLabel.match(/\\(([^)]+)\\)/);
-            const email = emailMatch ? (emailMatch[1] || '').trim() : '';
-            const labelParts = ariaLabel.split(':');
-            const displayName = labelParts.length > 1 ? labelParts[1].replace(/\\([^)]*\\)/, '').trim() : '';
-            let avatarUrl = '';
-            let img = link ? link.querySelector('img') : null;
-            if (!img) {
-                img = document.querySelector('img.gbii, img.gb_Q, img[aria-label^="Account"], img[alt*="@"]');
-            }
-            if (img) {
-                avatarUrl = img.getAttribute('src') || '';
-                if (!avatarUrl && img.srcset) {
-                    avatarUrl = img.srcset.split(' ')[0];
-                }
-            }
-            return { avatarUrl, email, displayName };
-        })();`, true);
-
-        if (!profile) {
-            return;
-        }
-
-        const now = Date.now();
-        let avatarFile = existingAccount ? existingAccount.avatarFile : '';
-        const needsDownload = !!profile.avatarUrl && (
-            forceAttempt ||
-            !avatarFile ||
-            !fs.existsSync(avatarFile) ||
-            !existingAccount ||
-            !existingAccount.lastProfileFetch ||
-            (now - existingAccount.lastProfileFetch) > PROFILE_REFRESH_INTERVAL_MS ||
-            (existingAccount.avatarUrl && existingAccount.avatarUrl !== profile.avatarUrl)
-        );
-
-        if (needsDownload) {
-            const downloaded = await downloadAccountAvatar(profile.avatarUrl, accountIndex);
-            if (downloaded) {
-                avatarFile = downloaded;
-            }
-        }
-
-        const updates = {};
-        if (avatarFile && (!existingAccount || existingAccount.avatarFile !== avatarFile)) {
-            updates.avatarFile = avatarFile;
-            updates.avatarUrl = profile.avatarUrl || (existingAccount ? existingAccount.avatarUrl : '');
-            updates.lastProfileFetch = now;
-        }
-
-        if (profile.email && (!existingAccount || existingAccount.email !== profile.email)) {
-            updates.email = profile.email;
-        }
-
-        if (profile.displayName && (
-            !existingAccount ||
-            !existingAccount.name ||
-            existingAccount.name.startsWith('Account ')
-        )) {
-            updates.name = profile.displayName;
-        }
-
-        if (Object.keys(updates).length > 0) {
-            const updatedAccount = updateAccountMetadata(accountIndex, updates);
-            if (updatedAccount) {
-                broadcastToAllWebContents('settings-updated', settings);
-            }
-        }
-    } catch (error) {
-        console.warn('Failed to capture account profile:', error && error.message ? error.message : error);
-    }
-}
-
-function maybeCaptureAccountProfile(view, accountIndex, forceAttempt = false) {
-    if (typeof accountIndex !== 'number' || accountIndex < 0) {
-        return;
-    }
-    captureAccountProfile(view, accountIndex, forceAttempt);
-}
+// Use profile module constants and functions
+const { PROFILE_CAPTURE_COOLDOWN_MS, PROFILE_REFRESH_INTERVAL_MS } = profileModule;
+const { getAvatarStorageDir, downloadAccountAvatar, captureAccountProfile, maybeCaptureAccountProfile } = profileModule;
 
 /**
  * Execute default prompt in a new chat - inserts text and clicks send button
@@ -678,6 +394,13 @@ const { getAccountPartition, getCurrentAccountPartition, getAccounts, addAccount
 // ================================================================= //
 
 const { forceOnTop, broadcastToAllWebContents, broadcastToWindows, reportErrorToServer, playAiCompletionSound, setupContextMenu } = utils;
+
+// ================================================================= //
+// Initialize New Modules
+// ================================================================= //
+
+// Note: loginModule and profileModule need to be initialized after createWindow is defined
+// This happens in the "Gemini-Specific Functions" section below
 
 // ================================================================= //
 // Icon Path Helper
@@ -1948,6 +1671,28 @@ function reloadFocusedView() {
 // Window Creation and Management
 // ================================================================= //
 
+// Initialize loginModule (needs constants, accountsModule, settings, saveSettings, setupContextMenu, createWindow)
+// Note: createWindow is defined below, so we'll pass it as a function reference after it's defined
+// For now, we'll initialize with other dependencies and update createWindow reference later
+function initializeModulesAfterWindowCreation() {
+    loginModule.initialize({
+        accountsModule,
+        settings,
+        saveSettings,
+        createWindow,
+        setupContextMenu,
+        STABLE_USER_AGENT,
+        GEMINI_URL,
+        AISTUDIO_URL
+    });
+
+    profileModule.initialize({
+        settings,
+        updateAccountMetadata,
+        broadcastToAllWebContents
+    });
+}
+
 function createWindow(state = null) {
     const newWin = new BrowserWindow({
         width: originalSize.width,
@@ -2297,6 +2042,9 @@ function createWindow(state = null) {
 
     return newWin;
 }
+
+// Initialize modules that depend on createWindow being defined
+initializeModulesAfterWindowCreation();
 
 async function loadGemini(mode, targetWin, initialUrl, options = {}) {
     if (!targetWin || targetWin.isDestroyed()) return;
