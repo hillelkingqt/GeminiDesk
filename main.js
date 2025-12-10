@@ -2182,11 +2182,13 @@ function createWindow(state = null) {
     });
 
     // Helper function to update BrowserView bounds
-    const updateViewBounds = async (saveScroll = true, restoreScroll = true) => {
+    const updateViewBounds = async (saveScroll = true, restoreScroll = true, updateBounds = true) => {
         const view = newWin.getBrowserView();
         if (view && view.webContents && !view.webContents.isDestroyed()) {
-            const contentBounds = newWin.getContentBounds();
-            view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+            if (updateBounds) {
+                const contentBounds = newWin.getContentBounds();
+                view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+            }
             
             if (saveScroll) {
                 try {
@@ -2218,7 +2220,13 @@ function createWindow(state = null) {
 
     // Handle resize event (fires during resize)
     newWin.on('resize', () => {
-        updateViewBounds(true, true);
+        // On Windows and macOS, we rely on 'will-resize' for bounds updates and to fix Snap issues.
+        // We also skip scroll saving/restoring during the high-frequency resize loop to avoid
+        // severe performance degradation caused by IPC calls.
+        // Scroll position is saved in 'will-resize' and restored in 'resized'.
+        if (process.platform === 'linux') {
+            updateViewBounds(true, true, true);
+        }
     });
 
     // Handle resized event (fires after resize completes - crucial for Windows snap with Win+Arrow keys)
@@ -2246,6 +2254,14 @@ function createWindow(state = null) {
             if (view && newBounds.width > 0 && newBounds.height > 30) {
                 // Since frame: false, newBounds (window bounds) is roughly content bounds
                 view.setBounds({ x: 0, y: 30, width: newBounds.width, height: newBounds.height - 30 });
+            }
+
+            // Save scroll position before/during resize to ensure we have a valid restore point.
+            // This is crucial because we skip scroll saving in the 'resize' event on Windows/Mac for performance.
+            if (view && !view.webContents.isDestroyed()) {
+                view.webContents.executeJavaScript(`(document.scrollingElement || document.documentElement).scrollTop`)
+                    .then(y => { newWin.savedScrollPosition = y; })
+                    .catch(() => {});
             }
         }
     });
