@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/icon.ico" alt="GeminiDesk Logo" width="150">
+  <img src="https://raw.githubusercontent.com/hillelkingqt/GeminiDesk/main/icons/icon.ico" alt="GeminiDesk Logo" width="150">
 </p>
 
 <h1 align="center">🚀 GeminiDesk - The Ultimate Gemini Desktop Super-App 🚀</h1>

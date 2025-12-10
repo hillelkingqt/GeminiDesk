@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Share Your Ideas - GeminiDesk</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --bg-root: #0f0f13;
+            --glass-surface: rgba(20, 20, 25, 0.95);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.05);
+
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --text-tertiary: #6b7280;
+
+            --accent-primary: #818cf8;
+            --accent-glow: rgba(129, 140, 248, 0.4);
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+
+            --input-bg: rgba(255, 255, 255, 0.03);
+            --input-border: rgba(255, 255, 255, 0.08);
+            --input-focus-bg: rgba(255, 255, 255, 0.05);
+
+            --radius-xl: 24px;
+            --radius-lg: 16px;
+            --radius-md: 16px;
+
+            --success: #10b981;
+            --danger: #f43f5e;
+
+            --button-bg: rgba(255, 255, 255, 0.05);
+            --button-hover-bg: rgba(255, 255, 255, 0.08);
+            --header-gradient: linear-gradient(to bottom, rgba(255, 255, 255, 0.03), transparent);
+
+            --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        html.light-mode {
+            --bg-root: #f1f5f9;
+            --glass-surface: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.8);
+
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-tertiary: #94a3b8;
+
+            --accent-primary: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.25);
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+
+            --input-bg: rgba(0, 0, 0, 0.04);
+            --input-border: rgba(0, 0, 0, 0.1);
+            --input-focus-bg: rgba(255, 255, 255, 0.5);
+
+            --button-bg: rgba(0, 0, 0, 0.04);
+            --button-hover-bg: rgba(0, 0, 0, 0.08);
+            --header-gradient: linear-gradient(to bottom, rgba(0, 0, 0, 0.02), transparent);
+        }
+
+        html.light-mode .orb-canvas {
+            background:
+                radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.08), transparent 60%),
+                radial-gradient(circle at 90% 90%, rgba(168, 85, 247, 0.08), transparent 60%);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
+            background: transparent !important;
+            color: var(--text-primary);
+            user-select: none;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- Main Card --- */
+        .card {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            background: var(--glass-surface);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 var(--glass-highlight);
+            overflow: hidden;
+        }
+
+        /* --- Background Effects (Inside Card) --- */
+        .orb-canvas {
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.12), transparent 60%),
+                radial-gradient(circle at 90% 90%, rgba(168, 85, 247, 0.12), transparent 60%);
+            opacity: 1;
+        }
+
+        .noise-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* --- Header --- */
+        .header {
+            -webkit-app-region: drag;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--glass-border);
+            background: var(--header-gradient);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .icon-box {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px var(--accent-glow);
+            color: white;
+        }
+
+        .icon-box svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .title-text h1 {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 0;
+            line-height: 1.2;
+            letter-spacing: 0.01em;
+            color: var(--text-primary);
+        }
+
+        .title-text span {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 400;
+            letter-spacing: 0.02em;
+        }
+
+        .close-btn {
+            -webkit-app-region: no-drag;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            background: var(--button-bg);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: var(--danger);
+            color: white;
+            transform: rotate(90deg);
+            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
+        }
+
+        /* --- Content --- */
+        .content {
+            flex: 1;
+            padding: 24px 28px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        /* Form Elements */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+        }
+
+        .label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-tertiary);
+            margin-left: 2px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 13px;
+            color: var(--text-tertiary);
+            width: 16px;
+            height: 16px;
+            pointer-events: none;
+            transition: color 0.3s ease;
+        }
+
+        textarea~.input-icon {
+            top: 15px;
+        }
+
+        .input-field {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: var(--radius-md);
+            padding: 12px 16px 12px 40px;
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            transition: all 0.2s var(--ease-out);
+            resize: none;
+        }
+
+        .input-field::placeholder {
+            color: var(--text-tertiary);
+            opacity: 0.7;
+        }
+
+        .input-field:focus {
+            outline: none;
+            background: var(--input-focus-bg);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 1px var(--accent-primary), 0 0 0 4px var(--accent-glow);
+        }
+
+        .input-field:focus~.input-icon {
+            color: var(--accent-primary);
+        }
+
+        textarea.input-field {
+            min-height: 140px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            margin-top: auto;
+            width: 100%;
+            height: 44px;
+            border: none;
+            border-radius: 50px;
+            background: var(--accent-gradient);
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s var(--ease-out);
+            box-shadow: 0 4px 12px var(--accent-glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px var(--accent-glow);
+        }
+
+        .submit-btn:hover::before {
+            opacity: 1;
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        .submit-btn.loading .spinner {
+            display: block;
+        }
+
+        .submit-btn.loading span,
+        .submit-btn.loading svg {
+            opacity: 0;
+            display: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Status Messages */
+        .status-message {
+            position: absolute;
+            bottom: 80px;
+            left: 28px;
+            right: 28px;
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+            transition: all 0.3s var(--ease-out);
+            z-index: 10;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-message.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .status-message.success {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-message.error {
+            background: rgba(244, 63, 94, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Card Container (Everything lives inside here for clipping) -->
+    <div class="card">
+        <!-- Background Effects -->
+        <div class="orb-canvas"></div>
+        <div class="noise-overlay"></div>
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-title">
+                <div class="icon-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M2 12h5"></path>
+                        <path d="M17 12h5"></path>
+                        <path d="M12 2v5"></path>
+                        <path d="M12 17v5"></path>
+                        <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"></path>
+                        <path d="M12 12m-8 0a8 8 0 1 0 16 0a8 8 0 1 0 -16 0"></path>
+                    </svg>
+                </div>
+                <div class="title-text">
+                    <h1>Share Ideas</h1>
+                    <span>Help us improve</span>
+                </div>
+            </div>
+            <button class="close-btn" id="close-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <div class="input-group">
+                <label class="label">The Big Idea</label>
+                <div class="input-wrapper">
+                    <textarea id="feedback-input" class="input-field"
+                        placeholder="I wish GeminiDesk could..."></textarea>
+                    <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="input-group">
+                    <label class="label">Email (Optional)</label>
+                    <div class="input-wrapper">
+                        <input type="email" id="contact-email" class="input-field" placeholder="hello@example.com">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                            </path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label class="label">Telegram (Optional)</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="contact-telegram" class="input-field" placeholder="@username">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 2L11 13"></path>
+                            <path d="M22 2l-7 20-4-9-9-4 20-7z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <button id="submit-feedback-btn" class="submit-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                <span>Send Feedback</span>
+                <div class="spinner"></div>
+            </button>
+        </div>
+
+        <div id="feedback-message" class="status-message"></div>
+    </div>
+
+    <script>
+        const workerUrl = 'https://deskgeminie.hillelben14.workers.dev/';
+
+        // Elements
+        const feedbackInput = document.getElementById('feedback-input');
+        const contactEmail = document.getElementById('contact-email');
+        const contactTelegram = document.getElementById('contact-telegram');
+        const submitBtn = document.getElementById('submit-feedback-btn');
+        const messageDiv = document.getElementById('feedback-message');
+        const closeButton = document.getElementById('close-btn');
+
+        // Close Handler
+        closeButton.addEventListener('click', () => {
+            if (window.electronAPI && window.electronAPI.closeShareIdeasWindow) {
+                window.electronAPI.closeShareIdeasWindow();
+            } else if (window.close) {
+                window.close();
+            }
+        });
+
+        // Submit Handler
+        submitBtn.addEventListener('click', sendFeedback);
+
+        async function sendFeedback() {
+            const feedbackText = feedbackInput.value.trim();
+
+            // Reset message
+            hideMessage();
+
+            if (feedbackText === '') {
+                showMessage('Please describe your idea first.', 'error');
+                feedbackInput.focus();
+                return;
+            }
+
+            const email = contactEmail.value.trim();
+            const telegram = contactTelegram.value.trim();
+
+            if (email && !isValidEmail(email)) {
+                showMessage('Please enter a valid email address.', 'error');
+                contactEmail.focus();
+                return;
+            }
+
+            if (telegram && !telegram.startsWith('@')) {
+                showMessage('Telegram username should start with @', 'error');
+                contactTelegram.focus();
+                return;
+            }
+
+            setLoading(true);
+
+            let completeMessage = feedbackText;
+            if (email || telegram) {
+                completeMessage += '\n\n---\nContact Info:\n';
+                if (email) completeMessage += `Email: ${email}\n`;
+                if (telegram) completeMessage += `Telegram: ${telegram}`;
+            }
+
+            const formData = new FormData();
+            formData.append('idea', completeMessage);
+
+            try {
+                const response = await fetch(workerUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage('Thanks! Your idea has been sent.', 'success');
+                    feedbackInput.value = '';
+                    contactEmail.value = '';
+                    contactTelegram.value = '';
+                } else {
+                    throw new Error(result.message || 'Server error');
+                }
+            } catch (error) {
+                console.error('Submission error:', error);
+                showMessage('Failed to send. Please try again.', 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                submitBtn.classList.add('loading');
+                submitBtn.disabled = true;
+            } else {
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            }
+        }
+
+        function showMessage(text, type) {
+            messageDiv.className = `status-message visible ${type}`;
+
+            let icon = '';
+            if (type === 'success') {
+                icon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            } else {
+                icon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+            }
+
+            messageDiv.innerHTML = `${icon}<span>${text}</span>`;
+
+            // Auto hide after 3 seconds
+            setTimeout(() => {
+                hideMessage();
+            }, 3000);
+        }
+
+        function hideMessage() {
+            messageDiv.classList.remove('visible');
+        }
+
+        // Theme Sync
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                document.documentElement.classList.add('light-mode');
+            } else {
+                document.documentElement.classList.remove('light-mode');
+            }
+        }
+
+        if (window.electronAPI && window.electronAPI.theme) {
+            window.electronAPI.theme.getResolved().then(applyTheme);
+            window.electronAPI.theme.onUpdate(applyTheme);
+        }
+    </script>
+</body>
+
+</html>

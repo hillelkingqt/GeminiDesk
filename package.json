@@ -47,7 +47,7 @@
     ],
     "extraResources": [
       "0.5.8_0/**",
-      "icon.ico"
+      "icons/**"
     ],
     "asar": true,
     "compression": "maximum",
@@ -108,8 +108,8 @@
         "deb"
       ],
       "category": "Utility",
-      "icon": "icon1.png"
+      "icon": "icons/icon1.png"
     },
-    "icon": "icon1.png"
+    "icon": "icons/icon1.png"
   }
 }

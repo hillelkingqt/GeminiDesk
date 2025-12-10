@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Update Available</title>
+    <title>Install Update</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
 
@@ -209,6 +209,23 @@
             margin-top: 8px;
             display: inline-block;
         }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--glass-surface);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-primary);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
     </style>
 </head>
 
@@ -218,30 +235,33 @@
         
         <div class="content-area">
             
-            <!-- Checking -->
-            <div id="checking-state" class="state-view active">
+            <!-- Downloading State -->
+            <div id="downloading-state" class="state-view active">
                 <div class="center-layout">
                     <div class="icon-box">
                         <svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
                     </div>
-                    <h1 data-i18n="update-checking-title">Checking for Updates</h1>
-                    <p data-i18n="update-checking-message">We're looking for the latest version...</p>
+                    <h1 data-i18n="install-downloading-title">Downloading Update</h1>
+                    <p data-i18n="install-downloading-message">Please wait while we download the latest version...</p>
+                    <div class="progress-bar">
+                        <div id="progress-fill" class="progress-fill"></div>
+                    </div>
+                    <p id="progress-text" style="font-size: 12px; margin-top: 8px;">0%</p>
                 </div>
             </div>
 
-            <!-- Found -->
-            <div id="update-found-state" class="state-view">
+            <!-- Install Confirmation -->
+            <div id="install-confirm-state" class="state-view">
                 <div style="text-align: center;">
                     <div class="icon-box" style="width: 60px; height: 60px; margin-bottom: 16px;">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
                     </div>
-                    <h1 data-i18n="update-found-title">Update Available</h1>
-                    <div id="version" class="version-badge">v1.0.0</div>
+                    <h1 data-i18n="install-ready-title">Update Ready to Install</h1>
+                    <div id="version" class="version-badge">Loading...</div>
                 </div>
 
                 <div class="notes-wrapper">
@@ -249,22 +269,8 @@
                 </div>
 
                 <div class="actions">
-                    <button id="later-btn" class="btn btn-secondary" data-i18n="update-later-button">Later</button>
-                    <button id="download-btn" class="btn btn-primary" data-i18n="update-download-button">Update Now</button>
-                </div>
-            </div>
-
-            <!-- No Update -->
-            <div id="no-update-state" class="state-view">
-                <div class="center-layout">
-                    <div class="icon-box" style="color: var(--success-color); background: rgba(129, 201, 149, 0.1);">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                    </div>
-                    <h1 data-i18n="update-not-found-title">You're Up to Date</h1>
-                    <p data-i18n="update-not-found-message">Gemini is running the latest version.</p>
-                    <button id="close-btn" class="btn btn-secondary" style="margin-top: 32px; width: 100%;" data-i18n="update-not-found-button">Close</button>
+                    <button id="later-btn" class="btn btn-secondary" data-i18n="install-later-button">Remind Me in 1 Hour</button>
+                    <button id="install-btn" class="btn btn-primary" data-i18n="install-now-button">Install Now</button>
                 </div>
             </div>
 
@@ -276,22 +282,21 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                     </div>
-                    <h1 data-i18n="update-error-title">Update Failed</h1>
-                    <p id="error-message">Something went wrong.</p>
-                    <button id="error-close-btn" class="btn btn-secondary" style="margin-top: 32px; width: 100%;" data-i18n="update-error-button">Close</button>
+                    <h1 data-i18n="install-error-title">Download Failed</h1>
+                    <p id="error-message">Something went wrong while downloading the update.</p>
+                    <button id="error-close-btn" class="btn btn-secondary" style="margin-top: 32px; width: 100%;" data-i18n="install-error-button">Close</button>
                 </div>
             </div>
 
         </div>
     </div>
 
-    <script src="translations.js"></script>
+    <script src="../translations.js"></script>
     <script>
         // State Management
         const states = {
-            checking: document.getElementById('checking-state'),
-            found: document.getElementById('update-found-state'),
-            notFound: document.getElementById('no-update-state'),
+            downloading: document.getElementById('downloading-state'),
+            confirm: document.getElementById('install-confirm-state'),
             error: document.getElementById('error-state'),
         };
 
@@ -304,17 +309,23 @@
 
         // API Integration
         document.addEventListener('DOMContentLoaded', () => {
-            const api = window.updateAPI;
+            const api = window.installUpdateAPI;
             const mainAppApi = window.electronAPI;
 
             if (api) {
-                api.onUpdateInfo((data) => {
-                    console.log('Update Info:', data);
+                api.onInstallUpdateInfo((data) => {
+                    console.log('Install Update Info:', data);
                     switch (data.status) {
-                        case 'checking':
-                            showState('checking');
+                        case 'downloading':
+                            showState('downloading');
+                            if (data.percent !== undefined) {
+                                const progressFill = document.getElementById('progress-fill');
+                                const progressText = document.getElementById('progress-text');
+                                progressFill.style.width = data.percent + '%';
+                                progressText.textContent = data.percent + '%';
+                            }
                             break;
-                        case 'update-available':
+                        case 'ready-to-install':
                             // Update Version
                             const verEl = document.getElementById('version');
                             verEl.textContent = 'v' + (data.version || 'Unknown');
@@ -342,10 +353,7 @@
                                 notesEl.innerHTML = '<p style="text-align:center; opacity:0.6;">No release notes available.</p>';
                             }
 
-                            showState('found');
-                            break;
-                        case 'up-to-date':
-                            showState('notFound');
+                            showState('confirm');
                             break;
                         case 'error':
                             const errEl = document.getElementById('error-message');
@@ -354,7 +362,7 @@
                             } else {
                                 // Use default translated error message if no custom message
                                 const dict = translations[document.documentElement.lang] || translations.en;
-                                errEl.textContent = dict['update-error-message'] || 'Something went wrong.';
+                                errEl.textContent = dict['install-error-message'] || 'Something went wrong while downloading the update.';
                             }
                             showState('error');
                             break;
@@ -363,10 +371,9 @@
             }
 
             // Button Handlers
-            document.getElementById('download-btn')?.addEventListener('click', () => mainAppApi?.openDownloadPage());
-            document.getElementById('later-btn')?.addEventListener('click', () => mainAppApi?.closeUpdateWindow());
-            document.getElementById('close-btn')?.addEventListener('click', () => mainAppApi?.closeUpdateWindow());
-            document.getElementById('error-close-btn')?.addEventListener('click', () => mainAppApi?.closeUpdateWindow());
+            document.getElementById('install-btn')?.addEventListener('click', () => mainAppApi?.installUpdateNow());
+            document.getElementById('later-btn')?.addEventListener('click', () => mainAppApi?.remindLaterUpdate());
+            document.getElementById('error-close-btn')?.addEventListener('click', () => mainAppApi?.closeInstallUpdateWindow());
 
             // Translations & Theme
             if (window.electronAPI) {

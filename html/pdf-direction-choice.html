@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>בחר כיוון טקסט</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Light Mode Colors */
+        body.light {
+            --bg-color: #f5f5f5;
+            --container-bg: #ffffff;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --border-color: #e0e0e0;
+            --ltr-bg: #e3f2fd;
+            --ltr-border: #1976d2;
+            --ltr-hover: #bbdefb;
+            --rtl-bg: #f3e5f5;
+            --rtl-border: #7b1fa2;
+            --rtl-hover: #e1bee7;
+            --close-btn-bg: #f5f5f5;
+            --close-btn-hover: #e0e0e0;
+            --shadow: rgba(0, 0, 0, 0.08);
+        }
+
+        /* Dark Mode Colors */
+        body.dark {
+            --bg-color: #1e1e1e;
+            --container-bg: #2d2d30;
+            --text-primary: #cccccc;
+            --text-secondary: #9e9e9e;
+            --border-color: #3e3e42;
+            --ltr-bg: #1e3a5f;
+            --ltr-border: #1976d2;
+            --ltr-hover: #2a5282;
+            --rtl-bg: #3a1e5f;
+            --rtl-border: #7b1fa2;
+            --rtl-hover: #522a82;
+            --close-btn-bg: #3e3e42;
+            --close-btn-hover: #4e4e52;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        .container {
+            background: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px var(--shadow);
+            padding: 36px;
+            text-align: center;
+            max-width: 520px;
+            width: 90%;
+            position: relative;
+            border: 1px solid var(--border-color);
+        }
+
+        .icon {
+            font-size: 56px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--text-primary);
+            font-size: 22px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+
+        .choice-btn {
+            flex: 1;
+            padding: 24px 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--container-bg);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .choice-btn:hover {
+            border-color: var(--ltr-border);
+        }
+
+        .choice-icon {
+            font-size: 36px;
+            margin-bottom: 6px;
+        }
+
+        .choice-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--text-primary);
+        }
+
+        .choice-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .ltr-btn {
+            background: var(--ltr-bg);
+            border-color: var(--ltr-border);
+        }
+
+        .ltr-btn:hover {
+            background: var(--ltr-hover);
+        }
+
+        .rtl-btn {
+            background: var(--rtl-bg);
+            border-color: var(--rtl-border);
+        }
+
+        .rtl-btn:hover {
+            background: var(--rtl-hover);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: var(--close-btn-bg);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 18px;
+        }
+
+        .close-btn:hover {
+            background: var(--close-btn-hover);
+            color: var(--text-primary);
+        }
+
+        body[dir="rtl"] .close-btn {
+            left: auto;
+            right: 16px;
+        }
+    </style>
+</head>
+
+<body class="light">
+    <div class="container">
+        <button class="close-btn" onclick="window.electronAPI.cancelPdfExport()">✕</button>
+
+        <div class="icon">📄</div>
+
+        <h1 data-i18n="title">בחר כיוון כתיבה למסמך PDF</h1>
+        <p data-i18n="subtitle">איך תרצה שהתוכן יוצג בקובץ PDF?</p>
+
+        <div class="buttons">
+            <button class="choice-btn ltr-btn" onclick="selectDirection('ltr')">
+                <div class="choice-icon">→</div>
+                <div class="choice-title" data-i18n="ltr-title">Left to Right</div>
+                <div class="choice-subtitle" data-i18n="ltr-desc">English</div>
+            </button>
+
+            <button class="choice-btn rtl-btn" onclick="selectDirection('rtl')">
+                <div class="choice-icon">←</div>
+                <div class="choice-title" data-i18n="rtl-title">Right to Left</div>
+                <div class="choice-subtitle" data-i18n="rtl-desc">עברית</div>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Translations
+        const translations = {
+            en: {
+                title: 'Choose PDF Text Direction',
+                subtitle: 'How would you like the content to be displayed in the PDF file?',
+                'ltr-title': 'Left to Right',
+                'ltr-desc': 'English',
+                'rtl-title': 'Right to Left',
+                'rtl-desc': 'Hebrew'
+            },
+            he: {
+                title: 'בחר כיוון כתיבה למסמך PDF',
+                subtitle: 'איך תרצה שהתוכן יוצג בקובץ PDF?',
+                'ltr-title': 'שמאל לימין',
+                'ltr-desc': 'English',
+                'rtl-title': 'ימין לשמאל',
+                'rtl-desc': 'עברית'
+            },
+            es: {
+                title: 'Elegir dirección del texto del PDF',
+                subtitle: '¿Cómo te gustaría que se mostrara el contenido en el archivo PDF?',
+                'ltr-title': 'Izquierda a derecha',
+                'ltr-desc': 'Español',
+                'rtl-title': 'Derecha a izquierda',
+                'rtl-desc': 'Hebreo'
+            },
+            fr: {
+                title: 'Choisir la direction du texte PDF',
+                subtitle: 'Comment souhaitez-vous que le contenu soit affiché dans le fichier PDF?',
+                'ltr-title': 'Gauche à droite',
+                'ltr-desc': 'Français',
+                'rtl-title': 'Droite à gauche',
+                'rtl-desc': 'Hébreu'
+            },
+            de: {
+                title: 'PDF-Textrichtung wählen',
+                subtitle: 'Wie möchten Sie, dass der Inhalt in der PDF-Datei angezeigt wird?',
+                'ltr-title': 'Links nach rechts',
+                'ltr-desc': 'Deutsch',
+                'rtl-title': 'Rechts nach links',
+                'rtl-desc': 'Hebräisch'
+            },
+            it: {
+                title: 'Scegli direzione testo PDF',
+                subtitle: 'Come vorresti che il contenuto fosse visualizzato nel file PDF?',
+                'ltr-title': 'Sinistra a destra',
+                'ltr-desc': 'Italiano',
+                'rtl-title': 'Destra a sinistra',
+                'rtl-desc': 'Ebraico'
+            },
+            pt: {
+                title: 'Escolher direção do texto PDF',
+                subtitle: 'Como você gostaria que o conteúdo fosse exibido no arquivo PDF?',
+                'ltr-title': 'Esquerda para direita',
+                'ltr-desc': 'Português',
+                'rtl-title': 'Direita para esquerda',
+                'rtl-desc': 'Hebraico'
+            },
+            ru: {
+                title: 'Выберите направление текста PDF',
+                subtitle: 'Как вы хотите, чтобы контент отображался в PDF-файле?',
+                'ltr-title': 'Слева направо',
+                'ltr-desc': 'Русский',
+                'rtl-title': 'Справа налево',
+                'rtl-desc': 'Иврит'
+            },
+            ja: {
+                title: 'PDFテキストの方向を選択',
+                subtitle: 'PDFファイルでコンテンツをどのように表示しますか？',
+                'ltr-title': '左から右へ',
+                'ltr-desc': '日本語',
+                'rtl-title': '右から左へ',
+                'rtl-desc': 'ヘブライ語'
+            },
+            zh: {
+                title: '选择PDF文本方向',
+                subtitle: '您希望内容如何在PDF文件中显示？',
+                'ltr-title': '从左到右',
+                'ltr-desc': '中文',
+                'rtl-title': '从右到左',
+                'rtl-desc': '希伯来语'
+            },
+            ar: {
+                title: 'اختر اتجاه نص PDF',
+                subtitle: 'كيف تريد عرض المحتوى في ملف PDF؟',
+                'ltr-title': 'من اليسار إلى اليمين',
+                'ltr-desc': 'إنجليزي',
+                'rtl-title': 'من اليمين إلى اليسار',
+                'rtl-desc': 'عبري'
+            }
+        };
+
+        // RTL languages
+        const rtlLanguages = ['he', 'ar'];
+
+        // Apply translations
+        function applyTranslations(lang) {
+            const t = translations[lang] || translations.en;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) {
+                    el.textContent = t[key];
+                }
+            });
+
+            // Set page direction based on language
+            if (rtlLanguages.includes(lang)) {
+                document.documentElement.setAttribute('dir', 'rtl');
+                document.body.setAttribute('dir', 'rtl');
+            } else {
+                document.documentElement.setAttribute('dir', 'ltr');
+                document.body.setAttribute('dir', 'ltr');
+            }
+
+            // Update lang attribute
+            document.documentElement.setAttribute('lang', lang);
+        }
+
+        // Initialize
+        async function initialize() {
+            try {
+                // Get settings from main process
+                const settings = await window.electronAPI.getSettings();
+
+                // Apply theme
+                let theme = settings.theme || 'light';
+                if (theme === 'system') {
+                    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                }
+
+                document.body.className = theme;
+
+                // Apply language
+                const language = settings.language || 'en';
+                applyTranslations(language);
+
+            } catch (error) {
+                console.error('Failed to load settings:', error);
+                // Fallback to defaults
+                document.body.className = 'light';
+                applyTranslations('en');
+            }
+        }
+
+        // Run on load
+        initialize();
+
+        function selectDirection(direction) {
+            window.electronAPI.selectPdfDirection(direction);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                window.electronAPI.cancelPdfExport();
+            } else if (e.key === 'ArrowLeft' || e.key === 'l' || e.key === 'L') {
+                selectDirection('ltr');
+            } else if (e.key === 'ArrowRight' || e.key === 'r' || e.key === 'R') {
+                selectDirection('rtl');
+            }
+        });
+    </script>
+</body>
+
+</html>

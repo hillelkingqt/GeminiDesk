@@ -81,7 +81,7 @@ async function executeScheduledDeepResearch(format) {
 
         // If it's a choice window, select Gemini mode
         const currentUrl = targetWin.webContents.getURL();
-        if (currentUrl.includes('choice.html')) {
+        if (currentUrl.includes('html/choice.html')) {
             console.log('Deep Research Schedule: Selecting Gemini mode from choice window');
             targetWin.webContents.executeJavaScript(`
                 const geminiButton = document.querySelector('button[onclick*="gemini"]') || 

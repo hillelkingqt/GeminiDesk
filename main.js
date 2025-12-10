@@ -267,7 +267,7 @@ async function createAndManageLoginWindowForPartition(loginUrl, targetPartition,
                     const choiceWin = createWindow();
                     if (choiceWin && !choiceWin.isDestroyed()) {
                         try {
-                            choiceWin.loadFile('choice.html');
+                            choiceWin.loadFile('html/choice.html');
                             const choiceSize = { width: 500, height: 450 };
                             choiceWin.setResizable(false);
                             choiceWin.setSize(choiceSize.width, choiceSize.height);
@@ -798,10 +798,10 @@ const { forceOnTop, broadcastToAllWebContents, broadcastToWindows, reportErrorTo
 function getIconPath() {
     if (app.isPackaged) {
         // Production: icon is in extraResources folder
-        return path.join(process.resourcesPath, 'icon.ico');
+        return path.join(process.resourcesPath, 'icons', 'icon.ico');
     } else {
         // Development: icon is in project root
-        return path.join(__dirname, 'icon.ico');
+        return path.join(__dirname, 'icons', 'icon.ico');
     }
 }
 
@@ -1395,11 +1395,11 @@ const shortcutActions = {
             const currentUrl = focusedWindow.webContents.getURL();
             
             // אם אנחנו כבר בעמוד onboarding, נחזיר את ה-view
-            if (currentUrl.includes('onboarding.html')) {
+            if (currentUrl.includes('html/onboarding.html')) {
                 const view = detachedViews.get(focusedWindow);
                 if (view && !view.webContents.isDestroyed()) {
                     // טוען את drag.html קודם, ואז מחזיר את ה-view - בדיוק כמו ב-onboarding-complete
-                    focusedWindow.loadFile('drag.html').then(() => {
+                    focusedWindow.loadFile('html/drag.html').then(() => {
                         focusedWindow.setBrowserView(view);
                         const contentBounds = focusedWindow.getContentBounds();
                         view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
@@ -1463,7 +1463,7 @@ const shortcutActions = {
                     focusedWindow.removeBrowserView(view);
                     detachedViews.set(focusedWindow, view);
                 }
-                focusedWindow.loadFile('onboarding.html');
+                focusedWindow.loadFile('html/onboarding.html');
                 setCanvasMode(false, focusedWindow);
             }
         }
@@ -2451,9 +2451,9 @@ function createWindow(state = null) {
             console.log('Restoring window with specific chat URL:', state.url);
         }
     } else if (!settings.onboardingShown) {
-        newWin.loadFile('onboarding.html');
+        newWin.loadFile('html/onboarding.html');
     } else if (settings.defaultMode === 'ask') {
-        newWin.loadFile('choice.html');
+        newWin.loadFile('html/choice.html');
         const choiceSize = { width: 500, height: 450 };
         newWin.setResizable(false);
         newWin.setSize(choiceSize.width, choiceSize.height);
@@ -2696,7 +2696,7 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
         }
     }
 
-    targetWin.loadFile('drag.html');
+    targetWin.loadFile('html/drag.html');
 
     const newView = new BrowserView({
         webPreferences: {
@@ -3115,7 +3115,7 @@ function createNotificationWindow() {
         }
     });
 
-    notificationWin.loadFile('notification.html');
+    notificationWin.loadFile('html/notification.html');
 
     notificationWin.once('ready-to-show', () => {
         if (notificationWin) {
@@ -3259,7 +3259,7 @@ function openUpdateWindowAndCheck() {
         }
     });
 
-    updateWin.loadFile('update-available.html');
+    updateWin.loadFile('html/update-available.html');
 
     updateWin.once('ready-to-show', async () => {
         if (!updateWin) return;
@@ -3299,7 +3299,7 @@ function openInstallUpdateWindow() {
         }
     });
 
-    installUpdateWin.loadFile('install-update-confirm.html');
+    installUpdateWin.loadFile('html/install-update-confirm.html');
 
     installUpdateWin.once('ready-to-show', () => {
         if (!installUpdateWin) return;
@@ -3576,7 +3576,7 @@ ipcMain.on('open-deep-research-schedule-window', () => {
         }
     });
 
-    deepResearchScheduleWin.loadFile('deep-research-schedule.html');
+    deepResearchScheduleWin.loadFile('html/deep-research-schedule.html');
 
     deepResearchScheduleWin.once('ready-to-show', () => {
         if (deepResearchScheduleWin) deepResearchScheduleWin.show();
@@ -4206,7 +4206,7 @@ function openUpdateWindowAndCheck() {
         }
     });
 
-    updateWin.loadFile('update-available.html');
+    updateWin.loadFile('html/update-available.html');
 
     updateWin.once('ready-to-show', async () => {
         if (!updateWin) return;
@@ -4974,7 +4974,7 @@ function openFormatChoiceWindow(parentWin) {
         }
     });
 
-    exportFormatWin.loadFile('export-format-choice.html');
+    exportFormatWin.loadFile('html/export-format-choice.html');
 
     exportFormatWin.once('ready-to-show', () => {
         if (exportFormatWin) exportFormatWin.show();
@@ -5014,7 +5014,7 @@ function openPdfDirectionWindow(parentWin) {
         }
     });
 
-    pdfDirectionWin.loadFile('pdf-direction-choice.html');
+    pdfDirectionWin.loadFile('html/pdf-direction-choice.html');
 
     pdfDirectionWin.once('ready-to-show', () => {
         if (pdfDirectionWin) pdfDirectionWin.show();
@@ -6437,7 +6437,7 @@ ipcMain.on('onboarding-complete', (event) => {
 
         if (existingView) {
             // Fix: Reload the top bar before restoring the view
-            senderWindow.loadFile('drag.html').then(() => {
+            senderWindow.loadFile('html/drag.html').then(() => {
                 // After the bar is loaded, restore the Gemini view
                 senderWindow.setBrowserView(existingView);
                 const contentBounds = senderWindow.getContentBounds();
@@ -6551,7 +6551,7 @@ ipcMain.on('show-confirm-reset', () => {
             contextIsolation: true,
         }
     });
-    confirmWin.loadFile('confirm-reset.html');
+    confirmWin.loadFile('html/confirm-reset.html');
     confirmWin.once('ready-to-show', () => {
         if (confirmWin) confirmWin.show();
     });
@@ -6806,7 +6806,7 @@ ipcMain.on('open-prompt-manager-window', (event) => {
     });
     
     promptManagerWin.__internal = true;
-    promptManagerWin.loadFile('prompt-manager.html');
+    promptManagerWin.loadFile('html/prompt-manager.html');
     
     promptManagerWin.on('closed', () => {
         promptManagerWin = null;
@@ -7034,7 +7034,7 @@ ipcMain.on('open-settings-window', (event) => {
     });
 
     setupContextMenu(settingsWin.webContents);
-    settingsWin.loadFile('settings.html');
+    settingsWin.loadFile('html/settings.html');
 
     settingsWin.once('ready-to-show', () => {
         if (settingsWin) {
@@ -7077,7 +7077,7 @@ ipcMain.on('open-share-ideas-window', (event) => {
     });
 
     setupContextMenu(shareIdeasWin.webContents);
-    shareIdeasWin.loadFile('share-ideas.html');
+    shareIdeasWin.loadFile('html/share-ideas.html');
 
     shareIdeasWin.once('ready-to-show', () => {
         if (shareIdeasWin) shareIdeasWin.show();
@@ -7136,7 +7136,7 @@ function openMcpSetupWindow(parent) {
             }
         });
 
-    mcpSetupWin.loadFile('mcp-setup.html');
+    mcpSetupWin.loadFile('html/mcp-setup.html');
 
         mcpSetupWin.once('ready-to-show', () => {
             if (mcpSetupWin) {
