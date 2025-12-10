@@ -68,7 +68,7 @@ function playAiCompletionSound() {
     }
 
     try {
-        const soundPath = path.join(__dirname, '..', 'sounds', settings.aiCompletionSoundFile);
+        const soundPath = path.join(__dirname, '..', '..', 'assets', 'sounds', settings.aiCompletionSoundFile);
         console.log('🔊 Sound file path:', soundPath);
 
         if (!fs.existsSync(soundPath)) {

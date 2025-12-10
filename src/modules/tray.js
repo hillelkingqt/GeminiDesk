@@ -21,7 +21,7 @@ function createTrayIcon() {
         return tray;
     }
 
-    const iconPath = path.join(__dirname, '..', 'icon.ico');
+    const iconPath = path.join(__dirname, '..', '..', 'assets', 'logos', 'icon.ico');
     tray = new Tray(nativeImage.createFromPath(iconPath));
 
     tray.setToolTip('GeminiDesk');
