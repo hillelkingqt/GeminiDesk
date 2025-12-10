@@ -1186,7 +1186,7 @@ const shortcutActions = {
                         await new Promise(resolve => setTimeout(resolve, 800));
 
                         // Step 3: Click the Pro model
-                        const proModel = await waitForElement('ms-model-carousel-row button[id*="gemini-2.5-pro"], ms-model-carousel-row button[id*="gemini-pro"]');
+                        const proModel = await waitForElement('ms-model-carousel-row button[id*="gemini-3-pro-preview"], ms-model-carousel-row button[id*="gemini-2.5-pro"], ms-model-carousel-row button[id*="gemini-pro"]');
                         simulateClick(proModel);
                         console.log('AI Studio: Selected Pro model');
                         
@@ -1198,7 +1198,7 @@ const shortcutActions = {
                         
                         // Wait and close the settings panel
                         await new Promise(resolve => setTimeout(resolve, 300));
-                        const closeSettingsPanel = await waitForElement('button[aria-label="Close run settings panel"][iconname="close"]', 3000);
+                        const closeSettingsPanel = await waitForElement('button[aria-label="Close run settings panel"], button[aria-label="Close settings"], button[iconname="close"][aria-label*="Close"], button[aria-label="Close"]', 3000);
                         simulateClick(closeSettingsPanel);
                         console.log('AI Studio: Closed settings panel');
                         
@@ -1273,7 +1273,7 @@ const shortcutActions = {
                         
                         // Wait and close the settings panel
                         await new Promise(resolve => setTimeout(resolve, 300));
-                        const closeSettingsPanel = await waitForElement('button[aria-label="Close run settings panel"][iconname="close"]', 3000);
+                        const closeSettingsPanel = await waitForElement('button[aria-label="Close run settings panel"], button[aria-label="Close settings"], button[iconname="close"][aria-label*="Close"], button[aria-label="Close"]', 3000);
                         simulateClick(closeSettingsPanel);
                         console.log('AI Studio: Closed settings panel');
                         
