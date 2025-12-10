@@ -1339,6 +1339,12 @@ const shortcutActions = {
                         focusedWindow.setBrowserView(view);
                         const contentBounds = focusedWindow.getContentBounds();
                         view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+                        // Force repaint after setting bounds
+                        try {
+                            view.webContents.invalidate();
+                        } catch (e) {
+                            // Ignore errors
+                        }
                         
                         // אל תקרא ל-setCanvasMode כי זה משנה את גודל החלון
                         detachedViews.delete(focusedWindow);
@@ -2188,6 +2194,14 @@ function createWindow(state = null) {
             const contentBounds = newWin.getContentBounds();
             view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
             
+            // Force repaint of BrowserView to fix Windows snap rendering issue (Win+Arrow keys)
+            // This is necessary in packaged builds where BrowserView doesn't auto-repaint
+            try {
+                view.webContents.invalidate();
+            } catch (e) {
+                // Ignore errors
+            }
+            
             if (saveScroll) {
                 try {
                     const scrollY = await view.webContents.executeJavaScript(
@@ -2233,6 +2247,12 @@ function createWindow(state = null) {
             const contentBounds = newWin.getContentBounds();
             if (contentBounds.width > 0 && contentBounds.height > 30) {
                 view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+                // Force repaint to fix Windows snap rendering issue
+                try {
+                    view.webContents.invalidate();
+                } catch (e) {
+                    // Ignore errors
+                }
             }
         }
     });
@@ -2246,6 +2266,14 @@ function createWindow(state = null) {
             if (view && newBounds.width > 0 && newBounds.height > 30) {
                 // Since frame: false, newBounds (window bounds) is roughly content bounds
                 view.setBounds({ x: 0, y: 30, width: newBounds.width, height: newBounds.height - 30 });
+                // Force repaint to fix Windows snap rendering issue
+                if (view.webContents && !view.webContents.isDestroyed()) {
+                    try {
+                        view.webContents.invalidate();
+                    } catch (e) {
+                        // Ignore errors
+                    }
+                }
             }
         }
     });
@@ -2258,6 +2286,14 @@ function createWindow(state = null) {
                 if (view) {
                     const contentBounds = newWin.getContentBounds();
                     view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+                    // Force repaint to fix Windows snap rendering issue
+                    if (view.webContents && !view.webContents.isDestroyed()) {
+                        try {
+                            view.webContents.invalidate();
+                        } catch (e) {
+                            // Ignore errors
+                        }
+                    }
                     console.log('Maximize: Updated BrowserView bounds to', contentBounds.width, 'x', contentBounds.height - 30);
                 }
             }
@@ -2271,6 +2307,14 @@ function createWindow(state = null) {
                 if (view) {
                     const contentBounds = newWin.getContentBounds();
                     view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+                    // Force repaint to fix Windows snap rendering issue
+                    if (view.webContents && !view.webContents.isDestroyed()) {
+                        try {
+                            view.webContents.invalidate();
+                        } catch (e) {
+                            // Ignore errors
+                        }
+                    }
                     console.log('Unmaximize: Updated BrowserView bounds to', contentBounds.width, 'x', contentBounds.height - 30);
                 }
             }
@@ -2286,6 +2330,14 @@ function createWindow(state = null) {
                 if (view) {
                     const contentBounds = newWin.getContentBounds();
                     view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+                    // Force repaint to fix Windows snap rendering issue
+                    if (view.webContents && !view.webContents.isDestroyed()) {
+                        try {
+                            view.webContents.invalidate();
+                        } catch (e) {
+                            // Ignore errors
+                        }
+                    }
                 }
             }
         }, 50);
@@ -2722,6 +2774,12 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
     // Use getContentBounds for accurate content area dimensions
     const contentBounds = targetWin.getContentBounds();
     newView.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+    // Force repaint after initial bounds setup
+    try {
+        newView.webContents.invalidate();
+    } catch (e) {
+        // Ignore errors
+    }
     newView.setAutoResize({ width: true, height: true });
 
     if (initialUrl && initialUrl !== GEMINI_URL && initialUrl !== AISTUDIO_URL) {
@@ -2915,6 +2973,14 @@ function animateResize(targetBounds, activeWin, activeView, duration_ms = 200) {
             activeWin.setBounds(b);
             if (activeView && activeView.webContents && !activeView.webContents.isDestroyed()) {
                 activeView.setBounds({ x: 0, y: 30, width: b.width, height: b.height - 30 });
+                // Force repaint on final step to ensure proper rendering
+                if (i >= steps) {
+                    try {
+                        activeView.webContents.invalidate();
+                    } catch (e) {
+                        // Ignore errors
+                    }
+                }
             }
             if (i < steps) setTimeout(step, interval);
         }
@@ -3565,6 +3631,14 @@ ipcMain.on('toggle-full-screen', async (event) => {
                     if (view) {
                         const contentBounds = win.getContentBounds();
                         view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+                        // Force repaint after setting bounds
+                        if (view.webContents && !view.webContents.isDestroyed()) {
+                            try {
+                                view.webContents.invalidate();
+                            } catch (e) {
+                                // Ignore errors
+                            }
+                        }
                     }
                 }
             }, 50);
@@ -3584,6 +3658,14 @@ ipcMain.on('toggle-full-screen', async (event) => {
                             if (view) {
                                 const contentBounds = win.getContentBounds();
                                 view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+                                // Force repaint after setting bounds
+                                if (view.webContents && !view.webContents.isDestroyed()) {
+                                    try {
+                                        view.webContents.invalidate();
+                                    } catch (e) {
+                                        // Ignore errors
+                                    }
+                                }
                             }
                         }
                     }, 100);
@@ -6280,6 +6362,12 @@ ipcMain.on('onboarding-complete', (event) => {
                 senderWindow.setBrowserView(existingView);
                 const contentBounds = senderWindow.getContentBounds();
                 existingView.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+                // Force repaint after restoring view
+                try {
+                    existingView.webContents.invalidate();
+                } catch (e) {
+                    // Ignore errors
+                }
 
                 // Replace the sendCurrentTitle function in the onboarding-complete handler
                 const sendCurrentTitle = async () => {
