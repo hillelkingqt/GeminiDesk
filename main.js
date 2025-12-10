@@ -1059,25 +1059,81 @@ const shortcutActions = {
         if (focusedWindow.appMode === 'aistudio') {
             view.webContents.loadURL('https://aistudio.google.com/prompts/new_chat');
         } else {
-            // Open new chat menu for Gemini - click the button in the HTML
+            // Open new chat - Robust Version with Navigation Fallback
             const script = `
-                (function() {
-                    // First click the main menu button
-                    const menuButton = document.querySelector('button[aria-label="Main menu"]');
-                    if (menuButton) {
-                        menuButton.click();
-                        // Wait a bit for the menu to open, then click New chat
-                        setTimeout(() => {
-                            const newChatButton = document.querySelector('button[aria-label="New chat"]');
-                            if (newChatButton) {
-                                newChatButton.click();
-                            }
-                        }, 100);
+                (async function() {
+                    console.log('GeminiDesk: Executing New Chat command');
+                    
+                    const waitForElement = (selector, timeout = 1000) => {
+                        return new Promise((resolve) => {
+                            const interval = setInterval(() => {
+                                const el = document.querySelector(selector);
+                                if (el && !el.disabled && el.offsetParent !== null) { 
+                                    clearInterval(interval);
+                                    resolve(el);
+                                }
+                            }, 100);
+                            setTimeout(() => {
+                                clearInterval(interval);
+                                resolve(null);
+                            }, timeout);
+                        });
+                    };
+
+                    const simulateClick = (element) => {
+                        ['mousedown', 'mouseup', 'click'].forEach(type => {
+                            element.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: window }));
+                        });
+                    };
+
+                    // Selectors for the New Chat button
+                    const selectors = [
+                        'button[aria-label="New chat"]',
+                        'button[aria-label="Create new chat"]',
+                        '[data-test-id="new-chat-button"] button', 
+                        '[data-test-id="new-chat-button"]',
+                        '.chat-history-new-chat-button',
+                        'button.new-chat-button' // Generic guess
+                    ];
+
+                    // 1. Try to find the button directly
+                    for (const sel of selectors) {
+                        const el = document.querySelector(sel);
+                        if (el && !el.disabled && el.offsetParent !== null) {
+                            console.log('GeminiDesk: Found New Chat button directly:', sel);
+                            simulateClick(el);
+                            return;
+                        }
                     }
+
+                    // 2. If not found, try to open the main menu
+                    console.log('GeminiDesk: Button not visible, trying menu toggle...');
+                    const menuButton = document.querySelector('button[aria-label="Main menu"]') || 
+                                       document.querySelector('button[aria-label="Expand menu"]');
+                    
+                    if (menuButton) {
+                        simulateClick(menuButton);
+                        // Wait for menu animation
+                        for (const sel of selectors) {
+                            const newChatButton = await waitForElement(sel, 1000);
+                            if (newChatButton) {
+                                console.log('GeminiDesk: Found button after menu toggle:', sel);
+                                simulateClick(newChatButton);
+                                return;
+                            }
+                        }
+                    }
+
+                    // 3. FALLBACK: Direct Navigation
+                    // If UI interaction failed, force load the new chat URL
+                    console.log('GeminiDesk: UI interaction failed. forcing navigation to /app');
+                    window.location.href = 'https://gemini.google.com/app';
                 })();
             `;
             view.webContents.executeJavaScript(script).catch(err => {
                 console.error('Failed to execute new chat script:', err);
+                // Last resort fallback from main process
+                view.webContents.loadURL('https://gemini.google.com/app');
             });
         }
     },
