@@ -4,6 +4,7 @@ const { Tray, Menu, BrowserWindow, nativeImage } = require('electron');
 const path = require('path');
 
 let tray = null;
+let trayIcon = null; // Keep icon reference to prevent garbage collection
 let createWindow = null;
 let updateTrayContextMenu = null;
 let forceOnTop = null;
@@ -22,7 +23,9 @@ function createTrayIcon() {
     }
 
     const iconPath = path.join(__dirname, '..', 'icons', 'icon.ico');
-    tray = new Tray(nativeImage.createFromPath(iconPath));
+    // Create and cache the icon to prevent garbage collection
+    trayIcon = nativeImage.createFromPath(iconPath);
+    tray = new Tray(trayIcon);
 
     tray.setToolTip('GeminiDesk');
 
