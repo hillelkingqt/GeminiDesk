@@ -5382,8 +5382,14 @@ ipcMain.on('select-pdf-direction', async (event, direction) => {
         const katexAuto = fs.readFileSync(katexAutoPath, 'utf8');
         
         // Get user's language for labels
-        const userLang = settings.language || 'en';
-        const t = translations[userLang] || translations.en;
+        const currentSettings = getSettings();
+        const userLang = currentSettings.language || 'en';
+        console.log('PDF Export - User language:', userLang);
+        console.log('PDF Export - Available translations:', Object.keys(translations));
+        const t = translations[userLang] || translations['en'] || {};
+        console.log('PDF Export - Translation object keys:', Object.keys(t).slice(0, 5));
+        console.log('PDF Export - pdf-user-label:', t['pdf-user-label']);
+        console.log('PDF Export - pdf-model-label:', t['pdf-model-label']);
         const userLabel = t['pdf-user-label'] || 'You:';
         const modelLabel = t['pdf-model-label'] || 'Gemini:';
         

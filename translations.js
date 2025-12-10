@@ -5723,3 +5723,5 @@ const translations = {
         "autoScreenshotFullScreen-desc": "Automaticky zachytit celou obrazovku místo výběru oblasti. Rychlejší pracovní postup pro vizuální úkoly."
     }
 };
+
+module.exports = translations;
