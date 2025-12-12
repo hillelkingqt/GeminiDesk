@@ -2127,7 +2127,7 @@ function createWindow(state = null) {
         frame: false,
         backgroundColor: '#1E1E1E',
         alwaysOnTop: false, // Will be set explicitly below with platform-specific logic
-        fullscreenable: false,
+        fullscreenable: true, // Enable native fullscreen on macOS
         focusable: true,
         icon: getIconPath(),
         show: true,
@@ -2396,6 +2396,50 @@ function createWindow(state = null) {
                         }
                     }
                     console.log('Unmaximize: Updated BrowserView bounds to', contentBounds.width, 'x', contentBounds.height - 30);
+                }
+            }
+        }, 50);
+    });
+
+    // Handle enter-full-screen event (macOS native fullscreen)
+    newWin.on('enter-full-screen', () => {
+        setTimeout(() => {
+            if (newWin && !newWin.isDestroyed()) {
+                const view = newWin.getBrowserView();
+                if (view) {
+                    const contentBounds = newWin.getContentBounds();
+                    view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+                    // Force repaint
+                    if (view.webContents && !view.webContents.isDestroyed()) {
+                        try {
+                            view.webContents.invalidate();
+                        } catch (e) {
+                            // Ignore errors
+                        }
+                    }
+                    console.log('Enter-full-screen: Updated BrowserView bounds to', contentBounds.width, 'x', contentBounds.height - 30);
+                }
+            }
+        }, 50);
+    });
+
+    // Handle leave-full-screen event (macOS native fullscreen)
+    newWin.on('leave-full-screen', () => {
+        setTimeout(() => {
+            if (newWin && !newWin.isDestroyed()) {
+                const view = newWin.getBrowserView();
+                if (view) {
+                    const contentBounds = newWin.getContentBounds();
+                    view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+                    // Force repaint
+                    if (view.webContents && !view.webContents.isDestroyed()) {
+                        try {
+                            view.webContents.invalidate();
+                        } catch (e) {
+                            // Ignore errors
+                        }
+                    }
+                    console.log('Leave-full-screen: Updated BrowserView bounds to', contentBounds.width, 'x', contentBounds.height - 30);
                 }
             }
         }, 50);
@@ -2704,7 +2748,8 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
             nativeWindowOpen: true,
-            backgroundThrottling: false
+            backgroundThrottling: false,
+            spellcheck: !settings.disableSpellcheck
         }
     });
 
@@ -3685,14 +3730,22 @@ ipcMain.on('toggle-full-screen', async (event) => {
             }
         }
         
-        // Store current bounds if not maximized (for restoration)
-        if (!win.isMaximized()) {
+        // Use native fullscreen on macOS, maximize on other platforms
+        const isMac = process.platform === 'darwin';
+        const isInFullscreen = isMac ? win.isFullScreen() : win.isMaximized();
+        
+        // Store current bounds if not in fullscreen/maximized (for restoration)
+        if (!isInFullscreen) {
             win.prevNormalBounds = win.getBounds();
         }
         
-        if (win.isMaximized()) {
+        if (isInFullscreen) {
             // Restore from fullscreen/maximized
-            win.unmaximize();
+            if (isMac) {
+                win.setFullScreen(false);
+            } else {
+                win.unmaximize();
+            }
             
             // Restore original "always on top" state from settings
             setTimeout(() => {
@@ -3706,7 +3759,7 @@ ipcMain.on('toggle-full-screen', async (event) => {
                         win.prevNormalBounds = null;
                     }
                     
-                    // Update BrowserView bounds after unmaximize
+                    // Update BrowserView bounds after restore
                     const view = win.getBrowserView();
                     if (view) {
                         const contentBounds = win.getContentBounds();
@@ -3724,33 +3777,39 @@ ipcMain.on('toggle-full-screen', async (event) => {
             }, 50);
         } else {
             // Enter fullscreen/maximized
-            // Temporarily disable "always on top" before maximizing
-            win.setAlwaysOnTop(false);
+            if (isMac) {
+                // On macOS, use native fullscreen which moves to separate space
+                win.setFullScreen(true);
+                win.focus();
+            } else {
+                // On Windows/Linux, temporarily disable "always on top" before maximizing
+                win.setAlwaysOnTop(false);
+                setTimeout(() => {
+                    if (win && !win.isDestroyed()) {
+                        win.maximize();
+                        win.focus();
+                    }
+                }, 50);
+            }
+            
+            // Update BrowserView bounds after fullscreen/maximize
             setTimeout(() => {
                 if (win && !win.isDestroyed()) {
-                    win.maximize();
-                    win.focus();
-                    
-                    // Update BrowserView bounds after maximize to fix scrollbar
-                    setTimeout(() => {
-                        if (win && !win.isDestroyed()) {
-                            const view = win.getBrowserView();
-                            if (view) {
-                                const contentBounds = win.getContentBounds();
-                                view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
-                                // Force repaint after setting bounds
-                                if (view.webContents && !view.webContents.isDestroyed()) {
-                                    try {
-                                        view.webContents.invalidate();
-                                    } catch (e) {
-                                        // Ignore errors
-                                    }
-                                }
+                    const view = win.getBrowserView();
+                    if (view) {
+                        const contentBounds = win.getContentBounds();
+                        view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
+                        // Force repaint after setting bounds
+                        if (view.webContents && !view.webContents.isDestroyed()) {
+                            try {
+                                view.webContents.invalidate();
+                            } catch (e) {
+                                // Ignore errors
                             }
                         }
-                    }, 100);
+                    }
                 }
-            }, 50);
+            }, 100);
         }
         
         // Restore scroll position after toggling - multiple attempts with proper timing
@@ -6876,6 +6935,25 @@ ipcMain.on('update-setting', (event, key, value) => {
                     console.log(`Invisibility mode ${value ? 'enabled' : 'disabled'} for window ${w.id}`);
                 } catch (e) {
                     console.warn('Failed to set content protection:', e && e.message ? e.message : e);
+                }
+            }
+        });
+    }
+    if (key === 'disableSpellcheck') {
+        // Update spellcheck for all existing BrowserViews
+        BrowserWindow.getAllWindows().forEach(w => {
+            if (!w.isDestroyed()) {
+                try {
+                    const view = w.getBrowserView();
+                    if (view && view.webContents && !view.webContents.isDestroyed()) {
+                        // Set spellcheck on the session
+                        if (view.webContents.session) {
+                            view.webContents.session.setSpellCheckerEnabled(!value);
+                            console.log(`Spellcheck ${value ? 'disabled' : 'enabled'} for window ${w.id}`);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Failed to update spellcheck:', e && e.message ? e.message : e);
                 }
             }
         });

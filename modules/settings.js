@@ -61,7 +61,8 @@ const defaultSettings = {
     aiCompletionSound: true,
     geminiApiKey: '',
     aiCompletionSoundFile: 'new-notification-09-352705.mp3',
-    exportFormat: 'ask' // 'pdf', 'md', or 'ask'
+    exportFormat: 'ask', // 'pdf', 'md', or 'ask'
+    disableSpellcheck: false // When true, disables spellcheck in the BrowserView
 };
 
 // Whether to automatically load the unpacked MCP SuperAssistant extension
