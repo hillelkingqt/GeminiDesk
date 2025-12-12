@@ -40,6 +40,8 @@ const translations = {
         "invisibilityMode-desc": "Hide app from screen sharing apps (Zoom, Teams, Discord). Window becomes invisible to screen capture.",
         "enableCanvasResizing-label": "Automatic Canvas Resizing",
         "enableCanvasResizing-desc": "Resize the canvas when needed.",
+        "disableSpellcheck-label": "Disable Spellcheck",
+        "disableSpellcheck-desc": "Turn off spellcheck to prevent red underlines on non-English text.",
         "restoreWindows-label": "Restore Windows on Launch",
         "restoreWindows-desc": "Reopen previous windows at startup.",
         "showCloseButton-label": "Show Close Button",

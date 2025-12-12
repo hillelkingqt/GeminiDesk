@@ -935,6 +935,12 @@
                 <label class="toggle-switch"><input type="checkbox" id="setting-enableCanvasResizing"><span
                         class="slider"></span></label>
             </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="disableSpellcheck-label">Disable Spellcheck</strong><span
+                        data-i18n="disableSpellcheck-desc">Turn off spellcheck to prevent red underlines on non-English text.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-disableSpellcheck"><span
+                        class="slider"></span></label>
+            </div>
             <!-- English-only: Load MCP SuperAssistant unpacked extension -->
             <div class="setting-item english-only-feature">
                 <div class="setting-label"><strong>Load MCP SuperAssistant Extension</strong><span>When enabled, the
@@ -1682,6 +1688,7 @@
                     document.getElementById('setting-disableAutoUpdateCheck').checked = settings.disableAutoUpdateCheck || false;
                     document.getElementById('setting-autoInstallUpdates').checked = settings.autoInstallUpdates !== false;
                     document.getElementById('setting-enableCanvasResizing').checked = settings.enableCanvasResizing || false;
+                    document.getElementById('setting-disableSpellcheck').checked = settings.disableSpellcheck || false;
                     document.getElementById('setting-invisibilityMode').checked = settings.invisibilityMode || false;
                     
                     // Gray out "Show in Taskbar" when invisibility mode is enabled
@@ -1888,6 +1895,10 @@
 
             document.getElementById('setting-enableCanvasResizing').addEventListener('change', (e) => {
                 electronAPI.updateSetting('enableCanvasResizing', e.target.checked);
+            });
+
+            document.getElementById('setting-disableSpellcheck').addEventListener('change', (e) => {
+                electronAPI.updateSetting('disableSpellcheck', e.target.checked);
             });
 
             document.getElementById('setting-invisibilityMode').addEventListener('change', (e) => {
