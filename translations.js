@@ -500,6 +500,8 @@ const translations = {
         "invisibilityMode-desc": "הסתר את האפליקציה מאפליקציות שיתוף מסך (Zoom, Teams, Discord). החלון הופך לבלתי נראה ללכידת מסך.",
         "enableCanvasResizing-label": "שינוי גודל אוטומטי",
         "enableCanvasResizing-desc": "שנה את גודל הקנבס בעת הצורך.",
+        "disableSpellcheck-label": "בטל בדיקת איות",
+        "disableSpellcheck-desc": "כבה את בדיקת האיות כדי למנוע קווים אדומים על טקסט שאינו באנגלית.",
         "restoreWindows-label": "שחזר חלונות",
         "restoreWindows-desc": "פתח מחדש חלונות קודמים.",
         "showCloseButton-label": "הצג כפתור סגירה",
