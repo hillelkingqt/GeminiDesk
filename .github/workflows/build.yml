@@ -51,6 +51,18 @@ jobs:
             dist/latest*.yml
             dist/*.blockmap
 
+      - name: Send Linux files to Telegram
+        run: |
+          for file in dist/*.AppImage dist/*.deb; do
+            if [ -f "$file" ]; then
+              echo "Sending $file to Telegram..."
+              curl -F "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+                   -F "document=@$file" \
+                   -F "caption=Linux Build: $(basename $file)" \
+                   "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument"
+            fi
+          done
+
   build-win:
     runs-on: windows-latest
     steps:
@@ -85,6 +97,19 @@ jobs:
             dist/*.exe
             dist/latest*.yml
             dist/*.blockmap
+
+      - name: Send Windows files to Telegram
+        shell: bash
+        run: |
+          for file in dist/*.exe; do
+            if [ -f "$file" ]; then
+              echo "Sending $file to Telegram..."
+              curl -F "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+                   -F "document=@$file" \
+                   -F "caption=Windows Build: $(basename $file)" \
+                   "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument"
+            fi
+          done
 
   build-mac:
     runs-on: macos-latest
@@ -124,6 +149,18 @@ jobs:
             dist/latest*.yml
             dist/*.blockmap
 
+      - name: Send macOS files to Telegram
+        run: |
+          for file in dist/*.dmg; do
+            if [ -f "$file" ]; then
+              echo "Sending $file to Telegram..."
+              curl -F "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+                   -F "document=@$file" \
+                   -F "caption=macOS Build: $(basename $file)" \
+                   "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument"
+            fi
+          done
+
   release:
     needs: [build-win, build-linux, build-mac]
     runs-on: ubuntu-latest
@@ -159,74 +196,4 @@ jobs:
             rel/mac/**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  telegram-upload:
-    needs: [build-win, build-linux, build-mac]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download linux artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: linux
-          path: artifacts/linux
-
-      - name: Download win artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: win
-          path: artifacts/windows
-
-      - name: Download mac artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: mac
-          path: artifacts/mac
-
-      - name: Send Windows EXE to Telegram
-        run: |
-          for file in artifacts/windows/*.exe; do
-            if [ -f "$file" ]; then
-              echo "Sending $file to Telegram..."
-              curl -F "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
-                   -F "document=@$file" \
-                   -F "caption=Windows Build: $(basename $file)" \
-                   "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument"
-            fi
-          done
-
-      - name: Send macOS DMG to Telegram
-        run: |
-          for file in artifacts/mac/*.dmg; do
-            if [ -f "$file" ]; then
-              echo "Sending $file to Telegram..."
-              curl -F "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
-                   -F "document=@$file" \
-                   -F "caption=macOS Build: $(basename $file)" \
-                   "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument"
-            fi
-          done
-
-      - name: Send Linux AppImage to Telegram
-        run: |
-          for file in artifacts/linux/*.AppImage; do
-            if [ -f "$file" ]; then
-              echo "Sending $file to Telegram..."
-              curl -F "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
-                   -F "document=@$file" \
-                   -F "caption=Linux AppImage Build: $(basename $file)" \
-                   "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument"
-            fi
-          done
-
-      - name: Send Linux DEB to Telegram
-        run: |
-          for file in artifacts/linux/*.deb; do
-            if [ -f "$file" ]; then
-              echo "Sending $file to Telegram..."
-              curl -F "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
-                   -F "document=@$file" \
-                   -F "caption=Linux DEB Build: $(basename $file)" \
-                   "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument"
-            fi
-          done
 
