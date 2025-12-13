@@ -3546,6 +3546,7 @@ let updateInfo = null;
 
 // Reminder timeout ID for "remind me in 1 hour"
 let reminderTimeoutId = null;
+let autoUpdateDisplayTimeoutId = null;
 
 // ================================================================= //
 // File Handling
@@ -4268,6 +4269,12 @@ app.on('will-quit', () => {
         reminderTimeoutId = null;
     }
     
+    // Clear auto-update display timeout
+    if (autoUpdateDisplayTimeoutId) {
+        clearTimeout(autoUpdateDisplayTimeoutId);
+        autoUpdateDisplayTimeoutId = null;
+    }
+    
     // Clear notification interval
     if (notificationIntervalId) {
         clearInterval(notificationIntervalId);
@@ -4285,7 +4292,14 @@ app.on('will-quit', () => {
     
     try {
         if (mcpProxyProcess && !mcpProxyProcess.killed) {
-            process.kill(mcpProxyProcess.pid);
+            // Kill the detached process and its child processes
+            if (process.platform === 'win32') {
+                // On Windows, kill the process tree
+                spawn('taskkill', ['/pid', mcpProxyProcess.pid, '/f', '/t']);
+            } else {
+                // On Unix-like systems, kill the process group
+                process.kill(-mcpProxyProcess.pid);
+            }
         }
     } catch (e) {
         // ignore kill errors
@@ -4422,8 +4436,15 @@ autoUpdater.on('update-available', async (info) => {
                 releaseNotesHTML: `<p>Automatic download will start shortly...</p>`
             });
             
+            // Clear any existing timeout
+            if (autoUpdateDisplayTimeoutId) {
+                clearTimeout(autoUpdateDisplayTimeoutId);
+                autoUpdateDisplayTimeoutId = null;
+            }
+            
             // After configured duration, close updateWin and open installUpdateWin
-            setTimeout(() => {
+            autoUpdateDisplayTimeoutId = setTimeout(() => {
+                autoUpdateDisplayTimeoutId = null;
                 try {
                     if (updateWin && !updateWin.isDestroyed()) {
                         updateWin.close();
@@ -6535,7 +6556,13 @@ ipcMain.on('select-pdf-direction', async (event, direction) => {
         pdfWin.close();
 
         // מחיקת קובץ HTML הזמני
-        fs.unlinkSync(tempHtmlPath);
+        try {
+            if (fs.existsSync(tempHtmlPath)) {
+                fs.unlinkSync(tempHtmlPath);
+            }
+        } catch (cleanupErr) {
+            console.warn('Failed to clean up temporary HTML file:', cleanupErr);
+        }
 
         console.log(`PDF successfully saved to ${filePath}`);
         
@@ -6561,6 +6588,16 @@ ipcMain.on('select-pdf-direction', async (event, direction) => {
 
     } catch (err) {
         console.error('Failed to export chat to PDF:', err);
+        
+        // Clean up temp file on error
+        try {
+            if (tempHtmlPath && fs.existsSync(tempHtmlPath)) {
+                fs.unlinkSync(tempHtmlPath);
+            }
+        } catch (cleanupErr) {
+            console.warn('Failed to clean up temporary HTML file:', cleanupErr);
+        }
+        
         dialog.showErrorBox('Export Error', 'An unexpected error occurred while exporting the chat. See console for details.');
         pendingPdfExportData = null;
         selectedExportFormat = null;
