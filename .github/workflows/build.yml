@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     tags:     [ 'v*.*.*' ]
-  workflow_dispatch: # הוסף את זה
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -36,7 +36,6 @@ jobs:
       - name: Install deps
         run: npm install
 
-      # --publish never כדי לא לפרסם, אבל עדיין יווצרו קבצי ה-updater
       - name: Build Linux (AppImage, deb + updater files)
         run: npm run build -- --linux deb AppImage --publish never
 
@@ -146,7 +145,6 @@ jobs:
           name: mac
           path: rel/mac
 
-      # יצירת דרפט עם שם רנדומלי geminidesk-<run id>
       - name: Create draft release & upload all files
         uses: softprops/action-gh-release@v2
         with:
@@ -160,13 +158,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  github-pages-deploy:
+  deploy-r2:
     needs: [build-win, build-linux, build-mac]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Download linux artifacts
         uses: actions/download-artifact@v4
         with:
@@ -185,86 +180,55 @@ jobs:
           name: mac
           path: artifacts/mac
 
-      - name: Prepare artifacts with consistent names
+      - name: Prepare and Rename Files
         run: |
-          mkdir -p gh-pages
+          mkdir -p upload_stage
           
-          # Copy Windows EXE with consistent name
+          # Rename files to consistent names (overwriting old builds on R2)
+          # Windows
           if ls artifacts/windows/*.exe 1> /dev/null 2>&1; then
-            cp artifacts/windows/*.exe gh-pages/GeminiDesk-Setup.exe
+            cp artifacts/windows/*.exe upload_stage/GeminiDesk-Setup.exe
           fi
           
-          # Copy macOS DMG with consistent name
+          # macOS
           if ls artifacts/mac/*.dmg 1> /dev/null 2>&1; then
-            cp artifacts/mac/*.dmg gh-pages/GeminiDesk.dmg
+            cp artifacts/mac/*.dmg upload_stage/GeminiDesk.dmg
           fi
           
-          # Copy Linux AppImage with consistent name
+          # Linux
           if ls artifacts/linux/*.AppImage 1> /dev/null 2>&1; then
-            cp artifacts/linux/*.AppImage gh-pages/GeminiDesk.AppImage
+            cp artifacts/linux/*.AppImage upload_stage/GeminiDesk.AppImage
           fi
-          
-          # Copy Linux DEB with consistent name
           if ls artifacts/linux/*.deb 1> /dev/null 2>&1; then
-            cp artifacts/linux/*.deb gh-pages/GeminiDesk.deb
+            cp artifacts/linux/*.deb upload_stage/GeminiDesk.deb
           fi
-          
-          # Create an index.html for easy access
-          cat > gh-pages/index.html << 'EOF'
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>GeminiDesk Test Builds</title>
-            <style>
-              body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
-              h1 { color: #333; }
-              .download-links { margin: 20px 0; }
-              .download-links a { display: block; margin: 10px 0; padding: 10px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
-              .download-links a:hover { background: #0056b3; }
-              .warning { background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 5px; margin: 20px 0; }
-            </style>
-          </head>
-          <body>
-            <h1>GeminiDesk Test Builds</h1>
-            <div class="warning">
-              ⚠️ These are test builds that are automatically overwritten with each new build. Download and test immediately.
-            </div>
-            <div class="download-links">
-              <a href="GeminiDesk-Setup.exe">📦 Download Windows (EXE)</a>
-              <a href="GeminiDesk.dmg">🍎 Download macOS (DMG)</a>
-              <a href="GeminiDesk.AppImage">🐧 Download Linux (AppImage)</a>
-              <a href="GeminiDesk.deb">🐧 Download Linux (DEB)</a>
-            </div>
-          </body>
-          </html>
-          EOF
-          
-          echo "Prepared files for GitHub Pages:"
-          ls -lh gh-pages/
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./gh-pages
-          force_orphan: true
+      - name: Upload to Cloudflare R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CF_R2_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CF_R2_SECRET_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ENDPOINT: ${{ secrets.CF_R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.CF_R2_BUCKET }}
+        run: |
+          # Use AWS CLI to sync files to R2 Bucket
+          aws s3 sync ./upload_stage s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT --no-progress
 
       - name: Send download links to Telegram
         run: |
-          REPO_OWNER="${{ github.repository_owner }}"
-          REPO_NAME="${{ github.event.repository.name }}"
-          BASE_URL="https://${REPO_OWNER}.github.io/${REPO_NAME}"
+          # Use the Public Domain provided in secrets (e.g., https://dl.example.com)
+          # Ensure no trailing slash in the secret, or handle it here
+          BASE_URL="${{ secrets.CF_R2_PUBLIC_DOMAIN }}"
           
           MESSAGE=$(cat << 'END_MESSAGE'
-          🚀 New test build available!
+          🚀 <b>New Build Uploaded to R2!</b>
           
-          📦 Windows: BASE_URL_PLACEHOLDER/GeminiDesk-Setup.exe
-          🍎 macOS: BASE_URL_PLACEHOLDER/GeminiDesk.dmg
-          🐧 Linux AppImage: BASE_URL_PLACEHOLDER/GeminiDesk.AppImage
-          🐧 Linux DEB: BASE_URL_PLACEHOLDER/GeminiDesk.deb
+          📦 Windows: <a href="BASE_URL_PLACEHOLDER/GeminiDesk-Setup.exe">Download EXE</a>
+          🍎 macOS: <a href="BASE_URL_PLACEHOLDER/GeminiDesk.dmg">Download DMG</a>
+          🐧 Linux AppImage: <a href="BASE_URL_PLACEHOLDER/GeminiDesk.AppImage">Download AppImage</a>
+          🐧 Linux DEB: <a href="BASE_URL_PLACEHOLDER/GeminiDesk.deb">Download DEB</a>
           
-          ⚠️ Test build - will be overwritten by next build
-          🔗 View all: BASE_URL_PLACEHOLDER
+          <i>These links always point to the latest successful build.</i>
           END_MESSAGE
           )
           
@@ -272,5 +236,5 @@ jobs:
           
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
                -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+               -d "parse_mode=HTML" \
                --data-urlencode "text=${MESSAGE}"
-
