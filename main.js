@@ -359,7 +359,6 @@ app.commandLine.appendSwitch('enable-features', 'ThirdPartyStoragePartitioning')
 // ================================================================= //
 // Global Variables
 // ================================================================= //
-let deepResearchScheduleInterval = null;
 let lastScheduleCheck = 0;
 let isQuitting = false;
 let isUserTogglingHide = false;
@@ -797,7 +796,7 @@ async function applyProxySettings() {
 // Deep Research Schedule Functions (Using Module)
 // ================================================================= //
 
-const { scheduleDeepResearchCheck, checkAndExecuteScheduledResearch, executeScheduledDeepResearch } = deepResearchModule;
+const { scheduleDeepResearchCheck, checkAndExecuteScheduledResearch, executeScheduledDeepResearch, stopScheduleCheck } = deepResearchModule;
 
 // ================================================================= //
 // Multi-Account Support (Using Module)
@@ -2286,6 +2285,12 @@ function createWindow(state = null) {
 
     newWin.on('closed', () => {
         detachedViews.delete(newWin);
+        
+        // Clear any pending restore scroll timeouts
+        if (newWin.restoreScrollTimeouts) {
+            newWin.restoreScrollTimeouts.forEach(id => clearTimeout(id));
+            newWin.restoreScrollTimeouts = null;
+        }
     });
 
     // Save scroll position when window is moved or resized
@@ -2794,6 +2799,15 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
         return;
     } else if (existingView) {
         try {
+            // Remove all event listeners before destroying
+            existingView.webContents.removeAllListeners('will-navigate');
+            existingView.webContents.removeAllListeners('found-in-page');
+            existingView.webContents.removeAllListeners('before-input-event');
+            existingView.webContents.removeAllListeners('zoom-changed');
+            existingView.webContents.removeAllListeners('did-finish-load');
+            existingView.webContents.removeAllListeners('did-navigate');
+            existingView.webContents.removeAllListeners('did-navigate-in-page');
+            
             targetWin.removeBrowserView(existingView);
         } catch (err) {
             // ignore detach errors
@@ -3122,6 +3136,12 @@ async function setCanvasMode(isCanvas, targetWin) {
 
     // Restore scroll position after animation completes
     if (activeView && activeView.webContents && !activeView.webContents.isDestroyed()) {
+        // Clear any pending restore timeouts to prevent leaks
+        if (targetWin.restoreScrollTimeouts) {
+            targetWin.restoreScrollTimeouts.forEach(id => clearTimeout(id));
+        }
+        targetWin.restoreScrollTimeouts = [];
+        
         // Try multiple times to ensure scroll position is restored
         const restoreScroll = () => {
             if (activeView && activeView.webContents && !activeView.webContents.isDestroyed()) {
@@ -3131,9 +3151,9 @@ async function setCanvasMode(isCanvas, targetWin) {
             }
         };
         
-        setTimeout(restoreScroll, 100);
-        setTimeout(restoreScroll, 300);
-        setTimeout(restoreScroll, 500);
+        targetWin.restoreScrollTimeouts.push(setTimeout(restoreScroll, 100));
+        targetWin.restoreScrollTimeouts.push(setTimeout(restoreScroll, 300));
+        targetWin.restoreScrollTimeouts.push(setTimeout(restoreScroll, 500));
     }
 }
 
@@ -3153,6 +3173,16 @@ function animateResize(targetBounds, activeWin, activeView, duration_ms = 200) {
     let timeoutId = null;
 
     function step() {
+        // Check if window was destroyed before processing
+        if (!activeWin || activeWin.isDestroyed()) {
+            // Cancel any pending timeout to prevent memory leak
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+            return;
+        }
+
         i++;
         const b = {
             x: Math.round(start.x + delta.x * i),
@@ -3160,28 +3190,22 @@ function animateResize(targetBounds, activeWin, activeView, duration_ms = 200) {
             width: Math.round(start.width + delta.width * i),
             height: Math.round(start.height + delta.height * i)
         };
-        if (activeWin && !activeWin.isDestroyed()) {
-            activeWin.setBounds(b);
-            if (activeView && activeView.webContents && !activeView.webContents.isDestroyed()) {
-                activeView.setBounds({ x: 0, y: 30, width: b.width, height: b.height - 30 });
-                // Force repaint on final step to ensure proper rendering
-                if (i >= steps) {
-                    try {
-                        activeView.webContents.invalidate();
-                    } catch (e) {
-                        // Ignore errors
-                    }
+        
+        activeWin.setBounds(b);
+        if (activeView && activeView.webContents && !activeView.webContents.isDestroyed()) {
+            activeView.setBounds({ x: 0, y: 30, width: b.width, height: b.height - 30 });
+            // Force repaint on final step to ensure proper rendering
+            if (i >= steps) {
+                try {
+                    activeView.webContents.invalidate();
+                } catch (e) {
+                    // Ignore errors
                 }
             }
-            if (i < steps) {
-                timeoutId = setTimeout(step, interval);
-            }
-        } else {
-            // Window was destroyed, clear timeout
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-                timeoutId = null;
-            }
+        }
+        
+        if (i < steps) {
+            timeoutId = setTimeout(step, interval);
         }
     }
     step();
@@ -3857,6 +3881,12 @@ ipcMain.on('toggle-full-screen', async (event) => {
         
         // Restore scroll position after toggling - multiple attempts with proper timing
         if (view && view.webContents && !view.webContents.isDestroyed()) {
+            // Clear any pending restore timeouts to prevent leaks
+            if (win.restoreScrollTimeouts) {
+                win.restoreScrollTimeouts.forEach(id => clearTimeout(id));
+            }
+            win.restoreScrollTimeouts = [];
+            
             const restoreScroll = async () => {
                 if (view && !view.webContents.isDestroyed()) {
                     try {
@@ -3871,11 +3901,11 @@ ipcMain.on('toggle-full-screen', async (event) => {
             };
             
             // Multiple restoration attempts with proper delays for different window states
-            setTimeout(restoreScroll, 100);   // Quick restore
-            setTimeout(restoreScroll, 300);   // After layout
-            setTimeout(restoreScroll, 600);   // After animation
-            setTimeout(restoreScroll, 1000);  // Final attempt
-            setTimeout(restoreScroll, 1500);  // Safety net
+            win.restoreScrollTimeouts.push(setTimeout(restoreScroll, 100));   // Quick restore
+            win.restoreScrollTimeouts.push(setTimeout(restoreScroll, 300));   // After layout
+            win.restoreScrollTimeouts.push(setTimeout(restoreScroll, 600));   // After animation
+            win.restoreScrollTimeouts.push(setTimeout(restoreScroll, 1000));  // Final attempt
+            win.restoreScrollTimeouts.push(setTimeout(restoreScroll, 1500));  // Safety net
         }
     }
 });
@@ -4245,10 +4275,7 @@ app.on('will-quit', () => {
     }
     
     // Clear deep research schedule interval
-    if (deepResearchScheduleInterval) {
-        clearInterval(deepResearchScheduleInterval);
-        deepResearchScheduleInterval = null;
-    }
+    stopScheduleCheck();
     
     // Clear daily update check interval
     if (dailyUpdateCheckIntervalId) {
