@@ -161,6 +161,23 @@ sudo dpkg -i GeminiDesk_8.0.0_amd64.deb
 
 ---
 
+## 🧪 Beta Builds (Latest Development Version)
+
+Want to try the latest fixes and features before they're officially released? Our beta builds are automatically uploaded after every successful build!
+
+### 📦 Download Beta Builds
+
+These builds include the latest fixes and improvements that haven't been released yet. They're automatically built and uploaded by GitHub Actions, just like our official releases, so they're safe to use.
+
+*   **Windows:** [GeminiDesk-Setup.exe](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk-Setup.exe)
+*   **macOS:** [GeminiDesk.dmg](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk.dmg)
+*   **Linux AppImage:** [GeminiDesk.AppImage](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk.AppImage)
+*   **Linux DEB:** [GeminiDesk.deb](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk.deb)
+
+> **Note:** These links always point to the latest build from the main branch. Perfect for early adopters who want the newest features!
+
+---
+
 ## 🛠️ For Developers: Building From the Ashes
 
 Want to peek under the hood or forge your own version? We admire your courage.
