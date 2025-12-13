@@ -56,7 +56,7 @@ async function loadExtensionToAllSessions() {
         await loadExtensionToSession(session.defaultSession, 'default');
 
         // main app partition
-        if (typeof constants !== 'undefined' && constants && constants.SESSION_PARTITION) {
+        if (constants && constants.SESSION_PARTITION) {
             const mainPart = session.fromPartition(constants.SESSION_PARTITION, { cache: true });
             await loadExtensionToSession(mainPart, constants.SESSION_PARTITION);
         }
@@ -123,8 +123,6 @@ async function unloadLoadedExtensions() {
                             try { session.defaultSession.removeExtension(extId); } catch (ee) {}
                         }
                     }
-                } else if (label.startsWith('view:')) {
-                    // handled above
                 }
                 loadedExtensions.delete(label);
             } catch (e) {
@@ -380,6 +378,7 @@ let notificationIntervalId = null;
 let agentProcess = null;
 let tray = null;
 let mcpProxyProcess = null; // Background MCP proxy process
+let isScreenshotProcessActive = false;
 
 const detachedViews = new Map();
 const PROFILE_CAPTURE_COOLDOWN_MS = 60 * 1000;
@@ -1501,8 +1500,6 @@ const shortcutActions = {
     },
     refresh: () => reloadFocusedView(),
     screenshot: () => {
-        let isScreenshotProcessActive = false;
-
         if (isQuitting || isScreenshotProcessActive) {
             return;
         }
@@ -2728,18 +2725,31 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
                     }
 
                     if (loginWin && !loginWin.isDestroyed()) {
+                        const loginWinId = loginWin.id; // Store ID before closing
                         loginWin.close();
-                    }
+                        loginWin = null;
 
-                    BrowserWindow.getAllWindows().forEach(win => {
-                        if (win && !win.isDestroyed() && (!loginWin || win.id !== loginWin.id)) {
-                            const view = win.getBrowserView();
-                            if (view && view.webContents && !view.webContents.isDestroyed()) {
-                                console.log(`Reloading view for window ID: ${win.id}`);
-                                view.webContents.reload();
+                        BrowserWindow.getAllWindows().forEach(win => {
+                            if (win && !win.isDestroyed() && win.id !== loginWinId) {
+                                const view = win.getBrowserView();
+                                if (view && view.webContents && !view.webContents.isDestroyed()) {
+                                    console.log(`Reloading view for window ID: ${win.id}`);
+                                    view.webContents.reload();
+                                }
                             }
-                        }
-                    });
+                        });
+                    } else {
+                        // If loginWin is already destroyed, reload all windows
+                        BrowserWindow.getAllWindows().forEach(win => {
+                            if (win && !win.isDestroyed()) {
+                                const view = win.getBrowserView();
+                                if (view && view.webContents && !view.webContents.isDestroyed()) {
+                                    console.log(`Reloading view for window ID: ${win.id}`);
+                                    view.webContents.reload();
+                                }
+                            }
+                        });
+                    }
 
                 } catch (error) {
                     console.error('Error during login success handling:', error);
@@ -3131,6 +3141,7 @@ function animateResize(targetBounds, activeWin, activeView, duration_ms = 200) {
         height: (targetBounds.height - start.height) / steps
     };
     let i = 0;
+    let timeoutId = null;
 
     function step() {
         i++;
@@ -3153,35 +3164,19 @@ function animateResize(targetBounds, activeWin, activeView, duration_ms = 200) {
                     }
                 }
             }
-            if (i < steps) setTimeout(step, interval);
+            if (i < steps) {
+                timeoutId = setTimeout(step, interval);
+            }
+        } else {
+            // Window was destroyed, clear timeout
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
+            }
         }
     }
     step();
 }
-
-// ================================================================= //
-// Theme Management
-// ================================================================= //
-
-function broadcastThemeChange(newTheme) {
-    const themeToSend = newTheme === 'system'
-        ? (nativeTheme.shouldUseDarkColors ? 'dark' : 'light')
-        : newTheme;
-
-    broadcastToAllWebContents('theme-updated', themeToSend);
-}
-
-function syncThemeWithWebsite(theme) {
-    if (['light', 'dark', 'system'].includes(theme)) {
-        nativeTheme.themeSource = theme;
-    }
-}
-
-nativeTheme.on('updated', () => {
-    if (settings.theme === 'system') {
-        broadcastThemeChange('system');
-    }
-});
 
 // ================================================================= //
 // Notifications Management
@@ -3236,17 +3231,6 @@ async function checkForNotifications(isManualCheck = false) {
         createNotificationWindow();
         if (!notificationWin) return;
     }
-
-    const sendToNotificationWindow = (data) => {
-        if (!notificationWin || notificationWin.isDestroyed()) return;
-        const wc = notificationWin.webContents;
-        const send = () => wc.send('notification-data', data);
-        if (wc.isLoadingMainFrame()) {
-            wc.once('did-finish-load', send);
-        } else {
-            send();
-        }
-    };
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
@@ -4239,6 +4223,18 @@ app.on('will-quit', () => {
     if (reminderTimeoutId) {
         clearTimeout(reminderTimeoutId);
         reminderTimeoutId = null;
+    }
+    
+    // Clear notification interval
+    if (notificationIntervalId) {
+        clearInterval(notificationIntervalId);
+        notificationIntervalId = null;
+    }
+    
+    // Clear deep research schedule interval
+    if (deepResearchScheduleInterval) {
+        clearInterval(deepResearchScheduleInterval);
+        deepResearchScheduleInterval = null;
     }
     
     try {
