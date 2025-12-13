@@ -15,7 +15,7 @@ const https = require('https');
 const path = require('path');
 const fs = require('fs');
 const fsp = fs.promises;
-const { spawn, fork } = require('child_process');
+const { spawn, fork, spawnSync } = require('child_process');
 const os = require('os');
 const crypto = require('crypto');
 const fetch = require('node-fetch');
@@ -4294,11 +4294,17 @@ app.on('will-quit', () => {
         if (mcpProxyProcess && !mcpProxyProcess.killed) {
             // Kill the detached process and its child processes
             if (process.platform === 'win32') {
-                // On Windows, kill the process tree
-                spawn('taskkill', ['/pid', mcpProxyProcess.pid, '/f', '/t']);
+                // On Windows, kill the process tree synchronously
+                spawnSync('taskkill', ['/pid', mcpProxyProcess.pid, '/f', '/t']);
             } else {
                 // On Unix-like systems, kill the process group
-                process.kill(-mcpProxyProcess.pid);
+                // The process was spawned with detached: true, making it a group leader
+                try {
+                    process.kill(-mcpProxyProcess.pid);
+                } catch (killErr) {
+                    // If process group kill fails, try normal kill
+                    process.kill(mcpProxyProcess.pid);
+                }
             }
         }
     } catch (e) {
