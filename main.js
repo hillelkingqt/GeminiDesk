@@ -4295,7 +4295,15 @@ app.on('will-quit', () => {
             // Kill the detached process and its child processes
             if (process.platform === 'win32') {
                 // On Windows, kill the process tree synchronously
-                spawnSync('taskkill', ['/pid', mcpProxyProcess.pid, '/f', '/t']);
+                const result = spawnSync('taskkill', ['/pid', mcpProxyProcess.pid, '/f', '/t']);
+                // If taskkill fails, try normal process.kill as fallback
+                if (result.error || result.status !== 0) {
+                    try {
+                        process.kill(mcpProxyProcess.pid);
+                    } catch (killErr) {
+                        // Ignore if process is already dead
+                    }
+                }
             } else {
                 // On Unix-like systems, kill the process group
                 // The process was spawned with detached: true, making it a group leader
