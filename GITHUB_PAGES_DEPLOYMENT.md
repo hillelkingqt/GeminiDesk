@@ -53,6 +53,36 @@ The `telegram-upload` job has been replaced with `github-pages-deploy` which:
 ⚠️ **Public**: All builds are publicly accessible via GitHub Pages  
 ⚠️ **Enable GitHub Pages**: Ensure GitHub Pages is enabled in repository settings for the `gh-pages` branch
 
+## Setup Instructions
+
+### 1. Configure Telegram Bot (if not already done)
+
+1. Create a Telegram bot with [@BotFather](https://t.me/botfather)
+2. Get your bot token (looks like `123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11`)
+3. Get your chat ID:
+   - Send a message to your bot
+   - Visit `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
+   - Find your chat ID in the response
+
+### 2. Add GitHub Secrets
+
+1. Go to repository **Settings** → **Secrets and variables** → **Actions**
+2. Click **New repository secret** and add:
+   - **Name**: `TELEGRAM_BOT_TOKEN`, **Value**: Your bot token
+   - **Name**: `TELEGRAM_CHAT_ID`, **Value**: Your chat ID
+3. `GITHUB_TOKEN` is automatically provided by GitHub Actions (no setup needed)
+
+### 3. Enable GitHub Pages
+
+1. Go to repository **Settings**
+2. Navigate to **Pages** section in the left sidebar
+3. Under **Source**, select:
+   - **Branch**: `gh-pages`
+   - **Folder**: `/ (root)`
+4. Click **Save**
+
+⚠️ **Note**: The `gh-pages` branch will be created automatically by the workflow on the first run. After the first deployment, come back and enable GitHub Pages.
+
 ## Configuration
 
 Required secrets in GitHub Actions:
@@ -60,13 +90,6 @@ Required secrets in GitHub Actions:
 - `TELEGRAM_CHAT_ID`: Your Telegram chat ID
 - `GITHUB_TOKEN`: Automatically provided by GitHub Actions
 
-## Enable GitHub Pages
-
-1. Go to repository **Settings**
-2. Navigate to **Pages** section
-3. Under **Source**, select:
-   - Branch: `gh-pages`
-   - Folder: `/ (root)`
-4. Click **Save**
+## URLs After Setup
 
 GitHub Pages will be available at `https://hillelkingqt.github.io/GeminiDesk/` after the first deployment.
