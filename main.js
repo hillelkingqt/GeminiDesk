@@ -1854,12 +1854,19 @@ function registerShortcuts() {
 
     // Separate shortcuts based on global/local setting
     for (const action in localShortcuts) {
-        if (action === 'findInPage') continue;
-        
         // Check per-key setting first, then fall back to global setting
         const isGlobal = settings.shortcutsGlobalPerKey && settings.shortcutsGlobalPerKey.hasOwnProperty(action)
             ? settings.shortcutsGlobalPerKey[action]
             : settings.shortcutsGlobal;
+        
+        // findInPage is handled separately in focus/blur events, so skip it here
+        if (action === 'findInPage') {
+            // But still include it in localOnlyShortcuts if it's not global
+            if (!isGlobal) {
+                localOnlyShortcuts[action] = localShortcuts[action];
+            }
+            continue;
+        }
         
         if (isGlobal) {
             globalShortcuts[action] = localShortcuts[action];
@@ -1894,6 +1901,15 @@ function registerShortcuts() {
     } else {
         broadcastToAllWebContents('set-local-shortcuts', {});
     }
+}
+
+// Helper function to check if findInPage shortcut should be global
+function isFindInPageGlobal() {
+    // Check per-key setting first, then fall back to global setting
+    const isGlobal = settings.shortcutsGlobalPerKey && settings.shortcutsGlobalPerKey.hasOwnProperty('findInPage')
+        ? settings.shortcutsGlobalPerKey['findInPage']
+        : settings.shortcutsGlobal;
+    return isGlobal;
 }
 
 // ================================================================= //
@@ -2250,15 +2266,17 @@ function createWindow(state = null) {
             }
         }, 100);
 
+        // Only register findInPage as global shortcut if user has enabled global shortcuts
         const findShortcut = settings.shortcuts.findInPage;
-        if (findShortcut) {
+        if (findShortcut && isFindInPageGlobal()) {
             globalShortcut.register(findShortcut, shortcutActions.findInPage);
         }
     });
 
     newWin.on('blur', () => {
+        // Only unregister if it was registered as a global shortcut
         const findShortcut = settings.shortcuts.findInPage;
-        if (findShortcut) {
+        if (findShortcut && isFindInPageGlobal()) {
             globalShortcut.unregister(findShortcut);
         }
     });
