@@ -379,6 +379,7 @@ let agentProcess = null;
 let tray = null;
 let mcpProxyProcess = null; // Background MCP proxy process
 let isScreenshotProcessActive = false;
+let dailyUpdateCheckIntervalId = null;
 
 const detachedViews = new Map();
 const PROFILE_CAPTURE_COOLDOWN_MS = 60 * 1000;
@@ -1003,9 +1004,17 @@ const shortcutActions = {
             // No windows, create one and wait for it to be ready
             const newWin = createWindow();
             await new Promise(resolve => {
+                let attempts = 0;
+                const maxAttempts = 50; // 10 seconds max (50 * 200ms)
                 const checkView = () => {
+                    attempts++;
+                    if (attempts > maxAttempts) {
+                        console.error('Voice Assistant: Timeout waiting for view to be ready');
+                        resolve();
+                        return;
+                    }
                     const view = newWin.getBrowserView();
-                    if (view && !view.webContents.isDestroyed() && view.webContents.getURL()) {
+                    if (view && view.webContents && !view.webContents.isDestroyed() && view.webContents.getURL()) {
                         setTimeout(() => clickMicrophoneButton(newWin, view), 1000);
                         resolve();
                     } else {
@@ -1058,7 +1067,7 @@ const shortcutActions = {
         }
         
         const view = targetWin.getBrowserView();
-        if (!view || view.webContents.isDestroyed()) {
+        if (!view || !view.webContents || view.webContents.isDestroyed()) {
             console.error('No browser view available for voice assistant');
             return;
         }
@@ -1399,7 +1408,7 @@ const shortcutActions = {
 
         if (focusedWindow.appMode === 'aistudio') {
             const view = focusedWindow.getBrowserView();
-            if (!view) return;
+            if (!view || !view.webContents || view.webContents.isDestroyed()) return;
 
             const libraryUrl = 'https://aistudio.google.com/library';
             const focusScript = `
@@ -3315,7 +3324,11 @@ function scheduleDailyUpdateCheck() {
 
     checkForUpdates();
     // Check for updates once every 24 hours (24 * 60 * 60 * 1000 milliseconds)
-    setInterval(checkForUpdates, 24 * 60 * 60 * 1000);
+    // Store interval ID so it can be cleared later
+    if (dailyUpdateCheckIntervalId) {
+        clearInterval(dailyUpdateCheckIntervalId);
+    }
+    dailyUpdateCheckIntervalId = setInterval(checkForUpdates, 24 * 60 * 60 * 1000);
 }
 
 function openUpdateWindowAndCheck() {
@@ -4235,6 +4248,12 @@ app.on('will-quit', () => {
     if (deepResearchScheduleInterval) {
         clearInterval(deepResearchScheduleInterval);
         deepResearchScheduleInterval = null;
+    }
+    
+    // Clear daily update check interval
+    if (dailyUpdateCheckIntervalId) {
+        clearInterval(dailyUpdateCheckIntervalId);
+        dailyUpdateCheckIntervalId = null;
     }
     
     try {
