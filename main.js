@@ -2291,6 +2291,12 @@ function createWindow(state = null) {
             newWin.restoreScrollTimeouts.forEach(id => clearTimeout(id));
             newWin.restoreScrollTimeouts = null;
         }
+        
+        // Clear any pending animation timeouts
+        if (newWin.animationTimeouts) {
+            newWin.animationTimeouts.forEach(id => clearTimeout(id));
+            newWin.animationTimeouts = null;
+        }
     });
 
     // Save scroll position when window is moved or resized
@@ -3170,16 +3176,15 @@ function animateResize(targetBounds, activeWin, activeView, duration_ms = 200) {
         height: (targetBounds.height - start.height) / steps
     };
     let i = 0;
-    let timeoutId = null;
+    
+    // Initialize array to track animation timeouts if not already present
+    if (!activeWin.animationTimeouts) {
+        activeWin.animationTimeouts = [];
+    }
 
     function step() {
         // Check if window was destroyed before processing
         if (!activeWin || activeWin.isDestroyed()) {
-            // Cancel any pending timeout to prevent memory leak
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-                timeoutId = null;
-            }
             return;
         }
 
@@ -3205,7 +3210,8 @@ function animateResize(targetBounds, activeWin, activeView, duration_ms = 200) {
         }
         
         if (i < steps) {
-            timeoutId = setTimeout(step, interval);
+            const timeoutId = setTimeout(step, interval);
+            activeWin.animationTimeouts.push(timeoutId);
         }
     }
     step();
@@ -3992,14 +3998,15 @@ ipcMain.handle('mcp-setup-doitforme', async () => {
             const proxyCmd = `npx -y @srbhptl39/mcp-superassistant-proxy@latest --config "${cfgPath}" --outputTransport sse`;
             if (process.platform === 'win32') {
                 // Open a new PowerShell window with -NoExit so it stays open
-                // Using cmd /c start ... to ensure a new window is spawned
-                spawn('cmd.exe', ['/c', 'start', 'powershell.exe', '-NoExit', '-Command', proxyCmd], {
+                // Spawn PowerShell directly without cmd.exe to maintain process handle
+                const child = spawn('powershell.exe', ['-NoExit', '-Command', proxyCmd], {
                     detached: true,
                     stdio: 'ignore',
                     windowsHide: false,
                     env: { ...process.env }
-                }).unref();
-                // We cannot reliably track the child PID started via 'start', so do not set mcpProxyProcess
+                });
+                child.unref();
+                mcpProxyProcess = child;
             } else if (process.platform === 'darwin') {
                 // On macOS, open a visible Terminal.app window with the command
                 // Use osascript to tell Terminal to run the command in a new window
@@ -4008,11 +4015,13 @@ ipcMain.handle('mcp-setup-doitforme', async () => {
                     activate
                     do script "${escapedCmd}"
                 end tell`;
-                spawn('osascript', ['-e', appleScript], {
+                const child = spawn('osascript', ['-e', appleScript], {
                     detached: true,
                     stdio: 'ignore',
                     env: { ...process.env }
-                }).unref();
+                });
+                child.unref();
+                mcpProxyProcess = child;
             } else {
                 // On Linux, try common terminal emulators in order of preference
                 const terminals = [
@@ -4028,11 +4037,13 @@ ipcMain.handle('mcp-setup-doitforme', async () => {
                         // Check if terminal exists using 'which'
                         const which = require('child_process').spawnSync('which', [term.cmd]);
                         if (which.status === 0) {
-                            spawn(term.cmd, term.args, {
+                            const child = spawn(term.cmd, term.args, {
                                 detached: true,
                                 stdio: 'ignore',
                                 env: { ...process.env }
-                            }).unref();
+                            });
+                            child.unref();
+                            mcpProxyProcess = child;
                             launched = true;
                             break;
                         }
