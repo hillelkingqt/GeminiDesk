@@ -4003,7 +4003,6 @@ ipcMain.handle('mcp-setup-doitforme', async () => {
                     detached: true,
                     stdio: 'ignore',
                     windowsHide: false,
-                    shell: false,
                     env: { ...process.env }
                 });
                 child.unref();
