@@ -364,9 +364,19 @@ async function executeScheduledDeepResearch(format) {
     }
 }
 
+function stopScheduleCheck() {
+    // Clear the interval if it exists
+    if (deepResearchScheduleInterval) {
+        clearInterval(deepResearchScheduleInterval);
+        deepResearchScheduleInterval = null;
+        console.log('Deep Research Schedule: Monitoring stopped');
+    }
+}
+
 module.exports = {
     initialize,
     scheduleDeepResearchCheck,
     checkAndExecuteScheduledResearch,
-    executeScheduledDeepResearch
+    executeScheduledDeepResearch,
+    stopScheduleCheck
 };
