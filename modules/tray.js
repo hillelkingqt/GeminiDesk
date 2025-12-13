@@ -29,6 +29,7 @@ function createTrayIcon() {
 
     tray.setToolTip('GeminiDesk');
 
+    // Handle click event (left-click on Linux, click on Windows/macOS)
     tray.on('click', () => {
         const allWindows = BrowserWindow.getAllWindows();
         const userWindows = allWindows.filter(w => !w.__internal);
@@ -55,6 +56,16 @@ function createTrayIcon() {
         }
     });
 
+    // Handle right-click (context menu) on all platforms
+    // This is especially important for Linux where right-click is the primary way to access menus
+    tray.on('right-click', () => {
+        if (updateTrayContextMenu) {
+            updateTrayContextMenu();
+        }
+        // The context menu will be shown by updateTrayContextMenu via setContextMenu
+    });
+
+    // Set initial context menu
     if (updateTrayContextMenu) {
         updateTrayContextMenu();
     }
