@@ -160,10 +160,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  telegram-upload:
+  github-pages-deploy:
     needs: [build-win, build-linux, build-mac]
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Download linux artifacts
         uses: actions/download-artifact@v4
         with:
@@ -182,51 +185,92 @@ jobs:
           name: mac
           path: artifacts/mac
 
-      - name: Send Windows EXE to Telegram
+      - name: Prepare artifacts with consistent names
         run: |
-          for file in artifacts/windows/*.exe; do
-            if [ -f "$file" ]; then
-              echo "Sending $file to Telegram..."
-              curl -F "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
-                   -F "document=@$file" \
-                   -F "caption=Windows Build: $(basename $file)" \
-                   "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument"
-            fi
-          done
+          mkdir -p gh-pages
+          
+          # Copy Windows EXE with consistent name
+          if ls artifacts/windows/*.exe 1> /dev/null 2>&1; then
+            cp artifacts/windows/*.exe gh-pages/GeminiDesk-Setup.exe
+          fi
+          
+          # Copy macOS DMG with consistent name
+          if ls artifacts/mac/*.dmg 1> /dev/null 2>&1; then
+            cp artifacts/mac/*.dmg gh-pages/GeminiDesk.dmg
+          fi
+          
+          # Copy Linux AppImage with consistent name
+          if ls artifacts/linux/*.AppImage 1> /dev/null 2>&1; then
+            cp artifacts/linux/*.AppImage gh-pages/GeminiDesk.AppImage
+          fi
+          
+          # Copy Linux DEB with consistent name
+          if ls artifacts/linux/*.deb 1> /dev/null 2>&1; then
+            cp artifacts/linux/*.deb gh-pages/GeminiDesk.deb
+          fi
+          
+          # Create an index.html for easy access
+          cat > gh-pages/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>GeminiDesk Test Builds</title>
+            <style>
+              body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+              h1 { color: #333; }
+              .download-links { margin: 20px 0; }
+              .download-links a { display: block; margin: 10px 0; padding: 10px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
+              .download-links a:hover { background: #0056b3; }
+              .warning { background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 5px; margin: 20px 0; }
+            </style>
+          </head>
+          <body>
+            <h1>GeminiDesk Test Builds</h1>
+            <div class="warning">
+              ⚠️ These are test builds that are automatically overwritten with each new build. Download and test immediately.
+            </div>
+            <div class="download-links">
+              <a href="GeminiDesk-Setup.exe">📦 Download Windows (EXE)</a>
+              <a href="GeminiDesk.dmg">🍎 Download macOS (DMG)</a>
+              <a href="GeminiDesk.AppImage">🐧 Download Linux (AppImage)</a>
+              <a href="GeminiDesk.deb">🐧 Download Linux (DEB)</a>
+            </div>
+          </body>
+          </html>
+          EOF
+          
+          echo "Prepared files for GitHub Pages:"
+          ls -lh gh-pages/
 
-      - name: Send macOS DMG to Telegram
-        run: |
-          for file in artifacts/mac/*.dmg; do
-            if [ -f "$file" ]; then
-              echo "Sending $file to Telegram..."
-              curl -F "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
-                   -F "document=@$file" \
-                   -F "caption=macOS Build: $(basename $file)" \
-                   "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument"
-            fi
-          done
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./gh-pages
+          force_orphan: true
 
-      - name: Send Linux AppImage to Telegram
+      - name: Send download links to Telegram
         run: |
-          for file in artifacts/linux/*.AppImage; do
-            if [ -f "$file" ]; then
-              echo "Sending $file to Telegram..."
-              curl -F "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
-                   -F "document=@$file" \
-                   -F "caption=Linux AppImage Build: $(basename $file)" \
-                   "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument"
-            fi
-          done
-
-      - name: Send Linux DEB to Telegram
-        run: |
-          for file in artifacts/linux/*.deb; do
-            if [ -f "$file" ]; then
-              echo "Sending $file to Telegram..."
-              curl -F "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
-                   -F "document=@$file" \
-                   -F "caption=Linux DEB Build: $(basename $file)" \
-                   "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument"
-            fi
-          done
+          REPO_OWNER="${{ github.repository_owner }}"
+          REPO_NAME="${{ github.event.repository.name }}"
+          BASE_URL="https://${REPO_OWNER}.github.io/${REPO_NAME}"
+          
+          MESSAGE=$(cat << 'END_MESSAGE'
+          🚀 New test build available!
+          
+          📦 Windows: BASE_URL_PLACEHOLDER/GeminiDesk-Setup.exe
+          🍎 macOS: BASE_URL_PLACEHOLDER/GeminiDesk.dmg
+          🐧 Linux AppImage: BASE_URL_PLACEHOLDER/GeminiDesk.AppImage
+          🐧 Linux DEB: BASE_URL_PLACEHOLDER/GeminiDesk.deb
+          
+          ⚠️ Test build - will be overwritten by next build
+          🔗 View all: BASE_URL_PLACEHOLDER
+          END_MESSAGE
+          )
+          
+          MESSAGE="${MESSAGE//BASE_URL_PLACEHOLDER/${BASE_URL}}"
+          
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+               -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+               --data-urlencode "text=${MESSAGE}"
 
