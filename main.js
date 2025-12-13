@@ -3210,7 +3210,14 @@ function animateResize(targetBounds, activeWin, activeView, duration_ms = 200) {
         }
         
         if (i < steps) {
-            const timeoutId = setTimeout(step, interval);
+            const timeoutId = setTimeout(() => {
+                // Remove this timeoutId from the array to prevent memory leak
+                if (activeWin && activeWin.animationTimeouts) {
+                    const idx = activeWin.animationTimeouts.indexOf(timeoutId);
+                    if (idx > -1) activeWin.animationTimeouts.splice(idx, 1);
+                }
+                step();
+            }, interval);
             activeWin.animationTimeouts.push(timeoutId);
         }
     }
@@ -4021,7 +4028,9 @@ ipcMain.handle('mcp-setup-doitforme', async () => {
                     env: { ...process.env }
                 });
                 child.unref();
-                mcpProxyProcess = child;
+                // On macOS, the actual proxy runs inside Terminal.app, not as a child process we can track.
+                // Users must manually close the Terminal window to stop the proxy.
+                mcpProxyProcess = null;
             } else {
                 // On Linux, try common terminal emulators in order of preference
                 const terminals = [
@@ -4043,7 +4052,9 @@ ipcMain.handle('mcp-setup-doitforme', async () => {
                                 env: { ...process.env }
                             });
                             child.unref();
-                            mcpProxyProcess = child;
+                            // On Linux, similar to macOS, we can't easily track the proxy process inside the terminal emulator.
+                            // Users must manually close the terminal window.
+                            mcpProxyProcess = null;
                             launched = true;
                             break;
                         }
