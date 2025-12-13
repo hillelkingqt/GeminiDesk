@@ -301,16 +301,32 @@ async function createAndManageLoginWindowForPartition(loginUrl, targetPartition,
 }
     app.whenReady().then(async () => {
         // Conditionally load unpacked extension if user enabled it in settings
-        try {
-            const localSettings = settingsModule.getSettings();
-            if (!localSettings || !localSettings.loadUnpackedExtension) {
-                console.log('loadUnpackedExtension is disabled in settings - skipping automatic extension load at startup');
-                return;
+        // Do this asynchronously without blocking app startup for better performance
+        const loadExtensionsAsync = async () => {
+            try {
+                const localSettings = settingsModule.getSettings();
+                if (!localSettings || !localSettings.loadUnpackedExtension) {
+                    console.log('loadUnpackedExtension is disabled in settings - skipping automatic extension load at startup');
+                    return;
+                }
+                
+                // On Linux (especially AppImage), defer extension loading to improve startup time
+                if (process.platform === 'linux') {
+                    console.log('Deferring extension loading on Linux for faster startup...');
+                    setTimeout(async () => {
+                        await loadExtensionToAllSessions();
+                        console.log('Deferred extension loading completed on Linux');
+                    }, 2000); // Wait 2 seconds after app is ready
+                } else {
+                    await loadExtensionToAllSessions();
+                }
+            } catch (e) {
+                console.error('Failed during conditional extension load at startup:', e && e.message ? e.message : e);
             }
-            await loadExtensionToAllSessions();
-        } catch (e) {
-            console.error('Failed during conditional extension load at startup:', e && e.message ? e.message : e);
-        }
+        };
+        
+        // Don't await this - let it run in the background
+        loadExtensionsAsync();
     });
 
 const trayModule = require('./modules/tray');
@@ -319,7 +335,22 @@ const trayModule = require('./modules/tray');
 // Global Constants and Configuration
 // ================================================================= //
 
-app.disableHardwareAcceleration();
+// On Linux, hardware acceleration can cause issues with some graphics drivers and slow startup
+// On other platforms, keep it enabled for better performance
+if (process.platform === 'linux') {
+    // Only disable if we detect potential issues, otherwise keep enabled for better performance
+    const hasGPU = process.env.DISPLAY || process.env.WAYLAND_DISPLAY;
+    if (!hasGPU) {
+        // Disable only if no display is available (headless)
+        app.disableHardwareAcceleration();
+        console.log('Hardware acceleration disabled (no display detected)');
+    } else {
+        console.log('Hardware acceleration enabled for better performance');
+    }
+} else {
+    // Keep enabled on Windows and macOS
+    console.log('Hardware acceleration enabled');
+}
 
 // Use constants from module
 const { REAL_CHROME_UA, STABLE_USER_AGENT, SESSION_PARTITION, GEMINI_URL, AISTUDIO_URL, isMac, execPath, launcherPath, margin, originalSize, canvasSize } = constants;

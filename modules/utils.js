@@ -265,12 +265,26 @@ function setupContextMenu(webContents) {
         if (menuTemplate.length > 0) {
             const contextMenu = Menu.buildFromTemplate(menuTemplate);
 
-            contextMenu.popup({
+            // On Linux, the context menu may close if the mouse button is released too quickly
+            // We use a slight delay and a proper callback to ensure menu stays visible
+            const popupOptions = {
                 window: BrowserWindow.fromWebContents(webContents),
                 x: params.x,
-                y: params.y,
-                callback: () => { }
-            });
+                y: params.y
+            };
+
+            // For Linux, we need to be more careful with the popup timing
+            if (process.platform === 'linux') {
+                // Use setImmediate to ensure the menu popup happens after the event loop
+                // This prevents the menu from closing immediately on button release
+                setImmediate(() => {
+                    if (!webContents.isDestroyed()) {
+                        contextMenu.popup(popupOptions);
+                    }
+                });
+            } else {
+                contextMenu.popup(popupOptions);
+            }
         }
     });
 }
