@@ -184,7 +184,6 @@ jobs:
         run: |
           mkdir -p upload_stage
           
-          # Rename files to consistent names (overwriting old builds on R2)
           # Windows
           if ls artifacts/windows/*.exe 1> /dev/null 2>&1; then
             cp artifacts/windows/*.exe upload_stage/GeminiDesk-Setup.exe
@@ -211,27 +210,34 @@ jobs:
           R2_ENDPOINT: ${{ secrets.CF_R2_ENDPOINT }}
           R2_BUCKET: ${{ secrets.CF_R2_BUCKET }}
         run: |
-          # Use AWS CLI to sync files to R2 Bucket
           aws s3 sync ./upload_stage s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT --no-progress
 
       - name: Send download links to Telegram
         run: |
-          # Use the Public Domain provided in secrets (e.g., https://dl.example.com)
-          # Ensure no trailing slash in the secret, or handle it here
+          # הסרת לוכסן בסוף ה-URL אם קיים, כדי למנוע כפילות
           BASE_URL="${{ secrets.CF_R2_PUBLIC_DOMAIN }}"
+          BASE_URL=${BASE_URL%/}
           
           MESSAGE=$(cat << 'END_MESSAGE'
           🚀 <b>New Build Uploaded to R2!</b>
           
-          📦 Windows: <a href="BASE_URL_PLACEHOLDER/GeminiDesk-Setup.exe">Download EXE</a>
-          🍎 macOS: <a href="BASE_URL_PLACEHOLDER/GeminiDesk.dmg">Download DMG</a>
-          🐧 Linux AppImage: <a href="BASE_URL_PLACEHOLDER/GeminiDesk.AppImage">Download AppImage</a>
-          🐧 Linux DEB: <a href="BASE_URL_PLACEHOLDER/GeminiDesk.deb">Download DEB</a>
+          📦 <b>Windows:</b>
+          BASE_URL_PLACEHOLDER/GeminiDesk-Setup.exe
           
-          <i>These links always point to the latest successful build.</i>
+          🍎 <b>macOS:</b>
+          BASE_URL_PLACEHOLDER/GeminiDesk.dmg
+          
+          🐧 <b>Linux AppImage:</b>
+          BASE_URL_PLACEHOLDER/GeminiDesk.AppImage
+          
+          🐧 <b>Linux DEB:</b>
+          BASE_URL_PLACEHOLDER/GeminiDesk.deb
+          
+          <i>(Links point to the latest build)</i>
           END_MESSAGE
           )
           
+          # החלפת ה-PLACEHOLDER בכתובת האמיתית
           MESSAGE="${MESSAGE//BASE_URL_PLACEHOLDER/${BASE_URL}}"
           
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
