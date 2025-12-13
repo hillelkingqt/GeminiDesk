@@ -10,11 +10,13 @@
   "scripts": {
     "start": "electron .",
     "browse": "node browser.js",
-    "build": "electron-builder"
+    "build": "electron-builder",
+    "test": "jest"
   },
   "devDependencies": {
     "electron": "^35.7.5",
-    "electron-builder": "^26.0.12"
+    "electron-builder": "^26.0.12",
+    "jest": "^30.2.0"
   },
   "dependencies": {
     "archiver": "^5.3.2",

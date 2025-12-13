@@ -67,20 +67,20 @@ function switchAccount(accountIndex) {
     if (accountIndex < 0) {
         return;
     }
-    
+
     if (!settings.accounts) {
         settings.accounts = [];
     }
-    
+
     while (settings.accounts.length <= accountIndex) {
         addAccount(`Account ${settings.accounts.length + 1}`);
     }
-    
+
     settings.currentAccountIndex = accountIndex;
     saveSettings(settings);
-    
+
     console.log(`Switched to account ${accountIndex}. New windows will use this account.`);
-    
+
     if (tray && typeof updateTrayContextMenu === 'function') {
         updateTrayContextMenu();
     }
@@ -88,27 +88,27 @@ function switchAccount(accountIndex) {
 
 function createWindowWithAccount(accountIndex = null, state = null) {
     const targetAccountIndex = accountIndex !== null ? accountIndex : (settings.currentAccountIndex || 0);
-    
+
     const originalAccountIndex = settings.currentAccountIndex;
     settings.currentAccountIndex = targetAccountIndex;
-    
+
     const newWin = createWindow(state);
-    
+
     settings.currentAccountIndex = originalAccountIndex;
-    
+
     newWin.accountIndex = targetAccountIndex;
-    
+
     return newWin;
 }
 
 function updateTrayContextMenu() {
     if (!tray) return;
-    
+
     const buildAccountsMenu = () => {
         if (!settings.accounts || settings.accounts.length === 0) {
             return [];
         }
-        
+
         const accountMenuItems = settings.accounts.map((account, index) => ({
             label: account.name,
             type: 'radio',
@@ -117,7 +117,7 @@ function updateTrayContextMenu() {
                 switchAccount(index);
             }
         }));
-        
+
         accountMenuItems.push(
             { type: 'separator' },
             {
@@ -142,7 +142,7 @@ function updateTrayContextMenu() {
                 }
             }
         );
-        
+
         return [
             { type: 'separator' },
             {
@@ -213,5 +213,20 @@ module.exports = {
     addAccount,
     switchAccount,
     createWindowWithAccount,
-    updateTrayContextMenu
+    updateTrayContextMenu,
+    updateAccountMetadata
 };
+
+function updateAccountMetadata(accountIndex, updates) {
+    if (!settings.accounts || !settings.accounts[accountIndex]) {
+        return null;
+    }
+
+    // Apply updates
+    Object.assign(settings.accounts[accountIndex], updates);
+
+    // Save changes
+    saveSettings(settings);
+
+    return settings.accounts[accountIndex];
+}
