@@ -109,21 +109,47 @@
         }
 
         @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
+            0% {
+                opacity: 0.6;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.6;
+            }
         }
 
         @keyframes loadingDots {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
+
+            0%,
+            100% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
         }
 
         @keyframes dots {
-            0% { content: ''; }
-            25% { content: '.'; }
-            50% { content: '..'; }
-            75% { content: '...'; }
+            0% {
+                content: '';
+            }
+
+            25% {
+                content: '.';
+            }
+
+            50% {
+                content: '..';
+            }
+
+            75% {
+                content: '...';
+            }
         }
 
         @keyframes fadeUp {
@@ -132,6 +158,7 @@
                 transform: translateY(15px) scale(0.98);
                 filter: blur(2px);
             }
+
             100% {
                 opacity: 1;
                 transform: translateY(0) scale(1);
@@ -281,13 +308,21 @@
         <div class="button-container">
             <button id="mode-toggle-button" class="icon-button" data-tooltip="Switch to AI Studio mode">
                 <!-- Gemini Icon (Sparkle) - shown when in Gemini mode, click to switch to AI Studio -->
-                <svg class="mode-icon gemini-icon active" viewBox="0 0 65 65" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M57.8647 29.0109C52.865 26.8587 48.4905 23.9061 44.7393 20.1567C40.99 16.4074 38.0373 12.031 35.8851 7.03132C35.0589 5.11516 34.395 3.14552 33.886 1.12608C33.72 0.465846 33.128 0.00109863 32.4475 0.00109863C31.7669 0.00109863 31.1749 0.465846 31.009 1.12608C30.4999 3.14552 29.836 5.11332 29.0098 7.03132C26.8576 12.031 23.905 16.4074 20.1556 20.1567C16.4063 23.9061 12.0299 26.8587 7.03022 29.0109C5.11406 29.8371 3.14442 30.501 1.12498 31.0101C0.464747 31.176 0 31.768 0 32.4486C0 33.1291 0.464747 33.7211 1.12498 33.8871C3.14442 34.3961 5.11222 35.06 7.03022 35.8862C12.0299 38.0384 16.4045 40.9911 20.1556 44.7404C23.9068 48.4897 26.8576 52.8661 29.0098 57.8658C29.836 59.782 30.4999 61.7516 31.009 63.771C31.1749 64.4313 31.7669 64.896 32.4475 64.896C33.128 64.896 33.72 64.4313 33.886 63.771C34.395 61.7516 35.0589 59.7838 35.8851 57.8658C38.0373 52.8661 40.99 48.4916 44.7393 44.7404C48.4886 40.9911 52.865 38.0384 57.8647 35.8862C59.7809 35.06 61.7505 34.3961 63.7699 33.8871C64.4302 33.7211 64.8949 33.1291 64.8949 32.4486C64.8949 31.768 64.4302 31.176 63.7699 31.0101C61.7505 30.501 59.7827 29.8371 57.8647 29.0109Z" fill="currentColor"></path>
+                <svg class="mode-icon gemini-icon active" viewBox="0 0 65 65" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M57.8647 29.0109C52.865 26.8587 48.4905 23.9061 44.7393 20.1567C40.99 16.4074 38.0373 12.031 35.8851 7.03132C35.0589 5.11516 34.395 3.14552 33.886 1.12608C33.72 0.465846 33.128 0.00109863 32.4475 0.00109863C31.7669 0.00109863 31.1749 0.465846 31.009 1.12608C30.4999 3.14552 29.836 5.11332 29.0098 7.03132C26.8576 12.031 23.905 16.4074 20.1556 20.1567C16.4063 23.9061 12.0299 26.8587 7.03022 29.0109C5.11406 29.8371 3.14442 30.501 1.12498 31.0101C0.464747 31.176 0 31.768 0 32.4486C0 33.1291 0.464747 33.7211 1.12498 33.8871C3.14442 34.3961 5.11222 35.06 7.03022 35.8862C12.0299 38.0384 16.4045 40.9911 20.1556 44.7404C23.9068 48.4897 26.8576 52.8661 29.0098 57.8658C29.836 59.782 30.4999 61.7516 31.009 63.771C31.1749 64.4313 31.7669 64.896 32.4475 64.896C33.128 64.896 33.72 64.4313 33.886 63.771C34.395 61.7516 35.0589 59.7838 35.8851 57.8658C38.0373 52.8661 40.99 48.4916 44.7393 44.7404C48.4886 40.9911 52.865 38.0384 57.8647 35.8862C59.7809 35.06 61.7505 34.3961 63.7699 33.8871C64.4302 33.7211 64.8949 33.1291 64.8949 32.4486C64.8949 31.768 64.4302 31.176 63.7699 31.0101C61.7505 30.501 59.7827 29.8371 57.8647 29.0109Z"
+                        fill="currentColor"></path>
                 </svg>
                 <!-- AI Studio Icon - shown when in AI Studio mode, click to switch to Gemini -->
-                <svg class="mode-icon aistudio-icon" aria-label="Google AI Studio logo" viewBox="0 0 299 310" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M125.365 32C120.691 38.5727 116.782 45.7277 113.766 53.334H64C40.4361 53.3342 21.3342 72.4361 21.334 96V245.334C21.3344 268.898 40.4362 288 64 288H213.334C236.898 288 256 268.898 256 245.334V179.93C263.778 175.739 270.945 170.561 277.334 164.563V245.334C277.334 280.68 248.68 309.334 213.334 309.334H64C28.6542 309.334 0.00038177 280.68 0 245.334V96C0.000171479 60.654 28.654 32.0002 64 32H125.365Z" fill="currentColor"></path>
-                    <path d="M281.333 71.5244C269.006 66.218 258.221 58.9383 248.972 49.6942C239.728 40.4502 232.448 29.6601 227.142 17.3332C225.105 12.6088 223.468 7.75264 222.213 2.77367C221.804 1.14585 220.344 0 218.666 0C216.988 0 215.529 1.14585 215.12 2.77367C213.865 7.75264 212.228 12.6043 210.191 17.3332C204.884 29.6601 197.605 40.4502 188.36 49.6942C179.116 58.9383 168.326 66.218 155.999 71.5244C151.275 73.5614 146.419 75.1984 141.44 76.4533C139.812 76.8626 138.666 78.3222 138.666 80C138.666 81.6778 139.812 83.1374 141.44 83.5467C146.419 84.8016 151.271 86.4386 155.999 88.4756C168.326 93.782 179.112 101.062 188.36 110.306C197.609 119.55 204.884 130.34 210.191 142.667C212.228 147.391 213.865 152.247 215.12 157.226C215.529 158.854 216.988 160 218.666 160C220.344 160 221.804 158.854 222.213 157.226C223.468 152.247 225.105 147.396 227.142 142.667C232.448 130.34 239.728 119.554 248.972 110.306C258.216 101.062 269.006 93.782 281.333 88.4756C286.057 86.4386 290.914 84.8016 295.893 83.5467C297.52 83.1374 298.666 81.6778 298.666 80C298.666 78.3222 297.52 76.8626 295.893 76.4533C290.914 75.1984 286.062 73.5614 281.333 71.5244Z" fill="currentColor"></path>
+                <svg class="mode-icon aistudio-icon" aria-label="Google AI Studio logo" viewBox="0 0 299 310"
+                    fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M125.365 32C120.691 38.5727 116.782 45.7277 113.766 53.334H64C40.4361 53.3342 21.3342 72.4361 21.334 96V245.334C21.3344 268.898 40.4362 288 64 288H213.334C236.898 288 256 268.898 256 245.334V179.93C263.778 175.739 270.945 170.561 277.334 164.563V245.334C277.334 280.68 248.68 309.334 213.334 309.334H64C28.6542 309.334 0.00038177 280.68 0 245.334V96C0.000171479 60.654 28.654 32.0002 64 32H125.365Z"
+                        fill="currentColor"></path>
+                    <path
+                        d="M281.333 71.5244C269.006 66.218 258.221 58.9383 248.972 49.6942C239.728 40.4502 232.448 29.6601 227.142 17.3332C225.105 12.6088 223.468 7.75264 222.213 2.77367C221.804 1.14585 220.344 0 218.666 0C216.988 0 215.529 1.14585 215.12 2.77367C213.865 7.75264 212.228 12.6043 210.191 17.3332C204.884 29.6601 197.605 40.4502 188.36 49.6942C179.116 58.9383 168.326 66.218 155.999 71.5244C151.275 73.5614 146.419 75.1984 141.44 76.4533C139.812 76.8626 138.666 78.3222 138.666 80C138.666 81.6778 139.812 83.1374 141.44 83.5467C146.419 84.8016 151.271 86.4386 155.999 88.4756C168.326 93.782 179.112 101.062 188.36 110.306C197.609 119.55 204.884 130.34 210.191 142.667C212.228 147.391 213.865 152.247 215.12 157.226C215.529 158.854 216.988 160 218.666 160C220.344 160 221.804 158.854 222.213 157.226C223.468 152.247 225.105 147.396 227.142 142.667C232.448 130.34 239.728 119.554 248.972 110.306C258.216 101.062 269.006 93.782 281.333 88.4756C286.057 86.4386 290.914 84.8016 295.893 83.5467C297.52 83.1374 298.666 81.6778 298.666 80C298.666 78.3222 297.52 76.8626 295.893 76.4533C290.914 75.1984 286.062 73.5614 281.333 71.5244Z"
+                        fill="currentColor"></path>
                 </svg>
             </button>
             <button id="new-window-button" class="icon-button" data-tooltip-i18n="tooltip-new-chat">
@@ -295,12 +330,13 @@
                     <path d="M12 4V20M4 12H20" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
             </button>
-            <button id="minimize-button" class="icon-button" data-tooltip-i18n="tooltip-minimize">
+            <!-- Add window-control class to these buttons -->
+            <button id="minimize-button" class="icon-button window-control" data-tooltip-i18n="tooltip-minimize">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M5 12H19" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
             </button>
-            <button id="fullscreen-button" class="icon-button" data-tooltip-i18n="tooltip-fullscreen">
+            <button id="fullscreen-button" class="icon-button window-control" data-tooltip-i18n="tooltip-fullscreen">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path class="enter-fullscreen" d="M16 3h5v5M8 3H3v5M16 21h5v-5M8 21H3v-5" stroke-linecap="round"
                         stroke-linejoin="round" />
@@ -321,7 +357,7 @@
                     <path d="M12 16l4-5h-3V4h-2v7H8l4 5zM5 18v2h14v-2H5z" fill="currentColor" />
                 </svg>
             </button>
-            <button id="close-window-button" class="icon-button" data-tooltip-i18n="tooltip-close"
+            <button id="close-window-button" class="icon-button window-control" data-tooltip-i18n="tooltip-close"
                 style="display:none;">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M6 6L18 18M6 18L18 6" stroke-linecap="round" stroke-linejoin="round" />
@@ -342,11 +378,11 @@
 
             async function showTooltipInMainView(text, buttonRect) {
                 if (!text) return;
-                
+
                 // Calculate position - tooltip appears below the drag bar
                 const x = buttonRect.left + buttonRect.width / 2;
                 const isLightMode = document.documentElement.classList.contains('light-mode');
-                
+
                 const code = `
                     (() => {
                         // Remove existing tooltip
@@ -436,7 +472,7 @@
                         return true;
                     })()
                 `;
-                
+
                 try {
                     await window.electronAPI.executeInMainView(code);
                     currentTooltip = text;
@@ -447,7 +483,7 @@
 
             async function hideTooltipInMainView() {
                 if (!currentTooltip) return;
-                
+
                 const code = `
                     (() => {
                         const tooltip = document.getElementById('gemini-floating-tooltip');
@@ -459,7 +495,7 @@
                         return true;
                     })()
                 `;
-                
+
                 try {
                     await window.electronAPI.executeInMainView(code);
                     currentTooltip = null;
@@ -481,25 +517,25 @@
                             }, 200);
                         }
                     });
-                    
+
                     button.addEventListener('mouseleave', () => {
                         clearTimeout(tooltipTimeout);
                         hideTooltipInMainView();
                     });
-                    
+
                     // Hide tooltip when clicking a button (important for buttons that trigger actions)
                     button.addEventListener('click', () => {
                         clearTimeout(tooltipTimeout);
                         hideTooltipInMainView();
                     });
-                    
+
                     // Also handle mousedown to hide tooltip immediately when user starts clicking
                     button.addEventListener('mousedown', () => {
                         clearTimeout(tooltipTimeout);
                         hideTooltipInMainView();
                     });
                 });
-                
+
                 // Hide tooltip when mouse leaves the button container entirely
                 const buttonContainer = document.querySelector('.button-container');
                 if (buttonContainer) {
@@ -508,7 +544,7 @@
                         hideTooltipInMainView();
                     });
                 }
-                
+
                 // Global check - hide tooltip if mouse is not over any button
                 document.addEventListener('mouseover', (e) => {
                     if (!e.target.closest('.icon-button')) {
@@ -532,10 +568,10 @@
             let latestTitle = '__NEW_CHAT__'; // Use a special key for new chats
             let sortable = null;
             let currentAppMode = 'gemini'; // Track current mode
-            const defaultButtonOrder = ['mode-toggle-button', 'minimize-button', 'new-window-button', 'fullscreen-button', 'export-chat-button', 'settings-button'];
+            const defaultButtonOrder = ['mode-toggle-button', 'new-window-button', 'export-chat-button', 'settings-button', 'minimize-button', 'fullscreen-button', 'close-window-button'];
 
             const newChatTitles = new Set(Object.values(translations).map(t => t['new-chat']));
-            
+
             // Save color before window closes
             window.addEventListener('beforeunload', () => {
                 if (lastBackgroundColor && currentAppMode) {
@@ -543,7 +579,7 @@
                     console.log(`Saving ${currentAppMode} color before window close:`, lastBackgroundColor);
                 }
             });
-            
+
             // Handle Ctrl+W to save color before closing
             window.addEventListener('keydown', (e) => {
                 if ((e.ctrlKey || e.metaKey) && e.key === 'w') {
@@ -568,9 +604,34 @@
             }
 
             function setButtonOrder(order) {
-                const orderToApply = (order && order.length > 0) ? order : defaultButtonOrder;
-                orderToApply.forEach(buttonId => {
-                    const button = document.getElementById(buttonId);
+                // Robustly handle button ordering:
+                // 1. Identify standard window controls that must be at the end
+                const windowControlsIds = ['minimize-button', 'fullscreen-button', 'close-window-button'];
+
+                // 2.  Get all current buttons in the DOM
+                const buttons = Array.from(buttonContainer.children);
+                const buttonMap = new Map(buttons.map(b => [b.id, b]));
+
+                // 3. Determine the order for the OTHER ("app") buttons
+                // Use the provided order (from settings) or default, but filter out window controls
+                const sourceOrder = (order && order.length > 0) ? order : defaultButtonOrder;
+                let appButtonsOrder = sourceOrder.filter(id => !windowControlsIds.includes(id));
+
+                // 4. Ensure any app buttons present in DOM but missing from settings are included (e.g. new features)
+                // Add them to the START of the list
+                const otherButtonIds = buttons.map(b => b.id).filter(id => !windowControlsIds.includes(id));
+                otherButtonIds.forEach(id => {
+                    if (!appButtonsOrder.includes(id)) {
+                        appButtonsOrder.unshift(id);
+                    }
+                });
+
+                // 5. Final order: App Buttons + Window Controls
+                const finalOrder = [...appButtonsOrder, ...windowControlsIds];
+
+                // 6. Apply to DOM
+                finalOrder.forEach(buttonId => {
+                    const button = buttonMap.get(buttonId);
                     if (button) buttonContainer.appendChild(button);
                 });
             }
@@ -582,6 +643,7 @@
                         ghostClass: 'sortable-ghost',
                         chosenClass: 'sortable-chosen',
                         dragClass: 'sortable-drag',
+                        filter: '.window-control', // Disable dragging for window controls
                         onEnd: (evt) => {
                             const newOrder = Array.from(buttonContainer.children).map(child => child.id);
                             window.electronAPI.updateSetting('buttonOrder', newOrder);
@@ -689,11 +751,11 @@
                 if (lastBackgroundColor && currentAppMode) {
                     saveColor(currentAppMode, lastBackgroundColor);
                 }
-                
+
                 currentAppMode = mode;
                 const geminiIcon = modeToggleButton.querySelector('.gemini-icon');
                 const aistudioIcon = modeToggleButton.querySelector('.aistudio-icon');
-                
+
                 if (mode === 'aistudio') {
                     // Currently in AI Studio mode - show AI Studio icon, click will switch to Gemini
                     geminiIcon.classList.remove('active');
@@ -705,7 +767,7 @@
                     aistudioIcon.classList.remove('active');
                     modeToggleButton.setAttribute('data-tooltip', 'Switch to AI Studio mode');
                 }
-                
+
                 // Apply saved color for new mode
                 setTimeout(applySavedColor, 100);
             }
@@ -727,12 +789,12 @@
 
             window.chatAPI.onTitleUpdate((title) => {
                 const titleEl = document.getElementById('chat-title');
-                
+
                 if (title === 'Generating title...') {
                     // Use translation if available, or default
                     const lang = document.documentElement.lang || 'en';
                     const generatingText = getTranslation('generating-title', lang) || 'Generating title...';
-                    
+
                     // Only update if different
                     if (titleEl.textContent !== generatingText) {
                         titleEl.textContent = generatingText;
@@ -754,7 +816,7 @@
                     if (latestTitle !== title) {
                         latestTitle = title;
                         updateTitleUI();
-                        
+
                         // Trigger animation if title changed
                         titleEl.classList.remove('fade-in');
                         void titleEl.offsetWidth; // trigger reflow
@@ -779,7 +841,7 @@
                 gemini: null,
                 aistudio: null
             };
-            
+
             // Load saved colors from localStorage
             function loadSavedColors() {
                 try {
@@ -792,7 +854,7 @@
                     console.error('Error loading saved colors:', err);
                 }
             }
-            
+
             // Save colors to localStorage
             function saveColor(mode, color) {
                 try {
@@ -803,7 +865,7 @@
                     console.error('Error saving color:', err);
                 }
             }
-            
+
             // Apply saved color on startup if available
             function applySavedColor() {
                 const savedColor = savedColors[currentAppMode];
@@ -816,7 +878,7 @@
                     }
                 }
             }
-            
+
             async function syncBackgroundColor() {
                 try {
                     // Query multiple possible background colors from the main site
@@ -841,7 +903,7 @@
                             return rootBg;
                         })()
                     `);
-                    
+
                     if (bgColor && bgColor !== lastBackgroundColor) {
                         console.log('Updating drag bar background color to:', bgColor);
                         const topBar = document.querySelector('.top-bar');
@@ -856,7 +918,7 @@
                     console.error('Error syncing background color:', err);
                 }
             }
-            
+
             // Random interval save function
             function scheduleRandomSave() {
                 // Random interval between 30-60 seconds
@@ -869,10 +931,10 @@
                     scheduleRandomSave(); // Schedule next random save
                 }, randomInterval);
             }
-            
+
             // Load saved colors on startup
             loadSavedColors();
-            
+
             // Apply saved color immediately if available
             setTimeout(applySavedColor, 100);
 
@@ -881,14 +943,14 @@
 
             // Check every 500ms for color changes
             setInterval(syncBackgroundColor, 500);
-            
+
             // Start random save scheduler
             scheduleRandomSave();
 
             // ========== SMART CHAT TITLE MONITORING SYSTEM ==========
             // This system monitors the Gemini page title in real-time and updates drag.html automatically
             // It works alongside the old system as a backup
-            
+
             let lastMonitoredTitle = null;
             let isWaitingForTitle = false;
             let messageSendDetected = false;
@@ -914,7 +976,7 @@
                             }
                         })()
                     `);
-                    
+
                     return title;
                 } catch (err) {
                     console.error('Error getting title from Gemini page:', err);
@@ -950,7 +1012,7 @@
                             }
                         })()
                     `);
-                    
+
                     return title;
                 } catch (err) {
                     console.error('Error getting title from nav bar:', err);
@@ -1075,25 +1137,25 @@
             // Update title with animation
             function updateTitleWithAnimation(newTitle, isFromLoading = false) {
                 const titleEl = document.getElementById('chat-title');
-                
+
                 // Use the new title
                 const displayTitle = newTitle || getTranslation('new-chat', document.documentElement.lang || 'en');
-                
+
                 // Check if the title is actually different from current
                 const currentTitle = titleEl.textContent;
                 if (currentTitle === displayTitle) {
                     console.log('Title unchanged, skipping animation:', displayTitle);
                     return; // Don't animate if it's the same title
                 }
-                
+
                 console.log('Title changed from "' + currentTitle + '" to "' + displayTitle + '", animating...');
-                
+
                 // Remove all animation classes
                 titleEl.classList.remove('generating', 'loading', 'fade-in', 'slide-in');
-                
+
                 // Set the new title
                 titleEl.textContent = displayTitle;
-                
+
                 // Apply appropriate animation
                 if (isFromLoading) {
                     // Slide in animation when coming from loading state
@@ -1104,7 +1166,7 @@
                     void titleEl.offsetWidth; // Force reflow
                     titleEl.classList.add('fade-in');
                 }
-                
+
                 // Update direction based on content
                 const direction = detectTextDirection(displayTitle);
                 titleEl.style.direction = direction;
@@ -1117,16 +1179,16 @@
 
                 // Check if message was sent
                 const wasSent = await checkMessageSent();
-                
+
                 if (wasSent && !isWaitingForTitle) {
                     const currentTitle = await getTitleFromGeminiPage();
-                    
+
                     // Check if we're on a "New chat" and user sent a message
                     if (currentTitle === 'New chat' || newChatTitles.has(currentTitle) || !currentTitle) {
                         console.log('Message sent on new chat - showing loading state and waiting 5 seconds for span.conversation-title');
                         isWaitingForTitle = true;
                         messageSendDetected = true;
-                        
+
                         // Show loading state
                         const titleEl = document.getElementById('chat-title');
                         titleEl.classList.remove('fade-in', 'slide-in');
@@ -1134,7 +1196,7 @@
                         const lang = document.documentElement.lang || 'en';
                         const loadingText = getTranslation('generating-title', lang) || 'Loading';
                         titleEl.textContent = loadingText;
-                        
+
                         // Wait 5 seconds, then try fallback if still waiting
                         setTimeout(async () => {
                             if (isWaitingForTitle) {
@@ -1152,18 +1214,18 @@
                         }, 5000);
                     }
                 }
-                
+
                 // Get current title from Gemini page (primary method only)
                 const currentTitle = await getTitleFromGeminiPage();
-                
+
                 // Check if title changed
                 if (currentTitle && currentTitle !== lastMonitoredTitle) {
                     // Ignore "New chat" titles unless we're not in loading state
                     const isNewChat = currentTitle === 'New chat' || newChatTitles.has(currentTitle);
-                    
+
                     if (!isNewChat || !isWaitingForTitle) {
                         console.log('Title changed from', lastMonitoredTitle, 'to', currentTitle);
-                        
+
                         if (!isNewChat && isWaitingForTitle) {
                             // We got a real title after loading state!
                             console.log('Real title appeared after loading:', currentTitle);
@@ -1171,7 +1233,7 @@
                             isWaitingForTitle = false;
                             messageSendDetected = false;
                             updateTitleWithAnimation(currentTitle, true);
-                            
+
                             // Update the old system too
                             latestTitle = currentTitle;
                         } else if (!isWaitingForTitle) {
@@ -1196,23 +1258,23 @@
             // Start the monitoring system
             function startTitleMonitoring() {
                 console.log('Starting smart title monitoring system...');
-                
+
                 // Set up message send detection
                 detectMessageSend();
-                
+
                 // Monitor title changes every 500ms
                 if (titleMonitoringInterval) {
                     clearInterval(titleMonitoringInterval);
                 }
-                
+
                 titleMonitoringInterval = setInterval(monitorTitleChanges, 500);
-                
+
                 // Initial check - but only set to "New chat" on first load if no title exists
                 setTimeout(async () => {
                     if (isInitialLoad) {
                         const currentTitle = await getTitleFromGeminiPage();
                         const isNewChat = !currentTitle || currentTitle === 'New chat' || newChatTitles.has(currentTitle);
-                        
+
                         if (isNewChat) {
                             // First load with new chat - set to "New chat"
                             console.log('Initial load: Setting to New chat');
@@ -1226,10 +1288,10 @@
                             latestTitle = currentTitle;
                             updateTitleWithAnimation(currentTitle, false);
                         }
-                        
+
                         isInitialLoad = false;
                     }
-                    
+
                     monitorTitleChanges();
                 }, 1000);
             }
