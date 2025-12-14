@@ -214,7 +214,9 @@ module.exports = {
     switchAccount,
     createWindowWithAccount,
     updateTrayContextMenu,
-    updateAccountMetadata
+    updateAccountMetadata,
+    updateAccount,
+    setProfileImageForAccount
 };
 
 function updateAccountMetadata(accountIndex, updates) {
@@ -229,4 +231,22 @@ function updateAccountMetadata(accountIndex, updates) {
     saveSettings(settings);
 
     return settings.accounts[accountIndex];
+}
+
+// Alias for backward compatibility
+function updateAccount(accountIndex, updates) {
+    return updateAccountMetadata(accountIndex, updates);
+}
+
+async function setProfileImageForAccount(accountIndex, imageUrl) {
+    if (!settings.accounts || !settings.accounts[accountIndex]) {
+        return null;
+    }
+
+    // Store the profile image URL
+    const updates = {
+        profileImageUrl: imageUrl
+    };
+
+    return updateAccountMetadata(accountIndex, updates);
 }
