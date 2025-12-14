@@ -26,7 +26,7 @@ const translations = require('./translations.js');
 // Path to unpacked extension root (must point to folder that contains manifest.json)
 // In production (packaged app), use process.resourcesPath which points to resources/
 // In dev, use __dirname which is the project root
-const EXT_PATH = app.isPackaged 
+const EXT_PATH = app.isPackaged
     ? path.join(process.resourcesPath, '0.5.8_0')
     : path.join(__dirname, '0.5.8_0');
 
@@ -82,7 +82,7 @@ async function loadExtensionToAllSessions() {
                 const view = win.getBrowserView();
                 if (view && view.webContents && view.webContents.session) {
                     const label = `view:${win.id}`;
-                    loadExtensionToSession(view.webContents.session, label).catch(() => {});
+                    loadExtensionToSession(view.webContents.session, label).catch(() => { });
                 }
             } catch (e) {
                 // ignore
@@ -120,7 +120,7 @@ async function unloadLoadedExtensions() {
                     } catch (e) {
                         // fallback: try defaultSession removal
                         if (typeof session.defaultSession.removeExtension === 'function') {
-                            try { session.defaultSession.removeExtension(extId); } catch (ee) {}
+                            try { session.defaultSession.removeExtension(extId); } catch (ee) { }
                         }
                     }
                 }
@@ -144,6 +144,7 @@ const constants = require('./modules/constants');
 const utils = require('./modules/utils');
 const deepResearchModule = require('./modules/deep-research');
 const accountsModule = require('./modules/accounts');
+const ProfileManager = require('./modules/ProfileManager');
 // Helper: open an isolated login window and transfer cookies into a specific account partition
 async function createAndManageLoginWindowForPartition(loginUrl, targetPartition, accountIndex = 0) {
     let tempWin = new BrowserWindow({
@@ -166,7 +167,7 @@ async function createAndManageLoginWindowForPartition(loginUrl, targetPartition,
 
     try {
         await tempWin.webContents.session.clearStorageData({ storages: ['cookies', 'localstorage'], origins: ['https://accounts.google.com', 'https://google.com'] });
-    } catch (e) {}
+    } catch (e) { }
 
     tempWin.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
     setupContextMenu(tempWin.webContents);
@@ -222,7 +223,7 @@ async function createAndManageLoginWindowForPartition(loginUrl, targetPartition,
                 }
             }
 
-            try { await mainSession.cookies.flushStore(); } catch (e) {}
+            try { await mainSession.cookies.flushStore(); } catch (e) { }
 
             // Extract profile image and account label from the loaded page
             try {
@@ -237,7 +238,7 @@ async function createAndManageLoginWindowForPartition(loginUrl, targetPartition,
 
                 if (profileInfo && profileInfo.img) {
                     // Save profile image for the new account
-                    await accountsModule.setProfileImageForAccount(accountIndex, profileInfo.img).catch(() => {});
+                    await accountsModule.setProfileImageForAccount(accountIndex, profileInfo.img).catch(() => { });
                     // Try to parse email/name from aria text like "Google Account: Name\n(email)"
                     if (profileInfo.aria) {
                         const text = profileInfo.aria.replace(/^Google Account:\s*/i, '').trim();
@@ -297,35 +298,35 @@ async function createAndManageLoginWindowForPartition(loginUrl, targetPartition,
         }
     });
 }
-    app.whenReady().then(async () => {
-        // Conditionally load unpacked extension if user enabled it in settings
-        // Do this asynchronously without blocking app startup for better performance
-        const loadExtensionsAsync = async () => {
-            try {
-                const localSettings = settingsModule.getSettings();
-                if (!localSettings || !localSettings.loadUnpackedExtension) {
-                    console.log('loadUnpackedExtension is disabled in settings - skipping automatic extension load at startup');
-                    return;
-                }
-                
-                // On Linux (especially AppImage), defer extension loading to improve startup time
-                if (process.platform === 'linux') {
-                    console.log('Deferring extension loading on Linux for faster startup...');
-                    setTimeout(async () => {
-                        await loadExtensionToAllSessions();
-                        console.log('Deferred extension loading completed on Linux');
-                    }, 2000); // Wait 2 seconds after app is ready
-                } else {
-                    await loadExtensionToAllSessions();
-                }
-            } catch (e) {
-                console.error('Failed during conditional extension load at startup:', e && e.message ? e.message : e);
+app.whenReady().then(async () => {
+    // Conditionally load unpacked extension if user enabled it in settings
+    // Do this asynchronously without blocking app startup for better performance
+    const loadExtensionsAsync = async () => {
+        try {
+            const localSettings = settingsModule.getSettings();
+            if (!localSettings || !localSettings.loadUnpackedExtension) {
+                console.log('loadUnpackedExtension is disabled in settings - skipping automatic extension load at startup');
+                return;
             }
-        };
-        
-        // Don't await this - let it run in the background
-        loadExtensionsAsync();
-    });
+
+            // On Linux (especially AppImage), defer extension loading to improve startup time
+            if (process.platform === 'linux') {
+                console.log('Deferring extension loading on Linux for faster startup...');
+                setTimeout(async () => {
+                    await loadExtensionToAllSessions();
+                    console.log('Deferred extension loading completed on Linux');
+                }, 2000); // Wait 2 seconds after app is ready
+            } else {
+                await loadExtensionToAllSessions();
+            }
+        } catch (e) {
+            console.error('Failed during conditional extension load at startup:', e && e.message ? e.message : e);
+        }
+    };
+
+    // Don't await this - let it run in the background
+    loadExtensionsAsync();
+});
 
 const trayModule = require('./modules/tray');
 
@@ -360,6 +361,7 @@ app.commandLine.appendSwitch('enable-features', 'ThirdPartyStoragePartitioning')
 // Global Variables
 // ================================================================= //
 let lastScheduleCheck = 0;
+let profileManager = null;
 let isQuitting = false;
 let isUserTogglingHide = false;
 let lastFocusedWindow = null;
@@ -387,150 +389,19 @@ const UPDATE_REMINDER_DELAY_MS = 60 * 60 * 1000; // 1 hour
 const UPDATER_INITIALIZATION_DELAY_MS = 5 * 1000; // 5 seconds
 const UPDATE_FOUND_DISPLAY_DURATION_MS = 1500; // 1.5 seconds - how long to show "update available" message before starting download
 const MAX_UPDATE_CHECK_RETRIES = 3; // Maximum retries for update check when reminder is pending
-const profileCaptureTimestamps = new Map();
-let avatarDirectoryPath = null;
 
-function getAvatarStorageDir() {
-    if (avatarDirectoryPath) {
-        return avatarDirectoryPath;
-    }
-    const dir = path.join(app.getPath('userData'), 'account-avatars');
-    if (!fs.existsSync(dir)) {
-        try {
-            fs.mkdirSync(dir, { recursive: true });
-        } catch (err) {
-            console.warn('Failed to create avatar storage directory:', err && err.message ? err.message : err);
-        }
-    }
-    avatarDirectoryPath = dir;
-    return dir;
-}
 
-async function downloadAccountAvatar(sourceUrl, accountIndex) {
-    if (!sourceUrl) return '';
-    try {
-        const response = await fetch(sourceUrl);
-        if (!response || !response.ok) {
-            throw new Error(`HTTP ${response ? response.status : 'unknown'}`);
-        }
-        const buffer = await response.buffer();
-        const dir = getAvatarStorageDir();
-        const avatarPath = path.join(dir, `account-${accountIndex}.png`);
-        await fsp.writeFile(avatarPath, buffer);
-        return avatarPath;
-    } catch (error) {
-        console.warn('Failed to download account avatar:', error && error.message ? error.message : error);
-        return '';
-    }
-}
 
-function shouldAttemptProfileCapture(accountIndex, forceAttempt = false) {
-    if (typeof accountIndex !== 'number' || accountIndex < 0) {
-        return false;
-    }
-    if (forceAttempt) {
-        return true;
-    }
-    const now = Date.now();
-    const last = profileCaptureTimestamps.get(accountIndex) || 0;
-    if (now - last < PROFILE_CAPTURE_COOLDOWN_MS) {
-        return false;
-    }
-    profileCaptureTimestamps.set(accountIndex, now);
-    return true;
-}
-
-async function captureAccountProfile(view, accountIndex, forceAttempt = false) {
-    if (!view || !view.webContents || view.webContents.isDestroyed()) {
-        return;
-    }
-    if (!shouldAttemptProfileCapture(accountIndex, forceAttempt)) {
-        return;
-    }
-
-    const currentAccounts = settings.accounts || [];
-    const existingAccount = currentAccounts[accountIndex];
-
-    try {
-        const profile = await view.webContents.executeJavaScript(`(() => {
-            const link = document.querySelector('a[aria-label^="Google Account"], a[aria-label*="@gmail.com"]');
-            const ariaLabel = link ? (link.getAttribute('aria-label') || '') : '';
-            const emailMatch = ariaLabel.match(/\\(([^)]+)\\)/);
-            const email = emailMatch ? (emailMatch[1] || '').trim() : '';
-            const labelParts = ariaLabel.split(':');
-            const displayName = labelParts.length > 1 ? labelParts[1].replace(/\\([^)]*\\)/, '').trim() : '';
-            let avatarUrl = '';
-            let img = link ? link.querySelector('img') : null;
-            if (!img) {
-                img = document.querySelector('img.gbii, img.gb_Q, img[aria-label^="Account"], img[alt*="@"]');
-            }
-            if (img) {
-                avatarUrl = img.getAttribute('src') || '';
-                if (!avatarUrl && img.srcset) {
-                    avatarUrl = img.srcset.split(' ')[0];
-                }
-            }
-            return { avatarUrl, email, displayName };
-        })();`, true);
-
-        if (!profile) {
-            return;
-        }
-
-        const now = Date.now();
-        let avatarFile = existingAccount ? existingAccount.avatarFile : '';
-        const needsDownload = !!profile.avatarUrl && (
-            forceAttempt ||
-            !avatarFile ||
-            !fs.existsSync(avatarFile) ||
-            !existingAccount ||
-            !existingAccount.lastProfileFetch ||
-            (now - existingAccount.lastProfileFetch) > PROFILE_REFRESH_INTERVAL_MS ||
-            (existingAccount.avatarUrl && existingAccount.avatarUrl !== profile.avatarUrl)
-        );
-
-        if (needsDownload) {
-            const downloaded = await downloadAccountAvatar(profile.avatarUrl, accountIndex);
-            if (downloaded) {
-                avatarFile = downloaded;
-            }
-        }
-
-        const updates = {};
-        if (avatarFile && (!existingAccount || existingAccount.avatarFile !== avatarFile)) {
-            updates.avatarFile = avatarFile;
-            updates.avatarUrl = profile.avatarUrl || (existingAccount ? existingAccount.avatarUrl : '');
-            updates.lastProfileFetch = now;
-        }
-
-        if (profile.email && (!existingAccount || existingAccount.email !== profile.email)) {
-            updates.email = profile.email;
-        }
-
-        if (profile.displayName && (
-            !existingAccount ||
-            !existingAccount.name ||
-            existingAccount.name.startsWith('Account ')
-        )) {
-            updates.name = profile.displayName;
-        }
-
-        if (Object.keys(updates).length > 0) {
-            const updatedAccount = updateAccountMetadata(accountIndex, updates);
-            if (updatedAccount) {
-                broadcastToAllWebContents('settings-updated', settings);
-            }
-        }
-    } catch (error) {
-        console.warn('Failed to capture account profile:', error && error.message ? error.message : error);
+function captureAccountProfile(view, accountIndex, forceAttempt = false) {
+    if (profileManager) {
+        return profileManager.captureAccountProfile(view, accountIndex, forceAttempt);
     }
 }
 
 function maybeCaptureAccountProfile(view, accountIndex, forceAttempt = false) {
-    if (typeof accountIndex !== 'number' || accountIndex < 0) {
-        return;
+    if (profileManager) {
+        profileManager.maybeCaptureAccountProfile(view, accountIndex, forceAttempt);
     }
-    captureAccountProfile(view, accountIndex, forceAttempt);
 }
 
 /**
@@ -643,6 +514,12 @@ async function executeDefaultPrompt(view, promptContent, mode) {
 // ================================================================= //
 
 const { getSettings, saveSettings, defaultSettings, settingsPath } = settingsModule;
+profileManager = new ProfileManager({
+    settingsModule,
+    accountsModule,
+    utils,
+    userDataPath: app.getPath('userData')
+});
 let settings = getSettings();
 
 // Helper function to apply invisibility mode (content protection) to a window
@@ -755,9 +632,9 @@ function setAutoLaunch(shouldEnable) {
 async function applyProxySettings() {
     const proxyEnabled = settings.proxyEnabled || false;
     const proxyUrl = settings.proxyUrl || '';
-    
+
     let proxyConfig = {};
-    
+
     if (proxyEnabled && proxyUrl) {
         // Parse proxy URL to determine protocol
         // Supports: http://host:port, https://host:port, socks5://host:port
@@ -773,11 +650,11 @@ async function applyProxySettings() {
         };
         console.log('Proxy disabled, using direct connection');
     }
-    
+
     try {
         // Apply to default session
         await session.defaultSession.setProxy(proxyConfig);
-        
+
         // Apply to all partitioned sessions (accounts)
         const accounts = settings.accounts || [];
         for (let i = 0; i < accounts.length; i++) {
@@ -785,7 +662,7 @@ async function applyProxySettings() {
             const accountSession = session.fromPartition(partition);
             await accountSession.setProxy(proxyConfig);
         }
-        
+
         console.log('Proxy settings applied successfully to all sessions');
     } catch (error) {
         console.error('Failed to apply proxy settings:', error);
@@ -851,7 +728,7 @@ const AISTUDIO_APP_USER_MODEL_ID = 'com.geminidesk.aistudio';
  */
 function updateWindowAppUserModelId(win, mode) {
     if (process.platform !== 'win32') return; // Only relevant on Windows
-    
+
     try {
         const appId = mode === 'aistudio' ? AISTUDIO_APP_USER_MODEL_ID : GEMINI_APP_USER_MODEL_ID;
         // Set the AppUserModelId for this specific window
@@ -876,11 +753,11 @@ function updateWindowAppUserModelId(win, mode) {
 
 function setupSessionFilters(sess) {
     if (!sess) return;
-    
+
     // Remove restrictive CSP headers for AI Studio
     sess.webRequest.onHeadersReceived((details, callback) => {
         const responseHeaders = details.responseHeaders || {};
-        
+
         // Remove or modify CSP headers that block resources
         if (details.url.includes('aistudio.google.com')) {
             delete responseHeaders['content-security-policy'];
@@ -888,7 +765,7 @@ function setupSessionFilters(sess) {
             delete responseHeaders['x-frame-options'];
             delete responseHeaders['X-Frame-Options'];
         }
-        
+
         callback({ responseHeaders });
     });
 }
@@ -966,7 +843,7 @@ async function clickMicrophoneButton(targetWin, view) {
             }
         })();
     `;
-    
+
     try {
         const result = await view.webContents.executeJavaScript(script);
         if (result.success) {
@@ -994,7 +871,7 @@ const shortcutActions = {
     },
     voiceAssistant: async () => {
         console.log('Voice Assistant activated!');
-        
+
         // FIRST: Use the exact same showHide logic to show windows (like Alt+G)
         const allWindows = BrowserWindow.getAllWindows();
         const userWindows = allWindows.filter(w => !w.__internal);
@@ -1054,28 +931,28 @@ const shortcutActions = {
                 }, 100);
             }
         }
-        
+
         // Wait for window to be fully visible and focused
         await new Promise(resolve => setTimeout(resolve, shouldShow ? 1200 : 300));
-        
+
         // NOW click the microphone on the target window
         const targetWin = lastFocusedWindow || userWindows[0];
         if (!targetWin || targetWin.isDestroyed()) {
             console.error('No target window available for voice assistant');
             return;
         }
-        
+
         const view = targetWin.getBrowserView();
         if (!view || !view.webContents || view.webContents.isDestroyed()) {
             console.error('No browser view available for voice assistant');
             return;
         }
-        
+
         // Ensure the target window is focused and on top
         if (!targetWin.isVisible()) targetWin.show();
         if (targetWin.isMinimized()) targetWin.restore();
         targetWin.focus();
-        
+
         await clickMicrophoneButton(targetWin, view);
     },
     findInPage: () => {
@@ -1431,7 +1308,7 @@ const shortcutActions = {
         const focusedWindow = BrowserWindow.getFocusedWindow();
         if (focusedWindow && !focusedWindow.isDestroyed()) {
             const currentUrl = focusedWindow.webContents.getURL();
-            
+
             // אם אנחנו כבר בעמוד onboarding, נחזיר את ה-view
             if (currentUrl.includes('html/onboarding.html')) {
                 const view = detachedViews.get(focusedWindow);
@@ -1447,13 +1324,13 @@ const shortcutActions = {
                         } catch (e) {
                             // Ignore errors
                         }
-                        
+
                         // אל תקרא ל-setCanvasMode כי זה משנה את גודל החלון
                         detachedViews.delete(focusedWindow);
-                        
+
                         focusedWindow.focus();
                         view.webContents.focus();
-                        
+
                         // שלח את הכותרת הנוכחית
                         const sendCurrentTitle = async () => {
                             try {
@@ -1527,7 +1404,7 @@ const shortcutActions = {
             isScreenshotProcessActive = false;
             return;
         }
-        
+
         // Check if auto full-screen screenshot is enabled
         if (settings.autoScreenshotFullScreen) {
             proceedWithFullScreenScreenshot();
@@ -1540,68 +1417,68 @@ const shortcutActions = {
             const screenshotTargetWindow = targetWin;
             try {
                 const { desktopCapturer } = require('electron');
-                
+
                 // Get the primary display
                 const primaryDisplay = screen.getPrimaryDisplay();
                 const { width, height } = primaryDisplay.size;
                 const scaleFactor = primaryDisplay.scaleFactor;
-                
+
                 // Hide the target window temporarily for cleaner screenshot
                 const wasVisible = screenshotTargetWindow.isVisible();
                 if (wasVisible) {
                     screenshotTargetWindow.hide();
                 }
-                
+
                 // Wait a bit for window to hide
                 await new Promise(resolve => setTimeout(resolve, 100));
-                
+
                 // Get screen sources
                 const sources = await desktopCapturer.getSources({
                     types: ['screen'],
-                    thumbnailSize: { 
-                        width: Math.round(width * scaleFactor), 
-                        height: Math.round(height * scaleFactor) 
+                    thumbnailSize: {
+                        width: Math.round(width * scaleFactor),
+                        height: Math.round(height * scaleFactor)
                     }
                 });
-                
+
                 if (sources.length > 0) {
                     const primarySource = sources[0];
                     const thumbnail = primarySource.thumbnail;
-                    
+
                     // Copy to clipboard
                     clipboard.writeImage(thumbnail);
                     console.log('Full screen screenshot captured and copied to clipboard!');
-                    
+
                     // Verify clipboard has the image
                     const verifyImage = clipboard.readImage();
                     if (verifyImage.isEmpty()) {
                         console.error('Failed to copy image to clipboard!');
                     }
-                    
+
                     // Show and focus the target window
                     if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
                         if (screenshotTargetWindow.isMinimized()) screenshotTargetWindow.restore();
                         screenshotTargetWindow.show();
                         screenshotTargetWindow.setAlwaysOnTop(true);
                         screenshotTargetWindow.focus();
-                        
+
                         const viewInstance = screenshotTargetWindow.getBrowserView();
                         if (viewInstance && viewInstance.webContents) {
                             // Multiple paste attempts with retry logic
                             let pasteAttempts = 0;
                             const maxPasteAttempts = 3;
-                            
+
                             const attemptPaste = () => {
                                 pasteAttempts++;
                                 console.log(`Full screen paste attempt ${pasteAttempts}/${maxPasteAttempts}`);
-                                
+
                                 try {
                                     viewInstance.webContents.focus();
-                                    
+
                                     setTimeout(() => {
                                         viewInstance.webContents.paste();
                                         console.log('Full screen screenshot paste() called');
-                                        
+
                                         // Second attempt shortly after
                                         setTimeout(() => {
                                             const imgCheck = clipboard.readImage();
@@ -1611,7 +1488,7 @@ const shortcutActions = {
                                             }
                                         }, 100);
                                     }, 150);
-                                    
+
                                     // Retry if needed
                                     if (pasteAttempts < maxPasteAttempts) {
                                         setTimeout(attemptPaste, 400);
@@ -1627,7 +1504,7 @@ const shortcutActions = {
                                     console.error('Full screen paste attempt failed:', err);
                                 }
                             };
-                            
+
                             attemptPaste();
                         }
                     }
@@ -1647,7 +1524,7 @@ const shortcutActions = {
                     screenshotTargetWindow.show();
                 }
             }
-            
+
             isScreenshotProcessActive = false;
         }
 
@@ -1667,12 +1544,12 @@ const shortcutActions = {
 
             let processExited = false;
             let imageFoundOnce = false;
-            
-            snippingTool.on('exit', () => { 
-                processExited = true; 
+
+            snippingTool.on('exit', () => {
+                processExited = true;
                 console.log('Screenshot tool exited');
             });
-            
+
             snippingTool.on('error', (err) => {
                 console.error('Failed to start snipping tool:', err);
                 isScreenshotProcessActive = false;
@@ -1680,37 +1557,37 @@ const shortcutActions = {
 
             let checkAttempts = 0;
             const maxAttempts = 100; // Increased from 60 to 100 (50 seconds)
-            
+
             // Start checking immediately, more frequently at first
             const fastCheckDuration = 20; // Check every 250ms for first 5 seconds
-            
+
             const intervalId = setInterval(() => {
                 checkAttempts++;
-                
+
                 try {
                     const image = clipboard.readImage();
                     const hasImage = !image.isEmpty();
-                    
+
                     // Log every 10 attempts for debugging
                     if (checkAttempts % 10 === 0) {
                         console.log(`Screenshot check attempt ${checkAttempts}/${maxAttempts}, processExited: ${processExited}, hasImage: ${hasImage}`);
                     }
-                    
+
                     // Found image - try to paste it
                     if (hasImage) {
                         if (!imageFoundOnce) {
                             console.log('Image found in clipboard!');
                             imageFoundOnce = true;
                         }
-                        
+
                         // Try pasting even if process hasn't exited yet (user might be done)
                         // Wait at least 1 second before attempting paste
                         if (checkAttempts > 4 || processExited) {
                             clearInterval(intervalId);
-                            
+
                             if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
                                 console.log('Preparing to paste screenshot...');
-                                
+
                                 // Restore and show window immediately
                                 if (screenshotTargetWindow.isMinimized()) {
                                     screenshotTargetWindow.restore();
@@ -1718,10 +1595,10 @@ const shortcutActions = {
                                 if (!screenshotTargetWindow.isVisible()) {
                                     screenshotTargetWindow.show();
                                 }
-                                
+
                                 screenshotTargetWindow.setAlwaysOnTop(true);
                                 screenshotTargetWindow.focus();
-                                
+
                                 const viewInstance = screenshotTargetWindow.getBrowserView();
                                 if (viewInstance && viewInstance.webContents) {
                                     // Single robust paste attempt
@@ -1733,7 +1610,7 @@ const shortcutActions = {
                                                 console.error('Screenshot target window was destroyed');
                                                 return;
                                             }
-                                            
+
                                             // Double-check window state before paste
                                             if (screenshotTargetWindow.isMinimized()) {
                                                 screenshotTargetWindow.restore();
@@ -1741,13 +1618,13 @@ const shortcutActions = {
                                             if (!screenshotTargetWindow.isVisible()) {
                                                 screenshotTargetWindow.show();
                                             }
-                                            
+
                                             // Force focus
                                             screenshotTargetWindow.setAlwaysOnTop(true);
                                             screenshotTargetWindow.focus();
                                             screenshotTargetWindow.moveTop();
                                             viewInstance.webContents.focus();
-                                            
+
                                             // Focus the text input field in the page
                                             viewInstance.webContents.executeJavaScript(`
                                                 (function() {
@@ -1764,14 +1641,14 @@ const shortcutActions = {
                                                     return false;
                                                 })();
                                             `).catch(err => console.error('Failed to execute focus script:', err));
-                                            
+
                                             // Wait for focus to settle then paste
                                             setTimeout(() => {
                                                 if (!viewInstance.webContents.isDestroyed()) {
                                                     viewInstance.webContents.paste();
                                                     console.log('Screenshot paste() executed');
                                                 }
-                                                
+
                                                 // Restore original AlwaysOnTop setting after a delay
                                                 setTimeout(() => {
                                                     if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
@@ -1783,12 +1660,12 @@ const shortcutActions = {
                                             console.error('Paste failed:', err);
                                         }
                                     };
-                                    
+
                                     // Wait longer for window to fully restore and get focus
                                     setTimeout(performPaste, 500);
                                 }
                             }
-                            
+
                             isScreenshotProcessActive = false;
                         }
                     } else if (checkAttempts > maxAttempts) {
@@ -1860,7 +1737,7 @@ function registerShortcuts() {
     // Separate shortcuts based on global/local setting
     for (const action in localShortcuts) {
         const isGlobal = isShortcutGlobal(action);
-        
+
         // findInPage is handled separately in focus/blur events, so skip it here
         if (action === 'findInPage') {
             // But still include it in localOnlyShortcuts if it's not global
@@ -1869,7 +1746,7 @@ function registerShortcuts() {
             }
             continue;
         }
-        
+
         if (isGlobal) {
             globalShortcuts[action] = localShortcuts[action];
         } else {
@@ -1920,7 +1797,7 @@ function isShortcutGlobal(action) {
 
 function checkAndSendDefaultPrompt(view, url, mode) {
     if (!view || view.webContents.isDestroyed()) return;
-    
+
     let isNewChat = false;
 
     try {
@@ -1959,11 +1836,11 @@ function checkAndSendDefaultPrompt(view, url, mode) {
                                 stillNewChat = true;
                             }
                         } else if (currentUrlObj.hostname === 'aistudio.google.com') {
-                             if (currentUrl.includes('/prompts/new_chat')) {
+                            if (currentUrl.includes('/prompts/new_chat')) {
                                 stillNewChat = true;
                             }
                         }
-                    } catch(e) {}
+                    } catch (e) { }
 
                     if (stillNewChat) {
                         executeDefaultPrompt(view, defaultPrompt.content, mode);
@@ -1976,8 +1853,8 @@ function checkAndSendDefaultPrompt(view, url, mode) {
     } else {
         // Reset the flag if we are NOT in a new chat, so it can trigger again later
         if (view.__defaultPromptSent) {
-             view.__defaultPromptSent = false;
-             console.log('Prompt Manager: Resetting default prompt sent flag (navigated to existing chat)');
+            view.__defaultPromptSent = false;
+            console.log('Prompt Manager: Resetting default prompt sent flag (navigated to existing chat)');
         }
     }
 }
@@ -2211,7 +2088,7 @@ function createWindow(state = null) {
     newWin.webContents.on('before-input-event', (event, input) => {
         if (input.control || input.meta) {
             const currentZoom = newWin.webContents.getZoomLevel();
-            
+
             if (input.type === 'keyDown') {
                 // Ctrl + Plus/Equal (zoom in)
                 if (input.key === '=' || input.key === '+') {
@@ -2285,13 +2162,13 @@ function createWindow(state = null) {
 
     newWin.on('closed', () => {
         detachedViews.delete(newWin);
-        
+
         // Clear any pending restore scroll timeouts
         if (newWin.restoreScrollTimeouts) {
             newWin.restoreScrollTimeouts.forEach(id => clearTimeout(id));
             newWin.restoreScrollTimeouts = null;
         }
-        
+
         // Clear any pending animation timeouts
         if (newWin.animationTimeouts) {
             newWin.animationTimeouts.forEach(id => clearTimeout(id));
@@ -2322,7 +2199,7 @@ function createWindow(state = null) {
                 const contentBounds = newWin.getContentBounds();
                 view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
             }
-            
+
             // Force repaint of BrowserView to fix Windows snap rendering issue (Win+Arrow keys)
             // This is necessary in packaged builds where BrowserView doesn't auto-repaint
             try {
@@ -2330,7 +2207,7 @@ function createWindow(state = null) {
             } catch (e) {
                 // Ignore errors
             }
-            
+
             if (saveScroll) {
                 try {
                     const scrollY = await view.webContents.executeJavaScript(
@@ -2341,7 +2218,7 @@ function createWindow(state = null) {
                     // Ignore errors
                 }
             }
-            
+
             if (restoreScroll) {
                 // Restore scroll position after resize
                 setTimeout(async () => {
@@ -2416,7 +2293,7 @@ function createWindow(state = null) {
             if (view && !view.webContents.isDestroyed()) {
                 view.webContents.executeJavaScript(`(document.scrollingElement || document.documentElement).scrollTop`)
                     .then(y => { newWin.savedScrollPosition = y; })
-                    .catch(() => {});
+                    .catch(() => { });
             }
         }
     });
@@ -2580,15 +2457,15 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
     if (!targetWin || targetWin.isDestroyed()) return;
 
     targetWin.appMode = mode;
-    
+
     // Update taskbar grouping based on mode (Windows only)
     updateWindowAppUserModelId(targetWin, mode);
-    
+
     // Notify the drag.html window of the mode change
     if (targetWin.webContents && !targetWin.webContents.isDestroyed()) {
         targetWin.webContents.send('app-mode-changed', mode);
     }
-    
+
     const targetAccountIndex = typeof options.accountIndex === 'number'
         ? options.accountIndex
         : (typeof targetWin.accountIndex === 'number' ? targetWin.accountIndex : (settings.currentAccountIndex || 0));
@@ -2732,7 +2609,7 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
 
                         if (profileInfo && profileInfo.img) {
                             const idx = (settings && typeof settings.currentAccountIndex === 'number') ? settings.currentAccountIndex : 0;
-                            await accountsModule.setProfileImageForAccount(idx, profileInfo.img).catch(() => {});
+                            await accountsModule.setProfileImageForAccount(idx, profileInfo.img).catch(() => { });
                             if (profileInfo.aria) {
                                 const text = profileInfo.aria.replace(/^Google Account:\s*/i, '').trim();
                                 const lines = text.split('\n').map(s => s.trim()).filter(Boolean);
@@ -2781,7 +2658,7 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
     const existingView = targetWin.getBrowserView();
     if (existingView && existingView.__accountPartition === partitionName) {
         existingView.webContents.loadURL(url);
-        
+
         existingView.webContents.removeAllListeners('did-finish-load');
         existingView.webContents.removeAllListeners('did-navigate');
         existingView.webContents.removeAllListeners('did-navigate-in-page');
@@ -2813,7 +2690,7 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
             existingView.webContents.removeAllListeners('did-finish-load');
             existingView.webContents.removeAllListeners('did-navigate');
             existingView.webContents.removeAllListeners('did-navigate-in-page');
-            
+
             targetWin.removeBrowserView(existingView);
         } catch (err) {
             // ignore detach errors
@@ -2925,7 +2802,7 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
     newView.webContents.on('before-input-event', (event, input) => {
         if (input.control || input.meta) {
             const currentZoom = newView.webContents.getZoomLevel();
-            
+
             if (input.type === 'keyDown') {
                 // Ctrl + Plus/Equal (zoom in)
                 if (input.key === '=' || input.key === '+') {
@@ -3147,7 +3024,7 @@ async function setCanvasMode(isCanvas, targetWin) {
             targetWin.restoreScrollTimeouts.forEach(id => clearTimeout(id));
         }
         targetWin.restoreScrollTimeouts = [];
-        
+
         // Try multiple times to ensure scroll position is restored
         const restoreScroll = () => {
             if (activeView && activeView.webContents && !activeView.webContents.isDestroyed()) {
@@ -3156,7 +3033,7 @@ async function setCanvasMode(isCanvas, targetWin) {
                 ).catch(console.error);
             }
         };
-        
+
         targetWin.restoreScrollTimeouts.push(setTimeout(restoreScroll, 100));
         targetWin.restoreScrollTimeouts.push(setTimeout(restoreScroll, 300));
         targetWin.restoreScrollTimeouts.push(setTimeout(restoreScroll, 500));
@@ -3176,7 +3053,7 @@ function animateResize(targetBounds, activeWin, activeView, duration_ms = 200) {
         height: (targetBounds.height - start.height) / steps
     };
     let i = 0;
-    
+
     // Initialize array to track animation timeouts if not already present
     if (!activeWin.animationTimeouts) {
         activeWin.animationTimeouts = [];
@@ -3195,7 +3072,7 @@ function animateResize(targetBounds, activeWin, activeView, duration_ms = 200) {
             width: Math.round(start.width + delta.width * i),
             height: Math.round(start.height + delta.height * i)
         };
-        
+
         activeWin.setBounds(b);
         if (activeView && activeView.webContents && !activeView.webContents.isDestroyed()) {
             activeView.setBounds({ x: 0, y: 30, width: b.width, height: b.height - 30 });
@@ -3208,7 +3085,7 @@ function animateResize(targetBounds, activeWin, activeView, duration_ms = 200) {
                 }
             }
         }
-        
+
         if (i < steps) {
             const timeoutId = setTimeout(() => {
                 // Remove this timeoutId from the array to prevent memory leak
@@ -3438,9 +3315,9 @@ function openInstallUpdateWindow() {
 
 async function showInstallConfirmation() {
     if (!updateInfo) return;
-    
+
     openInstallUpdateWindow();
-    
+
     // Fetch release notes and show install confirmation
     try {
         const { marked } = await import('marked');
@@ -3482,7 +3359,7 @@ function checkAndShowPendingUpdateReminder(retryCount = 0) {
     if (settings.updateInstallReminderTime) {
         // Validate the timestamp
         const reminderTime = new Date(settings.updateInstallReminderTime);
-        
+
         // Check if the date is valid
         if (isNaN(reminderTime.getTime())) {
             console.error('Invalid update reminder timestamp, clearing it');
@@ -3490,13 +3367,13 @@ function checkAndShowPendingUpdateReminder(retryCount = 0) {
             saveSettings(settings);
             return;
         }
-        
+
         // Restore updateInfo from settings if available
         if (!updateInfo && settings.pendingUpdateInfo) {
             updateInfo = settings.pendingUpdateInfo;
             console.log('Restored pending update info from settings:', updateInfo.version);
         }
-        
+
         // If we still don't have updateInfo, we need to check for updates first
         if (!updateInfo) {
             if (retryCount >= MAX_UPDATE_CHECK_RETRIES) {
@@ -3505,7 +3382,7 @@ function checkAndShowPendingUpdateReminder(retryCount = 0) {
                 saveSettings(settings);
                 return;
             }
-            
+
             console.log(`No update info available, checking for updates before showing reminder (attempt ${retryCount + 1}/${MAX_UPDATE_CHECK_RETRIES})`);
             // Schedule a check after autoUpdater is ready
             setTimeout(async () => {
@@ -3522,9 +3399,9 @@ function checkAndShowPendingUpdateReminder(retryCount = 0) {
             }, UPDATER_INITIALIZATION_DELAY_MS);
             return;
         }
-        
+
         const now = new Date();
-        
+
         if (now >= reminderTime) {
             // Reminder time has passed, show the install confirmation
             console.log('Showing pending update reminder from previous session');
@@ -3796,7 +3673,7 @@ ipcMain.on('toggle-full-screen', async (event) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (win && !win.isDestroyed()) {
         const view = win.getBrowserView();
-        
+
         // Save scroll position before toggling
         let scrollY = 0;
         if (view && view.webContents && !view.webContents.isDestroyed()) {
@@ -3810,16 +3687,16 @@ ipcMain.on('toggle-full-screen', async (event) => {
                 console.log('Fullscreen: Could not save scroll position:', e.message);
             }
         }
-        
+
         // Use native fullscreen on macOS, maximize on other platforms
         const isMac = process.platform === 'darwin';
         const isInFullscreen = isMac ? win.isFullScreen() : win.isMaximized();
-        
+
         // Store current bounds if not in fullscreen/maximized (for restoration)
         if (!isInFullscreen) {
             win.prevNormalBounds = win.getBounds();
         }
-        
+
         if (isInFullscreen) {
             // Restore from fullscreen/maximized
             if (isMac) {
@@ -3827,19 +3704,19 @@ ipcMain.on('toggle-full-screen', async (event) => {
             } else {
                 win.unmaximize();
             }
-            
+
             // Restore original "always on top" state from settings
             setTimeout(() => {
                 if (win && !win.isDestroyed()) {
                     applyAlwaysOnTopSetting(win, settings.alwaysOnTop);
                     win.focus();
-                    
+
                     // Restore to saved bounds if available
                     if (win.prevNormalBounds) {
                         win.setBounds(win.prevNormalBounds);
                         win.prevNormalBounds = null;
                     }
-                    
+
                     // Update BrowserView bounds after restore
                     const view = win.getBrowserView();
                     if (view) {
@@ -3872,7 +3749,7 @@ ipcMain.on('toggle-full-screen', async (event) => {
                     }
                 }, 50);
             }
-            
+
             // Update BrowserView bounds after fullscreen/maximize
             setTimeout(() => {
                 if (win && !win.isDestroyed()) {
@@ -3892,7 +3769,7 @@ ipcMain.on('toggle-full-screen', async (event) => {
                 }
             }, 100);
         }
-        
+
         // Restore scroll position after toggling - multiple attempts with proper timing
         if (view && view.webContents && !view.webContents.isDestroyed()) {
             // Clear any pending restore timeouts to prevent leaks
@@ -3900,7 +3777,7 @@ ipcMain.on('toggle-full-screen', async (event) => {
                 win.restoreScrollTimeouts.forEach(id => clearTimeout(id));
             }
             win.restoreScrollTimeouts = [];
-            
+
             const restoreScroll = async () => {
                 if (view && !view.webContents.isDestroyed()) {
                     try {
@@ -3913,7 +3790,7 @@ ipcMain.on('toggle-full-screen', async (event) => {
                     }
                 }
             };
-            
+
             // Multiple restoration attempts with proper delays for different window states
             win.restoreScrollTimeouts.push(setTimeout(restoreScroll, 100));   // Quick restore
             win.restoreScrollTimeouts.push(setTimeout(restoreScroll, 300));   // After layout
@@ -4039,7 +3916,7 @@ ipcMain.handle('mcp-setup-doitforme', async () => {
                     { cmd: 'xfce4-terminal', args: ['-e', `bash -c "${proxyCmd}; exec bash"`] },
                     { cmd: 'xterm', args: ['-hold', '-e', proxyCmd] }
                 ];
-                
+
                 let launched = false;
                 for (const term of terminals) {
                     try {
@@ -4062,7 +3939,7 @@ ipcMain.handle('mcp-setup-doitforme', async () => {
                         // Try next terminal
                     }
                 }
-                
+
                 // Fallback: run in background if no terminal found
                 if (!launched) {
                     const child = spawn('npx', ['-y', '@srbhptl39/mcp-superassistant-proxy@latest', '--config', cfgPath, '--outputTransport', 'sse'], {
@@ -4090,10 +3967,10 @@ ipcMain.handle('mcp-setup-doitforme', async () => {
 
 app.whenReady().then(() => {
     syncThemeWithWebsite(settings.theme);
-    
+
     // Apply proxy settings on startup if configured
     applyProxySettings();
-    
+
     // Initialize modules with dependencies
     deepResearchModule.initialize({
         settings,
@@ -4101,7 +3978,7 @@ app.whenReady().then(() => {
         shortcutActions,
         playAiCompletionSound
     });
-    
+
     accountsModule.initialize({
         settings,
         saveSettings,
@@ -4109,39 +3986,39 @@ app.whenReady().then(() => {
         createWindow,
         Menu
     });
-    
+
     trayModule.initialize({
         createWindow,
         forceOnTop
     });
-    
+
     // Create system tray icon
     tray = trayModule.createTray();
     accountsModule.setTray(tray);
     trayModule.setUpdateTrayCallback(updateTrayContextMenu);
-    
+
     // Enable spell checking with multiple languages
     session.defaultSession.setSpellCheckerEnabled(true);
     // Support common languages: English, Hebrew, German, French, Spanish, Russian, etc.
     session.defaultSession.setSpellCheckerLanguages(['en-US', 'he-IL', 'de-DE', 'fr-FR', 'es-ES', 'ru-RU', 'it-IT', 'pt-BR', 'nl-NL', 'pl-PL', 'tr-TR']);
-    
+
     // Initialize first account if none exist
     if (!settings.accounts || settings.accounts.length === 0) {
         addAccount('Default Account');
         settings.currentAccountIndex = 0;
         saveSettings(settings);
     }
-    
+
     // Also enable for Gemini session and set user agent (use current account's partition)
     const gemSession = session.fromPartition(getCurrentAccountPartition());
     gemSession.setSpellCheckerEnabled(true);
     gemSession.setSpellCheckerLanguages(['en-US', 'he-IL', 'de-DE', 'fr-FR', 'es-ES', 'ru-RU', 'it-IT', 'pt-BR', 'nl-NL', 'pl-PL', 'tr-TR']);
     gemSession.setUserAgent(REAL_CHROME_UA);
-    
+
     // Apply session filters for AI Studio support
     setupSessionFilters(session.defaultSession);
     setupSessionFilters(gemSession);
-    
+
     // Disable background throttling globally to keep AI responses working when hidden
     app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
     app.commandLine.appendSwitch('disable-renderer-backgrounding');
@@ -4151,13 +4028,13 @@ app.whenReady().then(() => {
     if (process.platform === 'darwin' && settings.alwaysOnTop) {
         app.dock.hide();
     }
-    
+
     // Start Deep Research Schedule monitoring
     scheduleDeepResearchCheck();
 
     // Check if we have windows to restore from update (this takes priority)
     const hasPreUpdateWindows = settings.preUpdateWindowStates && Array.isArray(settings.preUpdateWindowStates) && settings.preUpdateWindowStates.length > 0;
-    
+
     if (!hasPreUpdateWindows) {
         // Only create windows from normal restore/new if we're not restoring from update
         if (settings.restoreWindows && Array.isArray(settings.savedWindows) && settings.savedWindows.length) {
@@ -4213,7 +4090,7 @@ app.whenReady().then(() => {
     if (settings.preUpdateWindowStates && Array.isArray(settings.preUpdateWindowStates) && settings.preUpdateWindowStates.length > 0) {
         console.log('Restoring windows after update:', settings.preUpdateWindowStates.length, 'windows');
         restoredFromUpdate = true;
-        
+
         // Small delay to ensure app is fully ready
         setTimeout(() => {
             settings.preUpdateWindowStates.forEach((state, index) => {
@@ -4223,13 +4100,13 @@ app.whenReady().then(() => {
                     console.warn('Failed to restore window', index, ':', e);
                 }
             });
-            
+
             // Clear the saved states
             settings.preUpdateWindowStates = null;
             saveSettings(settings);
         }, 1000);
     }
-    
+
     // --- 4c. Check for pending update reminders from previous session ---
     checkAndShowPendingUpdateReminder();
 
@@ -4255,7 +4132,7 @@ app.whenReady().then(() => {
 
     // --- 7. Schedule daily update check ---
     scheduleDailyUpdateCheck();
-    
+
     // Clear any stale preUpdateWindowStates that might exist
     if (!restoredFromUpdate && settings.preUpdateWindowStates) {
         console.log('Clearing stale preUpdateWindowStates');
@@ -4284,34 +4161,34 @@ app.on('before-quit', () => {
 app.on('will-quit', () => {
     isQuitting = true;
     globalShortcut.unregisterAll();
-    
+
     // Clear update reminder timeout
     if (reminderTimeoutId) {
         clearTimeout(reminderTimeoutId);
         reminderTimeoutId = null;
     }
-    
+
     // Clear auto-update display timeout
     if (autoUpdateDisplayTimeoutId) {
         clearTimeout(autoUpdateDisplayTimeoutId);
         autoUpdateDisplayTimeoutId = null;
     }
-    
+
     // Clear notification interval
     if (notificationIntervalId) {
         clearInterval(notificationIntervalId);
         notificationIntervalId = null;
     }
-    
+
     // Clear deep research schedule interval
     stopScheduleCheck();
-    
+
     // Clear daily update check interval
     if (dailyUpdateCheckIntervalId) {
         clearInterval(dailyUpdateCheckIntervalId);
         dailyUpdateCheckIntervalId = null;
     }
-    
+
     try {
         if (mcpProxyProcess && !mcpProxyProcess.killed) {
             // Kill the detached process and its child processes
@@ -4447,7 +4324,7 @@ autoUpdater.on('checking-for-update', () => {
 
 autoUpdater.on('update-available', async (info) => {
     updateInfo = info; // Store update info
-    
+
     // Persist updateInfo to settings for recovery after restart
     settings.pendingUpdateInfo = {
         version: info.version,
@@ -4455,14 +4332,14 @@ autoUpdater.on('update-available', async (info) => {
         releaseDate: info.releaseDate || ''
     };
     saveSettings(settings);
-    
+
     // Check if auto-install is enabled
     const autoInstall = settings.autoInstallUpdates !== false;
-    
+
     if (autoInstall) {
         // Auto-install mode: Start downloading immediately
         console.log('Auto-install enabled, starting download...');
-        
+
         // If update window is open (manual check), show brief update found message before transitioning
         if (updateWin && !updateWin.isDestroyed()) {
             // Show update available message briefly to inform user
@@ -4471,13 +4348,13 @@ autoUpdater.on('update-available', async (info) => {
                 version: info.version,
                 releaseNotesHTML: `<p>Automatic download will start shortly...</p>`
             });
-            
+
             // Clear any existing timeout
             if (autoUpdateDisplayTimeoutId) {
                 clearTimeout(autoUpdateDisplayTimeoutId);
                 autoUpdateDisplayTimeoutId = null;
             }
-            
+
             // After configured duration, close updateWin and open installUpdateWin
             autoUpdateDisplayTimeoutId = setTimeout(() => {
                 autoUpdateDisplayTimeoutId = null;
@@ -4586,14 +4463,14 @@ autoUpdater.on('download-progress', (progressObj) => {
         total: progressObj.total,
         bytesPerSecond: progressObj.bytesPerSecond
     };
-    
+
     console.log(`Download progress: ${progress.percent}%`);
     sendUpdateStatus('downloading', progress);
 });
 
 autoUpdater.on('update-downloaded', async () => {
     sendUpdateStatus('downloaded');
-    
+
     // Show install confirmation with changelog
     if (updateInfo) {
         // Make sure install window exists
@@ -4695,14 +4572,14 @@ ipcMain.on('request-last-notification', async (event) => {
 ipcMain.on('install-update-now', () => {
     // Save current window state before updating
     try {
-        const openWindows = BrowserWindow.getAllWindows().filter(w => 
-            !w.isDestroyed() && 
-            w !== updateWin && 
-            w !== installUpdateWin && 
-            w !== notificationWin && 
+        const openWindows = BrowserWindow.getAllWindows().filter(w =>
+            !w.isDestroyed() &&
+            w !== updateWin &&
+            w !== installUpdateWin &&
+            w !== notificationWin &&
             w !== personalMessageWin
         );
-        
+
         const windowStates = openWindows.map(win => {
             const bounds = win.getBounds();
             const view = win.getBrowserView();
@@ -4713,18 +4590,18 @@ ipcMain.on('install-update-now', () => {
                 url: view && view.webContents ? view.webContents.getURL() : null
             };
         });
-        
+
         settings.preUpdateWindowStates = windowStates;
         console.log('Saved window states before update:', windowStates.length, 'windows');
     } catch (e) {
         console.warn('Failed to save window states:', e);
     }
-    
+
     // Clear pending update info and reminder
     settings.updateInstallReminderTime = null;
     settings.pendingUpdateInfo = null;
     saveSettings(settings);
-    
+
     // Use silent install (isSilent=true) and force run after (isForceRunAfter=true)
     // This will install the update silently and automatically relaunch the app
     autoUpdater.quitAndInstall(true, true);
@@ -4736,20 +4613,20 @@ ipcMain.on('remind-later-update', () => {
         clearTimeout(reminderTimeoutId);
         reminderTimeoutId = null;
     }
-    
+
     // Close the install update window
     if (installUpdateWin) {
         installUpdateWin.close();
     }
-    
+
     // Calculate reminder time (1 hour from now)
     const reminderTime = new Date();
     reminderTime.setTime(reminderTime.getTime() + UPDATE_REMINDER_DELAY_MS);
-    
+
     // Save reminder time to settings for persistence across restarts
     settings.updateInstallReminderTime = reminderTime.toISOString();
     saveSettings(settings);
-    
+
     // Set a reminder for 1 hour
     reminderTimeoutId = setTimeout(() => {
         showInstallConfirmation();
@@ -4757,7 +4634,7 @@ ipcMain.on('remind-later-update', () => {
         settings.updateInstallReminderTime = null;
         saveSettings(settings);
     }, UPDATE_REMINDER_DELAY_MS);
-    
+
     console.log('Update reminder set for 1 hour from now:', reminderTime.toISOString());
 });
 
@@ -5288,11 +5165,11 @@ async function exportToMarkdown(win, title, chatHTML) {
         // Helper function to convert HTML to Markdown while preserving LaTeX
         function htmlToMarkdown(html) {
             let result = html;
-            
+
             // Step 1: Extract and preserve LaTeX from annotation tags (MathML)
             const latexMap = new Map();
             let latexCounter = 0;
-            
+
             // Extract LaTeX from annotation tags (this is where KaTeX stores original LaTeX)
             result = result.replace(/<annotation[^>]*encoding=["']application\/x-tex["'][^>]*>([\s\S]*?)<\/annotation>/gi, (_, latex) => {
                 const placeholder = `__LATEX_${latexCounter}__`;
@@ -5300,7 +5177,7 @@ async function exportToMarkdown(win, title, chatHTML) {
                 latexCounter++;
                 return placeholder;
             });
-            
+
             // Extract display math blocks ($$...$$)
             result = result.replace(/\$\$([\s\S]*?)\$\$/g, (match, latex) => {
                 const placeholder = `__LATEX_DISPLAY_${latexCounter}__`;
@@ -5308,7 +5185,7 @@ async function exportToMarkdown(win, title, chatHTML) {
                 latexCounter++;
                 return placeholder;
             });
-            
+
             // Extract inline math ($...$) - but not currency like $50
             result = result.replace(/\$([^\$\n]+?)\$/g, (match, latex) => {
                 // Skip if it looks like currency
@@ -5318,7 +5195,7 @@ async function exportToMarkdown(win, title, chatHTML) {
                 latexCounter++;
                 return placeholder;
             });
-            
+
             // Extract \[...\] display math
             result = result.replace(/\\\[([\s\S]*?)\\\]/g, (match, latex) => {
                 const placeholder = `__LATEX_DISPLAY_${latexCounter}__`;
@@ -5326,7 +5203,7 @@ async function exportToMarkdown(win, title, chatHTML) {
                 latexCounter++;
                 return placeholder;
             });
-            
+
             // Extract \(...\) inline math
             result = result.replace(/\\\(([\s\S]*?)\\\)/g, (match, latex) => {
                 const placeholder = `__LATEX_INLINE_${latexCounter}__`;
@@ -5334,16 +5211,16 @@ async function exportToMarkdown(win, title, chatHTML) {
                 latexCounter++;
                 return placeholder;
             });
-            
+
             // Step 2: Remove MathML/SVG rendered math (keep only our placeholders)
             result = result.replace(/<math[\s\S]*?<\/math>/gi, '');
             result = result.replace(/<svg[\s\S]*?<\/svg>/gi, '');
             result = result.replace(/<span[^>]*class="[^"]*katex[^"]*"[^>]*>[\s\S]*?<\/span>/gi, '');
-            
+
             // Step 3: Remove script tags
             result = result.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
             result = result.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
-            
+
             // Step 4: Extract images
             const images = [];
             const imgRegex = /<img[^>]+src="([^"]+)"[^>]*(?:alt="([^"]*)")?[^>]*>/gi;
@@ -5356,10 +5233,10 @@ async function exportToMarkdown(win, title, chatHTML) {
                 }
             }
             result = result.replace(/<img[^>]*>/gi, '');
-            
+
             // Step 5: Convert code blocks
             // Handle pre > code blocks with language detection
-            result = result.replace(/<pre[^>]*(?:data-language="([^"]*)")?[^>]*>\s*<code[^>]*(?:class="[^"]*language-([^"]*)[^"]*")?[^>]*>([\s\S]*?)<\/code>\s*<\/pre>/gi, 
+            result = result.replace(/<pre[^>]*(?:data-language="([^"]*)")?[^>]*>\s*<code[^>]*(?:class="[^"]*language-([^"]*)[^"]*")?[^>]*>([\s\S]*?)<\/code>\s*<\/pre>/gi,
                 (_, dataLang, classLang, code) => {
                     const lang = dataLang || classLang || '';
                     const cleanCode = code
@@ -5371,7 +5248,7 @@ async function exportToMarkdown(win, title, chatHTML) {
                         .replace(/&#39;/g, "'");
                     return `\n\`\`\`${lang}\n${cleanCode.trim()}\n\`\`\`\n`;
                 });
-            
+
             // Handle standalone pre blocks
             result = result.replace(/<pre[^>]*>([\s\S]*?)<\/pre>/gi, (_, code) => {
                 const cleanCode = code
@@ -5381,45 +5258,45 @@ async function exportToMarkdown(win, title, chatHTML) {
                     .replace(/&amp;/g, '&');
                 return `\n\`\`\`\n${cleanCode.trim()}\n\`\`\`\n`;
             });
-            
+
             // Convert inline code
             result = result.replace(/<code[^>]*>(.*?)<\/code>/gi, (_, code) => {
                 if (code.includes('__LATEX_')) return code;
                 return `\`${code.replace(/<[^>]+>/g, '')}\``;
             });
-            
+
             // Step 6: Convert headers
             result = result.replace(/<h([1-6])[^>]*>([\s\S]*?)<\/h\1>/gi, (_, level, text) => {
                 const cleanText = text.replace(/<[^>]+>/g, '').trim();
                 return `\n${'#'.repeat(parseInt(level))} ${cleanText}\n\n`;
             });
-            
+
             // Step 7: Convert text formatting
             result = result.replace(/<(strong|b)[^>]*>([\s\S]*?)<\/\1>/gi, '**$2**');
             result = result.replace(/<(em|i)[^>]*>([\s\S]*?)<\/\1>/gi, '*$2*');
             result = result.replace(/<(del|s|strike)[^>]*>([\s\S]*?)<\/\1>/gi, '~~$2~~');
             result = result.replace(/<u[^>]*>([\s\S]*?)<\/u>/gi, '<u>$1</u>');
             result = result.replace(/<mark[^>]*>([\s\S]*?)<\/mark>/gi, '==$1==');
-            
+
             // Step 8: Convert lists
             result = result.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, (_, content) => {
                 const cleanContent = content.replace(/<[^>]+>/g, '').trim();
                 return `- ${cleanContent}\n`;
             });
             result = result.replace(/<\/?[ou]l[^>]*>/gi, '\n');
-            
+
             // Step 9: Convert blockquotes
             result = result.replace(/<blockquote[^>]*>([\s\S]*?)<\/blockquote>/gi, (_, content) => {
                 const lines = content.replace(/<[^>]+>/g, '').trim().split('\n');
                 return lines.map(line => `> ${line}`).join('\n') + '\n';
             });
-            
+
             // Step 10: Convert tables
             result = result.replace(/<table[^>]*>([\s\S]*?)<\/table>/gi, (_, tableContent) => {
                 let md = '\n';
                 const rows = tableContent.match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) || [];
                 let isHeader = true;
-                
+
                 rows.forEach(row => {
                     const cells = row.match(/<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/gi) || [];
                     const cellContents = cells.map(cell => {
@@ -5427,7 +5304,7 @@ async function exportToMarkdown(win, title, chatHTML) {
                             .replace(/<[^>]+>/g, '')
                             .trim();
                     });
-                    
+
                     if (cellContents.length > 0) {
                         md += '| ' + cellContents.join(' | ') + ' |\n';
                         if (isHeader) {
@@ -5436,27 +5313,27 @@ async function exportToMarkdown(win, title, chatHTML) {
                         }
                     }
                 });
-                
+
                 return md + '\n';
             });
-            
+
             // Step 11: Convert links
             result = result.replace(/<a[^>]+href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, (_, href, text) => {
                 const cleanText = text.replace(/<[^>]+>/g, '').trim();
                 return `[${cleanText}](${href})`;
             });
-            
+
             // Step 12: Convert line breaks and paragraphs
             result = result.replace(/<br\s*\/?>/gi, '\n');
             result = result.replace(/<p[^>]*>([\s\S]*?)<\/p>/gi, '$1\n\n');
             result = result.replace(/<div[^>]*>([\s\S]*?)<\/div>/gi, '$1\n');
-            
+
             // Step 13: Convert horizontal rules
             result = result.replace(/<hr[^>]*>/gi, '\n---\n');
-            
+
             // Step 14: Remove remaining HTML tags
             result = result.replace(/<[^>]+>/g, '');
-            
+
             // Step 15: Decode HTML entities
             result = result
                 .replace(/&amp;/g, '&')
@@ -5467,7 +5344,7 @@ async function exportToMarkdown(win, title, chatHTML) {
                 .replace(/&nbsp;/g, ' ')
                 .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code)))
                 .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCharCode(parseInt(code, 16)));
-            
+
             // Step 16: Restore LaTeX expressions
             latexMap.forEach((latex, placeholder) => {
                 // Determine if it should be display or inline
@@ -5477,17 +5354,17 @@ async function exportToMarkdown(win, title, chatHTML) {
                     result = result.replace(new RegExp(placeholder, 'g'), latex.includes('$$') ? latex : `$${latex}$`);
                 }
             });
-            
+
             // Step 17: Clean up whitespace
             result = result.replace(/\n{3,}/g, '\n\n');
             result = result.trim();
-            
+
             // Prepend images at the start
             let imagesMd = '';
             images.forEach(img => {
                 imagesMd += `![${img.alt}](${img.src})\n\n`;
             });
-            
+
             return imagesMd + result;
         }
 
@@ -5506,16 +5383,16 @@ async function exportToMarkdown(win, title, chatHTML) {
         });
 
         fs.writeFileSync(filePath, mdContent, 'utf-8');
-        
+
         console.log(`MD successfully saved to ${filePath}`);
-        
+
         // Check if user wants to open file after export
         if (settings.openFileAfterExport) {
             shell.openPath(filePath).catch(err => {
                 console.error('Failed to open MD file:', err);
             });
         }
-        
+
         dialog.showMessageBox(win, {
             type: 'info',
             title: 'Export Successful',
@@ -5558,7 +5435,7 @@ ipcMain.on('select-pdf-direction', async (event, direction) => {
 
         // שלב 2: יצירת קובץ HTML זמני עם KaTeX
         const tempHtmlPath = path.join(app.getPath('temp'), `gemini-chat-${Date.now()}.html`);
-        
+
         // --- KaTeX inline (ללא רשת) ---
         const katexCssPath = require.resolve('katex/dist/katex.min.css');
         const katexJsPath = require.resolve('katex/dist/katex.min.js');
@@ -5584,7 +5461,7 @@ ipcMain.on('select-pdf-direction', async (event, direction) => {
         const katexCSS = inlineKatexFonts(fs.readFileSync(katexCssPath, 'utf8'));
         const katexJS = fs.readFileSync(katexJsPath, 'utf8');
         const katexAuto = fs.readFileSync(katexAutoPath, 'utf8');
-        
+
         // Get user's language for labels
         const currentSettings = getSettings();
         const userLang = currentSettings.language || 'en';
@@ -5596,11 +5473,11 @@ ipcMain.on('select-pdf-direction', async (event, direction) => {
         console.log('PDF Export - pdf-model-label:', t['pdf-model-label']);
         const userLabel = t['pdf-user-label'] || 'You:';
         const modelLabel = t['pdf-model-label'] || 'Gemini:';
-        
+
         const isRTL = direction === 'rtl';
         const borderSide = isRTL ? 'border-right' : 'border-left';
         const textAlign = isRTL ? 'right' : 'left';
-        
+
         let htmlContent = `<!DOCTYPE html>
 <html dir="${direction}">
 <head>
@@ -6375,12 +6252,12 @@ ipcMain.on('select-pdf-direction', async (event, direction) => {
         });
 
         // הוספת footer
-        const currentDate = new Date().toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
+        const currentDate = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         });
-        
+
         htmlContent += `
     <div class="pdf-footer">
         <p>Exported from <a href="https://github.com/hillelkingqt/GeminiDesk" target="_blank" style="color: #1967d2; text-decoration: none; font-weight: 600;">GeminiDesk</a> • ${currentDate}</p>
@@ -6551,7 +6428,7 @@ ipcMain.on('select-pdf-direction', async (event, direction) => {
                 offscreen: false
             }
         });
-        
+
         // סימון שזה חלון פנימי כדי שלא יוצג ב-Alt+G
         pdfWin.__internal = true;
 
@@ -6601,7 +6478,7 @@ ipcMain.on('select-pdf-direction', async (event, direction) => {
         }
 
         console.log(`PDF successfully saved to ${filePath}`);
-        
+
         // Check if user wants to open file after export
         if (settings.openFileAfterExport) {
             shell.openPath(filePath).catch(err => {
@@ -6624,7 +6501,7 @@ ipcMain.on('select-pdf-direction', async (event, direction) => {
 
     } catch (err) {
         console.error('Failed to export chat to PDF:', err);
-        
+
         // Clean up temp file on error
         try {
             if (tempHtmlPath && fs.existsSync(tempHtmlPath)) {
@@ -6633,7 +6510,7 @@ ipcMain.on('select-pdf-direction', async (event, direction) => {
         } catch (cleanupErr) {
             console.warn('Failed to clean up temporary HTML file:', cleanupErr);
         }
-        
+
         dialog.showErrorBox('Export Error', 'An unexpected error occurred while exporting the chat. See console for details.');
         pendingPdfExportData = null;
         selectedExportFormat = null;
@@ -6848,12 +6725,12 @@ ipcMain.handle('add-google-account', async () => {
         try {
             const placeholders = allAccounts.map((a, i) => ({ a, i })).filter(item => {
                 const acc = item.a || {};
-                return !( (acc.email && acc.email.length>0) || (acc.localImagePath && acc.localImagePath.length>0) || (acc.profileImageUrl && acc.profileImageUrl.length>0) || (acc.avatarFile && acc.avatarFile.length>0) || (acc.avatarUrl && acc.avatarUrl.length>0) );
+                return !((acc.email && acc.email.length > 0) || (acc.localImagePath && acc.localImagePath.length > 0) || (acc.profileImageUrl && acc.profileImageUrl.length > 0) || (acc.avatarFile && acc.avatarFile.length > 0) || (acc.avatarUrl && acc.avatarUrl.length > 0));
             });
             if (placeholders.length > 0) {
                 newIndex = placeholders[0].i;
                 // ensure placeholder exists and reset minimal fields
-                try { accountsModule.updateAccountMetadata(newIndex, { name: `Account ${newIndex+1}` }); } catch (e) {}
+                try { accountsModule.updateAccountMetadata(newIndex, { name: `Account ${newIndex + 1}` }); } catch (e) { }
             }
         } catch (e) {
             console.warn('Error while searching for placeholder accounts:', e && e.message ? e.message : e);
@@ -6935,13 +6812,13 @@ ipcMain.handle('add-custom-prompt', async (event, prompt) => {
         content: prompt.content || '',
         isDefault: prompt.isDefault || false
     };
-    
+
     // If this prompt is set as default, clear default from others
     if (newPrompt.isDefault) {
         settings.customPrompts.forEach(p => p.isDefault = false);
         settings.defaultPromptId = newPrompt.id;
     }
-    
+
     settings.customPrompts.push(newPrompt);
     saveSettings(settings);
     broadcastToWindows('settings-updated', settings);
@@ -6951,10 +6828,10 @@ ipcMain.handle('add-custom-prompt', async (event, prompt) => {
 // Update an existing custom prompt
 ipcMain.handle('update-custom-prompt', async (event, prompt) => {
     if (!settings.customPrompts) return null;
-    
+
     const index = settings.customPrompts.findIndex(p => p.id === prompt.id);
     if (index === -1) return null;
-    
+
     // If this prompt is being set as default, clear default from others
     if (prompt.isDefault) {
         settings.customPrompts.forEach(p => p.isDefault = false);
@@ -6962,7 +6839,7 @@ ipcMain.handle('update-custom-prompt', async (event, prompt) => {
     } else if (settings.defaultPromptId === prompt.id) {
         settings.defaultPromptId = null;
     }
-    
+
     settings.customPrompts[index] = { ...settings.customPrompts[index], ...prompt };
     saveSettings(settings);
     broadcastToWindows('settings-updated', settings);
@@ -6972,15 +6849,15 @@ ipcMain.handle('update-custom-prompt', async (event, prompt) => {
 // Delete a custom prompt
 ipcMain.handle('delete-custom-prompt', async (event, promptId) => {
     if (!settings.customPrompts) return false;
-    
+
     const index = settings.customPrompts.findIndex(p => p.id === promptId);
     if (index === -1) return false;
-    
+
     // If deleting the default prompt, clear the default
     if (settings.defaultPromptId === promptId) {
         settings.defaultPromptId = null;
     }
-    
+
     settings.customPrompts.splice(index, 1);
     saveSettings(settings);
     broadcastToWindows('settings-updated', settings);
@@ -6990,10 +6867,10 @@ ipcMain.handle('delete-custom-prompt', async (event, promptId) => {
 // Set a prompt as the default
 ipcMain.handle('set-default-prompt', async (event, promptId) => {
     if (!settings.customPrompts) return false;
-    
+
     // Clear default from all prompts
     settings.customPrompts.forEach(p => p.isDefault = false);
-    
+
     if (promptId) {
         const prompt = settings.customPrompts.find(p => p.id === promptId);
         if (prompt) {
@@ -7005,7 +6882,7 @@ ipcMain.handle('set-default-prompt', async (event, promptId) => {
     } else {
         settings.defaultPromptId = null;
     }
-    
+
     saveSettings(settings);
     broadcastToWindows('settings-updated', settings);
     return true;
@@ -7018,7 +6895,7 @@ ipcMain.on('open-prompt-manager-window', (event) => {
         promptManagerWin.focus();
         return;
     }
-    
+
     promptManagerWin = new BrowserWindow({
         width: 700,
         height: 600,
@@ -7030,10 +6907,10 @@ ipcMain.on('open-prompt-manager-window', (event) => {
             contextIsolation: true
         }
     });
-    
+
     promptManagerWin.__internal = true;
     promptManagerWin.loadFile('html/prompt-manager.html');
-    
+
     promptManagerWin.on('closed', () => {
         promptManagerWin = null;
     });
@@ -7200,41 +7077,41 @@ ipcMain.on('update-setting', (event, key, value) => {
                         }
                     }
 
-                            // Do NOT call removeExtension at runtime (can crash Chromium).
-                            // Instead: restore views and ask the user to restart the app to fully unload the extension.
-                            for (const item of restores) {
-                                try {
-                                    if (item.orig && item.orig !== 'about:blank') {
-                                        item.view.webContents.loadURL(item.orig).catch(() => {});
-                                        console.log('Restored view for window', item.winId, 'to', item.orig);
-                                    }
-                                } catch (e) {
-                                    // ignore
-                                }
+                    // Do NOT call removeExtension at runtime (can crash Chromium).
+                    // Instead: restore views and ask the user to restart the app to fully unload the extension.
+                    for (const item of restores) {
+                        try {
+                            if (item.orig && item.orig !== 'about:blank') {
+                                item.view.webContents.loadURL(item.orig).catch(() => { });
+                                console.log('Restored view for window', item.winId, 'to', item.orig);
                             }
+                        } catch (e) {
+                            // ignore
+                        }
+                    }
 
-                            // Clear our in-memory map so we won't attempt removeExtension again in this session
-                            loadedExtensions.clear();
+                    // Clear our in-memory map so we won't attempt removeExtension again in this session
+                    loadedExtensions.clear();
 
-                            // Prompt the user to restart the app to fully unload the extension from all sessions
-                            try {
-                                const focused = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
-                                const result = await dialog.showMessageBox(focused, {
-                                    type: 'question',
-                                    buttons: ['Restart Now', 'Later'],
-                                    defaultId: 0,
-                                    cancelId: 1,
-                                    title: 'Restart required',
-                                    message: 'To completely unload the extension from all browser sessions a restart is required. Restart now?'
-                                });
-                                if (result.response === 0) {
-                                    // Relaunch the app; on startup we check settings and will skip loading the extension
-                                    app.relaunch();
-                                    app.exit(0);
-                                }
-                            } catch (e) {
-                                console.warn('Failed to prompt for restart after disabling extension:', e && e.message ? e.message : e);
-                            }
+                    // Prompt the user to restart the app to fully unload the extension from all sessions
+                    try {
+                        const focused = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+                        const result = await dialog.showMessageBox(focused, {
+                            type: 'question',
+                            buttons: ['Restart Now', 'Later'],
+                            defaultId: 0,
+                            cancelId: 1,
+                            title: 'Restart required',
+                            message: 'To completely unload the extension from all browser sessions a restart is required. Restart now?'
+                        });
+                        if (result.response === 0) {
+                            // Relaunch the app; on startup we check settings and will skip loading the extension
+                            app.relaunch();
+                            app.exit(0);
+                        }
+                    } catch (e) {
+                        console.warn('Failed to prompt for restart after disabling extension:', e && e.message ? e.message : e);
+                    }
                 } catch (err) {
                     console.warn('Failed safe-unload sequence for unpacked extension:', err && err.message ? err.message : err);
                 }
@@ -7371,17 +7248,17 @@ function openMcpSetupWindow(parent) {
 
         // Open external links in default browser
         mcpSetupWin.webContents.setWindowOpenHandler(({ url }) => {
-            try { shell.openExternal(url); } catch (e) {}
+            try { shell.openExternal(url); } catch (e) { }
             return { action: 'deny' };
         });
         mcpSetupWin.webContents.on('will-navigate', (e, url) => {
             if (!url.startsWith('file://')) {
                 e.preventDefault();
-                try { shell.openExternal(url); } catch (err) {}
+                try { shell.openExternal(url); } catch (err) { }
             }
         });
 
-    mcpSetupWin.loadFile('html/mcp-setup.html');
+        mcpSetupWin.loadFile('html/mcp-setup.html');
 
         mcpSetupWin.once('ready-to-show', () => {
             if (mcpSetupWin) {
@@ -7401,7 +7278,7 @@ function openMcpSetupWindow(parent) {
 // Open external URL from renderer on demand
 ipcMain.on('open-external', (_event, url) => {
     if (typeof url === 'string' && /^https?:\/\//i.test(url)) {
-        try { shell.openExternal(url); } catch (_) {}
+        try { shell.openExternal(url); } catch (_) { }
     }
 });
 
