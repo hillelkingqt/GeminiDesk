@@ -7,8 +7,14 @@
     "128": "icon.svg"
   },
   "permissions": [
-    "storage"
+    "storage",
+    "activeTab"
   ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.svg",
+    "default_title": "AI Studio RTL"
+  },
   "content_scripts": [
     {
       "matches": ["https://aistudio.google.com/*"],
