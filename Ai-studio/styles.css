@@ -1,0 +1,119 @@
+/* ==========================================================================
+   הגדרות בסיס (צ'אט, בועות, מחשבות)
+   ========================================================================== */
+body.rtl-enabled .turn-content,
+body.rtl-enabled ms-text-chunk,
+body.rtl-enabled .cmark-node,
+/* מחילים RTL על גוף הפאנל רק אם הוא לא חלק מההיסטוריה */
+body.rtl-enabled .mat-expansion-panel-body {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+/* טיפול בטקסט רגיל (פסקאות ורשימות) */
+body.rtl-enabled .turn-content p,
+body.rtl-enabled .turn-content li,
+body.rtl-enabled .mat-expansion-panel-body p,
+body.rtl-enabled .mat-expansion-panel-body li,
+body.rtl-enabled ms-text-chunk p {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+/* כותרות (User / Model) */
+body.rtl-enabled .author-label,
+body.rtl-enabled div[role="heading"] {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+/* ==========================================================================
+   אזור ה"מחשבות" (Thoughts)
+   ========================================================================== */
+body.rtl-enabled mat-panel-title,
+body.rtl-enabled .mat-expansion-panel-header-title {
+    direction: rtl !important;
+    text-align: right !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+}
+
+body.rtl-enabled ms-thought-chunk .cmark-node {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+body.rtl-enabled .thinking-progress-icon {
+    margin-left: 10px !important;
+    margin-right: 0 !important;
+}
+
+/* ==========================================================================
+   מתמטיקה (התיקון החדש!)
+   ========================================================================== */
+
+/* 1. מתמטיקה בתוך השורה (Inline Math - $...$) */
+/* אלו צריכים לזרום עם הטקסט אבל להיות משמאל לימין פנימית */
+body.rtl-enabled ms-katex:not(.display), 
+body.rtl-enabled .katex:not(.katex-display), 
+body.rtl-enabled math {
+    direction: ltr !important;
+    unicode-bidi: isolate !important;
+    text-align: left !important;
+    display: inline-block !important;
+}
+
+/* 2. מתמטיקה בשורה נפרדת (Display Math - $$...$$) */
+/* אלו המשוואות ששלחת עכשיו - אנחנו מכריחים אותן למרכז */
+body.rtl-enabled ms-katex.display,
+body.rtl-enabled .katex-display {
+    display: block !important;       /* תופס שורה נפרדת */
+    width: 100% !important;          /* רוחב מלא */
+    text-align: center !important;   /* מרכוז */
+    direction: ltr !important;       /* כיוון פנימי משמאל לימין */
+    margin: 10px 0 !important;       /* ריווח קטן מלמעלה ולמטה */
+}
+
+/* ==========================================================================
+   קוד ורשימות
+   ========================================================================== */
+body.rtl-enabled pre, 
+body.rtl-enabled code,
+body.rtl-enabled .code-block-aligner pre {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+/* רשימות בצ'אט (הזחה נכונה לימין) */
+body.rtl-enabled .turn-content ul, 
+body.rtl-enabled .turn-content ol,
+body.rtl-enabled ms-thought-chunk ul,
+body.rtl-enabled ms-thought-chunk ol {
+    margin-right: 20px !important;
+    margin-left: 0 !important;
+    padding-right: 20px !important;
+    padding-left: 0 !important;
+}
+
+/* ==========================================================================
+   תיקון סרגל צד - היסטוריה (שלא ייפגע)
+   ========================================================================== */
+/* אם הפאנל מכיל היסטוריה, נשאיר אותו משמאל לימין */
+body.rtl-enabled .mat-expansion-panel-body:has(.prompt-link-wrapper),
+body.rtl-enabled .mat-expansion-panel-body:has(.view-all-history-link) {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+body.rtl-enabled .prompt-link-wrapper,
+body.rtl-enabled .prompt-link,
+body.rtl-enabled .view-all-history-link {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+body.rtl-enabled .mat-expansion-panel-body:has(.prompt-link-wrapper) ul {
+    padding-right: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+}

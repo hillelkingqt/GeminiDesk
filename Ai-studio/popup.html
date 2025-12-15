@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Studio RTL</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon-bg">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h14"/></svg>
+            </div>
+            <h1>AI Studio RTL</h1>
+            <p>Enhance readability</p>
+        </div>
+
+        <div class="control-panel">
+            <div class="label">
+                <span class="title">RTL Mode</span>
+                <span class="subtitle">Right-to-Left Layout</span>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="rtlToggle" checked>
+                <span class="slider round"></span>
+            </label>
+        </div>
+
+        <div class="footer">
+            <span class="status" id="statusText">Active</span>
+        </div>
+    </div>
+    <script src="popup.js"></script>
+</body>
+</html>
