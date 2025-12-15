@@ -2099,6 +2099,7 @@ function createWindow(state = null) {
     newWin.prevBounds = null;
     newWin.appMode = null;
     newWin.savedScrollPosition = 0;
+    newWin.scrollRestoreTimeouts = [];
 
     // Setup context menu for the main window
     setupContextMenu(newWin.webContents);
@@ -2188,6 +2189,12 @@ function createWindow(state = null) {
             newWin.restoreScrollTimeouts = null;
         }
 
+        // Clear any pending scroll restoration timeouts
+        if (newWin.scrollRestoreTimeouts) {
+            newWin.scrollRestoreTimeouts.forEach(id => clearTimeout(id));
+            newWin.scrollRestoreTimeouts = null;
+        }
+
         // Clear any pending animation timeouts
         if (newWin.animationTimeouts) {
             newWin.animationTimeouts.forEach(id => clearTimeout(id));
@@ -2245,35 +2252,50 @@ function createWindow(state = null) {
             }
 
             if (restoreScroll) {
+                // Clear any pending scroll restoration timeouts
+                if (newWin.scrollRestoreTimeouts && newWin.scrollRestoreTimeouts.length > 0) {
+                    newWin.scrollRestoreTimeouts.forEach(id => clearTimeout(id));
+                    newWin.scrollRestoreTimeouts = [];
+                }
+
+                // Validate scroll position is a safe numeric value
+                const scrollPosition = typeof newWin.savedScrollPosition === 'number' && 
+                                     isFinite(newWin.savedScrollPosition) && 
+                                     newWin.savedScrollPosition >= 0 
+                                     ? Math.floor(newWin.savedScrollPosition) 
+                                     : 0;
+
                 // For gemini.google.com, use multiple restoration attempts with longer delays
                 // to handle the page's dynamic content updates during resize
                 if (isGemini) {
                     GEMINI_SCROLL_RESTORE_DELAYS.forEach(delay => {
-                        setTimeout(async () => {
+                        const timeoutId = setTimeout(async () => {
                             if (view && !view.webContents.isDestroyed()) {
                                 try {
                                     await view.webContents.executeJavaScript(
-                                        `(document.scrollingElement || document.documentElement).scrollTop = ${newWin.savedScrollPosition};`
+                                        `(document.scrollingElement || document.documentElement).scrollTop = ${scrollPosition};`
                                     );
                                 } catch (e) {
                                     // Ignore errors
                                 }
                             }
                         }, delay);
+                        newWin.scrollRestoreTimeouts.push(timeoutId);
                     });
                 } else {
                     // Standard single restoration for other sites
-                    setTimeout(async () => {
+                    const timeoutId = setTimeout(async () => {
                         if (view && !view.webContents.isDestroyed()) {
                             try {
                                 await view.webContents.executeJavaScript(
-                                    `(document.scrollingElement || document.documentElement).scrollTop = ${newWin.savedScrollPosition};`
+                                    `(document.scrollingElement || document.documentElement).scrollTop = ${scrollPosition};`
                                 );
                             } catch (e) {
                                 // Ignore errors
                             }
                         }
                     }, 100);
+                    newWin.scrollRestoreTimeouts.push(timeoutId);
                 }
             }
         }
