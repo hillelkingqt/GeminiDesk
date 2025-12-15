@@ -1710,6 +1710,11 @@
                     // Load unpacked extension setting (English-only)
                     const loadExtEl = document.getElementById('setting-loadUnpackedExtension');
                     if (loadExtEl) loadExtEl.checked = !!settings.loadUnpackedExtension;
+                    
+                    // AI Studio RTL setting
+                    const aiStudioRtlEl = document.getElementById('setting-aiStudioRtlEnabled');
+                    if (aiStudioRtlEl) aiStudioRtlEl.checked = !!settings.aiStudioRtlEnabled;
+                    
                     document.getElementById('setting-shortcutsGlobal').checked = settings.shortcutsGlobal !== false;
                     document.getElementById('setting-showAdvancedShortcutOptions').checked = settings.showAdvancedShortcutOptions || false;
                     document.getElementById('setting-showChatTitle').checked = settings.showChatTitle !== false;
@@ -1933,6 +1938,14 @@
             if (openMcpBtnGlobal) {
                 openMcpBtnGlobal.addEventListener('click', () => {
                     electronAPI.openMcpSetupWindow();
+                });
+            }
+
+            // AI Studio RTL toggle
+            const aiStudioRtlCheckbox = document.getElementById('setting-aiStudioRtlEnabled');
+            if (aiStudioRtlCheckbox) {
+                aiStudioRtlCheckbox.addEventListener('change', (e) => {
+                    electronAPI.updateSetting('aiStudioRtlEnabled', e.target.checked);
                 });
             }
 
