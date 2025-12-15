@@ -2245,6 +2245,11 @@ function createWindow(state = null) {
             newWin.scrollRestoreTimeouts = [];
         }
 
+        // Initialize scrollRestoreTimeouts array if it doesn't exist
+        if (!newWin.scrollRestoreTimeouts) {
+            newWin.scrollRestoreTimeouts = [];
+        }
+
         // Validate scroll position is a safe numeric value
         const scrollPosition = typeof newWin.savedScrollPosition === 'number' && 
                              isFinite(newWin.savedScrollPosition) && 
