@@ -3,17 +3,11 @@
   "name": "AI Studio RTL Pro",
   "version": "1.0",
   "description": "RTL toggler for Google AI Studio with Math support",
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": "icon.svg"
-  },
   "icons": {
     "128": "icon.svg"
   },
   "permissions": [
-    "activeTab",
-    "storage",
-    "scripting"
+    "storage"
   ],
   "content_scripts": [
     {

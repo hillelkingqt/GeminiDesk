@@ -30,6 +30,11 @@ const EXT_PATH = app.isPackaged
     ? path.join(process.resourcesPath, '0.5.8_0')
     : path.join(__dirname, '0.5.8_0');
 
+// Path to AI Studio RTL extension
+const AI_STUDIO_EXT_PATH = app.isPackaged
+    ? path.join(process.resourcesPath, 'Ai-studio')
+    : path.join(__dirname, 'Ai-studio');
+
 // Track loaded extension IDs per label so we can attempt removal later
 const loadedExtensions = new Map(); // label -> extensionId
 
@@ -131,6 +136,152 @@ async function unloadLoadedExtensions() {
         }
     } catch (e) {
         console.warn('Error unloading extensions:', e && e.message ? e.message : e);
+    }
+}
+
+// ================================================================= //
+// AI Studio RTL Extension Functions
+// ================================================================= //
+
+// Track loaded AI Studio extension IDs per session label
+const loadedAiStudioExtensions = new Map(); // label -> extensionId
+
+async function loadAiStudioExtensionToSession(sess, label) {
+    try {
+        if (!sess || typeof sess.loadExtension !== 'function') return null;
+        if (!fs.existsSync(AI_STUDIO_EXT_PATH)) {
+            console.warn('AI Studio extension path does not exist:', AI_STUDIO_EXT_PATH);
+            return null;
+        }
+        const ext = await sess.loadExtension(AI_STUDIO_EXT_PATH, { allowFileAccess: true });
+        const id = ext && ext.id ? ext.id : (ext && ext.name ? ext.name : null);
+        if (id) loadedAiStudioExtensions.set(label, id);
+        console.log(`Loaded AI Studio RTL extension into session (${label}) ->`, id || ext && ext.name || ext);
+        return id;
+    } catch (err) {
+        console.warn(`Failed to load AI Studio extension into session (${label}):`, err && err.message ? err.message : err);
+        return null;
+    }
+}
+
+async function loadAiStudioExtensionToAllSessions() {
+    try {
+        if (!fs.existsSync(AI_STUDIO_EXT_PATH)) {
+            console.warn('AI Studio extension path does not exist:', AI_STUDIO_EXT_PATH);
+            return;
+        }
+
+        // default session
+        await loadAiStudioExtensionToSession(session.defaultSession, 'default');
+
+        // main app partition
+        if (constants && constants.SESSION_PARTITION) {
+            const mainPart = session.fromPartition(constants.SESSION_PARTITION, { cache: true });
+            await loadAiStudioExtensionToSession(mainPart, constants.SESSION_PARTITION);
+        }
+
+        // per-account partitions
+        const s = getSettings();
+        if (s && Array.isArray(s.accounts) && s.accounts.length > 0) {
+            for (let i = 0; i < s.accounts.length; i++) {
+                try {
+                    const partName = accountsModule.getAccountPartition(i);
+                    const accSess = session.fromPartition(partName, { cache: true });
+                    await loadAiStudioExtensionToSession(accSess, partName);
+                } catch (e) {
+                    console.warn('Error loading AI Studio extension into account partition', e && e.message ? e.message : e);
+                }
+            }
+        }
+
+        // sessions attached to existing BrowserViews
+        const allWindows = BrowserWindow.getAllWindows();
+        allWindows.forEach(win => {
+            try {
+                const view = win.getBrowserView();
+                if (view && view.webContents && view.webContents.session) {
+                    const label = `view:${win.id}`;
+                    loadAiStudioExtensionToSession(view.webContents.session, label).catch(() => { });
+                }
+            } catch (e) {
+                // ignore
+            }
+        });
+
+        console.log('AI Studio RTL extension loaded into all sessions');
+    } catch (e) {
+        console.warn('Error while loading AI Studio extension into all sessions:', e && e.message ? e.message : e);
+    }
+}
+
+async function updateAiStudioRtlState(enabled) {
+    try {
+        // Update chrome.storage.local in all sessions where the extension is loaded
+        const allSessions = [];
+        
+        // Collect all unique sessions
+        allSessions.push(session.defaultSession);
+        
+        if (constants && constants.SESSION_PARTITION) {
+            allSessions.push(session.fromPartition(constants.SESSION_PARTITION, { cache: true }));
+        }
+        
+        const s = getSettings();
+        if (s && Array.isArray(s.accounts) && s.accounts.length > 0) {
+            for (let i = 0; i < s.accounts.length; i++) {
+                try {
+                    const partName = accountsModule.getAccountPartition(i);
+                    allSessions.push(session.fromPartition(partName, { cache: true }));
+                } catch (e) {
+                    // ignore
+                }
+            }
+        }
+        
+        // Update storage in each session
+        for (const sess of allSessions) {
+            try {
+                if (sess && sess.webRequest) {
+                    // Execute script in all tabs of aistudio.google.com to update RTL state
+                    const code = `
+                        try {
+                            chrome.storage.local.set({rtlEnabled: ${enabled}}, function() {
+                                console.log('AI Studio RTL state updated to:', ${enabled});
+                            });
+                        } catch (e) {
+                            console.error('Failed to update AI Studio RTL state:', e);
+                        }
+                    `;
+                    
+                    // Get all webContents and update those on aistudio.google.com
+                    const allWindows = BrowserWindow.getAllWindows();
+                    for (const win of allWindows) {
+                        try {
+                            const view = win.getBrowserView();
+                            if (view && view.webContents && view.webContents.getURL().includes('aistudio.google.com')) {
+                                await view.webContents.executeJavaScript(`
+                                    chrome.storage.local.set({rtlEnabled: ${enabled}});
+                                `);
+                                // Also send message to content script
+                                await view.webContents.executeJavaScript(`
+                                    if (typeof setRTL === 'function') {
+                                        setRTL(${enabled});
+                                    }
+                                `);
+                            }
+                        } catch (e) {
+                            // ignore - tab might not be ready or not on aistudio.google.com
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('Error updating AI Studio RTL state in session:', e && e.message ? e.message : e);
+            }
+        }
+        
+        console.log('AI Studio RTL state updated to:', enabled);
+    } catch (e) {
+        console.warn('Error updating AI Studio RTL state:', e && e.message ? e.message : e);
     }
 }
 
@@ -324,8 +475,42 @@ app.whenReady().then(async () => {
         }
     };
 
-    // Don't await this - let it run in the background
+    // Always load AI Studio RTL extension (independent of loadUnpackedExtension setting)
+    const loadAiStudioAsync = async () => {
+        try {
+            console.log('Loading AI Studio RTL extension...');
+            
+            // On Linux (especially AppImage), defer extension loading to improve startup time
+            if (process.platform === 'linux') {
+                console.log('Deferring AI Studio extension loading on Linux for faster startup...');
+                setTimeout(async () => {
+                    await loadAiStudioExtensionToAllSessions();
+                    
+                    // Update RTL state based on settings
+                    const localSettings = settingsModule.getSettings();
+                    if (localSettings && localSettings.aiStudioRtlEnabled) {
+                        setTimeout(() => updateAiStudioRtlState(true), 1000);
+                    }
+                    
+                    console.log('Deferred AI Studio extension loading completed on Linux');
+                }, 2000); // Wait 2 seconds after app is ready
+            } else {
+                await loadAiStudioExtensionToAllSessions();
+                
+                // Update RTL state based on settings
+                const localSettings = settingsModule.getSettings();
+                if (localSettings && localSettings.aiStudioRtlEnabled) {
+                    setTimeout(() => updateAiStudioRtlState(true), 1000);
+                }
+            }
+        } catch (e) {
+            console.error('Failed to load AI Studio RTL extension at startup:', e && e.message ? e.message : e);
+        }
+    };
+
+    // Don't await these - let them run in the background
     loadExtensionsAsync();
+    loadAiStudioAsync();
 });
 
 const trayModule = require('./modules/tray');
@@ -7269,6 +7454,11 @@ ipcMain.on('update-setting', (event, key, value) => {
                 }
             })();
         }
+    }
+    if (key === 'aiStudioRtlEnabled') {
+        // User toggled AI Studio RTL mode
+        console.log('AI Studio RTL mode toggled to:', value);
+        updateAiStudioRtlState(value);
     }
     if (key.startsWith('shortcuts.') || key === 'shortcutsGlobal' || key === 'shortcutsGlobalPerKey') {
         console.log('🔑 Shortcuts settings updated, re-registering shortcuts...');

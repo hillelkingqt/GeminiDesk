@@ -8,15 +8,15 @@ function setRTL(enabled) {
     }
 }
 
-// בדיקה בטעינה ראשונית
+// Check on initial load
 chrome.storage.local.get(['rtlEnabled'], function(result) {
-    const isEnabled = result.rtlEnabled !== false; // ברירת מחדל פעיל
+    const isEnabled = result.rtlEnabled === true; // Default is false
     setRTL(isEnabled);
 });
 
-// האזנה לשינויים מהתפריט
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    if (request.action === "toggleRTL") {
-        setRTL(request.state);
+// Listen for changes from GeminiDesk settings
+chrome.storage.onChanged.addListener(function(changes, areaName) {
+    if (areaName === 'local' && changes.rtlEnabled) {
+        setRTL(changes.rtlEnabled.newValue === true);
     }
 });
