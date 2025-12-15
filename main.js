@@ -2200,12 +2200,24 @@ function createWindow(state = null) {
                 view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
             }
 
-            // Force repaint of BrowserView to fix Windows snap rendering issue (Win+Arrow keys)
-            // This is necessary in packaged builds where BrowserView doesn't auto-repaint
+            // Check if current URL is gemini.google.com
+            let isGeminiUrl = false;
             try {
-                view.webContents.invalidate();
+                const currentUrl = view.webContents.getURL();
+                isGeminiUrl = currentUrl && currentUrl.startsWith('https://gemini.google.com');
             } catch (e) {
                 // Ignore errors
+            }
+
+            // Force repaint of BrowserView to fix Windows snap rendering issue (Win+Arrow keys)
+            // This is necessary in packaged builds where BrowserView doesn't auto-repaint
+            // Skip invalidate for gemini.google.com during resize to prevent scroll reset
+            if (!isGeminiUrl || !restoreScroll) {
+                try {
+                    view.webContents.invalidate();
+                } catch (e) {
+                    // Ignore errors
+                }
             }
 
             if (saveScroll) {
@@ -2220,18 +2232,37 @@ function createWindow(state = null) {
             }
 
             if (restoreScroll) {
-                // Restore scroll position after resize
-                setTimeout(async () => {
-                    if (view && !view.webContents.isDestroyed()) {
-                        try {
-                            await view.webContents.executeJavaScript(
-                                `(document.scrollingElement || document.documentElement).scrollTop = ${newWin.savedScrollPosition};`
-                            );
-                        } catch (e) {
-                            // Ignore errors
+                // For gemini.google.com, use multiple restoration attempts with longer delays
+                // to handle the page's dynamic content updates during resize
+                if (isGeminiUrl) {
+                    const restoreAttempts = [150, 300, 500];
+                    restoreAttempts.forEach(delay => {
+                        setTimeout(async () => {
+                            if (view && !view.webContents.isDestroyed()) {
+                                try {
+                                    await view.webContents.executeJavaScript(
+                                        `(document.scrollingElement || document.documentElement).scrollTop = ${newWin.savedScrollPosition};`
+                                    );
+                                } catch (e) {
+                                    // Ignore errors
+                                }
+                            }
+                        }, delay);
+                    });
+                } else {
+                    // Standard single restoration for other sites
+                    setTimeout(async () => {
+                        if (view && !view.webContents.isDestroyed()) {
+                            try {
+                                await view.webContents.executeJavaScript(
+                                    `(document.scrollingElement || document.documentElement).scrollTop = ${newWin.savedScrollPosition};`
+                                );
+                            } catch (e) {
+                                // Ignore errors
+                            }
                         }
-                    }
-                }, 100);
+                    }, 100);
+                }
             }
         }
     };
@@ -2279,9 +2310,14 @@ function createWindow(state = null) {
                 // Since frame: false, newBounds (window bounds) is roughly content bounds
                 view.setBounds({ x: 0, y: 30, width: newBounds.width, height: newBounds.height - 30 });
                 // Force repaint to fix Windows snap rendering issue
+                // Skip invalidate for gemini.google.com to prevent scroll reset during resize
                 if (view.webContents && !view.webContents.isDestroyed()) {
                     try {
-                        view.webContents.invalidate();
+                        const currentUrl = view.webContents.getURL();
+                        const isGeminiUrl = currentUrl && currentUrl.startsWith('https://gemini.google.com');
+                        if (!isGeminiUrl) {
+                            view.webContents.invalidate();
+                        }
                     } catch (e) {
                         // Ignore errors
                     }
@@ -2307,9 +2343,14 @@ function createWindow(state = null) {
                     const contentBounds = newWin.getContentBounds();
                     view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
                     // Force repaint to fix Windows snap rendering issue
+                    // Skip invalidate for gemini.google.com to prevent scroll reset
                     if (view.webContents && !view.webContents.isDestroyed()) {
                         try {
-                            view.webContents.invalidate();
+                            const currentUrl = view.webContents.getURL();
+                            const isGeminiUrl = currentUrl && currentUrl.startsWith('https://gemini.google.com');
+                            if (!isGeminiUrl) {
+                                view.webContents.invalidate();
+                            }
                         } catch (e) {
                             // Ignore errors
                         }
@@ -2328,9 +2369,14 @@ function createWindow(state = null) {
                     const contentBounds = newWin.getContentBounds();
                     view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
                     // Force repaint to fix Windows snap rendering issue
+                    // Skip invalidate for gemini.google.com to prevent scroll reset
                     if (view.webContents && !view.webContents.isDestroyed()) {
                         try {
-                            view.webContents.invalidate();
+                            const currentUrl = view.webContents.getURL();
+                            const isGeminiUrl = currentUrl && currentUrl.startsWith('https://gemini.google.com');
+                            if (!isGeminiUrl) {
+                                view.webContents.invalidate();
+                            }
                         } catch (e) {
                             // Ignore errors
                         }
@@ -2350,9 +2396,14 @@ function createWindow(state = null) {
                     const contentBounds = newWin.getContentBounds();
                     view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
                     // Force repaint
+                    // Skip invalidate for gemini.google.com to prevent scroll reset
                     if (view.webContents && !view.webContents.isDestroyed()) {
                         try {
-                            view.webContents.invalidate();
+                            const currentUrl = view.webContents.getURL();
+                            const isGeminiUrl = currentUrl && currentUrl.startsWith('https://gemini.google.com');
+                            if (!isGeminiUrl) {
+                                view.webContents.invalidate();
+                            }
                         } catch (e) {
                             // Ignore errors
                         }
@@ -2372,9 +2423,14 @@ function createWindow(state = null) {
                     const contentBounds = newWin.getContentBounds();
                     view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
                     // Force repaint
+                    // Skip invalidate for gemini.google.com to prevent scroll reset
                     if (view.webContents && !view.webContents.isDestroyed()) {
                         try {
-                            view.webContents.invalidate();
+                            const currentUrl = view.webContents.getURL();
+                            const isGeminiUrl = currentUrl && currentUrl.startsWith('https://gemini.google.com');
+                            if (!isGeminiUrl) {
+                                view.webContents.invalidate();
+                            }
                         } catch (e) {
                             // Ignore errors
                         }
@@ -2395,9 +2451,14 @@ function createWindow(state = null) {
                     const contentBounds = newWin.getContentBounds();
                     view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
                     // Force repaint to fix Windows snap rendering issue
+                    // Skip invalidate for gemini.google.com to prevent scroll reset
                     if (view.webContents && !view.webContents.isDestroyed()) {
                         try {
-                            view.webContents.invalidate();
+                            const currentUrl = view.webContents.getURL();
+                            const isGeminiUrl = currentUrl && currentUrl.startsWith('https://gemini.google.com');
+                            if (!isGeminiUrl) {
+                                view.webContents.invalidate();
+                            }
                         } catch (e) {
                             // Ignore errors
                         }
