@@ -49,6 +49,7 @@
     ],
     "extraResources": [
       "0.5.8_0/**",
+      "Ai-studio/**",
       "icons/**"
     ],
     "asar": true,
