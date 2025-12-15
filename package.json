@@ -103,8 +103,8 @@
       "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
       "runAfterFinish": true,
-      "installerIcon": "icons/icon1.png",
-      "uninstallerIcon": "icons/icon1.png",
+      "installerIcon": "icons/icon1.ico",
+      "uninstallerIcon": "icons/icon1.ico",
       "include": "installer.nsh",
       "license": "build/EULA.txt",
       "deleteAppDataOnUninstall": false
