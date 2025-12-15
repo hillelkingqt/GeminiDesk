@@ -216,66 +216,25 @@ async function loadAiStudioExtensionToAllSessions() {
 
 async function updateAiStudioRtlState(enabled) {
     try {
-        // Update chrome.storage.local in all sessions where the extension is loaded
-        const allSessions = [];
-        
-        // Collect all unique sessions
-        allSessions.push(session.defaultSession);
-        
-        if (constants && constants.SESSION_PARTITION) {
-            allSessions.push(session.fromPartition(constants.SESSION_PARTITION, { cache: true }));
-        }
-        
-        const s = getSettings();
-        if (s && Array.isArray(s.accounts) && s.accounts.length > 0) {
-            for (let i = 0; i < s.accounts.length; i++) {
-                try {
-                    const partName = accountsModule.getAccountPartition(i);
-                    allSessions.push(session.fromPartition(partName, { cache: true }));
-                } catch (e) {
-                    // ignore
-                }
-            }
-        }
-        
-        // Update storage in each session
-        for (const sess of allSessions) {
+        // Get all webContents and update those on aistudio.google.com
+        const allWindows = BrowserWindow.getAllWindows();
+        for (const win of allWindows) {
             try {
-                if (sess && sess.webRequest) {
-                    // Execute script in all tabs of aistudio.google.com to update RTL state
-                    const code = `
-                        try {
-                            chrome.storage.local.set({rtlEnabled: ${enabled}}, function() {
-                                console.log('AI Studio RTL state updated to:', ${enabled});
-                            });
-                        } catch (e) {
-                            console.error('Failed to update AI Studio RTL state:', e);
+                const view = win.getBrowserView();
+                if (view && view.webContents && view.webContents.getURL().includes('aistudio.google.com')) {
+                    // Use JSON.stringify to safely inject the boolean value
+                    await view.webContents.executeJavaScript(`
+                        chrome.storage.local.set({rtlEnabled: ${JSON.stringify(enabled)}});
+                    `);
+                    // Also send message to content script
+                    await view.webContents.executeJavaScript(`
+                        if (typeof setRTL === 'function') {
+                            setRTL(${JSON.stringify(enabled)});
                         }
-                    `;
-                    
-                    // Get all webContents and update those on aistudio.google.com
-                    const allWindows = BrowserWindow.getAllWindows();
-                    for (const win of allWindows) {
-                        try {
-                            const view = win.getBrowserView();
-                            if (view && view.webContents && view.webContents.getURL().includes('aistudio.google.com')) {
-                                await view.webContents.executeJavaScript(`
-                                    chrome.storage.local.set({rtlEnabled: ${enabled}});
-                                `);
-                                // Also send message to content script
-                                await view.webContents.executeJavaScript(`
-                                    if (typeof setRTL === 'function') {
-                                        setRTL(${enabled});
-                                    }
-                                `);
-                            }
-                        } catch (e) {
-                            // ignore - tab might not be ready or not on aistudio.google.com
-                        }
-                    }
+                    `);
                 }
             } catch (e) {
-                console.warn('Error updating AI Studio RTL state in session:', e && e.message ? e.message : e);
+                // ignore - tab might not be ready or not on aistudio.google.com
             }
         }
         
