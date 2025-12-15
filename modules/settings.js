@@ -71,6 +71,7 @@ defaultSettings.loadUnpackedExtension = false;
 defaultSettings.disableAutoUpdateCheck = false;
 defaultSettings.autoInstallUpdates = true; // Automatically download and install updates
 defaultSettings.updateInstallReminderTime = null; // Timestamp for "remind me in 1 hour"
+defaultSettings.aiStudioRtlEnabled = false; // Enable RTL mode for AI Studio (Hebrew, Arabic, etc.)
 
 function getSettings() {
     try {
@@ -88,7 +89,8 @@ function getSettings() {
                     loadUnpackedExtension: savedSettings.loadUnpackedExtension === true ? true : false,
                     disableAutoUpdateCheck: savedSettings.disableAutoUpdateCheck === true ? true : false,
                     autoInstallUpdates: savedSettings.autoInstallUpdates === undefined ? true : savedSettings.autoInstallUpdates,
-                    updateInstallReminderTime: savedSettings.updateInstallReminderTime || null
+                    updateInstallReminderTime: savedSettings.updateInstallReminderTime || null,
+                    aiStudioRtlEnabled: savedSettings.aiStudioRtlEnabled === true ? true : false
                 };
                 return combinedSettings;
             }
