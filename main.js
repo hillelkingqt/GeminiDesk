@@ -221,17 +221,26 @@ async function updateAiStudioRtlState(enabled) {
         for (const win of allWindows) {
             try {
                 const view = win.getBrowserView();
-                if (view && view.webContents && view.webContents.getURL().includes('aistudio.google.com')) {
-                    // Use JSON.stringify to safely inject the boolean value
-                    await view.webContents.executeJavaScript(`
-                        chrome.storage.local.set({rtlEnabled: ${JSON.stringify(enabled)}});
-                    `);
-                    // Also send message to content script
-                    await view.webContents.executeJavaScript(`
-                        if (typeof setRTL === 'function') {
-                            setRTL(${JSON.stringify(enabled)});
+                if (view && view.webContents) {
+                    const url = view.webContents.getURL();
+                    try {
+                        const urlObj = new URL(url);
+                        // Properly validate hostname to prevent URL injection attacks
+                        if (urlObj.hostname === 'aistudio.google.com') {
+                            // Use JSON.stringify to safely inject the boolean value
+                            await view.webContents.executeJavaScript(`
+                                chrome.storage.local.set({rtlEnabled: ${JSON.stringify(enabled)}});
+                            `);
+                            // Also send message to content script
+                            await view.webContents.executeJavaScript(`
+                                if (typeof setRTL === 'function') {
+                                    setRTL(${JSON.stringify(enabled)});
+                                }
+                            `);
                         }
-                    `);
+                    } catch (urlError) {
+                        // Invalid URL, skip
+                    }
                 }
             } catch (e) {
                 // ignore - tab might not be ready or not on aistudio.google.com
