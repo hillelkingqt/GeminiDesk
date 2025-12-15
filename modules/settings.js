@@ -71,6 +71,7 @@ defaultSettings.loadUnpackedExtension = false;
 defaultSettings.disableAutoUpdateCheck = false;
 defaultSettings.autoInstallUpdates = true; // Automatically download and install updates
 defaultSettings.updateInstallReminderTime = null; // Timestamp for "remind me in 1 hour"
+defaultSettings.aiStudioRtlEnabled = false; // Enable RTL (Right-to-Left) mode for AI Studio
 
 function getSettings() {
     try {

@@ -8,15 +8,17 @@ function setRTL(enabled) {
     }
 }
 
-// בדיקה בטעינה ראשונית
+// Initial load - check if RTL is enabled in extension storage
 chrome.storage.local.get(['rtlEnabled'], function(result) {
-    const isEnabled = result.rtlEnabled !== false; // ברירת מחדל פעיל
+    // Default to false (disabled) if not set
+    const isEnabled = result.rtlEnabled === true;
     setRTL(isEnabled);
 });
 
-// האזנה לשינויים מהתפריט
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    if (request.action === "toggleRTL") {
-        setRTL(request.state);
+// Listen for changes from the main application
+chrome.storage.onChanged.addListener(function(changes, namespace) {
+    if (namespace === 'local' && changes.rtlEnabled) {
+        const newValue = changes.rtlEnabled.newValue === true;
+        setRTL(newValue);
     }
 });
