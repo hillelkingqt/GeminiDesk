@@ -96,14 +96,18 @@
       "artifactName": "${productName}-Setup-${version}.${ext}"
     },
     "nsis": {
-      "oneClick": true,
+      "oneClick": false,
       "perMachine": false,
-      "allowElevation": false,
-      "createDesktopShortcut": true,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
       "runAfterFinish": true,
+      "installerIcon": "icons/icon1.png",
+      "uninstallerIcon": "icons/icon1.png",
       "include": "installer.nsh",
-      "license": "build/EULA.txt"
+      "license": "build/EULA.txt",
+      "deleteAppDataOnUninstall": false
     },
     "linux": {
       "target": [
