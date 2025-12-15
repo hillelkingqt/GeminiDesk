@@ -941,6 +941,12 @@
                 <label class="toggle-switch"><input type="checkbox" id="setting-disableSpellcheck"><span
                         class="slider"></span></label>
             </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="aiStudioRTL-label">AI Studio RTL</strong><span
+                        data-i18n="aiStudioRTL-desc">Enables Right-to-Left layout support for AI Studio.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-aiStudioRTL"><span
+                        class="slider"></span></label>
+            </div>
             <!-- English-only: Load MCP SuperAssistant unpacked extension -->
             <div class="setting-item english-only-feature">
                 <div class="setting-label"><strong>Load MCP SuperAssistant Extension</strong><span>When enabled, the
@@ -1689,6 +1695,7 @@
                     document.getElementById('setting-autoInstallUpdates').checked = settings.autoInstallUpdates !== false;
                     document.getElementById('setting-enableCanvasResizing').checked = settings.enableCanvasResizing || false;
                     document.getElementById('setting-disableSpellcheck').checked = settings.disableSpellcheck || false;
+                    document.getElementById('setting-aiStudioRTL').checked = settings.aiStudioRTL || false;
                     document.getElementById('setting-invisibilityMode').checked = settings.invisibilityMode || false;
                     
                     // Gray out "Show in Taskbar" when invisibility mode is enabled
@@ -1899,6 +1906,10 @@
 
             document.getElementById('setting-disableSpellcheck').addEventListener('change', (e) => {
                 electronAPI.updateSetting('disableSpellcheck', e.target.checked);
+            });
+
+            document.getElementById('setting-aiStudioRTL').addEventListener('change', (e) => {
+                electronAPI.updateSetting('aiStudioRTL', e.target.checked);
             });
 
             document.getElementById('setting-invisibilityMode').addEventListener('change', (e) => {

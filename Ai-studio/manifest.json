@@ -4,7 +4,6 @@
   "version": "1.0",
   "description": "RTL toggler for Google AI Studio with Math support",
   "action": {
-    "default_popup": "popup.html",
     "default_icon": "icon.svg"
   },
   "icons": {
