@@ -2217,6 +2217,63 @@ function createWindow(state = null) {
         }
     });
 
+    // Helper function to save and restore scroll position for Gemini
+    const saveAndRestoreScrollForGemini = async (view) => {
+        if (!view || !view.webContents || view.webContents.isDestroyed()) {
+            return;
+        }
+
+        // Check if current URL is gemini.google.com
+        const isGemini = isGeminiUrl(view);
+        if (!isGemini) {
+            return; // Only apply this logic to Gemini
+        }
+
+        // Save current scroll position
+        try {
+            const scrollY = await view.webContents.executeJavaScript(
+                `(document.scrollingElement || document.documentElement).scrollTop`
+            );
+            newWin.savedScrollPosition = scrollY;
+        } catch (e) {
+            // Ignore errors
+        }
+
+        // Clear any pending scroll restoration timeouts
+        if (newWin.scrollRestoreTimeouts && newWin.scrollRestoreTimeouts.length > 0) {
+            newWin.scrollRestoreTimeouts.forEach(id => clearTimeout(id));
+            newWin.scrollRestoreTimeouts = [];
+        }
+
+        // Initialize scrollRestoreTimeouts array if it doesn't exist
+        if (!newWin.scrollRestoreTimeouts) {
+            newWin.scrollRestoreTimeouts = [];
+        }
+
+        // Validate scroll position is a safe numeric value
+        const scrollPosition = typeof newWin.savedScrollPosition === 'number' && 
+                             isFinite(newWin.savedScrollPosition) && 
+                             newWin.savedScrollPosition >= 0 
+                             ? Math.floor(newWin.savedScrollPosition) 
+                             : 0;
+
+        // Use multiple restoration attempts with longer delays to handle dynamic content
+        GEMINI_SCROLL_RESTORE_DELAYS.forEach(delay => {
+            const timeoutId = setTimeout(async () => {
+                if (view && !view.webContents.isDestroyed()) {
+                    try {
+                        await view.webContents.executeJavaScript(
+                            `(document.scrollingElement || document.documentElement).scrollTop = ${scrollPosition};`
+                        );
+                    } catch (e) {
+                        // Ignore errors
+                    }
+                }
+            }, delay);
+            newWin.scrollRestoreTimeouts.push(timeoutId);
+        });
+    };
+
     // Helper function to update BrowserView bounds
     const updateViewBounds = async (saveScroll = true, restoreScroll = true, updateBounds = true) => {
         const view = newWin.getBrowserView();
@@ -2368,7 +2425,7 @@ function createWindow(state = null) {
 
     // Handle maximize/unmaximize to ensure BrowserView bounds are correct
     newWin.on('maximize', () => {
-        setTimeout(() => {
+        setTimeout(async () => {
             if (newWin && !newWin.isDestroyed()) {
                 const view = newWin.getBrowserView();
                 if (view) {
@@ -2383,6 +2440,9 @@ function createWindow(state = null) {
                             } catch (e) {
                                 // Ignore errors
                             }
+                        } else {
+                            // For Gemini, save and restore scroll position
+                            await saveAndRestoreScrollForGemini(view);
                         }
                     }
                     console.log('Maximize: Updated BrowserView bounds to', contentBounds.width, 'x', contentBounds.height - 30);
@@ -2392,7 +2452,7 @@ function createWindow(state = null) {
     });
 
     newWin.on('unmaximize', () => {
-        setTimeout(() => {
+        setTimeout(async () => {
             if (newWin && !newWin.isDestroyed()) {
                 const view = newWin.getBrowserView();
                 if (view) {
@@ -2407,6 +2467,9 @@ function createWindow(state = null) {
                             } catch (e) {
                                 // Ignore errors
                             }
+                        } else {
+                            // For Gemini, save and restore scroll position
+                            await saveAndRestoreScrollForGemini(view);
                         }
                     }
                     console.log('Unmaximize: Updated BrowserView bounds to', contentBounds.width, 'x', contentBounds.height - 30);
@@ -2417,7 +2480,7 @@ function createWindow(state = null) {
 
     // Handle enter-full-screen event (macOS native fullscreen)
     newWin.on('enter-full-screen', () => {
-        setTimeout(() => {
+        setTimeout(async () => {
             if (newWin && !newWin.isDestroyed()) {
                 const view = newWin.getBrowserView();
                 if (view) {
@@ -2432,6 +2495,9 @@ function createWindow(state = null) {
                             } catch (e) {
                                 // Ignore errors
                             }
+                        } else {
+                            // For Gemini, save and restore scroll position
+                            await saveAndRestoreScrollForGemini(view);
                         }
                     }
                     console.log('Enter-full-screen: Updated BrowserView bounds to', contentBounds.width, 'x', contentBounds.height - 30);
@@ -2442,7 +2508,7 @@ function createWindow(state = null) {
 
     // Handle leave-full-screen event (macOS native fullscreen)
     newWin.on('leave-full-screen', () => {
-        setTimeout(() => {
+        setTimeout(async () => {
             if (newWin && !newWin.isDestroyed()) {
                 const view = newWin.getBrowserView();
                 if (view) {
@@ -2457,6 +2523,9 @@ function createWindow(state = null) {
                             } catch (e) {
                                 // Ignore errors
                             }
+                        } else {
+                            // For Gemini, save and restore scroll position
+                            await saveAndRestoreScrollForGemini(view);
                         }
                     }
                     console.log('Leave-full-screen: Updated BrowserView bounds to', contentBounds.width, 'x', contentBounds.height - 30);
