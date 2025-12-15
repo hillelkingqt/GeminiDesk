@@ -35,6 +35,10 @@ const AI_STUDIO_EXT_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'Ai-studio')
     : path.join(__dirname, 'Ai-studio');
 
+// AI Studio RTL extension loading delays
+const AI_STUDIO_RTL_STATE_DELAY_MS = 1000; // 1 second - delay before updating RTL state after extension loads
+const AI_STUDIO_EXTENSION_LINUX_DELAY_MS = 2000; // 2 seconds - defer extension loading on Linux for faster startup
+
 // Track loaded extension IDs per label so we can attempt removal later
 const loadedExtensions = new Map(); // label -> extensionId
 
@@ -457,18 +461,18 @@ app.whenReady().then(async () => {
                     // Update RTL state based on settings
                     const localSettings = settingsModule.getSettings();
                     if (localSettings && localSettings.aiStudioRtlEnabled) {
-                        setTimeout(() => updateAiStudioRtlState(true), 1000);
+                        setTimeout(() => updateAiStudioRtlState(true), AI_STUDIO_RTL_STATE_DELAY_MS);
                     }
                     
                     console.log('Deferred AI Studio extension loading completed on Linux');
-                }, 2000); // Wait 2 seconds after app is ready
+                }, AI_STUDIO_EXTENSION_LINUX_DELAY_MS);
             } else {
                 await loadAiStudioExtensionToAllSessions();
                 
                 // Update RTL state based on settings
                 const localSettings = settingsModule.getSettings();
                 if (localSettings && localSettings.aiStudioRtlEnabled) {
-                    setTimeout(() => updateAiStudioRtlState(true), 1000);
+                    setTimeout(() => updateAiStudioRtlState(true), AI_STUDIO_RTL_STATE_DELAY_MS);
                 }
             }
         } catch (e) {
