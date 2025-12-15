@@ -389,6 +389,25 @@ const UPDATE_REMINDER_DELAY_MS = 60 * 60 * 1000; // 1 hour
 const UPDATER_INITIALIZATION_DELAY_MS = 5 * 1000; // 5 seconds
 const UPDATE_FOUND_DISPLAY_DURATION_MS = 1500; // 1.5 seconds - how long to show "update available" message before starting download
 const MAX_UPDATE_CHECK_RETRIES = 3; // Maximum retries for update check when reminder is pending
+// Scroll restoration delays for gemini.google.com to handle dynamic content updates during resize
+const GEMINI_SCROLL_RESTORE_DELAYS = [150, 300, 500];
+
+/**
+ * Helper function to check if a BrowserView is currently displaying gemini.google.com
+ * @param {BrowserView} view - The BrowserView to check
+ * @returns {boolean} True if the view is on gemini.google.com, false otherwise
+ */
+function isGeminiUrl(view) {
+    try {
+        if (view && view.webContents && !view.webContents.isDestroyed()) {
+            const currentUrl = view.webContents.getURL();
+            return currentUrl && currentUrl.startsWith('https://gemini.google.com');
+        }
+    } catch (e) {
+        // Ignore errors
+    }
+    return false;
+}
 
 
 
@@ -2080,6 +2099,7 @@ function createWindow(state = null) {
     newWin.prevBounds = null;
     newWin.appMode = null;
     newWin.savedScrollPosition = 0;
+    newWin.scrollRestoreTimeouts = [];
 
     // Setup context menu for the main window
     setupContextMenu(newWin.webContents);
@@ -2169,6 +2189,12 @@ function createWindow(state = null) {
             newWin.restoreScrollTimeouts = null;
         }
 
+        // Clear any pending scroll restoration timeouts
+        if (newWin.scrollRestoreTimeouts) {
+            newWin.scrollRestoreTimeouts.forEach(id => clearTimeout(id));
+            newWin.scrollRestoreTimeouts = null;
+        }
+
         // Clear any pending animation timeouts
         if (newWin.animationTimeouts) {
             newWin.animationTimeouts.forEach(id => clearTimeout(id));
@@ -2200,12 +2226,18 @@ function createWindow(state = null) {
                 view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
             }
 
+            // Check if current URL is gemini.google.com
+            const isGemini = isGeminiUrl(view);
+
             // Force repaint of BrowserView to fix Windows snap rendering issue (Win+Arrow keys)
             // This is necessary in packaged builds where BrowserView doesn't auto-repaint
-            try {
-                view.webContents.invalidate();
-            } catch (e) {
-                // Ignore errors
+            // Skip invalidate for gemini.google.com during resize to prevent scroll reset
+            if (!isGemini || !restoreScroll) {
+                try {
+                    view.webContents.invalidate();
+                } catch (e) {
+                    // Ignore errors
+                }
             }
 
             if (saveScroll) {
@@ -2220,18 +2252,51 @@ function createWindow(state = null) {
             }
 
             if (restoreScroll) {
-                // Restore scroll position after resize
-                setTimeout(async () => {
-                    if (view && !view.webContents.isDestroyed()) {
-                        try {
-                            await view.webContents.executeJavaScript(
-                                `(document.scrollingElement || document.documentElement).scrollTop = ${newWin.savedScrollPosition};`
-                            );
-                        } catch (e) {
-                            // Ignore errors
+                // Clear any pending scroll restoration timeouts
+                if (newWin.scrollRestoreTimeouts && newWin.scrollRestoreTimeouts.length > 0) {
+                    newWin.scrollRestoreTimeouts.forEach(id => clearTimeout(id));
+                    newWin.scrollRestoreTimeouts = [];
+                }
+
+                // Validate scroll position is a safe numeric value
+                const scrollPosition = typeof newWin.savedScrollPosition === 'number' && 
+                                     isFinite(newWin.savedScrollPosition) && 
+                                     newWin.savedScrollPosition >= 0 
+                                     ? Math.floor(newWin.savedScrollPosition) 
+                                     : 0;
+
+                // For gemini.google.com, use multiple restoration attempts with longer delays
+                // to handle the page's dynamic content updates during resize
+                if (isGemini) {
+                    GEMINI_SCROLL_RESTORE_DELAYS.forEach(delay => {
+                        const timeoutId = setTimeout(async () => {
+                            if (view && !view.webContents.isDestroyed()) {
+                                try {
+                                    await view.webContents.executeJavaScript(
+                                        `(document.scrollingElement || document.documentElement).scrollTop = ${scrollPosition};`
+                                    );
+                                } catch (e) {
+                                    // Ignore errors
+                                }
+                            }
+                        }, delay);
+                        newWin.scrollRestoreTimeouts.push(timeoutId);
+                    });
+                } else {
+                    // Standard single restoration for other sites
+                    const timeoutId = setTimeout(async () => {
+                        if (view && !view.webContents.isDestroyed()) {
+                            try {
+                                await view.webContents.executeJavaScript(
+                                    `(document.scrollingElement || document.documentElement).scrollTop = ${scrollPosition};`
+                                );
+                            } catch (e) {
+                                // Ignore errors
+                            }
                         }
-                    }
-                }, 100);
+                    }, 100);
+                    newWin.scrollRestoreTimeouts.push(timeoutId);
+                }
             }
         }
     };
@@ -2279,11 +2344,14 @@ function createWindow(state = null) {
                 // Since frame: false, newBounds (window bounds) is roughly content bounds
                 view.setBounds({ x: 0, y: 30, width: newBounds.width, height: newBounds.height - 30 });
                 // Force repaint to fix Windows snap rendering issue
+                // Skip invalidate for gemini.google.com to prevent scroll reset during resize
                 if (view.webContents && !view.webContents.isDestroyed()) {
-                    try {
-                        view.webContents.invalidate();
-                    } catch (e) {
-                        // Ignore errors
+                    if (!isGeminiUrl(view)) {
+                        try {
+                            view.webContents.invalidate();
+                        } catch (e) {
+                            // Ignore errors
+                        }
                     }
                 }
             }
@@ -2307,11 +2375,14 @@ function createWindow(state = null) {
                     const contentBounds = newWin.getContentBounds();
                     view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
                     // Force repaint to fix Windows snap rendering issue
+                    // Skip invalidate for gemini.google.com to prevent scroll reset
                     if (view.webContents && !view.webContents.isDestroyed()) {
-                        try {
-                            view.webContents.invalidate();
-                        } catch (e) {
-                            // Ignore errors
+                        if (!isGeminiUrl(view)) {
+                            try {
+                                view.webContents.invalidate();
+                            } catch (e) {
+                                // Ignore errors
+                            }
                         }
                     }
                     console.log('Maximize: Updated BrowserView bounds to', contentBounds.width, 'x', contentBounds.height - 30);
@@ -2328,11 +2399,14 @@ function createWindow(state = null) {
                     const contentBounds = newWin.getContentBounds();
                     view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
                     // Force repaint to fix Windows snap rendering issue
+                    // Skip invalidate for gemini.google.com to prevent scroll reset
                     if (view.webContents && !view.webContents.isDestroyed()) {
-                        try {
-                            view.webContents.invalidate();
-                        } catch (e) {
-                            // Ignore errors
+                        if (!isGeminiUrl(view)) {
+                            try {
+                                view.webContents.invalidate();
+                            } catch (e) {
+                                // Ignore errors
+                            }
                         }
                     }
                     console.log('Unmaximize: Updated BrowserView bounds to', contentBounds.width, 'x', contentBounds.height - 30);
@@ -2350,11 +2424,14 @@ function createWindow(state = null) {
                     const contentBounds = newWin.getContentBounds();
                     view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
                     // Force repaint
+                    // Skip invalidate for gemini.google.com to prevent scroll reset
                     if (view.webContents && !view.webContents.isDestroyed()) {
-                        try {
-                            view.webContents.invalidate();
-                        } catch (e) {
-                            // Ignore errors
+                        if (!isGeminiUrl(view)) {
+                            try {
+                                view.webContents.invalidate();
+                            } catch (e) {
+                                // Ignore errors
+                            }
                         }
                     }
                     console.log('Enter-full-screen: Updated BrowserView bounds to', contentBounds.width, 'x', contentBounds.height - 30);
@@ -2372,11 +2449,14 @@ function createWindow(state = null) {
                     const contentBounds = newWin.getContentBounds();
                     view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
                     // Force repaint
+                    // Skip invalidate for gemini.google.com to prevent scroll reset
                     if (view.webContents && !view.webContents.isDestroyed()) {
-                        try {
-                            view.webContents.invalidate();
-                        } catch (e) {
-                            // Ignore errors
+                        if (!isGeminiUrl(view)) {
+                            try {
+                                view.webContents.invalidate();
+                            } catch (e) {
+                                // Ignore errors
+                            }
                         }
                     }
                     console.log('Leave-full-screen: Updated BrowserView bounds to', contentBounds.width, 'x', contentBounds.height - 30);
@@ -2395,11 +2475,14 @@ function createWindow(state = null) {
                     const contentBounds = newWin.getContentBounds();
                     view.setBounds({ x: 0, y: 30, width: contentBounds.width, height: contentBounds.height - 30 });
                     // Force repaint to fix Windows snap rendering issue
+                    // Skip invalidate for gemini.google.com to prevent scroll reset
                     if (view.webContents && !view.webContents.isDestroyed()) {
-                        try {
-                            view.webContents.invalidate();
-                        } catch (e) {
-                            // Ignore errors
+                        if (!isGeminiUrl(view)) {
+                            try {
+                                view.webContents.invalidate();
+                            } catch (e) {
+                                // Ignore errors
+                            }
                         }
                     }
                 }
