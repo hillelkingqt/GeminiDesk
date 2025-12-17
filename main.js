@@ -250,7 +250,7 @@ async function updateAiStudioRtlState(enabled) {
                 // ignore - tab might not be ready or not on aistudio.google.com
             }
         }
-        
+
         console.log('AI Studio RTL state updated to:', enabled);
     } catch (e) {
         console.warn('Error updating AI Studio RTL state:', e && e.message ? e.message : e);
@@ -451,24 +451,24 @@ app.whenReady().then(async () => {
     const loadAiStudioAsync = async () => {
         try {
             console.log('Loading AI Studio RTL extension...');
-            
+
             // On Linux (especially AppImage), defer extension loading to improve startup time
             if (process.platform === 'linux') {
                 console.log('Deferring AI Studio extension loading on Linux for faster startup...');
                 setTimeout(async () => {
                     await loadAiStudioExtensionToAllSessions();
-                    
+
                     // Update RTL state based on settings
                     const localSettings = settingsModule.getSettings();
                     if (localSettings && localSettings.aiStudioRtlEnabled) {
                         setTimeout(() => updateAiStudioRtlState(true), AI_STUDIO_RTL_STATE_DELAY_MS);
                     }
-                    
+
                     console.log('Deferred AI Studio extension loading completed on Linux');
                 }, AI_STUDIO_EXTENSION_LINUX_DELAY_MS);
             } else {
                 await loadAiStudioExtensionToAllSessions();
-                
+
                 // Update RTL state based on settings
                 const localSettings = settingsModule.getSettings();
                 if (localSettings && localSettings.aiStudioRtlEnabled) {
@@ -1031,6 +1031,52 @@ async function clickMicrophoneButton(targetWin, view) {
         console.error('Voice Assistant script execution failed:', error);
     }
 }
+
+
+
+// ================================================================= //
+// Recording Special Shortcuts (Alt+Space interception)
+// ================================================================= //
+
+ipcMain.on('start-recording-shortcut', (event) => {
+    // Attempt to intercept Alt+Space globally so we can capture it
+    // instead of opening the system menu
+    try {
+        const ret = globalShortcut.register('Alt+Space', () => {
+            console.log('Intercepted Alt+Space during recording');
+            event.sender.send('shortcut-captured', 'Alt+Space');
+        });
+
+        if (!ret) {
+            console.log('Registration failed for Alt+Space during recording');
+        } else {
+            console.log('Global shortcut registered: Alt+Space (Recording Mode)');
+        }
+    } catch (err) {
+        console.error('Error registering recording shortcut:', err);
+    }
+});
+
+ipcMain.on('stop-recording-shortcut', () => {
+    // Unregister the special recording interception
+    // The regular registerShortcuts() will normally be called shortly after
+    // by the settings update mechanism if needed
+    try {
+        globalShortcut.unregister('Alt+Space');
+        console.log('Unregistered Alt+Space (Recording Mode stopped)');
+
+        // If Alt+Space was actually the assigned shortcut for showHide, 
+        // we should re-register it to its normal function.
+        // But simply unregistering here allows the "Save" flow to continue 
+        // and eventually call registerShortcuts() with the new config.
+        // Only potential edge case: if they CANCEL recording, we might lose the old binding
+        // until a restart or toggle.
+        // To be safe, we can trigger a re-registration of current settings:
+        registerShortcuts();
+    } catch (err) {
+        console.error('Error stopping recording shortcut:', err);
+    }
+});
 
 const shortcutActions = {
     quit: () => app.quit(),
@@ -1867,7 +1913,10 @@ function registerShortcuts() {
             const allWindows = BrowserWindow.getAllWindows();
             const userWindows = allWindows.filter(w => !w.__internal);
 
-            if (userWindows.length === 0) return;
+            if (userWindows.length === 0) {
+                createWindow();
+                return;
+            }
 
             const shouldShow = userWindows.some(win => !win.isVisible());
 
@@ -2408,11 +2457,11 @@ function createWindow(state = null) {
         }
 
         // Validate scroll position is a safe numeric value
-        const scrollPosition = typeof newWin.savedScrollPosition === 'number' && 
-                             isFinite(newWin.savedScrollPosition) && 
-                             newWin.savedScrollPosition >= 0 
-                             ? Math.floor(newWin.savedScrollPosition) 
-                             : 0;
+        const scrollPosition = typeof newWin.savedScrollPosition === 'number' &&
+            isFinite(newWin.savedScrollPosition) &&
+            newWin.savedScrollPosition >= 0
+            ? Math.floor(newWin.savedScrollPosition)
+            : 0;
 
         // Use multiple restoration attempts with longer delays to handle dynamic content
         GEMINI_SCROLL_RESTORE_DELAYS.forEach(delay => {
@@ -2473,11 +2522,11 @@ function createWindow(state = null) {
                 }
 
                 // Validate scroll position is a safe numeric value
-                const scrollPosition = typeof newWin.savedScrollPosition === 'number' && 
-                                     isFinite(newWin.savedScrollPosition) && 
-                                     newWin.savedScrollPosition >= 0 
-                                     ? Math.floor(newWin.savedScrollPosition) 
-                                     : 0;
+                const scrollPosition = typeof newWin.savedScrollPosition === 'number' &&
+                    isFinite(newWin.savedScrollPosition) &&
+                    newWin.savedScrollPosition >= 0
+                    ? Math.floor(newWin.savedScrollPosition)
+                    : 0;
 
                 // For gemini.google.com, use multiple restoration attempts with longer delays
                 // to handle the page's dynamic content updates during resize
