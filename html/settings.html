@@ -2176,29 +2176,6 @@
                 button.addEventListener('click', () => startRecording(button));
             });
 
-            // Handle manual simulation of Alt+Space (sent from main process)
-            // This is needed because preventing the system menu also prevents the renderer from receiving the event
-            electronAPI.onSimulateAltSpace(() => {
-                if (isRecording && recordingButton) {
-                    // Manually simulate the effect of pressing Alt+Space
-                    const finalShortcut = 'Alt+Space';
-                    recordingButton.textContent = finalShortcut;
-                    electronAPI.updateSetting(`shortcuts.${recordingButton.dataset.key}`, finalShortcut);
-
-                    // Call cleanup logic manually since we're bypassing keyup
-                    if (recordingTimeout) {
-                        clearTimeout(recordingTimeout);
-                        recordingTimeout = null;
-                    }
-                    document.removeEventListener('keydown', keydownHandler, true);
-                    document.removeEventListener('keyup', keyupHandler, true);
-                    document.removeEventListener('blur', blurHandler, true);
-                    recordingButton.classList.remove('is-recording');
-                    isRecording = false;
-                    recordingButton = null;
-                }
-            });
-
             // Initialize toggle listeners
             attachToggleListeners();
         });
