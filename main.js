@@ -250,7 +250,7 @@ async function updateAiStudioRtlState(enabled) {
                 // ignore - tab might not be ready or not on aistudio.google.com
             }
         }
-        
+
         console.log('AI Studio RTL state updated to:', enabled);
     } catch (e) {
         console.warn('Error updating AI Studio RTL state:', e && e.message ? e.message : e);
@@ -451,24 +451,24 @@ app.whenReady().then(async () => {
     const loadAiStudioAsync = async () => {
         try {
             console.log('Loading AI Studio RTL extension...');
-            
+
             // On Linux (especially AppImage), defer extension loading to improve startup time
             if (process.platform === 'linux') {
                 console.log('Deferring AI Studio extension loading on Linux for faster startup...');
                 setTimeout(async () => {
                     await loadAiStudioExtensionToAllSessions();
-                    
+
                     // Update RTL state based on settings
                     const localSettings = settingsModule.getSettings();
                     if (localSettings && localSettings.aiStudioRtlEnabled) {
                         setTimeout(() => updateAiStudioRtlState(true), AI_STUDIO_RTL_STATE_DELAY_MS);
                     }
-                    
+
                     console.log('Deferred AI Studio extension loading completed on Linux');
                 }, AI_STUDIO_EXTENSION_LINUX_DELAY_MS);
             } else {
                 await loadAiStudioExtensionToAllSessions();
-                
+
                 // Update RTL state based on settings
                 const localSettings = settingsModule.getSettings();
                 if (localSettings && localSettings.aiStudioRtlEnabled) {
@@ -1867,7 +1867,10 @@ function registerShortcuts() {
             const allWindows = BrowserWindow.getAllWindows();
             const userWindows = allWindows.filter(w => !w.__internal);
 
-            if (userWindows.length === 0) return;
+            if (userWindows.length === 0) {
+                createWindow();
+                return;
+            }
 
             const shouldShow = userWindows.some(win => !win.isVisible());
 
@@ -2408,11 +2411,11 @@ function createWindow(state = null) {
         }
 
         // Validate scroll position is a safe numeric value
-        const scrollPosition = typeof newWin.savedScrollPosition === 'number' && 
-                             isFinite(newWin.savedScrollPosition) && 
-                             newWin.savedScrollPosition >= 0 
-                             ? Math.floor(newWin.savedScrollPosition) 
-                             : 0;
+        const scrollPosition = typeof newWin.savedScrollPosition === 'number' &&
+            isFinite(newWin.savedScrollPosition) &&
+            newWin.savedScrollPosition >= 0
+            ? Math.floor(newWin.savedScrollPosition)
+            : 0;
 
         // Use multiple restoration attempts with longer delays to handle dynamic content
         GEMINI_SCROLL_RESTORE_DELAYS.forEach(delay => {
@@ -2473,11 +2476,11 @@ function createWindow(state = null) {
                 }
 
                 // Validate scroll position is a safe numeric value
-                const scrollPosition = typeof newWin.savedScrollPosition === 'number' && 
-                                     isFinite(newWin.savedScrollPosition) && 
-                                     newWin.savedScrollPosition >= 0 
-                                     ? Math.floor(newWin.savedScrollPosition) 
-                                     : 0;
+                const scrollPosition = typeof newWin.savedScrollPosition === 'number' &&
+                    isFinite(newWin.savedScrollPosition) &&
+                    newWin.savedScrollPosition >= 0
+                    ? Math.floor(newWin.savedScrollPosition)
+                    : 0;
 
                 // For gemini.google.com, use multiple restoration attempts with longer delays
                 // to handle the page's dynamic content updates during resize
