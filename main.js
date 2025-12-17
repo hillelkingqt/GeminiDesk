@@ -1867,11 +1867,7 @@ function registerShortcuts() {
             const allWindows = BrowserWindow.getAllWindows();
             const userWindows = allWindows.filter(w => !w.__internal);
 
-            if (userWindows.length === 0) {
-                // If no windows exist (e.g. all closed), recreate the main window
-                createWindow();
-                return;
-            }
+            if (userWindows.length === 0) return;
 
             const shouldShow = userWindows.some(win => !win.isVisible());
 
@@ -7475,15 +7471,6 @@ ipcMain.on('open-settings-window', (event) => {
 
     setupContextMenu(settingsWin.webContents);
     settingsWin.loadFile('html/settings.html');
-
-    // Prevent Windows System Menu on Alt+Space to allow recording the shortcut
-    settingsWin.webContents.on('before-input-event', (event, input) => {
-        if (input.key === ' ' && input.alt) {
-            event.preventDefault();
-            // Manually forward the event to the renderer since preventDefault swallows it
-            settingsWin.webContents.send('simulate-alt-space');
-        }
-    });
 
     settingsWin.once('ready-to-show', () => {
         if (settingsWin) {
