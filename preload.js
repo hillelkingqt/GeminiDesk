@@ -160,6 +160,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     updateCustomPrompt: (prompt) => ipcRenderer.invoke('update-custom-prompt', prompt),
     deleteCustomPrompt: (promptId) => ipcRenderer.invoke('delete-custom-prompt', promptId),
     setDefaultPrompt: (promptId) => ipcRenderer.invoke('set-default-prompt', promptId),
+    startRecordingShortcut: () => ipcRenderer.send('start-recording-shortcut'),
+    stopRecordingShortcut: () => ipcRenderer.send('stop-recording-shortcut'),
+    onShortcutCaptured: (callback) => ipcRenderer.on('shortcut-captured', (_event, key) => callback(key)),
     closeWindow: () => ipcRenderer.send('close-window')
 });
 

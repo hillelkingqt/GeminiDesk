@@ -1032,6 +1032,52 @@ async function clickMicrophoneButton(targetWin, view) {
     }
 }
 
+
+
+// ================================================================= //
+// Recording Special Shortcuts (Alt+Space interception)
+// ================================================================= //
+
+ipcMain.on('start-recording-shortcut', (event) => {
+    // Attempt to intercept Alt+Space globally so we can capture it
+    // instead of opening the system menu
+    try {
+        const ret = globalShortcut.register('Alt+Space', () => {
+            console.log('Intercepted Alt+Space during recording');
+            event.sender.send('shortcut-captured', 'Alt+Space');
+        });
+
+        if (!ret) {
+            console.log('Registration failed for Alt+Space during recording');
+        } else {
+            console.log('Global shortcut registered: Alt+Space (Recording Mode)');
+        }
+    } catch (err) {
+        console.error('Error registering recording shortcut:', err);
+    }
+});
+
+ipcMain.on('stop-recording-shortcut', () => {
+    // Unregister the special recording interception
+    // The regular registerShortcuts() will normally be called shortly after
+    // by the settings update mechanism if needed
+    try {
+        globalShortcut.unregister('Alt+Space');
+        console.log('Unregistered Alt+Space (Recording Mode stopped)');
+
+        // If Alt+Space was actually the assigned shortcut for showHide, 
+        // we should re-register it to its normal function.
+        // But simply unregistering here allows the "Save" flow to continue 
+        // and eventually call registerShortcuts() with the new config.
+        // Only potential edge case: if they CANCEL recording, we might lose the old binding
+        // until a restart or toggle.
+        // To be safe, we can trigger a re-registration of current settings:
+        registerShortcuts();
+    } catch (err) {
+        console.error('Error stopping recording shortcut:', err);
+    }
+});
+
 const shortcutActions = {
     quit: () => app.quit(),
     closeWindow: () => {
