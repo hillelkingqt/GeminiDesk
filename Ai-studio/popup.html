@@ -2,33 +2,37 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AI Studio RTL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Studio RTL Pro</title>
     <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="icon-bg">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h14"/></svg>
+    <div class="card">
+        <header class="header">
+            <div class="header-text">
+                <h1>AI Studio RTL</h1>
             </div>
-            <h1>AI Studio RTL</h1>
-            <p>Enhance readability</p>
-        </div>
+        </header>
 
-        <div class="control-panel">
-            <div class="label">
-                <span class="title">RTL Mode</span>
-                <span class="subtitle">Right-to-Left Layout</span>
+        <main class="content">
+            <div class="setting-row">
+                <div class="setting-info">
+                    <span class="setting-title">RTL Support</span>
+                    <span class="setting-desc">Enable Right-to-Left layout</span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="rtlToggle" checked>
+                    <span class="slider"></span>
+                </label>
             </div>
-            <label class="switch">
-                <input type="checkbox" id="rtlToggle" checked>
-                <span class="slider round"></span>
-            </label>
-        </div>
+        </main>
 
-        <div class="footer">
-            <span class="status" id="statusText">Active</span>
-        </div>
+        <footer class="footer">
+            <div class="status-indicator">
+                <span class="dot"></span>
+                <span id="statusText">Active</span>
+            </div>
+        </footer>
     </div>
     <script src="popup.js"></script>
 </body>

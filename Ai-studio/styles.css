@@ -1,59 +1,134 @@
 /* ==========================================================================
-   הגדרות בסיס (צ'אט, בועות, מחשבות)
+   הגדרות בסיס - הופכים את הצ'אט לעברית (RTL)
    ========================================================================== */
+
+/* החלת RTL על תוכן הצ'אט הראשי בלבד */
 body.rtl-enabled .turn-content,
 body.rtl-enabled ms-text-chunk,
 body.rtl-enabled .cmark-node,
-/* מחילים RTL על גוף הפאנל רק אם הוא לא חלק מההיסטוריה */
+body.rtl-enabled ms-console-turn,
+/* גוף הפאנל - רק אם הוא לא מוחרג בהמשך */
 body.rtl-enabled .mat-expansion-panel-body {
     direction: rtl !important;
     text-align: right !important;
 }
 
-/* טיפול בטקסט רגיל (פסקאות ורשימות) */
+/* יישור פסקאות ורשימות בצ'אט לימין */
 body.rtl-enabled .turn-content p,
 body.rtl-enabled .turn-content li,
-body.rtl-enabled .mat-expansion-panel-body p,
-body.rtl-enabled .mat-expansion-panel-body li,
-body.rtl-enabled ms-text-chunk p {
+body.rtl-enabled ms-text-chunk p,
+body.rtl-enabled ms-text-chunk li,
+body.rtl-enabled ms-console-turn p,
+body.rtl-enabled ms-console-turn li {
     direction: rtl !important;
     text-align: right !important;
 }
 
-/* כותרות (User / Model) */
+/* כותרות (User / Model) - לימין */
 body.rtl-enabled .author-label,
-body.rtl-enabled div[role="heading"] {
+body.rtl-enabled div[role="heading"],
+body.rtl-enabled .turn-header {
     direction: rtl !important;
     text-align: right !important;
 }
 
 /* ==========================================================================
-   אזור ה"מחשבות" (Thoughts)
+   !!! החרגות חשובות - משאירים בצד שמאל (LTR) !!!
+   כאן אנחנו דואגים ש"מחשבות", קוד, והיסטוריה לא ייפגעו
    ========================================================================== */
-body.rtl-enabled mat-panel-title,
-body.rtl-enabled .mat-expansion-panel-header-title {
-    direction: rtl !important;
-    text-align: right !important;
+
+/* 1. אזור המחשבות (Thoughts) - חייב להישאר משמאל לימין (LTR) */
+/* הבלוק שהבאת קודם מכיל ms-thought-chunk, אנחנו מבודדים אותו */
+body.rtl-enabled .thought-panel,
+body.rtl-enabled .thought-panel *,
+body.rtl-enabled ms-thought-chunk,
+body.rtl-enabled ms-thought-chunk *,
+body.rtl-enabled .thought-panel mat-panel-title,
+body.rtl-enabled .mat-expansion-panel-header-title,
+body.rtl-enabled .thought-panel .mat-expansion-panel-header,
+body.rtl-enabled .thought-panel .mat-expansion-panel-content,
+body.rtl-enabled .thought-panel .mat-expansion-panel-body,
+body.rtl-enabled .thought-panel ms-text-chunk,
+body.rtl-enabled .thought-panel p,
+body.rtl-enabled .thought-panel span,
+body.rtl-enabled .thought-panel div,
+body.rtl-enabled .thought-panel-footer,
+body.rtl-enabled .thought-panel-footer *,
+body.rtl-enabled .thought-collapsed-text,
+body.rtl-enabled .thought-collapsed-text-container,
+body.rtl-enabled .thought-collapsed-text-container * {
+    direction: ltr !important;
+    text-align: left !important;
     justify-content: flex-start !important;
-    width: 100% !important;
 }
 
-body.rtl-enabled ms-thought-chunk .cmark-node {
-    direction: rtl !important;
-    text-align: right !important;
+/* Force the header to be LTR if it contains the thought footer */
+body.rtl-enabled .mat-expansion-panel-header:has(.thought-panel-footer),
+body.rtl-enabled .mat-expansion-panel-header:has(.thought-collapsed-text-container) {
+    direction: ltr !important;
+    text-align: left !important;
 }
 
+/* תיקון האייקון של המחשבות שיהיה בצד שמאל */
 body.rtl-enabled .thinking-progress-icon {
-    margin-left: 10px !important;
-    margin-right: 0 !important;
+    margin-right: 10px !important;
+    margin-left: 0 !important;
+}
+
+/* 2. קוד ובלוקים טכניים - תמיד משמאל לימין */
+body.rtl-enabled ms-code-block,
+body.rtl-enabled ms-code-block *,
+body.rtl-enabled pre, 
+body.rtl-enabled code,
+body.rtl-enabled .code-block-aligner pre,
+body.rtl-enabled .code-block-aligner {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+/* 3. היסטוריה וסרגל צד - לא לגעת (להשאיר LTR) */
+body.rtl-enabled .mat-expansion-panel-body:has(.prompt-link-wrapper),
+body.rtl-enabled .mat-expansion-panel-body:has(.view-all-history-link),
+body.rtl-enabled .prompt-link-wrapper,
+body.rtl-enabled .prompt-link {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+/* 4. אזהרות תצוגה מקדימה (Preview Warnings) - להשאיר LTR */
+body.rtl-enabled .preview.warning,
+body.rtl-enabled .preview.warning *,
+body.rtl-enabled .preview.warning p,
+body.rtl-enabled .preview.warning .buttons {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+/* 5. טבלת קבצים שנוצרו (Generation Table) - להשאיר LTR */
+body.rtl-enabled ms-console-generation-table,
+body.rtl-enabled ms-console-generation-table *,
+body.rtl-enabled .generation-table,
+body.rtl-enabled .generation-table * {
+    direction: ltr !important;
+    text-align: left !important;
+    justify-content: flex-start !important;
+}
+
+/* 6. מחשבות בקונסול (Console Thoughts) - להשאיר LTR */
+body.rtl-enabled ms-expandable-turn,
+body.rtl-enabled ms-expandable-turn .container.expandable,
+body.rtl-enabled ms-expandable-turn .header,
+body.rtl-enabled ms-expandable-turn .title {
+    direction: ltr !important;
+    text-align: left !important;
+    justify-content: flex-start !important;
 }
 
 /* ==========================================================================
-   מתמטיקה (התיקון החדש!)
+   מתמטיקה
    ========================================================================== */
 
-/* 1. מתמטיקה בתוך השורה (Inline Math - $...$) */
-/* אלו צריכים לזרום עם הטקסט אבל להיות משמאל לימין פנימית */
+/* מתמטיקה בתוך השורה ($...$) - זורם עם הטקסט אבל LTR פנימית */
 body.rtl-enabled ms-katex:not(.display), 
 body.rtl-enabled .katex:not(.katex-display), 
 body.rtl-enabled math {
@@ -63,57 +138,37 @@ body.rtl-enabled math {
     display: inline-block !important;
 }
 
-/* 2. מתמטיקה בשורה נפרדת (Display Math - $$...$$) */
-/* אלו המשוואות ששלחת עכשיו - אנחנו מכריחים אותן למרכז */
+/* מתמטיקה בשורה נפרדת ($$...$$) - ממורכז */
 body.rtl-enabled ms-katex.display,
 body.rtl-enabled .katex-display {
-    display: block !important;       /* תופס שורה נפרדת */
-    width: 100% !important;          /* רוחב מלא */
-    text-align: center !important;   /* מרכוז */
-    direction: ltr !important;       /* כיוון פנימי משמאל לימין */
-    margin: 10px 0 !important;       /* ריווח קטן מלמעלה ולמטה */
+    display: block !important;
+    width: 100% !important;
+    text-align: center !important;
+    direction: ltr !important;
+    margin: 10px 0 !important;
 }
 
 /* ==========================================================================
-   קוד ורשימות
+   רשימות בצ'אט הראשי (בעברית בלבד)
    ========================================================================== */
-body.rtl-enabled pre, 
-body.rtl-enabled code,
-body.rtl-enabled .code-block-aligner pre {
-    direction: ltr !important;
-    text-align: left !important;
-}
-
-/* רשימות בצ'אט (הזחה נכונה לימין) */
-body.rtl-enabled .turn-content ul, 
-body.rtl-enabled .turn-content ol,
-body.rtl-enabled ms-thought-chunk ul,
-body.rtl-enabled ms-thought-chunk ol {
+/* אנו מחילים את ההזחה לימין רק על .turn-content ישיר, ולא בתוך מחשבות */
+body.rtl-enabled .turn-content > ul, 
+body.rtl-enabled .turn-content > ol,
+body.rtl-enabled ms-text-chunk > ul,
+body.rtl-enabled ms-text-chunk > ol {
     margin-right: 20px !important;
     margin-left: 0 !important;
     padding-right: 20px !important;
     padding-left: 0 !important;
 }
 
-/* ==========================================================================
-   תיקון סרגל צד - היסטוריה (שלא ייפגע)
-   ========================================================================== */
-/* אם הפאנל מכיל היסטוריה, נשאיר אותו משמאל לימין */
-body.rtl-enabled .mat-expansion-panel-body:has(.prompt-link-wrapper),
-body.rtl-enabled .mat-expansion-panel-body:has(.view-all-history-link) {
-    direction: ltr !important;
-    text-align: left !important;
-}
-
-body.rtl-enabled .prompt-link-wrapper,
-body.rtl-enabled .prompt-link,
-body.rtl-enabled .view-all-history-link {
-    direction: ltr !important;
-    text-align: left !important;
-}
-
-body.rtl-enabled .mat-expansion-panel-body:has(.prompt-link-wrapper) ul {
-    padding-right: 0 !important;
+/* איפוס רשימות בתוך מחשבות (שישארו רגיל - משמאל) */
+body.rtl-enabled ms-thought-chunk ul,
+body.rtl-enabled ms-thought-chunk ol,
+body.rtl-enabled .thought-panel ul,
+body.rtl-enabled .thought-panel ol {
     margin-right: 0 !important;
-    padding-left: 0 !important;
+    margin-left: 20px !important;
+    padding-right: 0 !important;
+    padding-left: 20px !important;
 }
