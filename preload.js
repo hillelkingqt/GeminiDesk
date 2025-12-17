@@ -160,7 +160,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     updateCustomPrompt: (prompt) => ipcRenderer.invoke('update-custom-prompt', prompt),
     deleteCustomPrompt: (promptId) => ipcRenderer.invoke('delete-custom-prompt', promptId),
     setDefaultPrompt: (promptId) => ipcRenderer.invoke('set-default-prompt', promptId),
-    closeWindow: () => ipcRenderer.send('close-window')
+    closeWindow: () => ipcRenderer.send('close-window'),
+    onSimulateAltSpace: (callback) => ipcRenderer.on('simulate-alt-space', () => callback())
 });
 
 // ================================================================
