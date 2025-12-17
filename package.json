@@ -1,6 +1,6 @@
 {
   "name": "gemini-desk",
-  "version": "8.1.3",
+  "version": "8.2.0",
   "description": "Gemini Desktop Wrapper",
   "author": {
     "name": "Hillel BH",
@@ -9,7 +9,6 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "browse": "node browser.js",
     "build": "electron-builder",
     "test": "jest"
   },

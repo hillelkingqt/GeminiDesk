@@ -1342,6 +1342,80 @@ const shortcutActions = {
             createNewChatWithModel('Flash');
         }
     },
+    changeModelThinking: () => {
+        const focusedWindow = BrowserWindow.getFocusedWindow();
+        if (!focusedWindow || !focusedWindow.appMode) return;
+        const view = focusedWindow.getBrowserView();
+        if (!view) return;
+
+        if (focusedWindow.appMode === 'aistudio') {
+            // For AI Studio - similar logic to Pro/Flash
+            const script = `
+                (async function() {
+                    const waitForElement = (selector, timeout = 5000) => {
+                        return new Promise((resolve, reject) => {
+                            const timer = setInterval(() => {
+                                const element = document.querySelector(selector);
+                                if (element && !element.disabled && element.offsetParent !== null) {
+                                    clearInterval(timer);
+                                    resolve(element);
+                                }
+                            }, 100);
+                            setTimeout(() => {
+                                clearInterval(timer);
+                                reject(new Error('Element not found: ' + selector));
+                            }, timeout);
+                        });
+                    };
+
+                    const simulateClick = (element) => {
+                        ['mousedown', 'mouseup', 'click'].forEach(type => {
+                            const event = new MouseEvent(type, { bubbles: true, cancelable: true, view: window });
+                            element.dispatchEvent(event);
+                        });
+                    };
+
+                    try {
+                        const toggleButton = await waitForElement('button[aria-label="Toggle run settings panel"], button[iconname="tune"]');
+                        simulateClick(toggleButton);
+                        console.log('AI Studio: Clicked settings toggle');
+                        
+                        await new Promise(resolve => setTimeout(resolve, 500));
+
+                        const modelSelector = await waitForElement('button.model-selector-card, ms-model-selector-v3 button');
+                        simulateClick(modelSelector);
+                        console.log('AI Studio: Clicked model selector');
+                        
+                        await new Promise(resolve => setTimeout(resolve, 800));
+
+                        const thinkingModel = await waitForElement('ms-model-carousel-row button[id*="gemini-thinking"]');
+                        simulateClick(thinkingModel);
+                        console.log('AI Studio: Selected Thinking model');
+                        
+                        await new Promise(resolve => setTimeout(resolve, 400));
+                        const closeModelPanel = await waitForElement('button[aria-label="Close panel"][mat-dialog-close], button[data-test-close-button][iconname="close"]', 3000);
+                        simulateClick(closeModelPanel);
+                        console.log('AI Studio: Closed model selection panel');
+                        
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                        try {
+                            const closeSettingsPanel = await waitForElement('button[aria-label="Close run settings panel"][iconname="close"]', 3000);
+                            simulateClick(closeSettingsPanel);
+                            console.log('AI Studio: Closed settings panel');
+                        } catch (e) {
+                            console.log('AI Studio: Could not find close settings button (might be already closed or changed):', e.message);
+                        }
+                        
+                    } catch (error) {
+                        console.error('AI Studio: Failed to change to Thinking model:', error);
+                    }
+                })();
+            `;
+            view.webContents.executeJavaScript(script).catch(console.error);
+        } else {
+            createNewChatWithModel('Thinking');
+        }
+    },
     newChatWithPro: () => {
         const focusedWindow = BrowserWindow.getFocusedWindow();
         if (!focusedWindow || !focusedWindow.appMode) return;
@@ -1406,6 +1480,40 @@ const shortcutActions = {
                 // Wait for new chat to load, then select model
                 setTimeout(() => {
                     createNewChatWithModel('Flash');
+                }, 500);
+            }).catch(console.error);
+        }
+    },
+    newChatWithThinking: () => {
+        const focusedWindow = BrowserWindow.getFocusedWindow();
+        if (!focusedWindow || !focusedWindow.appMode) return;
+        const view = focusedWindow.getBrowserView();
+        if (!view) return;
+
+        if (focusedWindow.appMode === 'aistudio') {
+            view.webContents.loadURL('https://aistudio.google.com/prompts/new_chat?model=gemini-thinking');
+        } else {
+            // First open new chat, then change model
+            const script = `
+                (function() {
+                    // First click the main menu button
+                    const menuButton = document.querySelector('button[aria-label="Main menu"]');
+                    if (menuButton) {
+                        menuButton.click();
+                        // Wait for menu to open, then click New chat
+                        setTimeout(() => {
+                            const newChatButton = document.querySelector('button[aria-label="New chat"]');
+                            if (newChatButton) {
+                                newChatButton.click();
+                            }
+                        }, 100);
+                    }
+                })();
+            `;
+            view.webContents.executeJavaScript(script).then(() => {
+                // Wait for new chat to load, then select model
+                setTimeout(() => {
+                    createNewChatWithModel('Thinking');
                 }, 500);
             }).catch(console.error);
         }
@@ -1991,7 +2099,10 @@ function createNewChatWithModel(modelType) {
     if (focusedWindow.isMinimized()) focusedWindow.restore();
     focusedWindow.focus();
 
-    const modelIndex = modelType.toLowerCase() === 'flash' ? 0 : 1;
+    // Fast = 0, Thinking = 1, Pro = 2
+    const modelIndex = modelType.toLowerCase() === 'flash' ? 0 
+                     : modelType.toLowerCase() === 'thinking' ? 1 
+                     : 2;
 
     const script = `
     (async function() {
