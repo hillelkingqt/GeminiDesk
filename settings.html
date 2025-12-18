@@ -286,23 +286,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Shortcut Recording Logic ---
     let isRecording = false;
+    let activeRecordingButton = null;
+    let recordingCleanup = null;
     
     const startRecording = (button) => {
         if (isRecording) return;
         
         isRecording = true;
+        activeRecordingButton = button;
         const originalText = button.textContent;
         const pressedKeys = new Set();
         
         button.textContent = 'Recording...';
         button.classList.add('is-recording');
+        if (electronAPI && electronAPI.startRecordingShortcut) {
+            electronAPI.startRecordingShortcut();
+        }
         
         const cleanup = () => {
             document.removeEventListener('keydown', keydownHandler, true);
             document.removeEventListener('keyup', keyupHandler, true);
             button.classList.remove('is-recording');
+            if (electronAPI && electronAPI.stopRecordingShortcut) {
+                electronAPI.stopRecordingShortcut();
+            }
             isRecording = false;
+            activeRecordingButton = null;
+            recordingCleanup = null;
         };
+        recordingCleanup = cleanup;
         
         const keydownHandler = (e) => {
             e.preventDefault();
@@ -352,6 +364,18 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('keydown', keydownHandler, true);
         document.addEventListener('keyup', keyupHandler, true);
     };
+
+    if (electronAPI && electronAPI.onShortcutCaptured) {
+        electronAPI.onShortcutCaptured((key) => {
+            if (!isRecording || !activeRecordingButton) return;
+
+            activeRecordingButton.textContent = key;
+            electronAPI.updateSetting(`shortcuts.${activeRecordingButton.dataset.key}`, key);
+            if (typeof recordingCleanup === 'function') {
+                recordingCleanup();
+            }
+        });
+    }
 
     // Add click handlers to all record buttons
     document.querySelectorAll('.record-button').forEach(button => {

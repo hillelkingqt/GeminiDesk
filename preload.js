@@ -13,7 +13,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   confirmReset: () => ipcRenderer.send('confirm-reset-action'),
   cancelReset: () => ipcRenderer.send('cancel-reset-action'),
   checkForUpdates: () => ipcRenderer.send('check-for-updates'),
-    manualCheckForNotifications: () => ipcRenderer.send('manual-check-for-notifications'),
+  manualCheckForNotifications: () => ipcRenderer.send('manual-check-for-notifications'),
   onNotificationCheckStatus: (callback) =>
     ipcRenderer.on('notification-check-status', (_event, result) => callback(result)),
 
@@ -24,7 +24,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   startDownloadUpdate: () => ipcRenderer.send('start-download-update'),
   installUpdateNow: () => ipcRenderer.send('install-update-now'),
   closeDownloadWindow: () => ipcRenderer.send('close-download-window'),
-  closeUpdateWindow: () => ipcRenderer.send('close-update-window')
+  closeUpdateWindow: () => ipcRenderer.send('close-update-window'),
+  startRecordingShortcut: () => ipcRenderer.send('start-recording-shortcut'),
+  stopRecordingShortcut: () => ipcRenderer.send('stop-recording-shortcut'),
+  onShortcutCaptured: (callback) => ipcRenderer.on('shortcut-captured', (_event, key) => callback(key))
 });
 
 // A. Added code to read the chat title

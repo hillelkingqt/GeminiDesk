@@ -464,7 +464,10 @@ let lastFocusedWindow = null;
 if (shortcuts.showHide) {
     globalShortcut.register(shortcuts.showHide, () => {
         const allWindows = BrowserWindow.getAllWindows();
-        if (allWindows.length === 0) return;
+        if (allWindows.length === 0) {
+            createWindow();
+            return;
+        }
 
         // בדוק אם לפחות חלון אחד גלוי. אם כן, נסתיר את כולם.
         // אם כולם מוסתרים, נציג את כולם.
@@ -999,6 +1002,38 @@ async function reportErrorToServer(error) {
         console.error('Could not send error report:', fetchError.message);
     }
 }
+
+// ================================================================= //
+// Recording Special Shortcuts (Alt+Space interception)
+// ================================================================= //
+
+ipcMain.on('start-recording-shortcut', (event) => {
+    try {
+        const registered = globalShortcut.register('Alt+Space', () => {
+            console.log('Intercepted Alt+Space during recording');
+            event.sender.send('shortcut-captured', 'Alt+Space');
+        });
+
+        if (!registered) {
+            console.log('Failed to register Alt+Space for recording');
+        } else {
+            console.log('Global shortcut registered for recording: Alt+Space');
+        }
+    } catch (err) {
+        console.error('Error registering recording shortcut:', err);
+    }
+});
+
+ipcMain.on('stop-recording-shortcut', () => {
+    try {
+        globalShortcut.unregister('Alt+Space');
+        console.log('Unregistered Alt+Space (recording mode stopped)');
+        registerShortcuts();
+    } catch (err) {
+        console.error('Error stopping recording shortcut:', err);
+    }
+});
+
 // ================================================================= //
 // App Lifecycle
 // ================================================================= //
