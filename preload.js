@@ -148,6 +148,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onSetApiKey: (callback) => ipcRenderer.on('set-api-key', (_event, apiKey) => callback(apiKey)),
     requestApiKey: () => ipcRenderer.send('request-api-key'),
     closeUpdateWindow: () => ipcRenderer.send('close-update-window'),
+    startRecordingShortcut: () => ipcRenderer.send('start-recording-shortcut'),
+    stopRecordingShortcut: () => ipcRenderer.send('stop-recording-shortcut'),
+    onShortcutCaptured: (callback) => ipcRenderer.on('shortcut-captured', (_event, key) => callback(key)),
     logToMain: (message) => ipcRenderer.send('log-to-main', message),
 
     // Execute JavaScript in main view (BrowserView)
@@ -210,31 +213,18 @@ contextBridge.exposeInMainWorld('personalMessageAPI', {
 // Periodically checks the page for the current chat title and sends it to the main process.
 let lastTitle = '';
 setInterval(() => {
-    let titleElement = null;
-    let currentTitle = '';
-    const hostname = window.location.hostname;
-
-    if (hostname.includes('aistudio.google.com')) {
-        // AI Studio uses a different selector
-        titleElement = document.querySelector('li.active a.prompt-link');
-        if (titleElement) {
-            currentTitle = titleElement.textContent.trim();
-        } else {
-            // Fallback to document.title, removing the " | Google AI Studio" suffix
-            currentTitle = (document.title || 'AI Studio').replace(/\s*\|\s*Google AI Studio$/i, '').trim();
-        }
-    } else {
-        // Standard Gemini selector
-        titleElement = document.querySelector('.conversation.selected .conversation-title');
-        currentTitle = titleElement ? titleElement.textContent.trim() : 'New Chat';
+    // Checks the title from the DOM of the Gemini page
+    const titleElement = document.querySelector('.conversation.selected .conversation-title');
+    let currentTitle = 'New Chat'; // Default value if there is no open chat or title
+    if (titleElement) {
+        currentTitle = titleElement.textContent.trim();
     }
 
-    // Only send the title if it has changed
-    if (currentTitle && currentTitle !== lastTitle) {
+    if (currentTitle !== lastTitle) {
         lastTitle = currentTitle;
         ipcRenderer.send('update-title', currentTitle);
     }
-}, 1000); // Check every second
+}, 1000); // Checks every second
 
 // ================================================================
 // Canvas Panel Detection and Notification

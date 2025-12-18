@@ -831,7 +831,7 @@ const { getAccountPartition, getCurrentAccountPartition, getAccounts, addAccount
 // Utility Functions (Using Module)
 // ================================================================= //
 
-const { forceOnTop, broadcastToAllWebContents, broadcastToWindows, reportErrorToServer, playAiCompletionSound, setupContextMenu } = utils;
+const { forceOnTop, broadcastToAllWebContents, broadcastToWindows, playAiCompletionSound, setupContextMenu } = utils;
 
 // ================================================================= //
 // Icon Path Helper
@@ -1933,11 +1933,16 @@ function registerShortcuts() {
             const allWindows = BrowserWindow.getAllWindows();
             const userWindows = allWindows.filter(w => !w.__internal);
 
-            if (userWindows.length === 0) return;
+            if (userWindows.length === 0) {
+                createWindow();
+                return;
+            }
 
             const shouldShow = userWindows.some(win => !win.isVisible());
 
             if (!shouldShow) {
+                // לפני הסתרה - שמור את החלון שנמצא כרגע בפוקוס
+                lastFocusedWindow = userWindows.find(w => w.isFocused()) || userWindows[0];
                 isUserTogglingHide = true;
                 setTimeout(() => { isUserTogglingHide = false; }, 500);
             }
@@ -4182,6 +4187,20 @@ app.whenReady().then(() => {
     setupSessionFilters(session.defaultSession);
     setupSessionFilters(gemSession);
     
+const sendPing = async () => {
+    try {
+        await fetch('https://latex-r70v.onrender.com/ping-stats', { // ודא שזו כתובת ה-worker שלך
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ version: app.getVersion() })
+        });
+        console.log('Analytics ping sent successfully.');
+    } catch (error) {
+        console.error('Failed to send analytics ping:', error.message);
+    }
+};
+sendPing();
+
     // Disable background throttling globally to keep AI responses working when hidden
     app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
     app.commandLine.appendSwitch('disable-renderer-backgrounding');
@@ -4361,6 +4380,60 @@ app.on('before-quit', async () => {
         }
     } catch (e) {
         console.error('Failed to flush cookies store:', e);
+    }
+});
+
+/**
+ * Sends an error report to the server.
+ * @param {Error} error The error object to report.
+ */
+async function reportErrorToServer(error) {
+    if (!error) return;
+    console.error('Reporting error to server:', error);
+    try {
+        await fetch('https://latex-r70v.onrender.com/error', { // ודא שזו כתובת ה-worker שלך
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                version: app.getVersion(),
+                error: error.message,
+                stack: error.stack,
+                platform: process.platform
+            })
+        });
+    } catch (fetchError) {
+        console.error('Could not send error report:', fetchError.message);
+    }
+}
+
+// ================================================================= //
+// Recording Special Shortcuts (Alt+Space interception)
+// ================================================================= //
+
+ipcMain.on('start-recording-shortcut', (event) => {
+    try {
+        const registered = globalShortcut.register('Alt+Space', () => {
+            console.log('Intercepted Alt+Space during recording');
+            event.sender.send('shortcut-captured', 'Alt+Space');
+        });
+
+        if (!registered) {
+            console.log('Failed to register Alt+Space for recording');
+        } else {
+            console.log('Global shortcut registered for recording: Alt+Space');
+        }
+    } catch (err) {
+        console.error('Error registering recording shortcut:', err);
+    }
+});
+
+ipcMain.on('stop-recording-shortcut', () => {
+    try {
+        globalShortcut.unregister('Alt+Space');
+        console.log('Unregistered Alt+Space (recording mode stopped)');
+        registerShortcuts();
+    } catch (err) {
+        console.error('Error stopping recording shortcut:', err);
     }
 });
 

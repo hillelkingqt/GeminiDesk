@@ -2083,194 +2083,106 @@
                 electronAPI.manualCheckForNotifications();
             });
 
-            // --- Shortcut Recording Logic ---
-            let isRecording = false;
-            let recordingButton = null;
-            let recordingTimeout = null;
+    // --- Shortcut Recording Logic ---
+    let isRecording = false;
+    let activeRecordingButton = null;
+    let recordingCleanup = null;
 
-            const startRecording = (button) => {
-                if (isRecording) return;
+    const startRecording = (button) => {
+        if (isRecording) return;
 
-                isRecording = true;
-                recordingButton = button;
-                const originalText = button.textContent;
-                const pressedKeys = new Set();
-                let hasRecordedKeys = false;
+        isRecording = true;
+        activeRecordingButton = button;
+        const originalText = button.textContent;
+        const pressedKeys = new Set();
 
-                // Start intercepting on the main process (for Alt+Space)
-                electronAPI.startRecordingShortcut();
+        button.textContent = 'Recording...';
+        button.classList.add('is-recording');
+        if (electronAPI && electronAPI.startRecordingShortcut) {
+            electronAPI.startRecordingShortcut();
+        }
 
-                button.textContent = (translations[currentLanguage] || translations.en)['recording'];
-                button.classList.add('is-recording');
-
-                // Auto-cancel recording after 10 seconds of inactivity
-                const resetTimeout = () => {
-                    if (recordingTimeout) clearTimeout(recordingTimeout);
-                    recordingTimeout = setTimeout(() => {
-                        if (isRecording) {
-                            button.textContent = originalText;
-                            cleanup();
-                        }
-                    }, 10000);
-                };
-                resetTimeout();
-
-                const cleanup = () => {
-                    if (recordingTimeout) {
-                        clearTimeout(recordingTimeout);
-                        recordingTimeout = null;
-                    }
-                    // Stop intercepting
-                    electronAPI.stopRecordingShortcut();
-
-                    document.removeEventListener('keydown', keydownHandler, true);
-                    document.removeEventListener('keyup', keyupHandler, true);
-                    document.removeEventListener('blur', blurHandler, true);
-                    button.classList.remove('is-recording');
-                    isRecording = false;
-                    recordingButton = null;
-                    pressedKeys.clear();
-                };
-
-                const blurHandler = () => {
-                    // If window loses focus during recording, cancel it
-                    if (isRecording && recordingButton === button) {
-                        button.textContent = originalText;
-                        cleanup();
-                    }
-                };
-
-                // Handle intercepted shortcuts from main process (Alt+Space)
-                const shortcutCapturedHandler = (key) => {
-                    if (!isRecording || recordingButton !== button) return;
-
-                    console.log('Received intercepted shortcut:', key);
-                    button.textContent = key;
-                    electronAPI.updateSetting(`shortcuts.${button.dataset.key}`, key);
-                    cleanup();
-                };
-
-                if (!window._shortcutCapturedListenerAttached) {
-                    electronAPI.onShortcutCaptured((key) => {
-                        if (isRecording && recordingButton) {
-                            console.log('Captured special shortcut:', key);
-                            const btn = recordingButton; // capture ref
-                            btn.textContent = key;
-                            electronAPI.updateSetting(`shortcuts.${btn.dataset.key}`, key);
-
-                            window._onSpecialShortcut = (k) => {
-                                if (isRecording && recordingButton === button) {
-                                    button.textContent = k;
-                                    electronAPI.updateSetting(`shortcuts.${button.dataset.key}`, k);
-                                    cleanup();
-                                }
-                            };
-                        }
-                    });
-
-                    window._shortcutCapturedListenerAttached = true;
-                }
-
-                // Set the specific handler for this session
-                window._onSpecialShortcut = (k) => {
-                    button.textContent = k;
-                    electronAPI.updateSetting(`shortcuts.${button.dataset.key}`, k);
-                    cleanup();
-                };
-
-                const keydownHandler = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    resetTimeout();
-
-                    // Handle Escape to cancel
-                    if (e.key === 'Escape') {
-                        button.textContent = originalText;
-                        cleanup();
-                        return;
-                    }
-
-                    // Add modifier keys
-                    if (e.ctrlKey) pressedKeys.add('Control');
-                    if (e.altKey) pressedKeys.add('Alt');
-                    if (e.shiftKey) pressedKeys.add('Shift');
-                    if (e.metaKey) pressedKeys.add('Super');
-
-                    // Add regular keys (exclude modifier keys themselves)
-                    const ignoredCodes = [
-                        'ControlLeft', 'ControlRight',
-                        'AltLeft', 'AltRight',
-                        'ShiftLeft', 'ShiftRight',
-                        'MetaLeft', 'MetaRight'
-                    ];
-
-                    if (!['Control', 'Alt', 'Shift', 'Meta', 'AltGraph'].includes(e.key) && !ignoredCodes.includes(e.code)) {
-                        const keyCode = e.code.replace('Key', '').replace('Digit', '');
-                        if (keyCode && keyCode.length > 0) {
-                            pressedKeys.add(keyCode);
-                            hasRecordedKeys = true;
-                        }
-                    }
-
-                    // Update button text with current combination
-                    if (pressedKeys.size > 0) {
-                        button.textContent = Array.from(pressedKeys).join('+');
-                    }
-                };
-
-                const keyupHandler = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    // Don't process if Escape was pressed (already handled in keydown)
-                    if (e.key === 'Escape') {
-                        return;
-                    }
-
-                    // Only save if we have at least one modifier + one key
-                    const modifierCount = ['Control', 'Alt', 'Shift', 'Super'].filter(mod => pressedKeys.has(mod)).length;
-                    const hasNonModifier = hasRecordedKeys;
-
-                    if (modifierCount > 0 && hasNonModifier && pressedKeys.size > 1) {
-                        const finalShortcut = Array.from(pressedKeys).join('+');
-                        button.textContent = finalShortcut;
-                        electronAPI.updateSetting(`shortcuts.${button.dataset.key}`, finalShortcut);
-                        cleanup();
-                    } else if (pressedKeys.size > 0) {
-                        // Invalid combination - show feedback and reset
-                        button.textContent = '⚠️ Invalid combination';
-                        setTimeout(() => {
-                            button.textContent = originalText;
-                            cleanup();
-                        }, 1500);
-                    } else {
-                        // No keys recorded
-                        button.textContent = originalText;
-                        cleanup();
-                    }
-                };
-
-                document.addEventListener('keydown', keydownHandler, true);
-                document.addEventListener('keyup', keyupHandler, true);
-                window.addEventListener('blur', blurHandler, true);
-            };
-
-            document.querySelectorAll('.record-button').forEach(button => {
-                button.addEventListener('click', () => startRecording(button));
-            });
-
-            // Initialize toggle listeners
-            attachToggleListeners();
-
-            // Initialize global listener for special IPC shortcuts (like Alt+Space)
-            if (!window._shortcutCapturedListenerAttached && window.electronAPI && window.electronAPI.onShortcutCaptured) {
-                window.electronAPI.onShortcutCaptured((key) => {
-                    if (window._onSpecialShortcut) {
-                        window._onSpecialShortcut(key);
-                    }
-                });
-                window._shortcutCapturedListenerAttached = true;
+        const cleanup = () => {
+            document.removeEventListener('keydown', keydownHandler, true);
+            document.removeEventListener('keyup', keyupHandler, true);
+            button.classList.remove('is-recording');
+            if (electronAPI && electronAPI.stopRecordingShortcut) {
+                electronAPI.stopRecordingShortcut();
             }
+            isRecording = false;
+            activeRecordingButton = null;
+            recordingCleanup = null;
+        };
+        recordingCleanup = cleanup;
+
+        const keydownHandler = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Add modifier keys
+            if (e.ctrlKey) pressedKeys.add('Control');
+            if (e.altKey) pressedKeys.add('Alt');
+            if (e.shiftKey) pressedKeys.add('Shift');
+            if (e.metaKey) pressedKeys.add('Super');
+
+            // Add the actual key (avoid adding modifier keys twice)
+            if (!['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) {
+                const keyCode = e.code.replace('Key', '').replace('Digit', '');
+                pressedKeys.add(keyCode);
+            }
+
+            // Update button text with current combination
+            button.textContent = Array.from(pressedKeys).join('+');
+        };
+
+        const keyupHandler = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Cancel recording on Escape
+            if (e.key === 'Escape') {
+                button.textContent = originalText;
+                cleanup();
+                return;
+            }
+
+            const finalShortcut = Array.from(pressedKeys).join('+');
+
+            // Only save if we have a valid combination (more than just modifier keys)
+            if (pressedKeys.size > 1 && finalShortcut !== 'Control+Alt+Shift') {
+                button.textContent = finalShortcut;
+                electronAPI.updateSetting(`shortcuts.${button.dataset.key}`, finalShortcut);
+            } else {
+                button.textContent = originalText;
+            }
+
+            cleanup();
+        };
+
+        // Add event listeners
+        document.addEventListener('keydown', keydownHandler, true);
+        document.addEventListener('keyup', keyupHandler, true);
+    };
+
+    if (electronAPI && electronAPI.onShortcutCaptured) {
+        electronAPI.onShortcutCaptured((key) => {
+            if (!isRecording || !activeRecordingButton) return;
+
+            activeRecordingButton.textContent = key;
+            electronAPI.updateSetting(`shortcuts.${activeRecordingButton.dataset.key}`, key);
+            if (typeof recordingCleanup === 'function') {
+                recordingCleanup();
+            }
+        });
+    }
+
+    // Add click handlers to all record buttons
+    document.querySelectorAll('.record-button').forEach(button => {
+        button.addEventListener('click', () => startRecording(button));
+    });
+
+    // Initialize toggle listeners
+    attachToggleListeners();
         });
 
         // --- Theme Application Logic ---
