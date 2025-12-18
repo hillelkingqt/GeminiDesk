@@ -351,13 +351,40 @@ async function createAndManageLoginWindowForPartition(loginUrl, targetPartition,
         }
     });
 
-// Always load the AI Studio RTL extension (it self-disables based on GeminiDesk settings via cookie/messages).
 app.whenReady().then(async () => {
-    try {
-        await loadAiStudioRtlExtensionToAllSessions();
-    } catch (e) {
-        console.warn('Failed loading AI Studio RTL extension at startup:', e && e.message ? e.message : e);
-    }
+    const loadAiStudioAsync = async () => {
+        try {
+            console.log('Loading AI Studio RTL extension...');
+
+            // On Linux (especially AppImage), defer extension loading to improve startup time
+            if (process.platform === 'linux') {
+                console.log('Deferring AI Studio extension loading on Linux for faster startup...');
+                setTimeout(async () => {
+                    await loadAiStudioRtlExtensionToAllSessions();
+
+                    // Update RTL state based on settings
+                    const localSettings = settingsModule.getSettings();
+                    if (localSettings && localSettings.aiStudioRtlEnabled) {
+                        setTimeout(() => updateAiStudioRtlState(true), AI_STUDIO_RTL_STATE_DELAY_MS);
+                    }
+
+                    console.log('Deferred AI Studio extension loading completed on Linux');
+                }, AI_STUDIO_EXTENSION_LINUX_DELAY_MS);
+            } else {
+                await loadAiStudioRtlExtensionToAllSessions();
+
+                // Update RTL state based on settings
+                const localSettings = settingsModule.getSettings();
+                if (localSettings && localSettings.aiStudioRtlEnabled) {
+                    setTimeout(() => updateAiStudioRtlState(true), AI_STUDIO_RTL_STATE_DELAY_MS);
+                }
+            }
+        } catch (e) {
+            console.warn('Failed loading AI Studio RTL extension at startup:', e && e.message ? e.message : e);
+        }
+    };
+
+    await loadAiStudioAsync();
 });
 
 const trayModule = require('./modules/tray');
@@ -860,6 +887,10 @@ function getIconPath() {
 const GEMINI_APP_USER_MODEL_ID = 'com.geminidesk.gemini';
 const AISTUDIO_APP_USER_MODEL_ID = 'com.geminidesk.aistudio';
 
+const AI_STUDIO_RTL_STATE_DELAY_MS = 2000;
+const AI_STUDIO_EXTENSION_LINUX_DELAY_MS = 3000;
+const GEMINI_SCROLL_RESTORE_DELAYS = [100, 300, 600, 1000];
+
 /**
  * Update the window's AppUserModelId to group windows by app mode in the taskbar.
  * On Windows, this separates Gemini windows from AI Studio windows in the taskbar.
@@ -913,6 +944,107 @@ function setupSessionFilters(sess) {
 // ================================================================= //
 // Shortcuts Management
 // ================================================================= //
+
+async function updateAiStudioRtlState(enabled) {
+    const boolVal = !!enabled;
+    console.log('AI Studio RTL state updated to:', boolVal);
+
+    // Helper to set cookie for a given session
+    const setCookieForSession = async (sess) => {
+        try {
+            if (!sess || !sess.cookies || typeof sess.cookies.set !== 'function') return;
+            await sess.cookies.set({
+                url: 'https://aistudio.google.com',
+                name: 'geminidesk_rtl',
+                value: boolVal ? '1' : '0',
+                path: '/',
+                secure: true,
+                httpOnly: false,
+                expirationDate: Math.floor(Date.now() / 1000) + (365 * 24 * 60 * 60)
+            });
+            console.log('Set geminidesk_rtl cookie for session');
+        } catch (e) {
+            console.warn('Failed to set geminidesk_rtl cookie', e && e.message ? e.message : e);
+        }
+    };
+
+    try {
+        // Default session
+        try { await setCookieForSession(session.defaultSession); } catch (e) {}
+
+        // Main app partition
+        try { if (constants && constants.SESSION_PARTITION) await setCookieForSession(session.fromPartition(constants.SESSION_PARTITION, { cache: true })); } catch (e) {}
+
+        // Per-account partitions
+        const s = getSettings();
+        if (s && Array.isArray(s.accounts)) {
+            for (let i = 0; i < s.accounts.length; i++) {
+                try {
+                    const partName = accountsModule.getAccountPartition(i);
+                    await setCookieForSession(session.fromPartition(partName, { cache: true }));
+                } catch (e) {}
+            }
+        }
+
+        // Notify any existing AI Studio views so they toggle immediately
+        BrowserWindow.getAllWindows().forEach(w => {
+            try {
+                const view = w.getBrowserView();
+                if (view && view.webContents && !view.webContents.isDestroyed()) {
+                    const url = view.webContents.getURL() || '';
+                    if (url.includes('aistudio.google.com')) {
+                        view.webContents.executeJavaScript(
+                            `try{window.postMessage({type:'GeminiDesk:aiStudioRtl', state: ${boolVal ? 'true' : 'false'}}, '*'); document.dispatchEvent(new CustomEvent('GeminiDeskAiStudioRtl', {detail:{state:${boolVal ? 'true' : 'false'}}})); }catch(e){}
+                            `, true).catch(() => {});
+                    }
+                }
+            } catch (e) {
+                // ignore per-window errors
+            }
+        });
+    } catch (e) {
+        console.warn('Error updating AI Studio RTL state:', e && e.message ? e.message : e);
+    }
+}
+
+// ================================================================= //
+// Recording Special Shortcuts (Alt+Space interception)
+// ================================================================= //
+
+ipcMain.on('start-recording-shortcut', (event) => {
+    // Attempt to intercept Alt+Space globally so we can capture it
+    // instead of opening the system menu
+    try {
+        const ret = globalShortcut.register('Alt+Space', () => {
+            console.log('Intercepted Alt+Space during recording');
+            event.sender.send('shortcut-captured', 'Alt+Space');
+        });
+
+        if (!ret) {
+            console.log('Registration failed for Alt+Space during recording');
+        } else {
+            console.log('Global shortcut registered: Alt+Space (Recording Mode)');
+        }
+    } catch (err) {
+        console.error('Error registering recording shortcut:', err);
+    }
+});
+
+ipcMain.on('stop-recording-shortcut', () => {
+    // Unregister the special recording interception
+    // The regular registerShortcuts() will normally be called shortly after
+    // by the settings update mechanism if needed
+    try {
+        globalShortcut.unregister('Alt+Space');
+        console.log('Unregistered Alt+Space (Recording Mode stopped)');
+
+        // If Alt+Space was actually the assigned shortcut for showHide,
+        // we should re-register it to its normal function.
+        registerShortcuts();
+    } catch (err) {
+        console.error('Error stopping recording shortcut:', err);
+    }
+});
 
 // Helper function to click microphone button
 async function clickMicrophoneButton(targetWin, view) {
@@ -1933,7 +2065,10 @@ function registerShortcuts() {
             const allWindows = BrowserWindow.getAllWindows();
             const userWindows = allWindows.filter(w => !w.__internal);
 
-            if (userWindows.length === 0) return;
+            if (userWindows.length === 0) {
+                createWindow();
+                return;
+            }
 
             const shouldShow = userWindows.some(win => !win.isVisible());
 
@@ -2438,18 +2573,27 @@ function createWindow(state = null) {
             }
             
             if (restoreScroll) {
-                // Restore scroll position after resize
-                setTimeout(async () => {
-                    if (view && !view.webContents.isDestroyed()) {
-                        try {
-                            await view.webContents.executeJavaScript(
-                                `(document.scrollingElement || document.documentElement).scrollTop = ${newWin.savedScrollPosition};`
-                            );
-                        } catch (e) {
-                            // Ignore errors
+                // Validate scroll position is a safe numeric value
+                const scrollPosition = typeof newWin.savedScrollPosition === 'number' &&
+                    isFinite(newWin.savedScrollPosition) &&
+                    newWin.savedScrollPosition >= 0
+                    ? Math.floor(newWin.savedScrollPosition)
+                    : 0;
+
+                // Use multiple restoration attempts with longer delays to handle dynamic content
+                GEMINI_SCROLL_RESTORE_DELAYS.forEach(delay => {
+                    setTimeout(async () => {
+                        if (view && !view.webContents.isDestroyed()) {
+                            try {
+                                await view.webContents.executeJavaScript(
+                                    `(document.scrollingElement || document.documentElement).scrollTop = ${scrollPosition};`
+                                );
+                            } catch (e) {
+                                // Ignore errors
+                            }
                         }
-                    }
-                }, 100);
+                    }, delay);
+                });
             }
         }
     };
@@ -7209,72 +7353,7 @@ ipcMain.on('update-setting', (event, key, value) => {
     }
 
     if (key === 'aiStudioRtlEnabled') {
-        const boolVal = !!value;
-        console.log('AI Studio RTL mode toggled to:', boolVal);
-
-        // Helper to set cookie for a given session
-        const setCookieForSession = async (sess) => {
-            try {
-                if (!sess || !sess.cookies || typeof sess.cookies.set !== 'function') return;
-                await sess.cookies.set({
-                    url: 'https://aistudio.google.com',
-                    name: 'geminidesk_rtl',
-                    value: boolVal ? '1' : '0',
-                    path: '/',
-                    secure: true,
-                    httpOnly: false,
-                    expirationDate: Math.floor(Date.now() / 1000) + (365 * 24 * 60 * 60)
-                });
-                console.log('Set geminidesk_rtl cookie for session');
-            } catch (e) {
-                console.warn('Failed to set geminidesk_rtl cookie', e && e.message ? e.message : e);
-            }
-        };
-
-        (async () => {
-            try {
-                // Default session
-                try { await setCookieForSession(session.defaultSession); } catch (e) {}
-
-                // Main app partition
-                try { if (constants && constants.SESSION_PARTITION) await setCookieForSession(session.fromPartition(constants.SESSION_PARTITION, { cache: true })); } catch (e) {}
-
-                // Per-account partitions
-                try {
-                    const s = settings;
-                    if (s && Array.isArray(s.accounts)) {
-                        for (let i = 0; i < s.accounts.length; i++) {
-                            try {
-                                const partName = accountsModule.getAccountPartition(i);
-                                await setCookieForSession(session.fromPartition(partName, { cache: true }));
-                            } catch (e) {}
-                        }
-                    }
-                } catch (e) {}
-
-                // Notify any existing AI Studio views so they toggle immediately
-                BrowserWindow.getAllWindows().forEach(w => {
-                    try {
-                        const view = w.getBrowserView();
-                        if (view && view.webContents && !view.webContents.isDestroyed()) {
-                            const url = view.webContents.getURL() || '';
-                            if (url.includes('aistudio.google.com')) {
-                                view.webContents.executeJavaScript(
-                                    `try{window.postMessage({type:'GeminiDesk:aiStudioRtl', state: ${boolVal ? 'true' : 'false'}}, '*'); document.dispatchEvent(new CustomEvent('GeminiDeskAiStudioRtl', {detail:{state:${boolVal ? 'true' : 'false'}}})); }catch(e){}
-                                    `, true).catch(() => {});
-                                console.log('Posted aiStudioRtl message to view for window', w.id);
-                            }
-                        }
-                    } catch (e) {
-                        // ignore per-window errors
-                    }
-                });
-
-                console.log('AI Studio RTL state updated to:', boolVal);
-            } catch (e) {
-                console.warn('Failed applying AI Studio RTL change:', e && e.message ? e.message : e);
-            }
-        })();
+        updateAiStudioRtlState(value);
     }
 
     // Broadcast the updated settings to all web contents (windows and views)
