@@ -65,6 +65,11 @@ GeminiDesk is more than a wrapper. It's a command center, loaded with powerful, 
 
 ### 🧠 Advanced AI Features
 
+*   **🚀 Full Gemini 3.0 Model Support:** Access the latest and greatest AI models:
+    *   **Gemini 3.0 Flash:** Lightning-fast responses for everyday tasks
+    *   **Flash Thinking:** Advanced reasoning capabilities for complex problems
+    *   **Gemini Pro:** Maximum power for the most demanding workloads
+    *   Quickly switch between models with dedicated keyboard shortcuts (`Alt+F`, `Alt+T`, `Alt+P`)
 *   **🔌 Model Context Protocol (MCP) Support:** Connect your AI to your local world. Run local tools, access files, and build powerful workflows with built-in MCP support. The app includes an automatic **"Do it for me"** setup to get your local proxy server running in seconds.
 *   **🗓️ Deep Research Automation & Scheduler:** Set it and forget it. Schedule complex research tasks to run automatically! Set a day, time, and a detailed prompt. GeminiDesk will wake up, launch, switch to the Pro model, execute your "Deep Research" query, and notify you when done.
 *   **📝 Prompt Manager:** Never type the same context twice. Create, edit, and manage a library of custom prompts. **Set a "Default Prompt"** to be automatically sent every time you start a new chat—perfect for setting up persistent personas or coding rules.
@@ -90,7 +95,8 @@ GeminiDesk is more than a wrapper. It's a command center, loaded with powerful, 
 
 *   **🔊 Smart Audio Feedback:** Know the second your AI has finished its thought. GeminiDesk plays a subtle, satisfying sound upon completion. Choose from multiple sound options in settings.
 *   **🌍 Full Internationalization:** The entire app interface is localized into over 20 languages, with RTL support built into the core.
-*   **⚡️ Instant Model Switching:** Use hotkeys (`Alt+F`, `Alt+P`) to instantly fire up a new chat with either the **Flash** or **Pro** model.
+*   **📐 RTL Layout Support for AI Studio:** Dedicated setting to force Right-to-Left (RTL) layout on AI Studio, fixing interface alignment issues for Hebrew and Arabic speakers (and other RTL languages), ensuring the UI renders correctly.
+*   **⚡️ Instant Model Switching:** Use hotkeys (`Alt+F`, `Alt+T`, `Alt+P`) to instantly fire up a new chat with the **Flash**, **Thinking**, or **Pro** model.
 *   **🎤 Voice Assistant:** Activate the microphone instantly with a shortcut to talk to Gemini hands-free.
 
 ---
@@ -109,8 +115,10 @@ Access the magic from anywhere in your OS. (Fully customizable in Settings!)
 | `Ctrl` + `Alt` + `S`          | **Capture Screenshot** & Paste into Chat    |
 | `Alt` + `P`                   | Switch current chat to **Pro** Model        |
 | `Alt` + `F`                   | Switch current chat to **Flash** Model      |
+| `Alt` + `T`                   | Switch current chat to **Thinking** Model   |
 | `Alt` + `Shift` + `P`         | New Chat with **Pro** Model                 |
 | `Alt` + `Shift` + `F`         | New Chat with **Flash** Model               |
+| `Alt` + `Shift` + `T`         | New Chat with **Thinking** Model            |
 | `Alt` + `Shift` + `A`         | Activate **Voice Assistant**                |
 | `Alt` + `R`                   | **Refresh the active View**                 |
 | `Alt` + `Q`                   | Close the Current Window                    |
