@@ -1933,7 +1933,10 @@ function registerShortcuts() {
             const allWindows = BrowserWindow.getAllWindows();
             const userWindows = allWindows.filter(w => !w.__internal);
 
-            if (userWindows.length === 0) return;
+            if (userWindows.length === 0) {
+                createWindow();
+                return;
+            }
 
             const shouldShow = userWindows.some(win => !win.isVisible());
 
@@ -4087,6 +4090,38 @@ ipcMain.handle('mcp-setup-doitforme', async () => {
         return { success: false, step: 'unexpected', message: err && err.message ? err.message : String(err) };
     }
 });
+
+// ================================================================= //
+// Recording Special Shortcuts (Alt+Space interception)
+// ================================================================= //
+
+ipcMain.on('start-recording-shortcut', (event) => {
+    try {
+        const registered = globalShortcut.register('Alt+Space', () => {
+            console.log('Intercepted Alt+Space during recording');
+            event.sender.send('shortcut-captured', 'Alt+Space');
+        });
+
+        if (!registered) {
+            console.log('Failed to register Alt+Space for recording');
+        } else {
+            console.log('Global shortcut registered for recording: Alt+Space');
+        }
+    } catch (err) {
+        console.error('Error registering recording shortcut:', err);
+    }
+});
+
+ipcMain.on('stop-recording-shortcut', () => {
+    try {
+        globalShortcut.unregister('Alt+Space');
+        console.log('Unregistered Alt+Space (recording mode stopped)');
+        registerShortcuts();
+    } catch (err) {
+        console.error('Error stopping recording shortcut:', err);
+    }
+});
+
 // ================================================================= //
 // App Lifecycle
 // ================================================================= //
