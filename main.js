@@ -204,9 +204,10 @@ async function createAndManageLoginWindowForPartition(loginUrl, targetPartition,
         }
     });
 
-    try {
-        await tempWin.webContents.session.clearStorageData({ storages: ['cookies', 'localstorage'], origins: ['https://accounts.google.com', 'https://google.com'] });
-    } catch (e) {}
+    // DON'T clear storage - keep existing login sessions
+    // This allows users to have multiple accounts logged in simultaneously
+    // and avoids requiring 2FA on every login
+    console.log('Account login window created - existing sessions preserved.');
 
     tempWin.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
     setupContextMenu(tempWin.webContents);
@@ -2649,13 +2650,10 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
     targetWin.accountIndex = targetAccountIndex;
     const partitionName = getAccountPartition(targetAccountIndex);
 
+    // Don't reset sessions anymore - preserve cookies and login data for multi-account support
+    // This allows users to switch between accounts without having to log in again
     if (options.resetSession) {
-        try {
-            const targetSession = session.fromPartition(partitionName, { cache: true });
-            await targetSession.clearStorageData({ storages: ['cookies', 'localstorage', 'indexdb', 'serviceworkers'] });
-        } catch (err) {
-            console.warn('Failed to reset session for account', targetAccountIndex, err && err.message ? err.message : err);
-        }
+        console.log('resetSession option ignored - sessions are now persistent for multi-account support');
     }
 
     const url = initialUrl || (mode === 'aistudio' ? AISTUDIO_URL : GEMINI_URL);
@@ -2690,15 +2688,10 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
             }
         });
 
-        try {
-            await loginWin.webContents.session.clearStorageData({
-                storages: ['cookies', 'localstorage'],
-                origins: ['https://accounts.google.com', 'https://google.com']
-            });
-            console.log('Login window session cleared for a fresh login attempt.');
-        } catch (error) {
-            console.error('Failed to clear login window session storage:', error);
-        }
+        // DON'T clear storage - keep existing login sessions
+        // This allows users to have multiple accounts logged in simultaneously
+        // and avoids requiring 2FA on every login
+        console.log('Login window created - existing sessions preserved for multi-account support.');
 
         loginWin.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
         setupContextMenu(loginWin.webContents);
