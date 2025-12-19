@@ -1007,6 +1007,10 @@
                 <label class="toggle-switch"><input type="checkbox" id="setting-showMinimizeButton"><span
                         class="slider"></span></label>
             </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong>Show Mode Toggle Button</strong><span>Display the Gemini / AI Studio mode switch.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-showModeToggleButton"><span class="slider"></span></label>
+            </div>
             <div class="setting-item" id="export-button-setting">
                 <div class="setting-label"><strong data-i18n="showExportButton-label">Show Export Button</strong><span
                         data-i18n="showExportButton-desc">Add an export chat button to each window.</span></div>
@@ -1802,6 +1806,9 @@
                     document.getElementById('setting-showFullscreenButton').checked = settings.showFullscreenButton !== false;
                     document.getElementById('setting-showNewWindowButton').checked = settings.showNewWindowButton !== false;
                     document.getElementById('setting-showMinimizeButton').checked = settings.showMinimizeButton !== false;
+                            // Mode toggle visibility
+                            const modeToggleCheckbox = document.getElementById('setting-showModeToggleButton');
+                            if (modeToggleCheckbox) modeToggleCheckbox.checked = settings.showModeToggleButton !== false;
                     document.getElementById('setting-aiCompletionSound').checked = settings.aiCompletionSound !== false;
 
                     // Set sound file radio button
@@ -2039,6 +2046,14 @@
             document.getElementById('setting-draggableButtonsEnabled').addEventListener('change', (e) => {
                 electronAPI.updateSetting('draggableButtonsEnabled', e.target.checked);
             });
+
+            // Show/hide mode toggle button
+            const showModeToggleEl = document.getElementById('setting-showModeToggleButton');
+            if (showModeToggleEl) {
+                showModeToggleEl.addEventListener('change', (e) => {
+                    electronAPI.updateSetting('showModeToggleButton', e.target.checked);
+                });
+            }
 
             document.getElementById('setting-aiCompletionSound').addEventListener('change', (e) => {
                 electronAPI.updateSetting('aiCompletionSound', e.target.checked);

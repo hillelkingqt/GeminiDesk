@@ -216,30 +216,66 @@ async function createAndManageLoginWindowForPartition(loginUrl, targetPartition,
     tempWin.on('closed', () => { tempWin = null; });
 
     tempWin.webContents.on('did-navigate', async (event, navigatedUrl) => {
-        const isLoginSuccess = navigatedUrl.startsWith(GEMINI_URL) || navigatedUrl.startsWith(AISTUDIO_URL);
+        // Treat both the canonical GEMINI_URL and URLs like
+        // https://gemini.google.com/u/1/app as successful navigation.
+        const isGeminiWithUserPath = /\/u\/\d+\/app(\/.*)?$/.test(navigatedUrl);
+        const isLoginSuccess = navigatedUrl.startsWith(GEMINI_URL) || navigatedUrl.startsWith(AISTUDIO_URL) || isGeminiWithUserPath;
+        console.log('Login popup navigated to:', navigatedUrl);
         if (!isLoginSuccess) return;
 
         const isolatedSession = tempWin.webContents.session;
+        try {
+            const preCookies = await isolatedSession.cookies.get({ domain: '.google.com' });
+            console.log('Login popup - initial .google.com cookies count:', (preCookies && preCookies.length) || 0, 'names:', (preCookies || []).map(c=>c.name));
+        } catch(e) {
+            console.warn('Error reading initial cookies from popup session:', e && e.message ? e.message : e);
+        }
         let sessionCookieFound = false;
-        for (let i = 0; i < 20; i++) {
-            const criticalCookies = await isolatedSession.cookies.get({ name: '__Secure-1PSID' });
-            if (criticalCookies && criticalCookies.length > 0) { sessionCookieFound = true; break; }
-            await new Promise(r => setTimeout(r, 500));
+        // If the popup navigated to a user-specific Gemini path (e.g. /u/1/app)
+        // then proceed immediately — some flows don't set cookies in the
+        // isolated popup even though the sign-in completed elsewhere.
+        if (isGeminiWithUserPath) {
+            sessionCookieFound = true;
+        } else {
+            // Wait until any Google cookies appear in the isolated session.
+            // Some sign-in flows may set different cookie names, so checking
+            // for any cookies under the Google domain is more reliable than
+            // looking for a single cookie name.
+            for (let i = 0; i < 20; i++) {
+                const criticalCookies = await isolatedSession.cookies.get({ domain: '.google.com' });
+                if (criticalCookies && criticalCookies.length > 0) { sessionCookieFound = true; break; }
+                await new Promise(r => setTimeout(r, 500));
+            }
         }
 
         // If we didn't observe a critical session cookie, it likely means the
         // user hasn't completed the sign-in flow yet (for example they only
         // provided the email and haven't entered the password). In that case
-        // don't proceed to transfer cookies and close the temporary login
-        // window — leave it open so the user can finish authentication.
+        // normally don't proceed to transfer cookies and close the temporary
+        // login window — leave it open so the user can finish authentication.
+        // However, when adding a second (or later) account, the popup may
+        // navigate to the Gemini URL without creating new cookies in the
+        // popup session (cookies may already exist in the default session).
+        // In that specific case we should attempt the transfer/close so the
+        // add-account flow completes instead of leaving the popup stuck.
         if (!sessionCookieFound) {
-            console.log('Partitioned login: no critical session cookie found; keeping login window open to allow user to finish sign-in');
-            return;
+            const currentSettings = (typeof getSettings === 'function') ? getSettings() : null;
+            const hasExistingAccounts = currentSettings && Array.isArray(currentSettings.accounts) && currentSettings.accounts.length > 0;
+            if (!hasExistingAccounts) {
+                console.log('Partitioned login: no critical session cookie found; keeping login window open to allow user to finish sign-in');
+                try {
+                    const afterCookies = await isolatedSession.cookies.get({ domain: '.google.com' });
+                    console.log('Login popup - cookies after wait count:', (afterCookies && afterCookies.length) || 0, 'names:', (afterCookies || []).map(c=>c.name));
+                } catch(e) {}
+                return;
+            }
+            console.log('Partitioned login: no new cookies detected but existing accounts present — proceeding to attempt transfer/close for multi-account add');
         }
 
         try {
             const mainSession = session.fromPartition(targetPartition);
             const googleCookies = await isolatedSession.cookies.get({ domain: '.google.com' });
+            console.log('Partitioned login: transferring', googleCookies.length, '.google.com cookies to', targetPartition);
             if (googleCookies && googleCookies.length > 0) {
                 for (const cookie of googleCookies) {
                     try {
@@ -299,6 +335,29 @@ async function createAndManageLoginWindowForPartition(loginUrl, targetPartition,
                 if (typeof settings !== 'undefined') {
                     settings.currentAccountIndex = accountIndex;
                     try { saveSettings(settings); } catch (e) { console.warn('Failed to save settings after adding account', e); }
+                }
+
+                // If the login popup navigated to a Gemini URL (possibly with /u/X/app),
+                // open or load a window using the new account partition so the user
+                // sees the newly added account immediately instead of just reloading.
+                try {
+                    const mode = (navigatedUrl && navigatedUrl.startsWith(AISTUDIO_URL)) ? 'aistudio' : 'gemini';
+                    let targetWindow = BrowserWindow.getAllWindows().find(w => w.accountIndex === accountIndex && !w.isDestroyed());
+                    if (targetWindow) {
+                        try { loadGemini(mode, targetWindow, navigatedUrl, { accountIndex }); }
+                        catch (e) { console.warn('Failed to load gemini into existing window for new account:', e); }
+                    } else {
+                        try {
+                            const newWin = accountsModule.createWindowWithAccount(accountIndex);
+                            if (newWin && !newWin.isDestroyed()) {
+                                loadGemini(mode, newWin, navigatedUrl, { accountIndex });
+                            }
+                        } catch (e) {
+                            console.warn('Failed to create window for new account:', e && e.message ? e.message : e);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Failed to open/load window for new account after login:', e && e.message ? e.message : e);
                 }
 
                 // Open the choice window (the small Alt+N style chooser)
@@ -2709,24 +2768,43 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
         });
 
         loginWin.webContents.on('did-navigate', async (event, navigatedUrl) => {
-            const isLoginSuccess = navigatedUrl.startsWith(GEMINI_URL) || navigatedUrl.startsWith(AISTUDIO_URL);
+            // Treat both the canonical GEMINI_URL and URLs like
+            // https://gemini.google.com/u/1/app as successful navigation.
+            const isGeminiWithUserPath = /\/u\/\d+\/app(\/.*)?$/.test(navigatedUrl);
+            const isLoginSuccess = navigatedUrl.startsWith(GEMINI_URL) || navigatedUrl.startsWith(AISTUDIO_URL) || isGeminiWithUserPath;
+            console.log('Legacy login window navigated to:', navigatedUrl);
 
             if (isLoginSuccess) {
                 let sessionCookieFound = false;
                 const maxAttempts = 20;
                 const isolatedSession = loginWin.webContents.session;
 
-                for (let i = 0; i < maxAttempts; i++) {
-                    const criticalCookies = await isolatedSession.cookies.get({ name: '__Secure-1PSID' });
-                    if (criticalCookies && criticalCookies.length > 0) {
-                        sessionCookieFound = true;
-                        break;
+                try {
+                    const preCookies = await isolatedSession.cookies.get({ domain: '.google.com' });
+                    console.log('Legacy login - initial .google.com cookies:', (preCookies && preCookies.length) || 0, (preCookies || []).map(c=>c.name));
+                } catch(e) {}
+
+                if (isGeminiWithUserPath) {
+                    sessionCookieFound = true;
+                } else {
+                    for (let i = 0; i < maxAttempts; i++) {
+                        const criticalCookies = await isolatedSession.cookies.get({ domain: '.google.com' });
+                        if (criticalCookies && criticalCookies.length > 0) {
+                            sessionCookieFound = true;
+                            break;
+                        }
+                        await new Promise(resolve => setTimeout(resolve, 500));
                     }
-                    await new Promise(resolve => setTimeout(resolve, 500));
                 }
 
                 if (!sessionCookieFound) {
-                    console.warn('Timed out waiting for critical session cookie. Transfer may be incomplete.');
+                    const currentSettings = (typeof getSettings === 'function') ? getSettings() : null;
+                    const hasExistingAccounts = currentSettings && Array.isArray(currentSettings.accounts) && currentSettings.accounts.length > 0;
+                    if (!hasExistingAccounts) {
+                        console.warn('Timed out waiting for critical session cookie. Transfer may be incomplete.');
+                    } else {
+                        console.log('Timed out waiting for critical session cookie but existing accounts present — proceeding to attempt transfer/close for multi-account add');
+                    }
                 }
 
                 try {
@@ -2802,22 +2880,28 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
                         loginWin.close();
                     }
 
-                    // Only reload windows that use the same account partition
-                    // This allows different windows to use different accounts independently
-                    BrowserWindow.getAllWindows().forEach(win => {
-                        if (win && !win.isDestroyed() && (!loginWin || win.id !== loginWin.id)) {
-                            // Only reload if this window uses the same account
-                            if (win.accountIndex === targetAccountIndex || (!win.accountIndex && targetAccountIndex === 0)) {
-                                const view = win.getBrowserView();
-                                if (view && view.webContents && !view.webContents.isDestroyed()) {
-                                    console.log(`Reloading view for window ID: ${win.id} (account ${targetAccountIndex})`);
-                                    view.webContents.reload();
+                    // Load the newly added account into an app window so the user
+                    // sees it immediately. If a window already uses this account,
+                    // load into that window; otherwise create a new window for it.
+                    try {
+                        const mode = (loginWin && loginWin.getURL && loginWin.getURL().startsWith(AISTUDIO_URL)) ? 'aistudio' : 'gemini';
+                        let targetWindow = BrowserWindow.getAllWindows().find(w => w.accountIndex === targetAccountIndex && !w.isDestroyed());
+                        if (targetWindow) {
+                            try { loadGemini(mode, targetWindow, navigatedUrl, { accountIndex: targetAccountIndex }); }
+                            catch (e) { console.warn('Failed to load gemini into existing window for new account:', e); }
+                        } else {
+                            try {
+                                const newWin = accountsModule.createWindowWithAccount(targetAccountIndex);
+                                if (newWin && !newWin.isDestroyed()) {
+                                    loadGemini(mode, newWin, navigatedUrl, { accountIndex: targetAccountIndex });
                                 }
-                            } else {
-                                console.log(`Skipping reload for window ID: ${win.id} (uses different account ${win.accountIndex})`);
+                            } catch (e) {
+                                console.warn('Failed to create window for new account:', e && e.message ? e.message : e);
                             }
                         }
-                    });
+                    } catch (e) {
+                        console.warn('Error while opening/loading window for new account:', e && e.message ? e.message : e);
+                    }
 
                 } catch (error) {
                     console.error('Error during login success handling:', error);
@@ -2908,11 +2992,44 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
     setupContextMenu(newView.webContents);
 
     newView.webContents.setWindowOpenHandler(({ url: popupUrl }) => {
-        const isGoogleLogin = /^https:\/\/accounts\.google\.com\//.test(popupUrl);
-        if (isGoogleLogin) {
-            createAndManageLoginWindow(popupUrl);
-            return { action: 'deny' };
+        try {
+            const parsed = new URL(popupUrl);
+            const isGoogleLogin = /^https:\/\/accounts\.google\.com\//.test(popupUrl);
+            const isGemini = parsed.hostname === 'gemini.google.com' || parsed.hostname.endsWith('.gemini.google.com');
+            const isAistudio = parsed.hostname === 'aistudio.google.com' || parsed.hostname.endsWith('.aistudio.google.com');
+
+            if (isGoogleLogin) {
+                createAndManageLoginWindow(popupUrl);
+                return { action: 'deny' };
+            }
+
+            // Handle gemini/aistudio links opened from within the webview: load inside the app
+            if (isGemini || isAistudio) {
+                try {
+                    // Determine account index from query param `authuser` if present
+                    let authuser = parsed.searchParams.get('authuser');
+                    let accountIdx = (typeof authuser === 'string' && authuser.length) ? parseInt(authuser, 10) : undefined;
+                    if (Number.isNaN(accountIdx)) accountIdx = undefined;
+
+                    if (typeof accountIdx === 'number') {
+                        try { accountsModule.switchAccount(accountIdx); } catch (e) { console.warn('Failed to switch account to', accountIdx, e); }
+                    }
+
+                    const mode = isAistudio ? 'aistudio' : 'gemini';
+                    try {
+                        loadGemini(mode, targetWin, popupUrl, (typeof accountIdx === 'number') ? { accountIndex: accountIdx } : {});
+                    } catch (e) {
+                        console.warn('Failed to load gemini/aistudio URL into app window:', e && e.message ? e.message : e);
+                    }
+                } catch (e) {
+                    console.warn('Error handling internal gemini/aistudio popup URL:', e && e.message ? e.message : e);
+                }
+                return { action: 'deny' };
+            }
+        } catch (e) {
+            // ignore parse errors and fallthrough to external open
         }
+
         shell.openExternal(popupUrl);
         return { action: 'deny' };
     });
@@ -3030,85 +3147,7 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
     }
     newView.setAutoResize({ width: true, height: true });
 
-    if (initialUrl && initialUrl !== GEMINI_URL && initialUrl !== AISTUDIO_URL) {
-        const waitForTitleAndUpdate = async () => {
-            let attempts = 0;
-            const maxAttempts = 20;
-
-            while (attempts < maxAttempts) {
-                try {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-
-                    const title = await newView.webContents.executeJavaScript(`
-            (function() {
-              try {
-                const text = el => el ? (el.textContent || el.innerText || '').trim() : '';
-                
-                const selectors = [
-                  '.conversation.selected .conversation-title',
-                  'li.active a.prompt-link',
-                  '[data-test-id="conversation-title"]',
-                  'h1.conversation-title',
-                  '.conversation-title',
-                  '.chat-title',
-                  'article h1'
-                ];
-                
-                for (const selector of selectors) {
-                  const el = document.querySelector(selector);
-                  if (el) {
-                    const t = text(el);
-                    if (t && t !== 'Gemini' && t !== 'New Chat') return t;
-                  }
-                }
-                
-                const urlMatch = location.href.match(/\\/chat\\/([^\\/\\?]+)/);
-                if (urlMatch) {
-                  return decodeURIComponent(urlMatch[1]).replace(/[-_]/g, ' ');
-                }
-                
-                const firstUserMsg = document.querySelector('user-query .query-text');
-                if (firstUserMsg) {
-                  const t = text(firstUserMsg);
-                  return t.length > 50 ? t.substring(0, 50) + '...' : t;
-                }
-                
-                return document.title || 'Restored Chat';
-              } catch (e) {
-                return 'Restored Chat';
-              }
-            })();
-          `, true);
-
-                    if (title && title.trim() !== '') {
-                        console.log('Found chat title after restore:', title);
-                        if (!targetWin.isDestroyed()) {
-                            targetWin.webContents.send('update-title', title);
-                        }
-                        break;
-                    }
-
-                    attempts++;
-                } catch (e) {
-                    console.warn('Failed to read title on attempt', attempts + 1, ':', e.message);
-                    attempts++;
-                }
-            }
-
-            if (attempts >= maxAttempts) {
-                console.log('Could not find chat title after restore, using fallback');
-                if (!targetWin.isDestroyed()) {
-                    targetWin.webContents.send('update-title', 'Restored Chat');
-                }
-            }
-        };
-
-        newView.webContents.once('did-finish-load', () => {
-            setTimeout(waitForTitleAndUpdate, 1000);
-        });
-
-        newView.webContents.on('did-navigate-in-page', waitForTitleAndUpdate);
-    }
+    
 
     if (!settings.shortcutsGlobal) {
         const localShortcuts = { ...settings.shortcuts };
@@ -3803,8 +3842,10 @@ ipcMain.on('select-app-mode', (event, mode) => {
         if (mode && typeof mode === 'object') {
             targetMode = mode.mode;
             if (typeof mode.accountIndex === 'number') {
-                // switch current account to requested index for this window
+                // switch current account globally and load the requested account
                 accountsModule.switchAccount(mode.accountIndex);
+                loadGemini(targetMode, senderWindow, undefined, { accountIndex: mode.accountIndex });
+                return;
             }
         }
 

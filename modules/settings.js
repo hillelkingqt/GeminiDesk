@@ -28,6 +28,8 @@ const defaultSettings = {
     language: 'en',
     showCloseButton: false,
     showExportButton: true,
+    // Whether to show the mode toggle (Gemini / AI Studio) in the drag bar
+    showModeToggleButton: true,
     showFullscreenButton: true,
     showNewWindowButton: true,
     showMinimizeButton: true,
@@ -92,7 +94,9 @@ function getSettings() {
                     disableAutoUpdateCheck: savedSettings.disableAutoUpdateCheck === true ? true : false,
                     autoInstallUpdates: savedSettings.autoInstallUpdates === undefined ? true : savedSettings.autoInstallUpdates,
                     updateInstallReminderTime: savedSettings.updateInstallReminderTime || null,
-                    aiStudioRtlEnabled: savedSettings.aiStudioRtlEnabled === true ? true : false
+                    aiStudioRtlEnabled: savedSettings.aiStudioRtlEnabled === true ? true : false,
+                    // Respect saved preference for showing the mode toggle; default true
+                    showModeToggleButton: savedSettings.hasOwnProperty('showModeToggleButton') ? savedSettings.showModeToggleButton : true
                 };
                 return combinedSettings;
             }
