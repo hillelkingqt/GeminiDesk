@@ -325,11 +325,18 @@ async function createAndManageLoginWindowForPartition(loginUrl, targetPartition,
                 console.warn('Error while finalizing account addition:', err && err.message ? err.message : err);
             }
 
-            // reload existing windows so new account session takes effect
+            // Only reload windows that use this specific account
+            // This allows different windows to use different accounts independently
             BrowserWindow.getAllWindows().forEach(win => {
                 if (win && !win.isDestroyed()) {
-                    const view = win.getBrowserView();
-                    if (view && view.webContents && !view.webContents.isDestroyed()) view.webContents.reload();
+                    // Only reload if this window uses the same account
+                    if (win.accountIndex === accountIndex || (!win.accountIndex && accountIndex === 0)) {
+                        const view = win.getBrowserView();
+                        if (view && view.webContents && !view.webContents.isDestroyed()) {
+                            console.log(`Reloading window ${win.id} for account ${accountIndex}`);
+                            view.webContents.reload();
+                        }
+                    }
                 }
             });
 
@@ -2795,12 +2802,19 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
                         loginWin.close();
                     }
 
+                    // Only reload windows that use the same account partition
+                    // This allows different windows to use different accounts independently
                     BrowserWindow.getAllWindows().forEach(win => {
                         if (win && !win.isDestroyed() && (!loginWin || win.id !== loginWin.id)) {
-                            const view = win.getBrowserView();
-                            if (view && view.webContents && !view.webContents.isDestroyed()) {
-                                console.log(`Reloading view for window ID: ${win.id}`);
-                                view.webContents.reload();
+                            // Only reload if this window uses the same account
+                            if (win.accountIndex === targetAccountIndex || (!win.accountIndex && targetAccountIndex === 0)) {
+                                const view = win.getBrowserView();
+                                if (view && view.webContents && !view.webContents.isDestroyed()) {
+                                    console.log(`Reloading view for window ID: ${win.id} (account ${targetAccountIndex})`);
+                                    view.webContents.reload();
+                                }
+                            } else {
+                                console.log(`Skipping reload for window ID: ${win.id} (uses different account ${win.accountIndex})`);
                             }
                         }
                     });
