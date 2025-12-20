@@ -96,6 +96,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     cancelReset: () => ipcRenderer.send('cancel-reset-action'),
 
     getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+    openReleaseNotes: (version) => ipcRenderer.send('open-release-notes', version),
 
     // Window management
     openNewWindow: () => ipcRenderer.send('open-new-window'),
@@ -154,6 +155,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     // Execute JavaScript in main view (BrowserView)
     executeInMainView: (code) => ipcRenderer.invoke('execute-in-main-view', code),
+
+    onReleaseNotesContent: (callback) => ipcRenderer.on('release-notes-content', (_event, data) => callback(data)),
 
     // Prompt Manager
     openPromptManagerWindow: () => ipcRenderer.send('open-prompt-manager-window'),

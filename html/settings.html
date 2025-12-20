@@ -384,6 +384,11 @@
             text-align: right;
         }
 
+        #app-version-display:hover {
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
         /* --- RTL Support --- */
         html[dir="rtl"] {
             direction: rtl;
@@ -1888,6 +1893,9 @@
                 const versionDisplay = document.getElementById('app-version-display');
                 if (versionDisplay) {
                     versionDisplay.textContent = version;
+                    versionDisplay.addEventListener('click', () => {
+                        electronAPI.openReleaseNotes(version);
+                    });
                 }
             }).catch(err => {
                 console.error('Failed to get app version:', err);

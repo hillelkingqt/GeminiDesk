@@ -4454,6 +4454,44 @@ ipcMain.on('check-for-updates', () => {
 ipcMain.on('manual-check-for-notifications', () => {
     checkForNotifications(true); // true = isManualCheck
 });
+
+ipcMain.on('open-release-notes', (event, version) => {
+    const parentWindow = BrowserWindow.fromWebContents(event.sender);
+    const releaseNotesWin = new BrowserWindow({
+        width: 800,
+        height: 600,
+        frame: false,
+        parent: parentWindow,
+        modal: true,
+        show: false,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+        },
+    });
+
+    releaseNotesWin.loadFile('html/release-notes.html');
+
+    releaseNotesWin.once('ready-to-show', () => {
+        releaseNotesWin.show();
+        // Fetch release notes from GitHub API
+        const url = `https://api.github.com/repos/hillelkingqt/GeminiDesk/releases/tags/v${version}`;
+        fetch(url)
+            .then(res => res.json())
+            .then(json => {
+                if (json.body) {
+                    releaseNotesWin.webContents.send('release-notes-content', { version, notes: json.body });
+                } else {
+                    releaseNotesWin.webContents.send('release-notes-content', { version, notes: 'No release notes found for this version.' });
+                }
+            })
+            .catch(err => {
+                console.error('Failed to fetch release notes:', err);
+                releaseNotesWin.webContents.send('release-notes-content', { version, notes: 'Could not load release notes.' });
+            });
+    });
+});
+
 ipcMain.on('open-voice-assistant', () => {
     // Open the Voice Assistant GitHub repository in the default browser
     shell.openExternal('https://github.com/hillelkingqt/Gemini-voice-assistant');
