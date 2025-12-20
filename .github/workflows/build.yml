@@ -25,6 +25,8 @@ jobs:
   build-linux:
     needs: create-release
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # הוספת ה-Token לפתרון שגיאת הפרסום
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -44,7 +46,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          draft: true
           files: |
             dist/*.AppImage
             dist/*.deb
@@ -69,6 +70,8 @@ jobs:
   build-win:
     needs: create-release
     runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # הוספת ה-Token
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -88,14 +91,12 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          draft: true
           files: |
             dist/*.exe
             dist/*.yml
             dist/*.yaml
             dist/*.blockmap
 
-      # Added 'shell: bash' to fix "find not found" and AWS variable issues
       - name: Rename and Upload to R2
         if: success()
         shell: bash 
@@ -112,6 +113,8 @@ jobs:
   build-mac-arm64:
     needs: create-release
     runs-on: macos-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # הוספת ה-Token
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -132,7 +135,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          draft: true
           files: |
             dist/*.dmg
             dist/*.yml
@@ -154,6 +156,8 @@ jobs:
   build-mac-intel:
     needs: create-release
     runs-on: macos-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # הוספת ה-Token
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -174,7 +178,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          draft: true
           files: |
             dist/*.dmg
             dist/*.yml
