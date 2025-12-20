@@ -112,9 +112,6 @@ body {
     /* Smaller text for custom prompts */
     padding: 10px;
     word-wrap: break-word;
-}
-
-.segment-bubble.custom:hover {
-    background: #3b82f6;
-    border-bottom: none;
+    border-bottom: 3px solid #4285F4;
+    /* Google Blue */
 }
