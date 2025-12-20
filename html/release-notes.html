@@ -2,95 +2,182 @@
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Release Notes</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
         :root {
-            --bg-root: #131314;
-            --glass-surface: #1e1f20;
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --text-primary: #e3e3e3;
-            --text-secondary: #9aa0a6;
-            --accent-primary: #8ab4f8;
-            --radius-lg: 20px;
+            --bg-root: #0f1113;
+            --surface: #151618;
+            --muted-surface: rgba(255,255,255,0.03);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --text-primary: #e6eef8;
+            --text-secondary: #9aa3ad;
+            --accent-primary: #7fb0ff;
+            --radius-lg: 12px;
+            --max-width: 920px;
+            --scroll-thumb: rgba(255,255,255,0.08);
+            --scroll-track: rgba(0,0,0,0.06);
         }
         html.light-mode {
-            --bg-root: #ffffff;
-            --glass-surface: #f8f9fa;
-            --glass-border: rgba(0, 0, 0, 0.08);
+            --bg-root: #f6f8fb;
+            --surface: #ffffff;
+            --muted-surface: rgba(0,0,0,0.04);
+            --glass-border: rgba(0,0,0,0.06);
             --text-primary: #202124;
             --text-secondary: #5f6368;
             --accent-primary: #1a73e8;
+            --scroll-thumb: rgba(0,0,0,0.12);
+            --scroll-track: rgba(0,0,0,0.04);
         }
         html, body {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            overflow: hidden; font-family: 'Google Sans', 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-root); color: var(--text-primary); user-select: none;
+            font-family: 'Google Sans', 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(180deg,var(--bg-root), #07080a 140%);
+            color: var(--text-primary); -webkit-font-smoothing:antialiased;
+            -webkit-user-select: none; user-select: text; overflow: hidden;
         }
+
+        /* Top drag bar */
         .drag-bar {
-            position: fixed; top: 0; left: 0; right: 0;
-            height: 48px; -webkit-app-region: drag;
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 16px; border-bottom: 1px solid var(--glass-border);
+            position: fixed; inset: 0 0 auto 0; height: 56px; display:flex;
+            align-items:center; justify-content:space-between; padding: 0 14px;
+            -webkit-app-region: drag; gap: 12px;
+            backdrop-filter: blur(6px) saturate(120%);
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 40;
         }
-        .drag-bar h2 {
-            font-size: 16px; margin: 0; font-weight: 500;
-        }
+        .drag-bar h2 { font-size: 15px; margin:0; font-weight:600; }
+
+        /* Close button */
         #close-button {
-            -webkit-app-region: no-drag; width: 32px; height: 32px;
-            border-radius: 50%; border: none; background: transparent;
-            color: var(--text-secondary); font-size: 20px;
-            cursor: pointer; transition: all 0.15s ease;
+            -webkit-app-region: no-drag; display:inline-flex; align-items:center; justify-content:center;
+            width:36px;height:36px;border-radius:10px;border:none;background:transparent;color:var(--text-secondary);
+            cursor:pointer;font-size:18px;padding:0;transition:all .12s ease; outline: none;
         }
-        #close-button:hover {
-             background: rgba(255,255,255,0.1);
-        }
+        #close-button:focus { box-shadow: 0 0 0 3px rgba(127,176,255,0.18); }
+        #close-button:hover { background: rgba(255,255,255,0.03); color:var(--text-primary); }
+
+        /* Page content */
+        .page-wrap { padding-top: 64px; height: 100vh; box-sizing: border-box; display:flex; justify-content:center; }
         .content {
-            padding: 64px 24px 24px; overflow-y: auto; height: calc(100vh - 88px);
+            padding: 20px; width: 100%; max-width: var(--max-width);
+            height: calc(100vh - 84px); box-sizing: border-box; overflow: auto;
         }
+
         .release-notes-container {
-             background: var(--glass-surface); border: 1px solid var(--glass-border);
-             border-radius: var(--radius-lg); padding: 20px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+            border: 1px solid var(--glass-border); border-radius: var(--radius-lg);
+            padding: 28px; box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+            color: var(--text-primary);
         }
-        .version-title {
-            font-size: 1.5em; font-weight: 500; color: var(--accent-primary);
-            margin-bottom: 10px;
+
+        .release-header { display:flex; align-items:flex-start; gap:16px; margin-bottom: 8px; }
+        .version-title { font-size: 20px; font-weight:700; color:var(--accent-primary); margin:0; }
+        .release-meta { color:var(--text-secondary); font-size:13px; margin-top:4px; }
+
+        .release-notes-body { margin-top: 18px; line-height:1.55; color:var(--text-primary); }
+        .release-notes-body h3 { margin-top: 18px; color:var(--accent-primary); }
+        .release-notes-body img { max-width:100%; height:auto; border-radius:8px; }
+
+        /* Nice scrollbar for Chromium and fallback for Firefox */
+        .content::-webkit-scrollbar, .release-notes-container::-webkit-scrollbar { width: 12px; height:12px; }
+        .content::-webkit-scrollbar-track, .release-notes-container::-webkit-scrollbar-track { background: var(--scroll-track); border-radius: 999px; }
+        .content::-webkit-scrollbar-thumb, .release-notes-container::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 999px; border: 3px solid transparent; background-clip: padding-box; }
+        .content { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) var(--scroll-track); }
+
+        a { color: var(--accent-primary); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* Small screens */
+        @media (max-width:640px) {
+            .content { padding: 12px; height: calc(100vh - 72px); }
+            .release-notes-container { padding: 16px; }
         }
     </style>
 </head>
 <body>
     <div class="drag-bar">
         <h2 id="window-title">Release Notes</h2>
-        <button id="close-button" title="Close">&times;</button>
+        <button id="close-button" aria-label="Close release notes" title="Close">&#10005;</button>
     </div>
-    <div class="content">
-        <div class="release-notes-container" id="release-notes-content">
-            <p>Loading release notes...</p>
-        </div>
+
+    <div class="page-wrap">
+        <main class="content" id="content" role="main">
+            <article class="release-notes-container" id="release-notes-content" aria-live="polite">
+                <div class="release-header">
+                    <div>
+                        <h1 class="version-title" id="version-title">Release Notes</h1>
+                        <div class="release-meta" id="release-meta">Loading…</div>
+                    </div>
+                </div>
+                <div class="release-notes-body" id="notes-body">
+                    <p>Loading release notes...</p>
+                </div>
+            </article>
+        </main>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
-        document.getElementById('close-button').addEventListener('click', () => {
-            window.electronAPI.closeWindow();
+        const closeButton = document.getElementById('close-button');
+        const versionTitle = document.getElementById('version-title');
+        const meta = document.getElementById('release-meta');
+        const notesBody = document.getElementById('notes-body');
+        const contentEl = document.getElementById('content');
+
+        closeButton.addEventListener('click', () => window.electronAPI.closeWindow());
+        closeButton.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') window.electronAPI.closeWindow(); });
+
+        // Close on Escape for keyboard users
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') window.electronAPI.closeWindow();
         });
 
+        // Receive release notes from main process
         window.electronAPI.onReleaseNotesContent((data) => {
-            const { version, notes } = data;
-            document.getElementById('window-title').textContent = `Release Notes - v${version}`;
-            const contentDiv = document.getElementById('release-notes-content');
-            contentDiv.innerHTML = marked.parse(notes);
+            try {
+                const { version, notes, date } = data || {};
+                versionTitle.textContent = `v${version || '—'}`;
+                meta.textContent = date ? `Released ${new Date(date).toLocaleDateString()}` : (version ? '' : '');
+                // Use marked to convert markdown -> HTML
+                notesBody.innerHTML = marked.parse(notes || 'No release notes available.');
+
+                // Make sure links open externally and images are safe
+                notesBody.querySelectorAll('a').forEach(a => {
+                    a.setAttribute('rel', 'noopener noreferrer');
+                    a.addEventListener('click', (ev) => {
+                        const href = a.getAttribute('href');
+                        if (!href) return;
+                        ev.preventDefault();
+                        window.electronAPI.openExternal(href);
+                    });
+                });
+            } catch (err) {
+                notesBody.innerHTML = '<p>Failed to load release notes.</p>';
+                window.electronAPI.logToMain && window.electronAPI.logToMain('Release notes render error: ' + err.message);
+            }
         });
 
+        // Theme handling
         function applyTheme(theme) {
-            if (theme === 'light') {
-                document.documentElement.classList.add('light-mode');
-            } else {
-                document.documentElement.classList.remove('light-mode');
-            }
+            if (theme === 'light') document.documentElement.classList.add('light-mode');
+            else document.documentElement.classList.remove('light-mode');
         }
+        window.electronAPI.theme.getResolved().then(applyTheme).catch(()=>{});
+        window.electronAPI.theme.onUpdate && window.electronAPI.theme.onUpdate(applyTheme);
 
-        window.electronAPI.theme.getResolved().then(applyTheme);
-        window.electronAPI.theme.onUpdate(applyTheme);
+        // Improve keyboard scroll behavior: focus on the content for a11y
+        contentEl.tabIndex = -1;
+
+        // Basic resize/height fix
+        function adjustHeights(){
+            const top = document.querySelector('.drag-bar').offsetHeight || 56;
+            contentEl.style.height = (window.innerHeight - top - 12) + 'px';
+        }
+        window.addEventListener('resize', adjustHeights);
+        setTimeout(adjustHeights, 60);
     </script>
 </body>
 </html>
