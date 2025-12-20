@@ -6869,6 +6869,10 @@ ipcMain.handle('get-settings', async () => {
     return getSettings();
 });
 
+ipcMain.handle('get-app-version', () => {
+    return app.getVersion();
+});
+
 ipcMain.handle('add-google-account', async () => {
     try {
         // Pre-check current account count and inform user if limit reached

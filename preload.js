@@ -95,6 +95,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     confirmReset: () => ipcRenderer.send('confirm-reset-action'),
     cancelReset: () => ipcRenderer.send('cancel-reset-action'),
 
+    getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+
     // Window management
     openNewWindow: () => ipcRenderer.send('open-new-window'),
     minimizeWindow: () => ipcRenderer.send('minimize-window'),
