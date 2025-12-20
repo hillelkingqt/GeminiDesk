@@ -7631,6 +7631,8 @@ function createPieMenuWindow() {
         }
     });
 
+    pieMenuWin.__internal = true;
+
     pieMenuWin.loadFile('html/pie-menu.html');
 
     pieMenuWin.once('ready-to-show', () => {
