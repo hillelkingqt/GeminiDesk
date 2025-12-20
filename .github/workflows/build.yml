@@ -1,30 +1,22 @@
-name: Build & Release (random draft name)
+name: Build & Release
 
 on:
   push:
-    branches: [ main ]
-    tags:     [ 'v*.*.*' ]
+    tags:
+      - 'v*.*.*'
   workflow_dispatch:
 
 permissions:
   contents: write
-  packages: write
-
-env:
-  NODE_VERSION: 20
 
 jobs:
   build-linux:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
-
+          node-version: 20
       - name: Cache npm dependencies
         uses: actions/cache@v4
         with:
@@ -32,177 +24,17 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-
-      - name: Install deps
-        run: npm install
-
-      - name: Build Linux (AppImage, deb + updater files)
-        run: npm run build -- --linux deb AppImage --publish never
-
-      - name: Upload linux artifacts
-        uses: actions/upload-artifact@v4
+      - run: npm install
+      - run: npm run build -- --linux deb AppImage --publish never
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          name: linux
-          if-no-files-found: error
-          path: |
+          files: |
             dist/*.AppImage
             dist/*.deb
-            dist/latest*.yml
-            dist/*.blockmap
-
-  build-win:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Cache npm dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~\AppData\Local\npm-cache
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install deps
-        run: npm install
-
-      - name: Build Windows (EXE + updater files)
-        run: npm run build -- --win --publish never
-
-      - name: Upload win artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: win
-          if-no-files-found: error
-          path: |
-            dist/*.exe
-            dist/latest*.yml
-            dist/*.blockmap
-
-  build-mac:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Cache npm dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Force install dmg-license (workaround)
-        run: npm install dmg-license --save-dev
-
-      - name: Install deps
-        run: npm install
-
-      - name: Build macOS (DMG + updater files)
-        run: npm run build -- --mac dmg --publish never
-
-      - name: Upload mac artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: mac
-          if-no-files-found: error
-          path: |
-            dist/*.dmg
-            dist/latest*.yml
-            dist/*.blockmap
-
-  release:
-    needs: [build-win, build-linux, build-mac]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download linux artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: linux
-          path: rel/linux
-
-      - name: Download win artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: win
-          path: rel/windows
-
-      - name: Download mac artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: mac
-          path: rel/mac
-
-      - name: Create draft release & upload all files
-        uses: softprops/action-gh-release@v2
-        with:
-          draft: true
-          name: geminidesk-${{ github.run_id }}-${{ github.run_attempt }}
-          tag_name: geminidesk-${{ github.run_id }}-${{ github.run_attempt }}
-          files: |
-            rel/windows/**
-            rel/linux/**
-            rel/mac/**
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  deploy-r2:
-    needs: [build-win, build-linux, build-mac]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download linux artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: linux
-          path: artifacts/linux
-
-      - name: Download win artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: win
-          path: artifacts/windows
-
-      - name: Download mac artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: mac
-          path: artifacts/mac
-
-      - name: Prepare and Rename Files
-        run: |
-          mkdir -p upload_stage
-          
-          # Windows
-          if ls artifacts/windows/*.exe 1> /dev/null 2>&1; then
-            cp artifacts/windows/*.exe upload_stage/GeminiDesk-Setup.exe
-          fi
-          
-          # macOS
-          if ls artifacts/mac/*.dmg 1> /dev/null 2>&1; then
-            cp artifacts/mac/*.dmg upload_stage/GeminiDesk.dmg
-          fi
-          
-          # Linux
-          if ls artifacts/linux/*.AppImage 1> /dev/null 2>&1; then
-            cp artifacts/linux/*.AppImage upload_stage/GeminiDesk.AppImage
-          fi
-          if ls artifacts/linux/*.deb 1> /dev/null 2>&1; then
-            cp artifacts/linux/*.deb upload_stage/GeminiDesk.deb
-          fi
-
-      - name: Upload to Cloudflare R2
+      - name: Rename and Upload to R2
+        if: success()
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.CF_R2_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.CF_R2_SECRET_KEY }}
@@ -210,11 +42,118 @@ jobs:
           R2_ENDPOINT: ${{ secrets.CF_R2_ENDPOINT }}
           R2_BUCKET: ${{ secrets.CF_R2_BUCKET }}
         run: |
-          aws s3 sync ./upload_stage s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT --no-progress
+          find dist -name "*.AppImage" -exec mv {} GeminiDesk.AppImage \;
+          find dist -name "*.deb" -exec mv {} GeminiDesk.deb \;
+          aws s3 cp GeminiDesk.AppImage s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT
+          aws s3 cp GeminiDesk.deb s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT
 
+  build-win:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~\AppData\Local\npm-cache
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - run: npm install
+      - run: npm run build -- --win --publish never
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: dist/*.exe
+      - name: Rename and Upload to R2
+        if: success()
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CF_R2_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CF_R2_SECRET_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ENDPOINT: ${{ secrets.CF_R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.CF_R2_BUCKET }}
+        run: |
+          find dist -name "*.exe" -exec mv {} GeminiDesk-Setup.exe \;
+          aws s3 cp GeminiDesk-Setup.exe s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT
+
+  build-mac-arm64:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - run: npm install dmg-license --save-dev
+      - run: npm install
+      - run: npm run build -- --mac dmg --publish never
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: dist/*.dmg
+      - name: Rename and Upload to R2
+        if: success()
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CF_R2_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CF_R2_SECRET_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ENDPOINT: ${{ secrets.CF_R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.CF_R2_BUCKET }}
+        run: |
+          find dist -name "*.dmg" -exec mv {} GeminiDesk-arm64.dmg \;
+          aws s3 cp GeminiDesk-arm64.dmg s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT
+
+  build-mac-intel:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - run: npm install dmg-license --save-dev
+      - run: npm install
+      - run: npm run build:mac-intel
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: dist/*.dmg
+      - name: Rename and Upload to R2
+        if: success()
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CF_R2_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CF_R2_SECRET_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ENDPOINT: ${{ secrets.CF_R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.CF_R2_BUCKET }}
+        run: |
+          find dist -name "*.dmg" -exec mv {} GeminiDesk-intel.dmg \;
+          aws s3 cp GeminiDesk-intel.dmg s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT
+
+  notify-telegram:
+    needs: [build-linux, build-win, build-mac-arm64, build-mac-intel]
+    runs-on: ubuntu-latest
+    steps:
       - name: Send download links to Telegram
         run: |
-          # הסרת לוכסן בסוף ה-URL אם קיים, כדי למנוע כפילות
           BASE_URL="${{ secrets.CF_R2_PUBLIC_DOMAIN }}"
           BASE_URL=${BASE_URL%/}
           
@@ -224,8 +163,11 @@ jobs:
           📦 <b>Windows:</b>
           BASE_URL_PLACEHOLDER/GeminiDesk-Setup.exe
           
-          🍎 <b>macOS:</b>
-          BASE_URL_PLACEHOLDER/GeminiDesk.dmg
+          🍎 <b>macOS ARM64:</b>
+          BASE_URL_PLACEHOLDER/GeminiDesk-arm64.dmg
+
+          🍎 <b>macOS Intel:</b>
+          BASE_URL_PLACEHOLDER/GeminiDesk-intel.dmg
           
           🐧 <b>Linux AppImage:</b>
           BASE_URL_PLACEHOLDER/GeminiDesk.AppImage
@@ -237,7 +179,6 @@ jobs:
           END_MESSAGE
           )
           
-          # החלפת ה-PLACEHOLDER בכתובת האמיתית
           MESSAGE="${MESSAGE//BASE_URL_PLACEHOLDER/${BASE_URL}}"
           
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
