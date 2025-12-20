@@ -10,6 +10,7 @@
   "scripts": {
     "start": "electron .",
     "build": "electron-builder",
+    "build:mac-intel": "electron-builder --mac --x64",
     "test": "jest"
   },
   "devDependencies": {

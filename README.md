@@ -218,6 +218,12 @@ Want to peek under the hood or forge your own version? We admire your courage.
     npm run build
     ```
 
+    ### <img src="https://img.shields.io/badge/-macOS-000000?style=flat&logo=apple&logoColor=white" height="20"> Building for Intel-based Macs
+    If you are on an Intel-based Mac or want to build for that architecture, run:
+    ```sh
+    npm run build:mac-intel
+    ```
+
 ---
 
 ## 🤝 Let's Build a Dynasty
