@@ -7630,6 +7630,7 @@ function createPieMenuWindow() {
             nodeIntegration: false
         }
     });
+    pieMenuWin.__internal = true;
 
     pieMenuWin.loadFile('html/pie-menu.html');
 
