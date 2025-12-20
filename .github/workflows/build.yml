@@ -10,7 +10,20 @@ permissions:
   contents: write
 
 jobs:
+  # 1. Job dedicated to creating the release first
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create Draft Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          prerelease: false
+          generate_release_notes: true
+
   build-linux:
+    needs: create-release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,13 +39,19 @@ jobs:
             ${{ runner.os }}-node-
       - run: npm install
       - run: npm run build -- --linux deb AppImage --publish never
+      
       - name: Upload to release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
+          draft: true
           files: |
             dist/*.AppImage
             dist/*.deb
+            dist/*.yml
+            dist/*.yaml
+            dist/*.blockmap
+
       - name: Rename and Upload to R2
         if: success()
         env:
@@ -48,6 +67,7 @@ jobs:
           aws s3 cp GeminiDesk.deb s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT
 
   build-win:
+    needs: create-release
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -63,13 +83,22 @@ jobs:
             ${{ runner.os }}-node-
       - run: npm install
       - run: npm run build -- --win --publish never
+      
       - name: Upload to release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: dist/*.exe
+          draft: true
+          files: |
+            dist/*.exe
+            dist/*.yml
+            dist/*.yaml
+            dist/*.blockmap
+
+      # Added 'shell: bash' to fix "find not found" and AWS variable issues
       - name: Rename and Upload to R2
         if: success()
+        shell: bash 
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.CF_R2_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.CF_R2_SECRET_KEY }}
@@ -81,6 +110,7 @@ jobs:
           aws s3 cp GeminiDesk-Setup.exe s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT
 
   build-mac-arm64:
+    needs: create-release
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -97,11 +127,18 @@ jobs:
       - run: npm install dmg-license --save-dev
       - run: npm install
       - run: npm run build -- --mac dmg --publish never
+      
       - name: Upload to release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: dist/*.dmg
+          draft: true
+          files: |
+            dist/*.dmg
+            dist/*.yml
+            dist/*.yaml
+            dist/*.blockmap
+
       - name: Rename and Upload to R2
         if: success()
         env:
@@ -115,6 +152,7 @@ jobs:
           aws s3 cp GeminiDesk-arm64.dmg s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT
 
   build-mac-intel:
+    needs: create-release
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -131,11 +169,18 @@ jobs:
       - run: npm install dmg-license --save-dev
       - run: npm install
       - run: npm run build:mac-intel
+      
       - name: Upload to release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: dist/*.dmg
+          draft: true
+          files: |
+            dist/*.dmg
+            dist/*.yml
+            dist/*.yaml
+            dist/*.blockmap
+
       - name: Rename and Upload to R2
         if: success()
         env:
@@ -151,6 +196,7 @@ jobs:
   notify-telegram:
     needs: [build-linux, build-win, build-mac-arm64, build-mac-intel]
     runs-on: ubuntu-latest
+    if: always()
     steps:
       - name: Send download links to Telegram
         run: |
