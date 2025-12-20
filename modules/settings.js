@@ -56,7 +56,8 @@ const defaultSettings = {
         refresh: isMac ? 'Command+R' : 'Alt+R',
         findInPage: isMac ? 'Command+F' : 'Control+F',
         closeWindow: isMac ? 'Command+W' : 'Alt+Q',
-        voiceAssistant: isMac ? 'Command+Shift+A' : 'Alt+Shift+A'
+        voiceAssistant: isMac ? 'Command+Shift+A' : 'Alt+Shift+A',
+        pieMenu: 'Alt+M'
     },
     lastUpdateCheck: 0,
     microphoneGranted: null,
