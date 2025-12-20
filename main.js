@@ -730,6 +730,37 @@ async function executeDefaultPrompt(view, promptContent, mode) {
 const { getSettings, saveSettings, defaultSettings, settingsPath } = settingsModule;
 let settings = getSettings();
 
+// Sanitize shortcuts on startup
+// This function checks for and corrects common shortcut conflicts that may exist
+// in a user's config file from older versions of the application.
+function sanitizeShortcutSettings() {
+    const isMac = process.platform === 'darwin';
+    const correctShowHide = isMac ? 'Command+G' : 'Alt+G';
+    const correctPieMenu = 'Alt+M';
+    let settingsModified = false;
+
+    // Conflict 1: pieMenu shortcut is incorrectly set to the show/hide shortcut's value.
+    if (settings.shortcuts.pieMenu === correctShowHide) {
+        settings.shortcuts.pieMenu = correctPieMenu;
+        settingsModified = true;
+        console.log('[Settings] Corrected conflicting Pie Menu shortcut to ' + correctPieMenu);
+    }
+
+    // Conflict 2: show/hide shortcut is incorrectly set to the pie menu shortcut's value.
+    if (settings.shortcuts.showHide === correctPieMenu) {
+        settings.shortcuts.showHide = correctShowHide;
+        settingsModified = true;
+        console.log('[Settings] Corrected conflicting Show/Hide shortcut to ' + correctShowHide);
+    }
+
+    if (settingsModified) {
+        console.log('[Settings] Saving corrected shortcut configuration.');
+        saveSettings(settings);
+    }
+}
+// Run the sanitization function as soon as settings are loaded.
+sanitizeShortcutSettings();
+
 // Helper function to apply invisibility mode (content protection) to a window
 // This hides the window from screen capture/sharing apps like Zoom, Teams, Discord
 // Also hides from taskbar/Alt+Tab when invisibility mode is enabled
