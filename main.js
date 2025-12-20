@@ -898,7 +898,13 @@ const { getAccountPartition, getCurrentAccountPartition, getAccounts, addAccount
 // Utility Functions (Using Module)
 // ================================================================= //
 
-const { forceOnTop, broadcastToAllWebContents, broadcastToWindows, reportErrorToServer, playAiCompletionSound, setupContextMenu } = utils;
+const { forceOnTop, broadcastToAllWebContents, broadcastToWindows, reportErrorToServer, playAiCompletionSound, setupContextMenu, debounce } = utils;
+
+// Debounced version of saveSettings to prevent race conditions with rapid updates
+const debouncedSaveSettings = debounce((settingsToSave) => {
+    saveSettings(settingsToSave);
+    console.log('Settings saved via debounce');
+}, 300);
 
 // ================================================================= //
 // Icon Path Helper
@@ -7154,7 +7160,7 @@ ipcMain.on('update-setting', (event, key, value) => {
     if (key === 'deepResearchEnabled' || key === 'deepResearchSchedule') {
         scheduleDeepResearchCheck(); // Restart schedule monitoring
     }
-    saveSettings(settings); // Save the updated global object
+    debouncedSaveSettings(settings); // Save the updated global object
     console.log(`Setting ${key} saved successfully`);
 
     // Apply settings immediately
