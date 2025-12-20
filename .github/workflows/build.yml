@@ -4,48 +4,59 @@ on:
   push:
     tags:
       - 'v*.*.*'
-  workflow_dispatch:
+  workflow_dispatch: # מאפשר הרצה ידנית
 
 permissions:
   contents: write
 
 jobs:
-  # 1. Job dedicated to creating the release first
+  # 1. יצירת הריליס הראשוני כ-Draft
   create-release:
     runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.set_tag.outputs.TAG }} # מוציא את שם התג לשימוש שאר הג'ובים
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Set dynamic tag name
+        id: set_tag
+        shell: bash
+        # אם הופעל ע"י Tag - משתמש ב-Tag. אם ידנית - יוצר תג לפי מספר הריצה.
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            echo "TAG=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "TAG=draft-build-${{ github.run_number }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create Draft Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.set_tag.outputs.TAG }}
           draft: true
           prerelease: false
           generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-linux:
     needs: create-release
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # הוספת ה-Token לפתרון שגיאת הפרסום
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Cache npm dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
       - run: npm install
       - run: npm run build -- --linux deb AppImage --publish never
       
       - name: Upload to release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
         with:
+          tag_name: ${{ needs.create-release.outputs.tag_name }}
+          draft: true
           files: |
             dist/*.AppImage
             dist/*.deb
@@ -71,26 +82,20 @@ jobs:
     needs: create-release
     runs-on: windows-latest
     env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # הוספת ה-Token
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Cache npm dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~\AppData\Local\npm-cache
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
       - run: npm install
       - run: npm run build -- --win --publish never
       
       - name: Upload to release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
         with:
+          tag_name: ${{ needs.create-release.outputs.tag_name }}
+          draft: true
           files: |
             dist/*.exe
             dist/*.yml
@@ -114,27 +119,21 @@ jobs:
     needs: create-release
     runs-on: macos-latest
     env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # הוספת ה-Token
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Cache npm dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
       - run: npm install dmg-license --save-dev
       - run: npm install
       - run: npm run build -- --mac dmg --publish never
       
       - name: Upload to release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
         with:
+          tag_name: ${{ needs.create-release.outputs.tag_name }}
+          draft: true
           files: |
             dist/*.dmg
             dist/*.yml
@@ -157,27 +156,21 @@ jobs:
     needs: create-release
     runs-on: macos-latest
     env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # הוספת ה-Token
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Cache npm dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
       - run: npm install dmg-license --save-dev
       - run: npm install
       - run: npm run build:mac-intel
       
       - name: Upload to release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
         with:
+          tag_name: ${{ needs.create-release.outputs.tag_name }}
+          draft: true
           files: |
             dist/*.dmg
             dist/*.yml
@@ -197,7 +190,7 @@ jobs:
           aws s3 cp GeminiDesk-intel.dmg s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT
 
   notify-telegram:
-    needs: [build-linux, build-win, build-mac-arm64, build-mac-intel]
+    needs: [create-release, build-linux, build-win, build-mac-arm64, build-mac-intel]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -224,7 +217,7 @@ jobs:
           🐧 <b>Linux DEB:</b>
           BASE_URL_PLACEHOLDER/GeminiDesk.deb
           
-          <i>(Links point to the latest build)</i>
+          <i>(Build: ${{ needs.create-release.outputs.tag_name }})</i>
           END_MESSAGE
           )
           
