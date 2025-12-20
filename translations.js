@@ -236,7 +236,9 @@ const translations = {
         "defaultPrompt-desc": "No default prompt set.",
         "screenshotSettings": "Screenshot Settings",
         "autoScreenshotFullScreen-label": "Auto Full-Screen Screenshot",
-        "autoScreenshotFullScreen-desc": "Capture entire screen automatically instead of selecting an area. Faster workflow for visual tasks."
+        "autoScreenshotFullScreen-desc": "Capture entire screen automatically instead of selecting an area. Faster workflow for visual tasks.",
+        "pieMenu-label": "Pie Menu",
+        "pieMenu-desc": "Open the quick access menu."
     },
     "fr": {
         "settings-title": "Paramètres",
@@ -472,7 +474,9 @@ const translations = {
         "defaultPrompt-desc": "Aucun prompt par défaut défini.",
         "screenshotSettings": "Paramètres de Capture d'Écran",
         "autoScreenshotFullScreen-label": "Capture Plein Écran Auto",
-        "autoScreenshotFullScreen-desc": "Capturer tout l'écran automatiquement au lieu de sélectionner une zone. Flux de travail plus rapide pour les tâches visuelles."
+        "autoScreenshotFullScreen-desc": "Capturer tout l'écran automatiquement au lieu de sélectionner une zone. Flux de travail plus rapide pour les tâches visuelles.",
+        "pieMenu-label": "Menu Pie",
+        "pieMenu-desc": "Ouvrir le menu d'accès rapide."
     },
     "he": {
         "settings-title": "הגדרות",
@@ -710,7 +714,9 @@ const translations = {
         "defaultPrompt-desc": "לא הוגדר פרומפט ברירת מחדל.",
         "screenshotSettings": "הגדרות צילום מסך",
         "autoScreenshotFullScreen-label": "צילום מסך מלא אוטומטי",
-        "autoScreenshotFullScreen-desc": "צלם את כל המסך אוטומטית במקום לבחור אזור. זרימת עבודה מהירה יותר למשימות ויזואליות."
+        "autoScreenshotFullScreen-desc": "צלם את כל המסך אוטומטית במקום לבחור אזור. זרימת עבודה מהירה יותר למשימות ויזואליות.",
+        "pieMenu-label": "תפריט עוגה",
+        "pieMenu-desc": "פתיחת תפריט הגישה המהירה."
     },
     "ru": {
         "settings-title": "Настройки",
@@ -942,7 +948,9 @@ const translations = {
         "defaultPrompt-desc": "Промпт по умолчанию не установлен.",
         "screenshotSettings": "Настройки скриншотов",
         "autoScreenshotFullScreen-label": "Авто-скриншот всего экрана",
-        "autoScreenshotFullScreen-desc": "Захватывать весь экран автоматически вместо выбора области. Ускоряет работу с визуальными задачами."
+        "autoScreenshotFullScreen-desc": "Захватывать весь экран автоматически вместо выбора области. Ускоряет работу с визуальными задачами.",
+        "pieMenu-label": "Круговое меню",
+        "pieMenu-desc": "Открыть меню быстрого доступа."
     },
     "es": {
         "settings-title": "Configuración",

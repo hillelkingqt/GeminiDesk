@@ -1,0 +1,120 @@
+body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    user-select: none;
+}
+
+.pie-menu {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+}
+
+/* Center Button (Min/Max) */
+.center-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    background: rgba(40, 40, 40, 0.9);
+    border-radius: 50%;
+    z-index: 10;
+    cursor: pointer;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.center-btn:hover {
+    background: rgba(60, 60, 60, 0.95);
+    transform: translate(-50%, -50%) scale(1.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.icon-min-max {
+    width: 20px;
+    height: 20px;
+    border: 2px solid white;
+    border-radius: 4px;
+}
+
+/* Unified Segment Bubble */
+.segment-bubble {
+    position: absolute;
+    /* Position is handled by JS translate() */
+    width: 90px;
+    height: 90px;
+    box-sizing: border-box;
+    /* Ensure padding doesn't increase size */
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: white;
+    font-weight: 600;
+    font-size: 13px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    z-index: 5;
+
+    /* Default Background */
+    background: rgba(30, 30, 30, 0.9);
+
+    /* Center on wrapper */
+    transform: translate(-50%, -50%);
+}
+
+.segment-bubble:hover {
+    transform: translate(-50%, -50%) scale(1.15);
+    background: rgba(50, 50, 50, 1);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+    z-index: 20;
+}
+
+/* Specific Styles */
+/* User Request: Fast=Green, Thinking=Yellow, Pro=Red */
+.bubble-flash {
+    border-bottom: 3px solid #81c995;
+    /* Green */
+}
+
+.bubble-thinking {
+    border-bottom: 3px solid #fdd663;
+    /* Yellow */
+}
+
+.bubble-pro {
+    border-bottom: 3px solid #f28b82;
+    /* Red */
+}
+
+.segment-bubble.custom {
+    background: rgba(40, 44, 52, 0.95);
+    font-size: 11px;
+    /* Smaller text for custom prompts */
+    padding: 10px;
+    word-wrap: break-word;
+}
+
+.segment-bubble.custom:hover {
+    background: #3b82f6;
+    border-bottom: none;
+}

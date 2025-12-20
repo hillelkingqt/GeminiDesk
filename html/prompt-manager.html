@@ -42,7 +42,8 @@
             --item-hover-bg: #e8eaed;
         }
 
-        html, body {
+        html,
+        body {
             margin: 0;
             padding: 0;
             width: 100%;
@@ -409,15 +410,15 @@
 
     <div class="content">
         <p class="description">
-            Create custom prompts that automatically send when you start a new chat. 
+            Create custom prompts that automatically send when you start a new chat.
             Set one as default to have it sent automatically every time you open a new conversation.
         </p>
-        
+
         <div class="header-actions">
             <span id="prompt-count"></span>
             <button class="add-button" id="add-prompt-btn">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                 </svg>
                 Add Prompt
             </button>
@@ -429,7 +430,8 @@
 
         <div id="empty-state" class="empty-state" style="display: none;">
             <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                <path
+                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
             </svg>
             <h3>No Prompts Yet</h3>
             <p>Add your first custom prompt to get started.</p>
@@ -453,6 +455,12 @@
                     <label class="checkbox-label">
                         <input type="checkbox" id="prompt-default">
                         <span>Set as default (auto-send on new chat)</span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="prompt-show-in-menu">
+                        <span>Show in Pie Menu</span>
                     </label>
                 </div>
                 <div class="modal-actions">
@@ -480,6 +488,7 @@
             const promptNameInput = document.getElementById('prompt-name');
             const promptContentInput = document.getElementById('prompt-content');
             const promptDefaultCheckbox = document.getElementById('prompt-default');
+            const promptShowInMenuCheckbox = document.getElementById('prompt-show-in-menu');
             const addPromptBtn = document.getElementById('add-prompt-btn');
             const cancelBtn = document.getElementById('cancel-btn');
             const closeBtn = document.getElementById('close-button');
@@ -498,7 +507,7 @@
             // Render prompts list
             function renderPrompts() {
                 if (!promptList || !emptyState || !promptCount) return;
-                
+
                 if (prompts.length === 0) {
                     promptList.style.display = 'none';
                     emptyState.style.display = 'block';
@@ -516,6 +525,7 @@
                             <div class="prompt-name">
                                 ${escapeHtml(prompt.name)}
                                 ${prompt.isDefault ? '<span class="default-badge">Default</span>' : ''}
+                                ${prompt.showInPieMenu ? '<span class="default-badge" style="background:#8ab4f8; margin-left:4px;">In Menu</span>' : ''}
                             </div>
                             <div class="prompt-actions">
                                 ${!prompt.isDefault ? `<button class="action-btn default-btn" onclick="setDefault('${prompt.id}')">Set Default</button>` : `<button class="action-btn" onclick="clearDefault()">Clear Default</button>`}
@@ -556,7 +566,7 @@
             }
 
             // Edit prompt
-            window.editPrompt = function(id) {
+            window.editPrompt = function (id) {
                 const prompt = prompts.find(p => p.id === id);
                 if (!prompt) return;
 
@@ -564,11 +574,12 @@
                 if (promptNameInput) promptNameInput.value = prompt.name;
                 if (promptContentInput) promptContentInput.value = prompt.content;
                 if (promptDefaultCheckbox) promptDefaultCheckbox.checked = prompt.isDefault;
+                if (promptShowInMenuCheckbox) promptShowInMenuCheckbox.checked = prompt.showInPieMenu || false;
                 showModal(true);
             };
 
             // Delete prompt
-            window.deletePrompt = async function(id) {
+            window.deletePrompt = async function (id) {
                 if (confirm('Are you sure you want to delete this prompt?')) {
                     if (electronAPI) await electronAPI.deleteCustomPrompt(id);
                     await loadPrompts();
@@ -576,13 +587,13 @@
             };
 
             // Set as default
-            window.setDefault = async function(id) {
+            window.setDefault = async function (id) {
                 if (electronAPI) await electronAPI.setDefaultPrompt(id);
                 await loadPrompts();
             };
 
             // Clear default
-            window.clearDefault = async function() {
+            window.clearDefault = async function () {
                 if (electronAPI) await electronAPI.setDefaultPrompt(null);
                 await loadPrompts();
             };
@@ -595,7 +606,8 @@
                     const promptData = {
                         name: promptNameInput.value.trim(),
                         content: promptContentInput.value.trim(),
-                        isDefault: promptDefaultCheckbox.checked
+                        isDefault: promptDefaultCheckbox.checked,
+                        showInPieMenu: promptShowInMenuCheckbox.checked
                     };
 
                     if (electronAPI) {

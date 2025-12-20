@@ -868,7 +868,8 @@
                 <span data-i18n="general">General</span>
             </h3>
             <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="appVersion-label">App Version</strong><span id="app-version-display">Loading...</span></div>
+                <div class="setting-label"><strong data-i18n="appVersion-label">App Version</strong><span
+                        id="app-version-display">Loading...</span></div>
             </div>
             <div class="setting-item">
                 <div class="setting-label"><strong data-i18n="language-label">Language</strong><span
@@ -1016,8 +1017,10 @@
                         class="slider"></span></label>
             </div>
             <div class="setting-item">
-                <div class="setting-label"><strong>Show Mode Toggle Button</strong><span>Display the Gemini / AI Studio mode switch.</span></div>
-                <label class="toggle-switch"><input type="checkbox" id="setting-showModeToggleButton"><span class="slider"></span></label>
+                <div class="setting-label"><strong>Show Mode Toggle Button</strong><span>Display the Gemini / AI Studio
+                        mode switch.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-showModeToggleButton"><span
+                        class="slider"></span></label>
             </div>
             <div class="setting-item" id="export-button-setting">
                 <div class="setting-label"><strong data-i18n="showExportButton-label">Show Export Button</strong><span
@@ -1252,10 +1255,12 @@
                 </div>
             </div>
             <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="changeModelThinking-label">Change Model (Thinking)</strong><span
-                        data-i18n="changeModelThinking-desc">Changes the current chat to Thinking model.</span></div>
+                <div class="setting-label"><strong data-i18n="changeModelThinking-label">Change Model
+                        (Thinking)</strong><span data-i18n="changeModelThinking-desc">Changes the current chat to
+                        Thinking model.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="record-button" data-key="changeModelThinking" data-i18n="recordButton-default">Click to
+                    <button class="record-button" data-key="changeModelThinking" data-i18n="recordButton-default">Click
+                        to
                         record</button>
                     <label class="toggle-switch shortcut-global-toggle" data-key="changeModelThinking"
                         style="display: none;">
@@ -1291,10 +1296,12 @@
                 </div>
             </div>
             <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="newChatWithThinking-label">New Chat with Thinking</strong><span
-                        data-i18n="newChatWithThinking-desc">Opens a new chat and selects the Thinking model.</span></div>
+                <div class="setting-label"><strong data-i18n="newChatWithThinking-label">New Chat with
+                        Thinking</strong><span data-i18n="newChatWithThinking-desc">Opens a new chat and selects the
+                        Thinking model.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="record-button" data-key="newChatWithThinking" data-i18n="recordButton-default">Click to
+                    <button class="record-button" data-key="newChatWithThinking" data-i18n="recordButton-default">Click
+                        to
                         record</button>
                     <label class="toggle-switch shortcut-global-toggle" data-key="newChatWithThinking"
                         style="display: none;">
@@ -1310,6 +1317,21 @@
                     <button class="record-button" data-key="voiceAssistant" data-i18n="recordButton-default">Click to
                         record</button>
                     <label class="toggle-switch shortcut-global-toggle" data-key="voiceAssistant"
+                        style="display: none;">
+                        <input type="checkbox" class="shortcut-global-checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <strong data-i18n="pieMenu-label">Pie Menu</strong>
+                    <span data-i18n="pieMenu-desc">Open the quick access menu</span>
+                </div>
+                <!-- Controls wrapper to match other shortcuts -->
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="record-button" data-key="pieMenu">Alt+M</button>
+                    <label class="toggle-switch shortcut-global-toggle" data-key="pieMenu" title="Toggle Global/Local"
                         style="display: none;">
                         <input type="checkbox" class="shortcut-global-checkbox">
                         <span class="slider"></span>
@@ -1393,976 +1415,979 @@
             <div class="setting-item">
                 <div class="setting-label">
                     <strong data-i18n="openFileAfterExport-label">Open File After Export</strong>
-                    <span data-i18n="openFileAfterExport-desc">Automatically open the exported file after saving.</span>
+                    <label class="toggle-switch"><input type="checkbox" id="setting-openFileAfterExport"><span
+                            class="slider"></span></label>
                 </div>
-                <label class="toggle-switch"><input type="checkbox" id="setting-openFileAfterExport"><span
-                        class="slider"></span></label>
+
+            </div>
+            <div class="setting-category">
+                <h3 class="setting-category-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+                    </svg>
+                    <span data-i18n="proxySettings">Proxy Settings</span>
+                </h3>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <strong data-i18n="proxyEnabled-label">Enable Proxy</strong>
+                        <span data-i18n="proxyEnabled-desc">Use a proxy server to connect to Gemini and AI
+                            Studio.</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="setting-proxyEnabled">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item" id="proxy-url-setting">
+                    <div class="setting-label">
+                        <strong data-i18n="proxyUrl-label">Proxy URL</strong>
+                        <span data-i18n="proxyUrl-desc">Enter proxy address (e.g., http://127.0.0.1:7890 or
+                            socks5://127.0.0.1:1080)</span>
+                    </div>
+                    <input type="text" id="setting-proxyUrl" class="text-input" placeholder="http://127.0.0.1:7890"
+                        style="width: 250px;">
+                </div>
+            </div>
+            <div class="setting-category">
+                <h3 class="setting-category-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z" />
+                    </svg>
+                    <span data-i18n="feedback">Feedback</span>
+                </h3>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <strong data-i18n="shareIdeas-label">Share Ideas with Creator</strong>
+                        <span data-i18n="shareIdeas-desc">Suggest new features or improvements for GeminiDesk.</span>
+                    </div>
+                    <button id="open-share-ideas" class="action-button" data-i18n="shareIdeasButton">Share
+                        Ideas</button>
+                </div>
+            </div>
+            <div class="setting-category">
+                <h3 class="setting-category-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                    <span data-i18n="deepResearchSchedule">Deep Research Schedule</span>
+                </h3>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <strong data-i18n="scheduleEnabled-label">Enable Deep Research Automation</strong>
+                        <span data-i18n="scheduleEnabled-desc">Automatically run deep research at scheduled
+                            times.</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="setting-deepResearchEnabled">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <strong data-i18n="manageSchedule-label">Manage Schedule</strong>
+                        <span data-i18n="manageSchedule-desc">Configure when and how deep research runs.</span>
+                    </div>
+                    <button id="open-schedule-manager" class="action-button" data-i18n="openScheduleManager">Manage
+                        Schedule</button>
+                </div>
+            </div>
+
+            <!-- Prompt Manager Section -->
+            <div class="setting-category">
+                <h3 class="setting-category-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+                    </svg>
+                    <span data-i18n="promptManager">Prompt Manager</span>
+                </h3>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <strong data-i18n="promptManager-label">Custom Prompts</strong>
+                        <span data-i18n="promptManager-desc">Create prompts that automatically send when you start a new
+                            chat.</span>
+                    </div>
+                    <button id="open-prompt-manager" class="action-button" data-i18n="managePrompts">Manage
+                        Prompts</button>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <strong data-i18n="defaultPrompt-label">Default Prompt Status</strong>
+                        <span id="default-prompt-status" data-i18n="defaultPrompt-desc">No default prompt set.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screenshot Settings Section -->
+            <div class="setting-category">
+                <h3 class="setting-category-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M21 3H3C2 3 1 4 1 5v14c0 1.1.9 2 2 2h18c1 0 2-1 2-2V5c0-1-1-2-2-2zM5 17l3.5-4.5 2.5 3.01L14.5 11l4.5 6H5z" />
+                    </svg>
+                    <span data-i18n="screenshotSettings">Screenshot Settings</span>
+                </h3>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <strong data-i18n="autoScreenshotFullScreen-label">Auto Full-Screen Screenshot</strong>
+                        <span data-i18n="autoScreenshotFullScreen-desc">Capture entire screen automatically instead of
+                            selecting an area. Faster workflow for visual tasks.</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="setting-autoScreenshotFullScreen">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="setting-category">
+                <h3 class="setting-category-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z" />
+                    </svg>
+                    <span data-i18n="assistantApi">Assistant</span>
+                </h3>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <strong data-i18n="openVoiceAssistant-label">Open Voice Assistant</strong>
+                        <span data-i18n="openVoiceAssistant-desc">Launch the conversational assistant.</span>
+                    </div>
+                    <button id="open-voice-assistant" class="action-button" data-i18n="open">Open</button>
+                </div>
+            </div>
+
+            <div class="setting-category">
+                <h3 class="setting-category-title" style="color: var(--danger-color);">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z">
+                        </path>
+                    </svg>
+                    <span data-i18n="dangerZone">Danger Zone</span>
+                </h3>
+                <div class="setting-item">
+                    <div class="setting-label"><strong data-i18n="resetSettings-label">Reset All Settings</strong><span
+                            data-i18n="resetSettings-desc">This action cannot be undone.</span></div>
+                    <button id="reset-button" data-i18n="reset">Reset</button>
+                </div>
             </div>
         </div>
-        <div class="setting-category">
-            <h3 class="setting-category-title">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path
-                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
-                </svg>
-                <span data-i18n="proxy">Proxy</span>
-            </h3>
-            <div class="setting-item">
-                <div class="setting-label">
-                    <strong data-i18n="proxyEnabled-label">Enable Proxy</strong>
-                    <span data-i18n="proxyEnabled-desc">Use a proxy server to connect to Gemini and AI Studio.</span>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="setting-proxyEnabled">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="setting-item" id="proxy-url-setting">
-                <div class="setting-label">
-                    <strong data-i18n="proxyUrl-label">Proxy URL</strong>
-                    <span data-i18n="proxyUrl-desc">Enter proxy address (e.g., http://127.0.0.1:7890 or
-                        socks5://127.0.0.1:1080)</span>
-                </div>
-                <input type="text" id="setting-proxyUrl" class="text-input" placeholder="http://127.0.0.1:7890"
-                    style="width: 250px;">
-            </div>
-        </div>
-        <div class="setting-category">
-            <h3 class="setting-category-title">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path
-                        d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z" />
-                </svg>
-                <span data-i18n="feedback">Feedback</span>
-            </h3>
-            <div class="setting-item">
-                <div class="setting-label">
-                    <strong data-i18n="shareIdeas-label">Share Ideas with Creator</strong>
-                    <span data-i18n="shareIdeas-desc">Suggest new features or improvements for GeminiDesk.</span>
-                </div>
-                <button id="open-share-ideas" class="action-button" data-i18n="shareIdeasButton">Share Ideas</button>
-            </div>
-        </div>
-        <div class="setting-category">
-            <h3 class="setting-category-title">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path
-                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-                <span data-i18n="deepResearchSchedule">Deep Research Schedule</span>
-            </h3>
-            <div class="setting-item">
-                <div class="setting-label">
-                    <strong data-i18n="scheduleEnabled-label">Enable Deep Research Automation</strong>
-                    <span data-i18n="scheduleEnabled-desc">Automatically run deep research at scheduled times.</span>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="setting-deepResearchEnabled">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="setting-item">
-                <div class="setting-label">
-                    <strong data-i18n="manageSchedule-label">Manage Schedule</strong>
-                    <span data-i18n="manageSchedule-desc">Configure when and how deep research runs.</span>
-                </div>
-                <button id="open-schedule-manager" class="action-button" data-i18n="openScheduleManager">Manage
-                    Schedule</button>
-            </div>
-        </div>
 
-        <!-- Prompt Manager Section -->
-        <div class="setting-category">
-            <h3 class="setting-category-title">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path
-                        d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
-                </svg>
-                <span data-i18n="promptManager">Prompt Manager</span>
-            </h3>
-            <div class="setting-item">
-                <div class="setting-label">
-                    <strong data-i18n="promptManager-label">Custom Prompts</strong>
-                    <span data-i18n="promptManager-desc">Create prompts that automatically send when you start a new
-                        chat.</span>
-                </div>
-                <button id="open-prompt-manager" class="action-button" data-i18n="managePrompts">Manage Prompts</button>
-            </div>
-            <div class="setting-item">
-                <div class="setting-label">
-                    <strong data-i18n="defaultPrompt-label">Default Prompt Status</strong>
-                    <span id="default-prompt-status" data-i18n="defaultPrompt-desc">No default prompt set.</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Screenshot Settings Section -->
-        <div class="setting-category">
-            <h3 class="setting-category-title">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path
-                        d="M21 3H3C2 3 1 4 1 5v14c0 1.1.9 2 2 2h18c1 0 2-1 2-2V5c0-1-1-2-2-2zM5 17l3.5-4.5 2.5 3.01L14.5 11l4.5 6H5z" />
-                </svg>
-                <span data-i18n="screenshotSettings">Screenshot Settings</span>
-            </h3>
-            <div class="setting-item">
-                <div class="setting-label">
-                    <strong data-i18n="autoScreenshotFullScreen-label">Auto Full-Screen Screenshot</strong>
-                    <span data-i18n="autoScreenshotFullScreen-desc">Capture entire screen automatically instead of
-                        selecting an area. Faster workflow for visual tasks.</span>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="setting-autoScreenshotFullScreen">
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
-
-        <div class="setting-category">
-            <h3 class="setting-category-title">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path
-                        d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z" />
-                </svg>
-                <span data-i18n="assistantApi">Assistant</span>
-            </h3>
-            <div class="setting-item">
-                <div class="setting-label">
-                    <strong data-i18n="openVoiceAssistant-label">Open Voice Assistant</strong>
-                    <span data-i18n="openVoiceAssistant-desc">Launch the conversational assistant.</span>
-                </div>
-                <button id="open-voice-assistant" class="action-button" data-i18n="open">Open</button>
-            </div>
-        </div>
-
-        <div class="setting-category">
-            <h3 class="setting-category-title" style="color: var(--danger-color);">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path
-                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z">
-                    </path>
-                </svg>
-                <span data-i18n="dangerZone">Danger Zone</span>
-            </h3>
-            <div class="setting-item">
-                <div class="setting-label"><strong data-i18n="resetSettings-label">Reset All Settings</strong><span
-                        data-i18n="resetSettings-desc">This action cannot be undone.</span></div>
-                <button id="reset-button" data-i18n="reset">Reset</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="../translations.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Check if electronAPI exists (for Electron environment)
-            if (!window.electronAPI) {
-                console.warn('electronAPI not available - running in browser mode');
-                // Initialize with default values for testing
-                initializeBrowserMode();
-                return;
-            }
-
-            const electronAPI = window.electronAPI;
-
-            let currentLanguage = 'en';
-            let currentSettings = {};
-
-            // RTL languages list
-            const rtlLanguages = ['he', 'ar', 'fa', 'ur'];
-
-            const applyTranslations = (lang) => {
-                const dict = translations[lang] || translations.en;
-                document.querySelectorAll('[data-i18n]').forEach(el => {
-                    const key = el.getAttribute('data-i18n');
-                    if (dict[key]) {
-                        el.textContent = dict[key];
-                    }
-                });
-                document.querySelectorAll('.record-button').forEach(button => {
-                    const key = button.dataset.key;
-                    if (currentSettings.shortcuts && currentSettings.shortcuts[key]) {
-                        button.textContent = currentSettings.shortcuts[key];
-                    } else {
-                        button.textContent = dict['recordButton-default'];
-                    }
-                });
-                currentLanguage = lang;
-                document.documentElement.setAttribute('lang', lang);
-
-                // Set direction based on language
-                const isRTL = rtlLanguages.includes(lang);
-                document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
-
-                // Show/hide English-only features
-                const englishOnlyFeatures = document.querySelectorAll('.english-only-feature');
-                if (lang === 'en') {
-                    englishOnlyFeatures.forEach(feature => feature.style.display = 'flex');
-                } else {
-                    englishOnlyFeatures.forEach(feature => feature.style.display = 'none');
+        <script src="../translations.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                // Check if electronAPI exists (for Electron environment)
+                if (!window.electronAPI) {
+                    console.warn('electronAPI not available - running in browser mode');
+                    // Initialize with default values for testing
+                    initializeBrowserMode();
+                    return;
                 }
 
-                updateLangSelectorUI(lang);
-            };
+                const electronAPI = window.electronAPI;
 
-            // --- Custom Language Selector Logic ---
-            const languageSelector = document.querySelector('.language-selector');
-            const langButton = document.getElementById('language-selector-button');
-            const langDropdown = document.getElementById('language-dropdown');
-            const langSearch = document.getElementById('language-search-input');
-            const langList = document.getElementById('language-list');
+                let currentLanguage = 'en';
+                let currentSettings = {};
 
-            const languages = [
-                { code: 'en', name: 'English' }, { code: 'fr', name: 'Français' }, { code: 'he', name: 'עברית' },
-                { code: 'ru', name: 'Русский' }, { code: 'es', name: 'Español' }, { code: 'de', name: 'Deutsch' },
-                { code: 'it', name: 'Italiano' }, { code: 'pt', name: 'Português' }, { code: 'nl', name: 'Nederlands' },
-                { code: 'pl', name: 'Polski' }, { code: 'tr', name: 'Türkçe' }, { code: 'zh', name: '简体中文' },
-                { code: 'zh-tw', name: '繁體中文' },
-                { code: 'ja', name: '日本語' }, { code: 'ko', name: '한국어' }, { code: 'hi', name: 'हिन्दी' },
-                { code: 'ar', name: 'العربية' }, { code: 'bn', name: 'বাংলা' }, { code: 'id', name: 'Bahasa Indonesia' },
-                { code: 'ur', name: 'اردو' }, { code: 'sw', name: 'Kiswahili' }, { code: 'ta', name: 'தமிழ்' },
-                { code: 'vi', name: 'Tiếng Việt' }, { code: 'th', name: 'ไทย' }, { code: 'cs', name: 'Čeština' },
-            ];
+                // RTL languages list
+                const rtlLanguages = ['he', 'ar', 'fa', 'ur'];
 
-            languages.forEach(lang => {
-                const li = document.createElement('li');
-                li.dataset.lang = lang.code;
-                li.textContent = lang.name;
-                langList.appendChild(li);
-            });
-
-            langButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const isOpen = langDropdown.classList.contains('show');
-                langDropdown.classList.toggle('show');
-                langButton.classList.toggle('open', !isOpen);
-
-                if (!isOpen) {
-                    langSearch.focus();
-                    langSearch.value = '';
-                    langList.querySelectorAll('li').forEach(li => li.classList.remove('hidden'));
-                }
-            });
-
-            langSearch.addEventListener('input', () => {
-                const filter = langSearch.value.toLowerCase();
-                langList.querySelectorAll('li').forEach(li => {
-                    const text = li.textContent.toLowerCase();
-                    li.classList.toggle('hidden', !text.includes(filter));
-                });
-            });
-
-            langList.addEventListener('click', (e) => {
-                if (e.target.tagName === 'LI') {
-                    const langCode = e.target.dataset.lang;
-                    langDropdown.classList.remove('show');
-                    langButton.classList.remove('open');
-                    applyTranslations(langCode);
-                    electronAPI.updateSetting('language', langCode);
-                }
-            });
-
-            document.addEventListener('click', (e) => {
-                if (!languageSelector.contains(e.target)) {
-                    langDropdown.classList.remove('show');
-                    langButton.classList.remove('open');
-                }
-            });
-
-            const updateLangSelectorUI = (langCode) => {
-                const lang = languages.find(l => l.code === langCode) || languages[0];
-                langButton.querySelector('span').textContent = lang.name;
-                langList.querySelectorAll('li').forEach(li => {
-                    li.classList.toggle('selected', li.dataset.lang === langCode);
-                });
-            };
-
-
-            // --- Theme Selection --- 
-            const themeRadios = document.querySelectorAll('input[name="theme"]');
-            electronAPI.theme.getSetting().then(currentTheme => {
-                document.getElementById(`theme-${currentTheme}`).checked = true;
-            });
-            document.querySelectorAll('input[name="defaultMode"]').forEach(radio => {
-                radio.addEventListener('change', (e) => {
-                    electronAPI.updateSetting('defaultMode', e.target.value);
-                });
-            });
-            themeRadios.forEach(radio => {
-                radio.addEventListener('change', (e) => {
-                    electronAPI.theme.set(e.target.value);
-                });
-            });
-
-            // --- Sync UI with settings ---
-
-            // Helper function to attach event listeners for per-key global toggles
-            const attachToggleListeners = () => {
-                const checkboxes = document.querySelectorAll('.shortcut-global-checkbox');
-                console.log('🔧 [SETTINGS] Attaching toggle listeners to', checkboxes.length, 'checkboxes');
-
-                checkboxes.forEach(checkbox => {
-                    // Remove old listener if exists
-                    if (checkbox._changeHandler) {
-                        checkbox.removeEventListener('change', checkbox._changeHandler);
-                    }
-
-                    // Create new handler for each checkbox
-                    const handleChange = (e) => {
-                        const toggle = e.target.closest('.shortcut-global-toggle');
-                        const key = toggle ? toggle.dataset.key : null;
-                        if (key) {
-                            const isGlobal = e.target.checked;
-                            console.log('🎛️ [SETTINGS] Toggle changed for', key, '- Global:', isGlobal);
-
-                            // Update the settings object with the new per-key global state
-                            if (!currentSettings.shortcutsGlobalPerKey) {
-                                currentSettings.shortcutsGlobalPerKey = {};
-                            }
-                            currentSettings.shortcutsGlobalPerKey[key] = isGlobal;
-
-                            // Save the entire shortcutsGlobalPerKey object
-                            electronAPI.updateSetting('shortcutsGlobalPerKey', currentSettings.shortcutsGlobalPerKey);
-                        }
-                    };
-
-                    // Store the handler on the element for future removal
-                    checkbox._changeHandler = handleChange;
-
-                    // Add the new listener
-                    checkbox.addEventListener('change', handleChange);
-                });
-
-                console.log('✅ [SETTINGS] Toggle listeners attached successfully');
-            };
-
-            const syncUi = (settings) => {
-                try {
-                    currentSettings = settings;
-                    document.getElementById('setting-deepResearchEnabled').checked = settings.deepResearchEnabled || false;
-                    document.getElementById('setting-autoStart').checked = settings.autoStart || false;
-                    document.getElementById('setting-showInTaskbar').checked = settings.showInTaskbar || false;
-                    document.getElementById('setting-alwaysOnTop').checked = settings.alwaysOnTop || false;
-                    document.getElementById('setting-autoCheckNotifications').checked = settings.autoCheckNotifications || false;
-                    document.getElementById('setting-disableAutoUpdateCheck').checked = settings.disableAutoUpdateCheck || false;
-                    document.getElementById('setting-autoInstallUpdates').checked = settings.autoInstallUpdates !== false;
-                    document.getElementById('setting-enableCanvasResizing').checked = settings.enableCanvasResizing || false;
-                    document.getElementById('setting-disableSpellcheck').checked = settings.disableSpellcheck || false;
-                    document.getElementById('setting-invisibilityMode').checked = settings.invisibilityMode || false;
-
-                    // Gray out "Show in Taskbar" when invisibility mode is enabled
-                    const showInTaskbarSetting = document.getElementById('showInTaskbar-setting');
-                    const showInTaskbarCheckbox = document.getElementById('setting-showInTaskbar');
-                    if (showInTaskbarSetting && showInTaskbarCheckbox) {
-                        showInTaskbarSetting.style.opacity = settings.invisibilityMode ? '0.5' : '1';
-                        showInTaskbarCheckbox.disabled = settings.invisibilityMode || false;
-                    }
-
-                    // Load unpacked extension setting (English-only)
-                    const loadExtEl = document.getElementById('setting-loadUnpackedExtension');
-                    if (loadExtEl) loadExtEl.checked = !!settings.loadUnpackedExtension;
-
-                    // AI Studio RTL setting
-                    const aiStudioRtlEl = document.getElementById('setting-aiStudioRtlEnabled');
-                    if (aiStudioRtlEl) aiStudioRtlEl.checked = !!settings.aiStudioRtlEnabled;
-
-                    document.getElementById('setting-shortcutsGlobal').checked = settings.shortcutsGlobal !== false;
-                    document.getElementById('setting-showAdvancedShortcutOptions').checked = settings.showAdvancedShortcutOptions || false;
-                    document.getElementById('setting-showChatTitle').checked = settings.showChatTitle !== false;
-
-                    // Proxy settings
-                    document.getElementById('setting-proxyEnabled').checked = settings.proxyEnabled || false;
-                    document.getElementById('setting-proxyUrl').value = settings.proxyUrl || '';
-                    document.getElementById('proxy-url-setting').style.opacity = settings.proxyEnabled ? '1' : '0.5';
-                    document.getElementById('setting-proxyUrl').disabled = !settings.proxyEnabled;
-
-                    // Handle per-key global toggles visibility
-                    const advancedToggles = document.querySelectorAll('.shortcut-global-toggle');
-                    advancedToggles.forEach(toggle => {
-                        toggle.style.display = settings.showAdvancedShortcutOptions ? 'inline-block' : 'none';
-                    });
-
-                    // Update per-key global toggle states when settings change from server
-                    advancedToggles.forEach(toggle => {
-                        const key = toggle.dataset.key;
-                        const checkbox = toggle.querySelector('.shortcut-global-checkbox');
-                        if (checkbox) {
-                            // Get the saved state for this specific key, or fall back to global setting
-                            const isGlobal = settings.shortcutsGlobalPerKey && settings.shortcutsGlobalPerKey.hasOwnProperty(key)
-                                ? settings.shortcutsGlobalPerKey[key]
-                                : settings.shortcutsGlobal !== false;
-
-                            // Only update if value actually changed to avoid infinite loops
-                            if (checkbox.checked !== isGlobal) {
-                                checkbox.checked = isGlobal;
-                            }
-
-                            // Mark as initialized
-                            checkbox._initialized = true;
+                const applyTranslations = (lang) => {
+                    const dict = translations[lang] || translations.en;
+                    document.querySelectorAll('[data-i18n]').forEach(el => {
+                        const key = el.getAttribute('data-i18n');
+                        if (dict[key]) {
+                            el.textContent = dict[key];
                         }
                     });
+                    document.querySelectorAll('.record-button').forEach(button => {
+                        const key = button.dataset.key;
+                        if (currentSettings.shortcuts && currentSettings.shortcuts[key]) {
+                            button.textContent = currentSettings.shortcuts[key];
+                        } else {
+                            button.textContent = dict['recordButton-default'];
+                        }
+                    });
+                    currentLanguage = lang;
+                    document.documentElement.setAttribute('lang', lang);
 
-                    // Attach listeners only once during first initialization
-                    if (!window._toggleListenersAttached) {
-                        attachToggleListeners();
-                        window._toggleListenersAttached = true;
-                    }
-                    document.getElementById('setting-restoreWindows').checked = settings.restoreWindows || false;
-                    document.getElementById('setting-showCloseButton').checked = settings.showCloseButton || false;
-                    document.getElementById('setting-draggableButtonsEnabled').checked = settings.draggableButtonsEnabled !== false;
-                    document.getElementById('setting-showExportButton').checked = settings.showExportButton || false;
-                    document.getElementById('setting-showFullscreenButton').checked = settings.showFullscreenButton !== false;
-                    document.getElementById('setting-showNewWindowButton').checked = settings.showNewWindowButton !== false;
-                    document.getElementById('setting-showMinimizeButton').checked = settings.showMinimizeButton !== false;
-                            // Mode toggle visibility
-                            const modeToggleCheckbox = document.getElementById('setting-showModeToggleButton');
-                            if (modeToggleCheckbox) modeToggleCheckbox.checked = settings.showModeToggleButton !== false;
-                    document.getElementById('setting-aiCompletionSound').checked = settings.aiCompletionSound !== false;
+                    // Set direction based on language
+                    const isRTL = rtlLanguages.includes(lang);
+                    document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
 
-                    // Set sound file radio button
-                    const soundFileName = settings.aiCompletionSoundFile || 'new-notification-09-352705.mp3';
-                    const soundRadio = document.querySelector(`input[name="aiCompletionSoundFile"][value="${soundFileName}"]`);
-                    if (soundRadio) {
-                        soundRadio.checked = true;
-                    }
-
-                    // Set export format radio button
-                    const exportFormat = settings.exportFormat || 'ask';
-                    const exportRadio = document.querySelector(`input[name="exportFormat"][value="${exportFormat}"]`);
-                    if (exportRadio) {
-                        exportRadio.checked = true;
-                    }
-
-                    // Set open file after export checkbox
-                    const openFileCheckbox = document.getElementById('setting-openFileAfterExport');
-                    if (openFileCheckbox) {
-                        openFileCheckbox.checked = settings.openFileAfterExport || false;
-                        console.log('Set openFileAfterExport checkbox to:', settings.openFileAfterExport);
+                    // Show/hide English-only features
+                    const englishOnlyFeatures = document.querySelectorAll('.english-only-feature');
+                    if (lang === 'en') {
+                        englishOnlyFeatures.forEach(feature => feature.style.display = 'flex');
                     } else {
-                        console.error('setting-openFileAfterExport element not found!');
+                        englishOnlyFeatures.forEach(feature => feature.style.display = 'none');
                     }
 
-                    // Auto-Screenshot Full Screen setting
-                    const autoScreenshotCheckbox = document.getElementById('setting-autoScreenshotFullScreen');
-                    if (autoScreenshotCheckbox) {
-                        autoScreenshotCheckbox.checked = settings.autoScreenshotFullScreen || false;
-                    }
+                    updateLangSelectorUI(lang);
+                };
 
-                    // Update default prompt status
-                    const defaultPromptStatus = document.getElementById('default-prompt-status');
-                    if (defaultPromptStatus) {
-                        if (settings.defaultPromptId && settings.customPrompts) {
-                            const defaultPrompt = settings.customPrompts.find(p => p.id === settings.defaultPromptId);
-                            if (defaultPrompt) {
-                                defaultPromptStatus.textContent = `Active: "${defaultPrompt.name}"`;
-                                defaultPromptStatus.style.color = 'var(--success-color)';
+                // --- Custom Language Selector Logic ---
+                const languageSelector = document.querySelector('.language-selector');
+                const langButton = document.getElementById('language-selector-button');
+                const langDropdown = document.getElementById('language-dropdown');
+                const langSearch = document.getElementById('language-search-input');
+                const langList = document.getElementById('language-list');
+
+                const languages = [
+                    { code: 'en', name: 'English' }, { code: 'fr', name: 'Français' }, { code: 'he', name: 'עברית' },
+                    { code: 'ru', name: 'Русский' }, { code: 'es', name: 'Español' }, { code: 'de', name: 'Deutsch' },
+                    { code: 'it', name: 'Italiano' }, { code: 'pt', name: 'Português' }, { code: 'nl', name: 'Nederlands' },
+                    { code: 'pl', name: 'Polski' }, { code: 'tr', name: 'Türkçe' }, { code: 'zh', name: '简体中文' },
+                    { code: 'zh-tw', name: '繁體中文' },
+                    { code: 'ja', name: '日本語' }, { code: 'ko', name: '한국어' }, { code: 'hi', name: 'हिन्दी' },
+                    { code: 'ar', name: 'العربية' }, { code: 'bn', name: 'বাংলা' }, { code: 'id', name: 'Bahasa Indonesia' },
+                    { code: 'ur', name: 'اردو' }, { code: 'sw', name: 'Kiswahili' }, { code: 'ta', name: 'தமிழ்' },
+                    { code: 'vi', name: 'Tiếng Việt' }, { code: 'th', name: 'ไทย' }, { code: 'cs', name: 'Čeština' },
+                ];
+
+                languages.forEach(lang => {
+                    const li = document.createElement('li');
+                    li.dataset.lang = lang.code;
+                    li.textContent = lang.name;
+                    langList.appendChild(li);
+                });
+
+                langButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isOpen = langDropdown.classList.contains('show');
+                    langDropdown.classList.toggle('show');
+                    langButton.classList.toggle('open', !isOpen);
+
+                    if (!isOpen) {
+                        langSearch.focus();
+                        langSearch.value = '';
+                        langList.querySelectorAll('li').forEach(li => li.classList.remove('hidden'));
+                    }
+                });
+
+                langSearch.addEventListener('input', () => {
+                    const filter = langSearch.value.toLowerCase();
+                    langList.querySelectorAll('li').forEach(li => {
+                        const text = li.textContent.toLowerCase();
+                        li.classList.toggle('hidden', !text.includes(filter));
+                    });
+                });
+
+                langList.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'LI') {
+                        const langCode = e.target.dataset.lang;
+                        langDropdown.classList.remove('show');
+                        langButton.classList.remove('open');
+                        applyTranslations(langCode);
+                        electronAPI.updateSetting('language', langCode);
+                    }
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!languageSelector.contains(e.target)) {
+                        langDropdown.classList.remove('show');
+                        langButton.classList.remove('open');
+                    }
+                });
+
+                const updateLangSelectorUI = (langCode) => {
+                    const lang = languages.find(l => l.code === langCode) || languages[0];
+                    langButton.querySelector('span').textContent = lang.name;
+                    langList.querySelectorAll('li').forEach(li => {
+                        li.classList.toggle('selected', li.dataset.lang === langCode);
+                    });
+                };
+
+
+                // --- Theme Selection --- 
+                const themeRadios = document.querySelectorAll('input[name="theme"]');
+                electronAPI.theme.getSetting().then(currentTheme => {
+                    document.getElementById(`theme-${currentTheme}`).checked = true;
+                });
+                document.querySelectorAll('input[name="defaultMode"]').forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        electronAPI.updateSetting('defaultMode', e.target.value);
+                    });
+                });
+                themeRadios.forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        electronAPI.theme.set(e.target.value);
+                    });
+                });
+
+                // --- Sync UI with settings ---
+
+                // Helper function to attach event listeners for per-key global toggles
+                const attachToggleListeners = () => {
+                    const checkboxes = document.querySelectorAll('.shortcut-global-checkbox');
+                    console.log('🔧 [SETTINGS] Attaching toggle listeners to', checkboxes.length, 'checkboxes');
+
+                    checkboxes.forEach(checkbox => {
+                        // Remove old listener if exists
+                        if (checkbox._changeHandler) {
+                            checkbox.removeEventListener('change', checkbox._changeHandler);
+                        }
+
+                        // Create new handler for each checkbox
+                        const handleChange = (e) => {
+                            const toggle = e.target.closest('.shortcut-global-toggle');
+                            const key = toggle ? toggle.dataset.key : null;
+                            if (key) {
+                                const isGlobal = e.target.checked;
+                                console.log('🎛️ [SETTINGS] Toggle changed for', key, '- Global:', isGlobal);
+
+                                // Update the settings object with the new per-key global state
+                                if (!currentSettings.shortcutsGlobalPerKey) {
+                                    currentSettings.shortcutsGlobalPerKey = {};
+                                }
+                                currentSettings.shortcutsGlobalPerKey[key] = isGlobal;
+
+                                // Save the entire shortcutsGlobalPerKey object
+                                electronAPI.updateSetting('shortcutsGlobalPerKey', currentSettings.shortcutsGlobalPerKey);
+                            }
+                        };
+
+                        // Store the handler on the element for future removal
+                        checkbox._changeHandler = handleChange;
+
+                        // Add the new listener
+                        checkbox.addEventListener('change', handleChange);
+                    });
+
+                    console.log('✅ [SETTINGS] Toggle listeners attached successfully');
+                };
+
+                const syncUi = (settings) => {
+                    try {
+                        currentSettings = settings;
+                        document.getElementById('setting-deepResearchEnabled').checked = settings.deepResearchEnabled || false;
+                        document.getElementById('setting-autoStart').checked = settings.autoStart || false;
+                        document.getElementById('setting-showInTaskbar').checked = settings.showInTaskbar || false;
+                        document.getElementById('setting-alwaysOnTop').checked = settings.alwaysOnTop || false;
+                        document.getElementById('setting-autoCheckNotifications').checked = settings.autoCheckNotifications || false;
+                        document.getElementById('setting-disableAutoUpdateCheck').checked = settings.disableAutoUpdateCheck || false;
+                        document.getElementById('setting-autoInstallUpdates').checked = settings.autoInstallUpdates !== false;
+                        document.getElementById('setting-enableCanvasResizing').checked = settings.enableCanvasResizing || false;
+                        document.getElementById('setting-disableSpellcheck').checked = settings.disableSpellcheck || false;
+                        document.getElementById('setting-invisibilityMode').checked = settings.invisibilityMode || false;
+
+                        // Gray out "Show in Taskbar" when invisibility mode is enabled
+                        const showInTaskbarSetting = document.getElementById('showInTaskbar-setting');
+                        const showInTaskbarCheckbox = document.getElementById('setting-showInTaskbar');
+                        if (showInTaskbarSetting && showInTaskbarCheckbox) {
+                            showInTaskbarSetting.style.opacity = settings.invisibilityMode ? '0.5' : '1';
+                            showInTaskbarCheckbox.disabled = settings.invisibilityMode || false;
+                        }
+
+                        // Load unpacked extension setting (English-only)
+                        const loadExtEl = document.getElementById('setting-loadUnpackedExtension');
+                        if (loadExtEl) loadExtEl.checked = !!settings.loadUnpackedExtension;
+
+                        // AI Studio RTL setting
+                        const aiStudioRtlEl = document.getElementById('setting-aiStudioRtlEnabled');
+                        if (aiStudioRtlEl) aiStudioRtlEl.checked = !!settings.aiStudioRtlEnabled;
+
+                        document.getElementById('setting-shortcutsGlobal').checked = settings.shortcutsGlobal !== false;
+                        document.getElementById('setting-showAdvancedShortcutOptions').checked = settings.showAdvancedShortcutOptions || false;
+                        document.getElementById('setting-showChatTitle').checked = settings.showChatTitle !== false;
+
+                        // Proxy settings
+                        document.getElementById('setting-proxyEnabled').checked = settings.proxyEnabled || false;
+                        document.getElementById('setting-proxyUrl').value = settings.proxyUrl || '';
+                        document.getElementById('proxy-url-setting').style.opacity = settings.proxyEnabled ? '1' : '0.5';
+                        document.getElementById('setting-proxyUrl').disabled = !settings.proxyEnabled;
+
+                        // Handle per-key global toggles visibility
+                        const advancedToggles = document.querySelectorAll('.shortcut-global-toggle');
+                        advancedToggles.forEach(toggle => {
+                            toggle.style.display = settings.showAdvancedShortcutOptions ? 'inline-block' : 'none';
+                        });
+
+                        // Update per-key global toggle states when settings change from server
+                        advancedToggles.forEach(toggle => {
+                            const key = toggle.dataset.key;
+                            const checkbox = toggle.querySelector('.shortcut-global-checkbox');
+                            if (checkbox) {
+                                // Get the saved state for this specific key, or fall back to global setting
+                                const isGlobal = settings.shortcutsGlobalPerKey && settings.shortcutsGlobalPerKey.hasOwnProperty(key)
+                                    ? settings.shortcutsGlobalPerKey[key]
+                                    : settings.shortcutsGlobal !== false;
+
+                                // Only update if value actually changed to avoid infinite loops
+                                if (checkbox.checked !== isGlobal) {
+                                    checkbox.checked = isGlobal;
+                                }
+
+                                // Mark as initialized
+                                checkbox._initialized = true;
+                            }
+                        });
+
+                        // Attach listeners only once during first initialization
+                        if (!window._toggleListenersAttached) {
+                            attachToggleListeners();
+                            window._toggleListenersAttached = true;
+                        }
+                        document.getElementById('setting-restoreWindows').checked = settings.restoreWindows || false;
+                        document.getElementById('setting-showCloseButton').checked = settings.showCloseButton || false;
+                        document.getElementById('setting-draggableButtonsEnabled').checked = settings.draggableButtonsEnabled !== false;
+                        document.getElementById('setting-showExportButton').checked = settings.showExportButton || false;
+                        document.getElementById('setting-showFullscreenButton').checked = settings.showFullscreenButton !== false;
+                        document.getElementById('setting-showNewWindowButton').checked = settings.showNewWindowButton !== false;
+                        document.getElementById('setting-showMinimizeButton').checked = settings.showMinimizeButton !== false;
+                        // Mode toggle visibility
+                        const modeToggleCheckbox = document.getElementById('setting-showModeToggleButton');
+                        if (modeToggleCheckbox) modeToggleCheckbox.checked = settings.showModeToggleButton !== false;
+                        document.getElementById('setting-aiCompletionSound').checked = settings.aiCompletionSound !== false;
+
+                        // Set sound file radio button
+                        const soundFileName = settings.aiCompletionSoundFile || 'new-notification-09-352705.mp3';
+                        const soundRadio = document.querySelector(`input[name="aiCompletionSoundFile"][value="${soundFileName}"]`);
+                        if (soundRadio) {
+                            soundRadio.checked = true;
+                        }
+
+                        // Set export format radio button
+                        const exportFormat = settings.exportFormat || 'ask';
+                        const exportRadio = document.querySelector(`input[name="exportFormat"][value="${exportFormat}"]`);
+                        if (exportRadio) {
+                            exportRadio.checked = true;
+                        }
+
+                        // Set open file after export checkbox
+                        const openFileCheckbox = document.getElementById('setting-openFileAfterExport');
+                        if (openFileCheckbox) {
+                            openFileCheckbox.checked = settings.openFileAfterExport || false;
+                            console.log('Set openFileAfterExport checkbox to:', settings.openFileAfterExport);
+                        } else {
+                            console.error('setting-openFileAfterExport element not found!');
+                        }
+
+                        // Auto-Screenshot Full Screen setting
+                        const autoScreenshotCheckbox = document.getElementById('setting-autoScreenshotFullScreen');
+                        if (autoScreenshotCheckbox) {
+                            autoScreenshotCheckbox.checked = settings.autoScreenshotFullScreen || false;
+                        }
+
+                        // Update default prompt status
+                        const defaultPromptStatus = document.getElementById('default-prompt-status');
+                        if (defaultPromptStatus) {
+                            if (settings.defaultPromptId && settings.customPrompts) {
+                                const defaultPrompt = settings.customPrompts.find(p => p.id === settings.defaultPromptId);
+                                if (defaultPrompt) {
+                                    defaultPromptStatus.textContent = `Active: "${defaultPrompt.name}"`;
+                                    defaultPromptStatus.style.color = 'var(--success-color)';
+                                } else {
+                                    defaultPromptStatus.textContent = 'No default prompt set.';
+                                    defaultPromptStatus.style.color = '';
+                                }
                             } else {
                                 defaultPromptStatus.textContent = 'No default prompt set.';
                                 defaultPromptStatus.style.color = '';
                             }
-                        } else {
-                            defaultPromptStatus.textContent = 'No default prompt set.';
-                            defaultPromptStatus.style.color = '';
                         }
+
+                        document.getElementById(`mode-${settings.defaultMode || 'ask'}`).checked = true;
+                        applyTranslations(settings.language || 'en');
+                        document.querySelectorAll('.record-button').forEach(button => {
+                            const key = button.dataset.key;
+                            if (settings.shortcuts && settings.shortcuts[key]) {
+                                button.textContent = settings.shortcuts[key];
+                            } else {
+                                button.textContent = (translations[currentLanguage] || translations.en)['recordButton-default'];
+                            }
+                        });
+                    } catch (error) {
+                        console.error('Error syncing UI:', error);
                     }
+                };
 
-                    document.getElementById(`mode-${settings.defaultMode || 'ask'}`).checked = true;
-                    applyTranslations(settings.language || 'en');
-                    document.querySelectorAll('.record-button').forEach(button => {
-                        const key = button.dataset.key;
-                        if (settings.shortcuts && settings.shortcuts[key]) {
-                            button.textContent = settings.shortcuts[key];
-                        } else {
-                            button.textContent = (translations[currentLanguage] || translations.en)['recordButton-default'];
-                        }
+                // Initialize settings
+                electronAPI.getSettings().then(syncUi).catch(error => {
+                    console.error('Error getting settings:', error);
+                });
+
+                electronAPI.onSettingsUpdated(syncUi);
+
+                // Display App Version
+                electronAPI.getAppVersion().then(version => {
+                    const versionDisplay = document.getElementById('app-version-display');
+                    if (versionDisplay) {
+                        versionDisplay.textContent = version;
+                        versionDisplay.addEventListener('click', () => {
+                            electronAPI.openReleaseNotes(version);
+                        });
+                    }
+                }).catch(err => {
+                    console.error('Failed to get app version:', err);
+                    const versionDisplay = document.getElementById('app-version-display');
+                    if (versionDisplay) {
+                        versionDisplay.textContent = 'Unknown';
+                    }
+                });
+
+                // --- General Event Listeners ---
+                document.getElementById('close-button').addEventListener('click', () => {
+                    if (window.close) {
+                        window.close();
+                    } else {
+                        electronAPI.closeWindow();
+                    }
+                });
+
+                document.getElementById('reset-button').addEventListener('click', () => {
+                    electronAPI.showConfirmReset();
+                });
+
+                document.getElementById('reset-button-order').addEventListener('click', () => {
+                    electronAPI.updateSetting('buttonOrder', []);
+                });
+                // Deep Research Schedule event listeners
+                document.getElementById('setting-deepResearchEnabled').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('deepResearchEnabled', e.target.checked);
+                });
+
+                document.getElementById('open-schedule-manager').addEventListener('click', () => {
+                    electronAPI.openDeepResearchScheduleWindow();
+                });
+
+                // --- Prompt Manager ---
+                document.getElementById('open-prompt-manager').addEventListener('click', () => {
+                    electronAPI.openPromptManagerWindow();
+                });
+
+                // --- Auto-Screenshot Full Screen ---
+                document.getElementById('setting-autoScreenshotFullScreen').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('autoScreenshotFullScreen', e.target.checked);
+                });
+
+                // --- Proxy Settings ---
+                document.getElementById('setting-proxyEnabled').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('proxyEnabled', e.target.checked);
+                    // Show/hide proxy URL field based on enabled state
+                    document.getElementById('proxy-url-setting').style.opacity = e.target.checked ? '1' : '0.5';
+                    document.getElementById('setting-proxyUrl').disabled = !e.target.checked;
+                });
+
+                document.getElementById('setting-proxyUrl').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('proxyUrl', e.target.value.trim());
+                });
+
+                // --- Toggle Switches ---
+                document.getElementById('setting-autoStart').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('autoStart', e.target.checked);
+                });
+
+                document.getElementById('setting-alwaysOnTop').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('alwaysOnTop', e.target.checked);
+                });
+
+                document.getElementById('setting-showInTaskbar').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('showInTaskbar', e.target.checked);
+                });
+
+                document.getElementById('setting-autoCheckNotifications').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('autoCheckNotifications', e.target.checked);
+                });
+
+                document.getElementById('setting-disableAutoUpdateCheck').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('disableAutoUpdateCheck', e.target.checked);
+                });
+
+                document.getElementById('setting-autoInstallUpdates').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('autoInstallUpdates', e.target.checked);
+                });
+
+                document.getElementById('setting-enableCanvasResizing').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('enableCanvasResizing', e.target.checked);
+                });
+
+                document.getElementById('setting-disableSpellcheck').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('disableSpellcheck', e.target.checked);
+                });
+
+                document.getElementById('setting-invisibilityMode').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('invisibilityMode', e.target.checked);
+                    // Gray out "Show in Taskbar" when invisibility mode is enabled
+                    const showInTaskbarSetting = document.getElementById('showInTaskbar-setting');
+                    const showInTaskbarCheckbox = document.getElementById('setting-showInTaskbar');
+                    if (showInTaskbarSetting && showInTaskbarCheckbox) {
+                        showInTaskbarSetting.style.opacity = e.target.checked ? '0.5' : '1';
+                        showInTaskbarCheckbox.disabled = e.target.checked;
+                    }
+                });
+
+                // Load Unpacked Extension toggle (English-only feature)
+                const loadExtCheckbox = document.getElementById('setting-loadUnpackedExtension');
+                if (loadExtCheckbox) {
+                    loadExtCheckbox.addEventListener('change', (e) => {
+                        electronAPI.updateSetting('loadUnpackedExtension', e.target.checked);
                     });
-                } catch (error) {
-                    console.error('Error syncing UI:', error);
                 }
-            };
 
-            // Initialize settings
-            electronAPI.getSettings().then(syncUi).catch(error => {
-                console.error('Error getting settings:', error);
-            });
-
-            electronAPI.onSettingsUpdated(syncUi);
-
-            // Display App Version
-            electronAPI.getAppVersion().then(version => {
-                const versionDisplay = document.getElementById('app-version-display');
-                if (versionDisplay) {
-                    versionDisplay.textContent = version;
-                    versionDisplay.addEventListener('click', () => {
-                        electronAPI.openReleaseNotes(version);
+                // Open MCP setup window (global button - always visible)
+                const openMcpBtnGlobal = document.getElementById('open-mcp-setup-global');
+                if (openMcpBtnGlobal) {
+                    openMcpBtnGlobal.addEventListener('click', () => {
+                        electronAPI.openMcpSetupWindow();
                     });
                 }
-            }).catch(err => {
-                console.error('Failed to get app version:', err);
-                const versionDisplay = document.getElementById('app-version-display');
-                if (versionDisplay) {
-                    versionDisplay.textContent = 'Unknown';
-                }
-            });
 
-            // --- General Event Listeners ---
-            document.getElementById('close-button').addEventListener('click', () => {
-                if (window.close) {
-                    window.close();
+                // AI Studio RTL toggle
+                const aiStudioRtlCheckbox = document.getElementById('setting-aiStudioRtlEnabled');
+                if (aiStudioRtlCheckbox) {
+                    aiStudioRtlCheckbox.addEventListener('change', (e) => {
+                        electronAPI.updateSetting('aiStudioRtlEnabled', e.target.checked);
+                    });
+                }
+
+                document.getElementById('setting-shortcutsGlobal').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('shortcutsGlobal', e.target.checked);
+                });
+
+                document.getElementById('setting-showAdvancedShortcutOptions').addEventListener('change', (e) => {
+                    const show = e.target.checked;
+                    electronAPI.updateSetting('showAdvancedShortcutOptions', show);
+
+                    // Show/hide all per-key toggles
+                    document.querySelectorAll('.shortcut-global-toggle').forEach(toggle => {
+                        toggle.style.display = show ? 'inline-block' : 'none';
+                    });
+
+                    // Attach listeners only if not attached yet
+                    if (!window._toggleListenersAttached) {
+                        attachToggleListeners();
+                        window._toggleListenersAttached = true;
+                    }
+                });
+
+                document.getElementById('setting-showChatTitle').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('showChatTitle', e.target.checked);
+                });
+
+                document.getElementById('setting-restoreWindows').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('restoreWindows', e.target.checked);
+                });
+
+                document.getElementById('setting-showCloseButton').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('showCloseButton', e.target.checked);
+                });
+
+                document.getElementById('setting-showExportButton').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('showExportButton', e.target.checked);
+                });
+
+                document.getElementById('setting-showFullscreenButton').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('showFullscreenButton', e.target.checked);
+                });
+
+                document.getElementById('setting-showNewWindowButton').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('showNewWindowButton', e.target.checked);
+                });
+
+                document.getElementById('setting-showMinimizeButton').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('showMinimizeButton', e.target.checked);
+                });
+
+                document.getElementById('setting-draggableButtonsEnabled').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('draggableButtonsEnabled', e.target.checked);
+                });
+
+                // Show/hide mode toggle button
+                const showModeToggleEl = document.getElementById('setting-showModeToggleButton');
+                if (showModeToggleEl) {
+                    showModeToggleEl.addEventListener('change', (e) => {
+                        electronAPI.updateSetting('showModeToggleButton', e.target.checked);
+                    });
+                }
+
+                document.getElementById('setting-aiCompletionSound').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('aiCompletionSound', e.target.checked);
+                });
+
+                document.getElementById('open-voice-assistant').addEventListener('click', () => {
+                    electronAPI.openVoiceAssistant();
+                });
+
+                document.getElementById('open-share-ideas').addEventListener('click', () => {
+                    electronAPI.openShareIdeasWindow();
+                });
+
+                document.querySelectorAll('input[name="aiCompletionSoundFile"]').forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        electronAPI.updateSetting('aiCompletionSoundFile', e.target.value);
+                    });
+                });
+
+                document.querySelectorAll('input[name="exportFormat"]').forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        electronAPI.updateSetting('exportFormat', e.target.value);
+                    });
+                });
+
+                const openFileCheckbox = document.getElementById('setting-openFileAfterExport');
+                if (openFileCheckbox) {
+                    openFileCheckbox.addEventListener('change', (e) => {
+                        console.log('openFileAfterExport changed to:', e.target.checked);
+                        electronAPI.updateSetting('openFileAfterExport', e.target.checked);
+                    });
                 } else {
-                    electronAPI.closeWindow();
-                }
-            });
-
-            document.getElementById('reset-button').addEventListener('click', () => {
-                electronAPI.showConfirmReset();
-            });
-
-            document.getElementById('reset-button-order').addEventListener('click', () => {
-                electronAPI.updateSetting('buttonOrder', []);
-            });
-            // Deep Research Schedule event listeners
-            document.getElementById('setting-deepResearchEnabled').addEventListener('change', (e) => {
-                electronAPI.updateSetting('deepResearchEnabled', e.target.checked);
-            });
-
-            document.getElementById('open-schedule-manager').addEventListener('click', () => {
-                electronAPI.openDeepResearchScheduleWindow();
-            });
-
-            // --- Prompt Manager ---
-            document.getElementById('open-prompt-manager').addEventListener('click', () => {
-                electronAPI.openPromptManagerWindow();
-            });
-
-            // --- Auto-Screenshot Full Screen ---
-            document.getElementById('setting-autoScreenshotFullScreen').addEventListener('change', (e) => {
-                electronAPI.updateSetting('autoScreenshotFullScreen', e.target.checked);
-            });
-
-            // --- Proxy Settings ---
-            document.getElementById('setting-proxyEnabled').addEventListener('change', (e) => {
-                electronAPI.updateSetting('proxyEnabled', e.target.checked);
-                // Show/hide proxy URL field based on enabled state
-                document.getElementById('proxy-url-setting').style.opacity = e.target.checked ? '1' : '0.5';
-                document.getElementById('setting-proxyUrl').disabled = !e.target.checked;
-            });
-
-            document.getElementById('setting-proxyUrl').addEventListener('change', (e) => {
-                electronAPI.updateSetting('proxyUrl', e.target.value.trim());
-            });
-
-            // --- Toggle Switches ---
-            document.getElementById('setting-autoStart').addEventListener('change', (e) => {
-                electronAPI.updateSetting('autoStart', e.target.checked);
-            });
-
-            document.getElementById('setting-alwaysOnTop').addEventListener('change', (e) => {
-                electronAPI.updateSetting('alwaysOnTop', e.target.checked);
-            });
-
-            document.getElementById('setting-showInTaskbar').addEventListener('change', (e) => {
-                electronAPI.updateSetting('showInTaskbar', e.target.checked);
-            });
-
-            document.getElementById('setting-autoCheckNotifications').addEventListener('change', (e) => {
-                electronAPI.updateSetting('autoCheckNotifications', e.target.checked);
-            });
-
-            document.getElementById('setting-disableAutoUpdateCheck').addEventListener('change', (e) => {
-                electronAPI.updateSetting('disableAutoUpdateCheck', e.target.checked);
-            });
-
-            document.getElementById('setting-autoInstallUpdates').addEventListener('change', (e) => {
-                electronAPI.updateSetting('autoInstallUpdates', e.target.checked);
-            });
-
-            document.getElementById('setting-enableCanvasResizing').addEventListener('change', (e) => {
-                electronAPI.updateSetting('enableCanvasResizing', e.target.checked);
-            });
-
-            document.getElementById('setting-disableSpellcheck').addEventListener('change', (e) => {
-                electronAPI.updateSetting('disableSpellcheck', e.target.checked);
-            });
-
-            document.getElementById('setting-invisibilityMode').addEventListener('change', (e) => {
-                electronAPI.updateSetting('invisibilityMode', e.target.checked);
-                // Gray out "Show in Taskbar" when invisibility mode is enabled
-                const showInTaskbarSetting = document.getElementById('showInTaskbar-setting');
-                const showInTaskbarCheckbox = document.getElementById('setting-showInTaskbar');
-                if (showInTaskbarSetting && showInTaskbarCheckbox) {
-                    showInTaskbarSetting.style.opacity = e.target.checked ? '0.5' : '1';
-                    showInTaskbarCheckbox.disabled = e.target.checked;
-                }
-            });
-
-            // Load Unpacked Extension toggle (English-only feature)
-            const loadExtCheckbox = document.getElementById('setting-loadUnpackedExtension');
-            if (loadExtCheckbox) {
-                loadExtCheckbox.addEventListener('change', (e) => {
-                    electronAPI.updateSetting('loadUnpackedExtension', e.target.checked);
-                });
-            }
-
-            // Open MCP setup window (global button - always visible)
-            const openMcpBtnGlobal = document.getElementById('open-mcp-setup-global');
-            if (openMcpBtnGlobal) {
-                openMcpBtnGlobal.addEventListener('click', () => {
-                    electronAPI.openMcpSetupWindow();
-                });
-            }
-
-            // AI Studio RTL toggle
-            const aiStudioRtlCheckbox = document.getElementById('setting-aiStudioRtlEnabled');
-            if (aiStudioRtlCheckbox) {
-                aiStudioRtlCheckbox.addEventListener('change', (e) => {
-                    electronAPI.updateSetting('aiStudioRtlEnabled', e.target.checked);
-                });
-            }
-
-            document.getElementById('setting-shortcutsGlobal').addEventListener('change', (e) => {
-                electronAPI.updateSetting('shortcutsGlobal', e.target.checked);
-            });
-
-            document.getElementById('setting-showAdvancedShortcutOptions').addEventListener('change', (e) => {
-                const show = e.target.checked;
-                electronAPI.updateSetting('showAdvancedShortcutOptions', show);
-
-                // Show/hide all per-key toggles
-                document.querySelectorAll('.shortcut-global-toggle').forEach(toggle => {
-                    toggle.style.display = show ? 'inline-block' : 'none';
-                });
-
-                // Attach listeners only if not attached yet
-                if (!window._toggleListenersAttached) {
-                    attachToggleListeners();
-                    window._toggleListenersAttached = true;
-                }
-            });
-
-            document.getElementById('setting-showChatTitle').addEventListener('change', (e) => {
-                electronAPI.updateSetting('showChatTitle', e.target.checked);
-            });
-
-            document.getElementById('setting-restoreWindows').addEventListener('change', (e) => {
-                electronAPI.updateSetting('restoreWindows', e.target.checked);
-            });
-
-            document.getElementById('setting-showCloseButton').addEventListener('change', (e) => {
-                electronAPI.updateSetting('showCloseButton', e.target.checked);
-            });
-
-            document.getElementById('setting-showExportButton').addEventListener('change', (e) => {
-                electronAPI.updateSetting('showExportButton', e.target.checked);
-            });
-
-            document.getElementById('setting-showFullscreenButton').addEventListener('change', (e) => {
-                electronAPI.updateSetting('showFullscreenButton', e.target.checked);
-            });
-
-            document.getElementById('setting-showNewWindowButton').addEventListener('change', (e) => {
-                electronAPI.updateSetting('showNewWindowButton', e.target.checked);
-            });
-
-            document.getElementById('setting-showMinimizeButton').addEventListener('change', (e) => {
-                electronAPI.updateSetting('showMinimizeButton', e.target.checked);
-            });
-
-            document.getElementById('setting-draggableButtonsEnabled').addEventListener('change', (e) => {
-                electronAPI.updateSetting('draggableButtonsEnabled', e.target.checked);
-            });
-
-            // Show/hide mode toggle button
-            const showModeToggleEl = document.getElementById('setting-showModeToggleButton');
-            if (showModeToggleEl) {
-                showModeToggleEl.addEventListener('change', (e) => {
-                    electronAPI.updateSetting('showModeToggleButton', e.target.checked);
-                });
-            }
-
-            document.getElementById('setting-aiCompletionSound').addEventListener('change', (e) => {
-                electronAPI.updateSetting('aiCompletionSound', e.target.checked);
-            });
-
-            document.getElementById('open-voice-assistant').addEventListener('click', () => {
-                electronAPI.openVoiceAssistant();
-            });
-
-            document.getElementById('open-share-ideas').addEventListener('click', () => {
-                electronAPI.openShareIdeasWindow();
-            });
-
-            document.querySelectorAll('input[name="aiCompletionSoundFile"]').forEach(radio => {
-                radio.addEventListener('change', (e) => {
-                    electronAPI.updateSetting('aiCompletionSoundFile', e.target.value);
-                });
-            });
-
-            document.querySelectorAll('input[name="exportFormat"]').forEach(radio => {
-                radio.addEventListener('change', (e) => {
-                    electronAPI.updateSetting('exportFormat', e.target.value);
-                });
-            });
-
-            const openFileCheckbox = document.getElementById('setting-openFileAfterExport');
-            if (openFileCheckbox) {
-                openFileCheckbox.addEventListener('change', (e) => {
-                    console.log('openFileAfterExport changed to:', e.target.checked);
-                    electronAPI.updateSetting('openFileAfterExport', e.target.checked);
-                });
-            } else {
-                console.error('setting-openFileAfterExport not found when adding event listener!');
-            }
-
-            // --- Manual Action Buttons ---
-            document.getElementById('manual-check-for-updates-button').addEventListener('click', () => {
-                electronAPI.checkForUpdates();
-            });
-
-            document.getElementById('check-for-notifications-button').addEventListener('click', () => {
-                electronAPI.manualCheckForNotifications();
-            });
-
-            // --- Shortcut Recording Logic ---
-            let isRecording = false;
-            let recordingButton = null;
-            let recordingTimeout = null;
-
-            const startRecording = (button) => {
-                if (isRecording) return;
-
-                isRecording = true;
-                recordingButton = button;
-                const originalText = button.textContent;
-                const pressedKeys = new Set();
-                let hasRecordedKeys = false;
-
-                // Start intercepting on the main process (for Alt+Space)
-                electronAPI.startRecordingShortcut();
-
-                button.textContent = (translations[currentLanguage] || translations.en)['recording'];
-                button.classList.add('is-recording');
-
-                // Auto-cancel recording after 10 seconds of inactivity
-                const resetTimeout = () => {
-                    if (recordingTimeout) clearTimeout(recordingTimeout);
-                    recordingTimeout = setTimeout(() => {
-                        if (isRecording) {
-                            button.textContent = originalText;
-                            cleanup();
-                        }
-                    }, 10000);
-                };
-                resetTimeout();
-
-                const cleanup = () => {
-                    if (recordingTimeout) {
-                        clearTimeout(recordingTimeout);
-                        recordingTimeout = null;
-                    }
-                    // Stop intercepting
-                    electronAPI.stopRecordingShortcut();
-
-                    document.removeEventListener('keydown', keydownHandler, true);
-                    document.removeEventListener('keyup', keyupHandler, true);
-                    document.removeEventListener('blur', blurHandler, true);
-                    button.classList.remove('is-recording');
-                    isRecording = false;
-                    recordingButton = null;
-                    pressedKeys.clear();
-                };
-
-                const blurHandler = () => {
-                    // If window loses focus during recording, cancel it
-                    if (isRecording && recordingButton === button) {
-                        button.textContent = originalText;
-                        cleanup();
-                    }
-                };
-
-                // Handle intercepted shortcuts from main process (Alt+Space)
-                const shortcutCapturedHandler = (key) => {
-                    if (!isRecording || recordingButton !== button) return;
-
-                    console.log('Received intercepted shortcut:', key);
-                    button.textContent = key;
-                    electronAPI.updateSetting(`shortcuts.${button.dataset.key}`, key);
-                    cleanup();
-                };
-
-                if (!window._shortcutCapturedListenerAttached) {
-                    electronAPI.onShortcutCaptured((key) => {
-                        if (isRecording && recordingButton) {
-                            console.log('Captured special shortcut:', key);
-                            const btn = recordingButton; // capture ref
-                            btn.textContent = key;
-                            electronAPI.updateSetting(`shortcuts.${btn.dataset.key}`, key);
-
-                            window._onSpecialShortcut = (k) => {
-                                if (isRecording && recordingButton === button) {
-                                    button.textContent = k;
-                                    electronAPI.updateSetting(`shortcuts.${button.dataset.key}`, k);
-                                    cleanup();
-                                }
-                            };
-                        }
-                    });
-
-                    window._shortcutCapturedListenerAttached = true;
+                    console.error('setting-openFileAfterExport not found when adding event listener!');
                 }
 
-                // Set the specific handler for this session
-                window._onSpecialShortcut = (k) => {
-                    button.textContent = k;
-                    electronAPI.updateSetting(`shortcuts.${button.dataset.key}`, k);
-                    cleanup();
-                };
+                // --- Manual Action Buttons ---
+                document.getElementById('manual-check-for-updates-button').addEventListener('click', () => {
+                    electronAPI.checkForUpdates();
+                });
 
-                const keydownHandler = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                document.getElementById('check-for-notifications-button').addEventListener('click', () => {
+                    electronAPI.manualCheckForNotifications();
+                });
+
+                // --- Shortcut Recording Logic ---
+                let isRecording = false;
+                let recordingButton = null;
+                let recordingTimeout = null;
+
+                const startRecording = (button) => {
+                    if (isRecording) return;
+
+                    isRecording = true;
+                    recordingButton = button;
+                    const originalText = button.textContent;
+                    const pressedKeys = new Set();
+                    let hasRecordedKeys = false;
+
+                    // Start intercepting on the main process (for Alt+Space)
+                    electronAPI.startRecordingShortcut();
+
+                    button.textContent = (translations[currentLanguage] || translations.en)['recording'];
+                    button.classList.add('is-recording');
+
+                    // Auto-cancel recording after 10 seconds of inactivity
+                    const resetTimeout = () => {
+                        if (recordingTimeout) clearTimeout(recordingTimeout);
+                        recordingTimeout = setTimeout(() => {
+                            if (isRecording) {
+                                button.textContent = originalText;
+                                cleanup();
+                            }
+                        }, 10000);
+                    };
                     resetTimeout();
 
-                    // Handle Escape to cancel
-                    if (e.key === 'Escape') {
-                        button.textContent = originalText;
-                        cleanup();
-                        return;
-                    }
-
-                    // Add modifier keys
-                    if (e.ctrlKey) pressedKeys.add('Control');
-                    if (e.altKey) pressedKeys.add('Alt');
-                    if (e.shiftKey) pressedKeys.add('Shift');
-                    if (e.metaKey) pressedKeys.add('Super');
-
-                    // Add regular keys (exclude modifier keys themselves)
-                    const ignoredCodes = [
-                        'ControlLeft', 'ControlRight',
-                        'AltLeft', 'AltRight',
-                        'ShiftLeft', 'ShiftRight',
-                        'MetaLeft', 'MetaRight'
-                    ];
-
-                    if (!['Control', 'Alt', 'Shift', 'Meta', 'AltGraph'].includes(e.key) && !ignoredCodes.includes(e.code)) {
-                        const keyCode = e.code.replace('Key', '').replace('Digit', '');
-                        if (keyCode && keyCode.length > 0) {
-                            pressedKeys.add(keyCode);
-                            hasRecordedKeys = true;
+                    const cleanup = () => {
+                        if (recordingTimeout) {
+                            clearTimeout(recordingTimeout);
+                            recordingTimeout = null;
                         }
-                    }
+                        // Stop intercepting
+                        electronAPI.stopRecordingShortcut();
 
-                    // Update button text with current combination
-                    if (pressedKeys.size > 0) {
-                        button.textContent = Array.from(pressedKeys).join('+');
-                    }
-                };
+                        document.removeEventListener('keydown', keydownHandler, true);
+                        document.removeEventListener('keyup', keyupHandler, true);
+                        document.removeEventListener('blur', blurHandler, true);
+                        button.classList.remove('is-recording');
+                        isRecording = false;
+                        recordingButton = null;
+                        pressedKeys.clear();
+                    };
 
-                const keyupHandler = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    // Don't process if Escape was pressed (already handled in keydown)
-                    if (e.key === 'Escape') {
-                        return;
-                    }
-
-                    // Only save if we have at least one modifier + one key
-                    const modifierCount = ['Control', 'Alt', 'Shift', 'Super'].filter(mod => pressedKeys.has(mod)).length;
-                    const hasNonModifier = hasRecordedKeys;
-
-                    if (modifierCount > 0 && hasNonModifier && pressedKeys.size > 1) {
-                        const finalShortcut = Array.from(pressedKeys).join('+');
-                        button.textContent = finalShortcut;
-                        electronAPI.updateSetting(`shortcuts.${button.dataset.key}`, finalShortcut);
-                        cleanup();
-                    } else if (pressedKeys.size > 0) {
-                        // Invalid combination - show feedback and reset
-                        button.textContent = '⚠️ Invalid combination';
-                        setTimeout(() => {
+                    const blurHandler = () => {
+                        // If window loses focus during recording, cancel it
+                        if (isRecording && recordingButton === button) {
                             button.textContent = originalText;
                             cleanup();
-                        }, 1500);
-                    } else {
-                        // No keys recorded
-                        button.textContent = originalText;
+                        }
+                    };
+
+                    // Handle intercepted shortcuts from main process (Alt+Space)
+                    const shortcutCapturedHandler = (key) => {
+                        if (!isRecording || recordingButton !== button) return;
+
+                        console.log('Received intercepted shortcut:', key);
+                        button.textContent = key;
+                        electronAPI.updateSetting(`shortcuts.${button.dataset.key}`, key);
                         cleanup();
+                    };
+
+                    if (!window._shortcutCapturedListenerAttached) {
+                        electronAPI.onShortcutCaptured((key) => {
+                            if (isRecording && recordingButton) {
+                                console.log('Captured special shortcut:', key);
+                                const btn = recordingButton; // capture ref
+                                btn.textContent = key;
+                                electronAPI.updateSetting(`shortcuts.${btn.dataset.key}`, key);
+
+                                window._onSpecialShortcut = (k) => {
+                                    if (isRecording && recordingButton === button) {
+                                        button.textContent = k;
+                                        electronAPI.updateSetting(`shortcuts.${button.dataset.key}`, k);
+                                        cleanup();
+                                    }
+                                };
+                            }
+                        });
+
+                        window._shortcutCapturedListenerAttached = true;
+                    }
+
+                    // Set the specific handler for this session
+                    window._onSpecialShortcut = (k) => {
+                        button.textContent = k;
+                        electronAPI.updateSetting(`shortcuts.${button.dataset.key}`, k);
+                        cleanup();
+                    };
+
+                    const keydownHandler = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        resetTimeout();
+
+                        // Handle Escape to cancel
+                        if (e.key === 'Escape') {
+                            button.textContent = originalText;
+                            cleanup();
+                            return;
+                        }
+
+                        // Add modifier keys
+                        if (e.ctrlKey) pressedKeys.add('Control');
+                        if (e.altKey) pressedKeys.add('Alt');
+                        if (e.shiftKey) pressedKeys.add('Shift');
+                        if (e.metaKey) pressedKeys.add('Super');
+
+                        // Add regular keys (exclude modifier keys themselves)
+                        const ignoredCodes = [
+                            'ControlLeft', 'ControlRight',
+                            'AltLeft', 'AltRight',
+                            'ShiftLeft', 'ShiftRight',
+                            'MetaLeft', 'MetaRight'
+                        ];
+
+                        if (!['Control', 'Alt', 'Shift', 'Meta', 'AltGraph'].includes(e.key) && !ignoredCodes.includes(e.code)) {
+                            const keyCode = e.code.replace('Key', '').replace('Digit', '');
+                            if (keyCode && keyCode.length > 0) {
+                                pressedKeys.add(keyCode);
+                                hasRecordedKeys = true;
+                            }
+                        }
+
+                        // Update button text with current combination
+                        if (pressedKeys.size > 0) {
+                            button.textContent = Array.from(pressedKeys).join('+');
+                        }
+                    };
+
+                    const keyupHandler = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        // Don't process if Escape was pressed (already handled in keydown)
+                        if (e.key === 'Escape') {
+                            return;
+                        }
+
+                        // Only save if we have at least one modifier + one key
+                        const modifierCount = ['Control', 'Alt', 'Shift', 'Super'].filter(mod => pressedKeys.has(mod)).length;
+                        const hasNonModifier = hasRecordedKeys;
+
+                        if (modifierCount > 0 && hasNonModifier && pressedKeys.size > 1) {
+                            const finalShortcut = Array.from(pressedKeys).join('+');
+                            button.textContent = finalShortcut;
+                            electronAPI.updateSetting(`shortcuts.${button.dataset.key}`, finalShortcut);
+                            cleanup();
+                        } else if (pressedKeys.size > 0) {
+                            // Invalid combination - show feedback and reset
+                            button.textContent = '⚠️ Invalid combination';
+                            setTimeout(() => {
+                                button.textContent = originalText;
+                                cleanup();
+                            }, 1500);
+                        } else {
+                            // No keys recorded
+                            button.textContent = originalText;
+                            cleanup();
+                        }
+                    };
+
+                    document.addEventListener('keydown', keydownHandler, true);
+                    document.addEventListener('keyup', keyupHandler, true);
+                    window.addEventListener('blur', blurHandler, true);
+                };
+
+                document.querySelectorAll('.record-button').forEach(button => {
+                    button.addEventListener('click', () => startRecording(button));
+                });
+
+                // Initialize toggle listeners
+                attachToggleListeners();
+
+                // Initialize global listener for special IPC shortcuts (like Alt+Space)
+                if (!window._shortcutCapturedListenerAttached && window.electronAPI && window.electronAPI.onShortcutCaptured) {
+                    window.electronAPI.onShortcutCaptured((key) => {
+                        if (window._onSpecialShortcut) {
+                            window._onSpecialShortcut(key);
+                        }
+                    });
+                    window._shortcutCapturedListenerAttached = true;
+                }
+            });
+
+            // --- Theme Application Logic ---
+            function applyTheme(theme) {
+                if (theme === 'light') {
+                    document.documentElement.classList.add('light-mode');
+                } else {
+                    document.documentElement.classList.remove('light-mode');
+                }
+            }
+
+            if (window.electronAPI) {
+                window.electronAPI.theme.getResolved().then(applyTheme);
+                window.electronAPI.theme.onUpdate(applyTheme);
+            }
+
+            // Initialize browser mode for testing without Electron
+            function initializeBrowserMode() {
+                console.log('Initializing browser mode');
+                // This function can be left empty or with minimal mocks for this task
+                const mockSettings = {
+                    autoStart: false,
+                    alwaysOnTop: false,
+                    autoCheckNotifications: true,
+                    enableCanvasResizing: true,
+                    shortcuts: {
+                        showHide: 'Control+Space',
+                        newWindow: 'Control+N',
+                        quit: 'Control+Q',
+                        showInstructions: 'F1',
+                        refresh: 'F5',
+                        search: 'Control+F',
+                        screenshot: 'Control+Shift+S',
+                        newChatPro: 'Control+Shift+P',
+                        newChatFlash: 'Control+Shift+F'
                     }
                 };
 
-                document.addEventListener('keydown', keydownHandler, true);
-                document.addEventListener('keyup', keyupHandler, true);
-                window.addEventListener('blur', blurHandler, true);
-            };
+                // Update UI with mock settings
+                document.getElementById('setting-autoStart').checked = mockSettings.autoStart;
+                document.getElementById('setting-alwaysOnTop').checked = mockSettings.alwaysOnTop;
+                document.getElementById('setting-autoCheckNotifications').checked = mockSettings.autoCheckNotifications;
+                document.getElementById('setting-enableCanvasResizing').checked = mockSettings.enableCanvasResizing;
 
-            document.querySelectorAll('.record-button').forEach(button => {
-                button.addEventListener('click', () => startRecording(button));
-            });
-
-            // Initialize toggle listeners
-            attachToggleListeners();
-
-            // Initialize global listener for special IPC shortcuts (like Alt+Space)
-            if (!window._shortcutCapturedListenerAttached && window.electronAPI && window.electronAPI.onShortcutCaptured) {
-                window.electronAPI.onShortcutCaptured((key) => {
-                    if (window._onSpecialShortcut) {
-                        window._onSpecialShortcut(key);
+                document.querySelectorAll('.record-button').forEach(button => {
+                    const key = button.dataset.key;
+                    if (mockSettings.shortcuts[key]) {
+                        button.textContent = mockSettings.shortcuts[key];
                     }
                 });
-                window._shortcutCapturedListenerAttached = true;
             }
-        });
-
-        // --- Theme Application Logic ---
-        function applyTheme(theme) {
-            if (theme === 'light') {
-                document.documentElement.classList.add('light-mode');
-            } else {
-                document.documentElement.classList.remove('light-mode');
-            }
-        }
-
-        if (window.electronAPI) {
-            window.electronAPI.theme.getResolved().then(applyTheme);
-            window.electronAPI.theme.onUpdate(applyTheme);
-        }
-
-        // Initialize browser mode for testing without Electron
-        function initializeBrowserMode() {
-            console.log('Initializing browser mode');
-            // This function can be left empty or with minimal mocks for this task
-            const mockSettings = {
-                autoStart: false,
-                alwaysOnTop: false,
-                autoCheckNotifications: true,
-                enableCanvasResizing: true,
-                shortcuts: {
-                    showHide: 'Control+Space',
-                    newWindow: 'Control+N',
-                    quit: 'Control+Q',
-                    showInstructions: 'F1',
-                    refresh: 'F5',
-                    search: 'Control+F',
-                    screenshot: 'Control+Shift+S',
-                    newChatPro: 'Control+Shift+P',
-                    newChatFlash: 'Control+Shift+F'
-                }
-            };
-
-            // Update UI with mock settings
-            document.getElementById('setting-autoStart').checked = mockSettings.autoStart;
-            document.getElementById('setting-alwaysOnTop').checked = mockSettings.alwaysOnTop;
-            document.getElementById('setting-autoCheckNotifications').checked = mockSettings.autoCheckNotifications;
-            document.getElementById('setting-enableCanvasResizing').checked = mockSettings.enableCanvasResizing;
-
-            document.querySelectorAll('.record-button').forEach(button => {
-                const key = button.dataset.key;
-                if (mockSettings.shortcuts[key]) {
-                    button.textContent = mockSettings.shortcuts[key];
-                }
-            });
-        }
-    </script>
+        </script>
 </body>
 
 </html>
