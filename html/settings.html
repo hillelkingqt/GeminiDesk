@@ -863,6 +863,9 @@
                 <span data-i18n="general">General</span>
             </h3>
             <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="appVersion-label">App Version</strong><span id="app-version-display">Loading...</span></div>
+            </div>
+            <div class="setting-item">
                 <div class="setting-label"><strong data-i18n="language-label">Language</strong><span
                         data-i18n="language-desc">Select interface language.</span></div>
                 <div class="language-selector">
@@ -1879,6 +1882,20 @@
             });
 
             electronAPI.onSettingsUpdated(syncUi);
+
+            // Display App Version
+            electronAPI.getAppVersion().then(version => {
+                const versionDisplay = document.getElementById('app-version-display');
+                if (versionDisplay) {
+                    versionDisplay.textContent = version;
+                }
+            }).catch(err => {
+                console.error('Failed to get app version:', err);
+                const versionDisplay = document.getElementById('app-version-display');
+                if (versionDisplay) {
+                    versionDisplay.textContent = 'Unknown';
+                }
+            });
 
             // --- General Event Listeners ---
             document.getElementById('close-button').addEventListener('click', () => {

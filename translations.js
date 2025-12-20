@@ -13,6 +13,7 @@ const translations = {
         "draggableButtons-desc": "Allow reordering of toolbar buttons.",
         "resetOrder": "Reset Order",
         "general": "General",
+        "appVersion-label": "App Version",
         "language-label": "Language",
         "language-desc": "Select interface language.",
         "updates-label": "Application Updates",
