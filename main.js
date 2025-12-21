@@ -7710,6 +7710,108 @@ ipcMain.on('pie-menu-action', (event, action) => {
         createNewChatWithModel('thinking');
     } else if (action === 'new-window-pro') {
         createNewChatWithModel('pro');
+    } else if (action === 'new-chat') {
+        shortcutActions.newChat();
+    } else if (action === 'new-window') {
+        shortcutActions.newWindow();
+    } else if (action === 'screenshot') {
+        shortcutActions.screenshot();
+    } else if (action === 'open-settings') {
+        if (settingsWin) {
+            settingsWin.focus();
+        } else {
+            // Emulate opening settings from a "generic" context since we don't have the triggering window readily available in this scope
+            // However, open-settings-window expects an event with sender.
+            // We can manually call the logic used in 'open-settings-window' handler.
+            const parentWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows().find(w => !w.__internal && w.isVisible());
+            if (parentWindow) {
+                settingsWin = new BrowserWindow({
+                    width: 450,
+                    height: 580,
+                    resizable: false,
+                    frame: false,
+                    parent: parentWindow,
+                    show: false,
+                    webPreferences: {
+                        preload: path.join(__dirname, 'preload.js'),
+                        contextIsolation: true,
+                    }
+                });
+                setupContextMenu(settingsWin.webContents);
+                settingsWin.loadFile('html/settings.html');
+                settingsWin.once('ready-to-show', () => {
+                    if (settingsWin) {
+                        applyInvisibilityMode(settingsWin);
+                        settingsWin.show();
+                    }
+                });
+                settingsWin.on('closed', () => {
+                    settingsWin = null;
+                });
+            }
+        }
+    } else if (action === 'voice-assistant') {
+        shortcutActions.voiceAssistant();
+    } else if (action === 'show-hide') {
+        // Trigger the show/hide logic (same as global shortcut)
+        const showHideShortcut = settings.shortcuts.showHide;
+        // We can't invoke the global shortcut handler directly easily, but we can reuse the logic
+        // Or simply call a function if we extracted it. Since we didn't extract it fully, we'll replicate the core logic or simulate.
+        // Actually, we can just call the logic block inside registerShortcuts if we refactored it,
+        // but since we didn't, let's copy the essential part.
+        const allWindows = BrowserWindow.getAllWindows();
+        const userWindows = allWindows.filter(w => !w.__internal);
+
+        if (userWindows.length === 0) {
+            createWindow();
+        } else {
+            const shouldShow = userWindows.some(win => !win.isVisible());
+            userWindows.forEach(win => {
+                if (shouldShow) {
+                    if (win.isMinimized()) win.restore();
+                    win.show();
+                } else {
+                    win.hide();
+                }
+            });
+             if (shouldShow) {
+                const focused = userWindows.find(w => w.isFocused());
+                lastFocusedWindow = (focused && !focused.isDestroyed())
+                    ? focused
+                    : (userWindows[0] || null);
+                 if (lastFocusedWindow && !lastFocusedWindow.isDestroyed()) {
+                    setTimeout(() => {
+                        forceOnTop(lastFocusedWindow);
+                        const view = lastFocusedWindow.getBrowserView();
+                        if (view && view.webContents && !view.webContents.isDestroyed()) {
+                            view.webContents.focus();
+                        }
+                    }, 100);
+                }
+            }
+        }
+    } else if (action === 'quit-app') {
+        shortcutActions.quit();
+    } else if (action === 'refresh-page') {
+        shortcutActions.refresh();
+    } else if (action === 'find-in-page') {
+        shortcutActions.findInPage();
+    } else if (action === 'search-chats') {
+        shortcutActions.search();
+    } else if (action === 'close-current-window') {
+        shortcutActions.closeWindow();
+    } else if (action === 'change-model-pro') {
+        shortcutActions.changeModelPro();
+    } else if (action === 'change-model-flash') {
+        shortcutActions.changeModelFlash();
+    } else if (action === 'change-model-thinking') {
+        shortcutActions.changeModelThinking();
+    } else if (action === 'new-chat-with-pro') {
+        shortcutActions.newChatWithPro();
+    } else if (action === 'new-chat-with-flash') {
+        shortcutActions.newChatWithFlash();
+    } else if (action === 'new-chat-with-thinking') {
+        shortcutActions.newChatWithThinking();
     } else if (typeof action === 'object' && action.type === 'custom-prompt') {
         // Handle Custom Prompt Action
         // 1. Create/Focus Window (Standard Gemini for now, effectively "Flash" or last used)

@@ -78,7 +78,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const totalItems = allItems.length;
-        const radius = 110;
+        // Dynamic radius: start at 110, add more space if many items.
+        // For example: 8 items -> 110. 12 items -> 110 + (4*5) = 130.
+        // Adjust the formula as needed for best aesthetics.
+        let radius = 110;
+        if (totalItems > 8) {
+            radius = 110 + ((totalItems - 8) * 8);
+        }
 
         // Starting angle: -90 degrees (Top)
         // Step angle: 360 / totalItems
