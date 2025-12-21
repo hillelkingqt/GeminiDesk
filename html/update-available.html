@@ -286,6 +286,7 @@
     </div>
 
     <script src="../translations.js"></script>
+    <script src="js/marked.min.js"></script>
     <script>
         // State Management
         const states = {
@@ -324,20 +325,25 @@
                             if (data.releaseNotesHTML) {
                                 notesEl.innerHTML = data.releaseNotesHTML;
                             } else if (data.releaseNotes) {
-                                // Simple markdown parser
-                                let html = data.releaseNotes
-                                    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-                                    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-                                    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-                                    .replace(/^\* (.*$)/gim, '<ul><li>$1</li></ul>')
-                                    .replace(/^- (.*$)/gim, '<ul><li>$1</li></ul>')
-                                    .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
-                                    .replace(/`(.*)`/gim, '<code>$1</code>')
-                                    .replace(/\n/gim, '<br />');
+                                // Use marked if available, otherwise fallback to simple parser
+                                if (typeof marked !== 'undefined') {
+                                    notesEl.innerHTML = marked.parse(data.releaseNotes);
+                                } else {
+                                    // Simple markdown parser fallback
+                                    let html = data.releaseNotes
+                                        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                                        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                                        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                                        .replace(/^\* (.*$)/gim, '<ul><li>$1</li></ul>')
+                                        .replace(/^- (.*$)/gim, '<ul><li>$1</li></ul>')
+                                        .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+                                        .replace(/`(.*)`/gim, '<code>$1</code>')
+                                        .replace(/\n/gim, '<br />');
 
-                                // Fix nested lists (basic)
-                                html = html.replace(/<\/ul><br \/><ul>/gim, '');
-                                notesEl.innerHTML = html;
+                                    // Fix nested lists (basic)
+                                    html = html.replace(/<\/ul><br \/><ul>/gim, '');
+                                    notesEl.innerHTML = html;
+                                }
                             } else {
                                 notesEl.innerHTML = '<p style="text-align:center; opacity:0.6;">No release notes available.</p>';
                             }
