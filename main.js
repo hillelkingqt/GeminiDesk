@@ -2793,6 +2793,55 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
             }
         });
 
+        // TTS Voice Control Injection
+        view.webContents.on('did-finish-load', () => {
+            const ttsVoiceName = settings.ttsVoice || null;
+            if (ttsVoiceName) {
+                // Safely escape the voice name for injection
+                const safeVoiceName = JSON.stringify(ttsVoiceName);
+
+                const injectionScript = `
+                    (() => {
+                        if (window.geminiDeskInjected) return;
+                        window.geminiDeskInjected = true;
+
+                        const originalSpeak = window.speechSynthesis.speak;
+                        const desiredVoiceName = ${safeVoiceName};
+
+                        const applyVoice = (utterance) => {
+                            const voices = window.speechSynthesis.getVoices();
+                            const desiredVoice = voices.find(v => v.name === desiredVoiceName);
+
+                            if (desiredVoice) {
+                                utterance.voice = desiredVoice;
+                                console.log('GeminiDesk TTS: Applied voice', desiredVoiceName);
+                            } else {
+                                console.warn('GeminiDesk TTS: Voice', desiredVoiceName, 'not found. Using default.');
+                            }
+                            originalSpeak.call(window.speechSynthesis, utterance);
+                        };
+
+                        window.speechSynthesis.speak = function(utterance) {
+                            const voices = window.speechSynthesis.getVoices();
+
+                            if (voices.length === 0) {
+                                const handleVoicesChanged = () => {
+                                    window.speechSynthesis.removeEventListener('voiceschanged', handleVoicesChanged);
+                                    applyVoice(utterance);
+                                };
+                                window.speechSynthesis.addEventListener('voiceschanged', handleVoicesChanged);
+                            } else {
+                                applyVoice(utterance);
+                            }
+                        };
+                    })();
+                `;
+                view.webContents.executeJavaScript(injectionScript).catch(err => {
+                    console.error('GeminiDesk: Failed to inject TTS voice control script:', err);
+                });
+            }
+        });
+
         // DON'T clear storage - keep existing login sessions
         // This allows users to have multiple accounts logged in simultaneously
         // and avoids requiring 2FA on every login

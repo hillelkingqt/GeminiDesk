@@ -1372,6 +1372,13 @@
             </div>
             <div class="setting-item">
                 <div class="setting-label">
+                    <strong data-i18n="ttsVoice-label">Text-to-Speech Voice</strong>
+                    <span data-i18n="ttsVoice-desc">Choose the voice for spoken responses.</span>
+                </div>
+                <select id="setting-ttsVoice" class="text-input" style="width: 250px;"></select>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label">
                     <strong data-i18n="exportFormat-label">Export Format</strong>
                     <span data-i18n="exportFormat-desc">Choose the default export format for chats.</span>
                 </div>
@@ -2387,6 +2394,34 @@
                     }
                 });
             }
+
+            // --- TTS Voice Selection ---
+            const voiceSelect = document.getElementById('setting-ttsVoice');
+
+            function populateVoiceList() {
+                const voices = speechSynthesis.getVoices();
+                voiceSelect.innerHTML = '';
+                voices.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    option.value = voice.name;
+                    voiceSelect.appendChild(option);
+                });
+
+                // Set the saved voice
+                if (currentSettings && currentSettings.ttsVoice) {
+                    voiceSelect.value = currentSettings.ttsVoice;
+                }
+            }
+
+            populateVoiceList();
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = populateVoiceList;
+            }
+
+            voiceSelect.addEventListener('change', (e) => {
+                electronAPI.updateSetting('ttsVoice', e.target.value);
+            });
         </script>
 </body>
 

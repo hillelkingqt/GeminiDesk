@@ -238,7 +238,9 @@ const translations = {
         "autoScreenshotFullScreen-label": "Auto Full-Screen Screenshot",
         "autoScreenshotFullScreen-desc": "Capture entire screen automatically instead of selecting an area. Faster workflow for visual tasks.",
         "pieMenu-label": "Pie Menu",
-        "pieMenu-desc": "Open the quick access menu."
+        "pieMenu-desc": "Open the quick access menu.",
+        "ttsVoice-label": "Text-to-Speech Voice",
+        "ttsVoice-desc": "Choose the voice for spoken responses."
     },
     "fr": {
         "settings-title": "Paramètres",
@@ -476,7 +478,9 @@ const translations = {
         "autoScreenshotFullScreen-label": "Capture Plein Écran Auto",
         "autoScreenshotFullScreen-desc": "Capturer tout l'écran automatiquement au lieu de sélectionner une zone. Flux de travail plus rapide pour les tâches visuelles.",
         "pieMenu-label": "Menu Pie",
-        "pieMenu-desc": "Ouvrir le menu d'accès rapide."
+        "pieMenu-desc": "Ouvrir le menu d'accès rapide.",
+        "ttsVoice-label": "Voix de synthèse vocale",
+        "ttsVoice-desc": "Choisissez la voix pour les réponses parlées."
     },
     "he": {
         "settings-title": "הגדרות",
@@ -716,7 +720,9 @@ const translations = {
         "autoScreenshotFullScreen-label": "צילום מסך מלא אוטומטי",
         "autoScreenshotFullScreen-desc": "צלם את כל המסך אוטומטית במקום לבחור אזור. זרימת עבודה מהירה יותר למשימות ויזואליות.",
         "pieMenu-label": "תפריט עוגה",
-        "pieMenu-desc": "פתיחת תפריט הגישה המהירה."
+        "pieMenu-desc": "פתיחת תפריט הגישה המהירה.",
+        "ttsVoice-label": "קול הקראה",
+        "ttsVoice-desc": "בחר את הקול לתגובות מדוברות."
     },
     "ru": {
         "settings-title": "Настройки",
@@ -950,7 +956,9 @@ const translations = {
         "autoScreenshotFullScreen-label": "Авто-скриншот всего экрана",
         "autoScreenshotFullScreen-desc": "Захватывать весь экран автоматически вместо выбора области. Ускоряет работу с визуальными задачами.",
         "pieMenu-label": "Круговое меню",
-        "pieMenu-desc": "Открыть меню быстрого доступа."
+        "pieMenu-desc": "Открыть меню быстрого доступа.",
+        "ttsVoice-label": "Голос для озвучивания",
+        "ttsVoice-desc": "Выберите голос для озвучивания ответов."
     },
     "es": {
         "settings-title": "Configuración",
@@ -1182,7 +1190,9 @@ const translations = {
         "defaultPrompt-desc": "No se ha establecido ningún prompt predeterminado.",
         "screenshotSettings": "Configuración de Captura de Pantalla",
         "autoScreenshotFullScreen-label": "Captura de Pantalla Completa Automática",
-        "autoScreenshotFullScreen-desc": "Capturar toda la pantalla automáticamente en lugar de seleccionar un área. Flujo de trabajo más rápido para tareas visuales."
+        "autoScreenshotFullScreen-desc": "Capturar toda la pantalla automáticamente en lugar de seleccionar un área. Flujo de trabajo más rápido para tareas visuales.",
+        "ttsVoice-label": "Voz de texto a voz",
+        "ttsVoice-desc": "Elige la voz para las respuestas habladas."
     },
     "de": {
         "settings-title": "Einstellungen",
@@ -1414,7 +1424,9 @@ const translations = {
         "defaultPrompt-desc": "Kein Standard-Prompt festgelegt.",
         "screenshotSettings": "Screenshot-Einstellungen",
         "autoScreenshotFullScreen-label": "Automatischer Vollbild-Screenshot",
-        "autoScreenshotFullScreen-desc": "Den gesamten Bildschirm automatisch erfassen, anstatt einen Bereich auszuwählen. Schnellerer Workflow für visuelle Aufgaben."
+        "autoScreenshotFullScreen-desc": "Den gesamten Bildschirm automatisch erfassen, anstatt einen Bereich auszuwählen. Schnellerer Workflow für visuelle Aufgaben.",
+        "ttsVoice-label": "Text-zu-Sprache-Stimme",
+        "ttsVoice-desc": "Wählen Sie die Stimme für gesprochene Antworten."
     },
     "it": {
         "settings-title": "Impostazioni",
@@ -1646,7 +1658,9 @@ const translations = {
         "defaultPrompt-desc": "Nessun prompt predefinito impostato.",
         "screenshotSettings": "Impostazioni Screenshot",
         "autoScreenshotFullScreen-label": "Screenshot a Schermo Intero Automatico",
-        "autoScreenshotFullScreen-desc": "Cattura l'intero schermo automaticamente invece di selezionare un'area. Flusso di lavoro più veloce per attività visive."
+        "autoScreenshotFullScreen-desc": "Cattura l'intero schermo automaticamente invece di selezionare un'area. Flusso di lavoro più veloce per attività visive.",
+        "ttsVoice-label": "Voce per sintesi vocale",
+        "ttsVoice-desc": "Scegli la voce per le risposte parlate."
     },
     "pt": {
         "settings-title": "Configurações",
@@ -1878,7 +1892,9 @@ const translations = {
         "defaultPrompt-desc": "Nenhum prompt padrão definido.",
         "screenshotSettings": "Configurações de Captura de Tela",
         "autoScreenshotFullScreen-label": "Captura de Tela Cheia Automática",
-        "autoScreenshotFullScreen-desc": "Capturar toda a tela automaticamente em vez de selecionar uma área. Fluxo de trabalho mais rápido para tarefas visuais."
+        "autoScreenshotFullScreen-desc": "Capturar toda a tela automaticamente em vez de selecionar uma área. Fluxo de trabalho mais rápido para tarefas visuais.",
+        "ttsVoice-label": "Voz de conversão de texto em fala",
+        "ttsVoice-desc": "Escolha a voz para as respostas faladas."
     },
     "nl": {
         "settings-title": "Instellingen",
@@ -2108,7 +2124,9 @@ const translations = {
         "defaultPrompt-desc": "Geen standaard prompt ingesteld.",
         "screenshotSettings": "Screenshot Instellingen",
         "autoScreenshotFullScreen-label": "Auto Volledig Scherm Screenshot",
-        "autoScreenshotFullScreen-desc": "Leg het hele scherm automatisch vast in plaats van een gebied te selecteren. Snellere workflow voor visuele taken."
+        "autoScreenshotFullScreen-desc": "Automatisch het hele scherm vastleggen in plaats van een gebied te selecteren. Snellere workflow voor visuele taken.",
+        "ttsVoice-label": "Tekst-naar-spraakstem",
+        "ttsVoice-desc": "Kies de stem voor gesproken antwoorden."
     },
     "pl": {
         "settings-title": "Ustawienia",
@@ -2338,7 +2356,9 @@ const translations = {
         "defaultPrompt-desc": "Brak ustawionego domyślnego promptu.",
         "screenshotSettings": "Ustawienia Zrzutu Ekranu",
         "autoScreenshotFullScreen-label": "Automatyczny Zrzut Pełnego Ekranu",
-        "autoScreenshotFullScreen-desc": "Automatycznie przechwytuj cały ekran zamiast wybierać obszar. Szybszy przepływ pracy przy zadaniach wizualnych."
+        "autoScreenshotFullScreen-desc": "Automatycznie przechwytuj cały ekran zamiast wybierać obszar. Szybszy przepływ pracy dla zadań wizualnych.",
+        "ttsVoice-label": "Głos syntezy mowy",
+        "ttsVoice-desc": "Wybierz głos dla odpowiedzi mówionych."
     },
     "tr": {
         "settings-title": "Ayarlar",
@@ -2568,7 +2588,9 @@ const translations = {
         "defaultPrompt-desc": "Varsayılan istem ayarlanmadı.",
         "screenshotSettings": "Ekran Görüntüsü Ayarları",
         "autoScreenshotFullScreen-label": "Otomatik Tam Ekran Görüntüsü",
-        "autoScreenshotFullScreen-desc": "Alan seçmek yerine tüm ekranı otomatik olarak yakalayın. Görsel görevler için daha hızlı iş akışı."
+        "autoScreenshotFullScreen-desc": "Bir alan seçmek yerine tüm ekranı otomatik olarak yakalayın. Görsel görevler için daha hızlı iş akışı.",
+        "ttsVoice-label": "Metin-Konuşma Sesi",
+        "ttsVoice-desc": "Konuşulan yanıtlar için sesi seçin."
     },
     "zh": {
         "settings-title": "设置",
@@ -2798,7 +2820,9 @@ const translations = {
         "defaultPrompt-desc": "未设置默认提示词。",
         "screenshotSettings": "截图设置",
         "autoScreenshotFullScreen-label": "自动全屏截图",
-        "autoScreenshotFullScreen-desc": "自动捕捉整个屏幕，而不是选择区域。视觉任务的工作流程更快。"
+        "autoScreenshotFullScreen-desc": "自动捕获整个屏幕而不是选择一个区域。视觉任务的工作流程更快。",
+        "ttsVoice-label": "文本转语音声音",
+        "ttsVoice-desc": "选择用于语音应答的声音。"
     },
     "zh-tw": {
         "settings-title": "設定",
@@ -3028,7 +3052,9 @@ const translations = {
         "defaultPrompt-desc": "未設定預設提示詞。",
         "screenshotSettings": "截圖設定",
         "autoScreenshotFullScreen-label": "自動全螢幕截圖",
-        "autoScreenshotFullScreen-desc": "自動捕捉整個螢幕，而不是選擇區域。視覺任務的工作流程更快。"
+        "autoScreenshotFullScreen-desc": "自動擷取整個螢幕，而不是選取一個區域。視覺化任務的工作流程更快。",
+        "ttsVoice-label": "文字轉語音聲音",
+        "ttsVoice-desc": "選擇用於語音應答的聲音。"
     },
     "ja": {
         "settings-title": "設定",
@@ -3257,7 +3283,9 @@ const translations = {
         "defaultPrompt-desc": "デフォルトのプロンプトが設定されていません。",
         "screenshotSettings": "スクリーンショット設定",
         "autoScreenshotFullScreen-label": "自動全画面スクリーンショット",
-        "autoScreenshotFullScreen-desc": "領域を選択する代わりに、画面全体を自動的にキャプチャします。視覚的なタスクのワークフローが高速化されます。"
+        "autoScreenshotFullScreen-desc": "領域を選択する代わりに画面全体を自動的にキャプチャします。視覚的なタスクのワークフローが高速化されます。",
+        "ttsVoice-label": "テキスト読み上げ音声",
+        "ttsVoice-desc": "音声応答に使用する音声を選択します。"
     },
     "ko": {
         "settings-title": "설정",
@@ -3486,7 +3514,9 @@ const translations = {
         "defaultPrompt-desc": "설정된 기본 프롬프트가 없습니다.",
         "screenshotSettings": "스크린샷 설정",
         "autoScreenshotFullScreen-label": "자동 전체 화면 스크린샷",
-        "autoScreenshotFullScreen-desc": "영역을 선택하는 대신 전체 화면을 자동으로 캡처합니다. 시각적 작업을 위한 더 빠른 워크플로."
+        "autoScreenshotFullScreen-desc": "영역을 선택하는 대신 전체 화면을 자동으로 캡처합니다. 시각적 작업의 워크플로가 빨라집니다.",
+        "ttsVoice-label": "텍스트 음성 변환 음성",
+        "ttsVoice-desc": "음성 응답에 사용할 음성을 선택하십시오."
     },
     "hi": {
         "settings-title": "सेटिंग्स",
@@ -3716,7 +3746,9 @@ const translations = {
         "defaultPrompt-desc": "कोई डिफ़ॉल्ट प्रॉम्प्ट सेट नहीं है।",
         "screenshotSettings": "स्क्रीनशॉट सेटिंग्स",
         "autoScreenshotFullScreen-label": "स्वचालित फुल-स्क्रीन स्क्रीनशॉट",
-        "autoScreenshotFullScreen-desc": "किसी क्षेत्र का चयन करने के बजाय पूरी स्क्रीन को स्वचालित रूप से कैप्चर करें। दृश्य कार्यों के लिए तेज़ वर्कफ़्लो।"
+        "autoScreenshotFullScreen-desc": "एक क्षेत्र का चयन करने के बजाय पूरी स्क्रीन को स्वचालित रूप से कैप्चर करें। दृश्य कार्यों के लिए तेज़ वर्कफ़्लो।",
+        "ttsVoice-label": "टेक्स्ट-टू-स्पीच आवाज़",
+        "ttsVoice-desc": "बोले गए उत्तरों के लिए आवाज़ चुनें।"
     },
     "ar": {
         "settings-title": "الإعدادات",
@@ -3948,7 +3980,9 @@ const translations = {
         "defaultPrompt-desc": "لم يتم تعيين مطالبة افتراضية.",
         "screenshotSettings": "إعدادات لقطة الشاشة",
         "autoScreenshotFullScreen-label": "لقطة شاشة كاملة تلقائية",
-        "autoScreenshotFullScreen-desc": "التقاط الشاشة بأكملها تلقائيًا بدلاً من تحديد منطقة. سير عمل أسرع للمهام المرئية."
+        "autoScreenshotFullScreen-desc": "التقاط الشاشة بأكملها تلقائيًا بدلاً من تحديد منطقة. سير عمل أسرع للمهام المرئية.",
+        "ttsVoice-label": "صوت تحويل النص إلى كلام",
+        "ttsVoice-desc": "اختر الصوت للردود المنطوقة."
     },
     "bn": {
         "settings-title": "সেটিংস",
@@ -4178,7 +4212,9 @@ const translations = {
         "defaultPrompt-desc": "কোন ডিফল্ট প্রম্পট সেট করা নেই।",
         "screenshotSettings": "স্ক্রিনশট সেটিংস",
         "autoScreenshotFullScreen-label": "অটো ফুল-স্ক্রিন স্ক্রিনশট",
-        "autoScreenshotFullScreen-desc": "একটি এলাকা নির্বাচন করার পরিবর্তে স্বয়ংক্রিয়ভাবে পুরো স্ক্রিন ক্যাপচার করুন। ভিজ্যুয়াল কাজের জন্য দ্রুত কর্মপ্রবাহ।"
+        "autoScreenshotFullScreen-desc": "একটি এলাকা নির্বাচন করার পরিবর্তে স্বয়ংক্রিয়ভাবে পুরো স্ক্রিন ক্যাপচার করুন। ভিজ্যুয়াল কাজের জন্য দ্রুত কর্মপ্রবাহ।",
+        "ttsVoice-label": "টেক্সট-টু-স্পিচ ভয়েস",
+        "ttsVoice-desc": "কথ্য প্রতিক্রিয়ার জন্য ভয়েস চয়ন করুন।"
     },
     "id": {
         "settings-title": "Pengaturan",
@@ -4408,7 +4444,9 @@ const translations = {
         "defaultPrompt-desc": "Tidak ada prompt default yang ditetapkan.",
         "screenshotSettings": "Pengaturan Tangkapan Layar",
         "autoScreenshotFullScreen-label": "Tangkapan Layar Penuh Otomatis",
-        "autoScreenshotFullScreen-desc": "Tangkap seluruh layar secara otomatis alih-alih memilih area. Alur kerja lebih cepat untuk tugas visual."
+        "autoScreenshotFullScreen-desc": "Tangkap seluruh layar secara otomatis alih-alih memilih area. Alur kerja lebih cepat untuk tugas visual.",
+        "ttsVoice-label": "Suara Teks-ke-Ucapan",
+        "ttsVoice-desc": "Pilih suara untuk respons lisan."
     },
     "ur": {
         "settings-title": "ترتیبات",
@@ -4638,7 +4676,9 @@ const translations = {
         "defaultPrompt-desc": "کوئی ڈیفالٹ پرامپٹ سیٹ نہیں ہے۔",
         "screenshotSettings": "اسکرین شاٹ کی ترتیبات",
         "autoScreenshotFullScreen-label": "خودکار فل سکرین اسکرین شاٹ",
-        "autoScreenshotFullScreen-desc": "کسی علاقے کو منتخب کرنے کے بجائے پوری اسکرین کو خود بخود کیپچر کریں۔ بصری کاموں کے لیے تیز ورک فلو۔"
+        "autoScreenshotFullScreen-desc": "کسی علاقے کو منتخب کرنے کے بجائے پوری اسکرین کو خود بخود کیپچر کریں۔ بصری کاموں کے لیے تیز ورک فلو۔",
+        "ttsVoice-label": "ٹیکسٹ ٹو اسپیچ آواز",
+        "ttsVoice-desc": "بولے گئے جوابات کے لیے آواز منتخب کریں۔"
     },
     "sw": {
         "settings-title": "Mipangilio",
@@ -4868,7 +4908,9 @@ const translations = {
         "defaultPrompt-desc": "Hakuna agizo chaguo-msingi lililowekwa.",
         "screenshotSettings": "Mipangilio ya Picha ya Skrini",
         "autoScreenshotFullScreen-label": "Picha ya Skrini Nzima Kiotomatiki",
-        "autoScreenshotFullScreen-desc": "Nasa skrini nzima kiotomatiki badala ya kuchagua eneo. Mtiririko wa kazi haraka kwa kazi za kuona."
+        "autoScreenshotFullScreen-desc": "Nasa skrini nzima kiotomatiki badala ya kuchagua eneo. Mtiririko wa kazi haraka kwa kazi za kuona.",
+        "ttsVoice-label": "Sauti ya Maandishi-kwa-Hotuba",
+        "ttsVoice-desc": "Chagua sauti ya majibu ya kuzungumzwa."
     },
     "ta": {
         "settings-title": "அமைப்புகள்",
@@ -5098,7 +5140,9 @@ const translations = {
         "defaultPrompt-desc": "இயல்புநிலை பிராம்ட் எதுவும் அமைக்கப்படவில்லை.",
         "screenshotSettings": "ஸ்கிரீன்ஷாட் அமைப்புகள்",
         "autoScreenshotFullScreen-label": "தானியங்கி முழுத்திரை ஸ்கிரீன்ஷாட்",
-        "autoScreenshotFullScreen-desc": "ஒரு பகுதியைத் தேர்ந்தெடுப்பதற்குப் பதிலாக முழுத் திரையையும் தானாகவே பிடிக்கவும். காட்சிப் பணிகளுக்கான விரைவான பணிப்பாய்வு."
+        "autoScreenshotFullScreen-desc": "ஒரு பகுதியைத் தேர்ந்தெடுப்பதற்குப் பதிலாக முழுத் திரையையும் தானாகவே பிடிக்கவும். காட்சிப் பணிகளுக்கான விரைவான பணிப்பாய்வு.",
+        "ttsVoice-label": "உரையிலிருந்து பேச்சு குரல்",
+        "ttsVoice-desc": "பேசும் பதில்களுக்கான குரலைத் தேர்ந்தெடுக்கவும்."
     },
     "vi": {
         "settings-title": "Cài đặt",
@@ -5328,7 +5372,9 @@ const translations = {
         "defaultPrompt-desc": "Không có lời nhắc mặc định được đặt.",
         "screenshotSettings": "Cài đặt Ảnh chụp màn hình",
         "autoScreenshotFullScreen-label": "Ảnh chụp toàn màn hình tự động",
-        "autoScreenshotFullScreen-desc": "Tự động chụp toàn bộ màn hình thay vì chọn khu vực. Quy trình làm việc nhanh hơn cho các tác vụ trực quan."
+        "autoScreenshotFullScreen-desc": "Tự động chụp toàn bộ màn hình thay vì chọn khu vực. Quy trình làm việc nhanh hơn cho các tác vụ trực quan.",
+        "ttsVoice-label": "Giọng nói Chuyển văn bản thành giọng nói",
+        "ttsVoice-desc": "Chọn giọng nói cho các câu trả lời được nói."
     },
     "th": {
         "settings-title": "การตั้งค่า",
@@ -5558,7 +5604,9 @@ const translations = {
         "defaultPrompt-desc": "ไม่ได้ตั้งค่าพรอมต์เริ่มต้น",
         "screenshotSettings": "การตั้งค่าภาพหน้าจอ",
         "autoScreenshotFullScreen-label": "ภาพหน้าจอเต็มหน้าจออัตโนมัติ",
-        "autoScreenshotFullScreen-desc": "จับภาพหน้าจอทั้งหมดโดยอัตโนมัติแทนที่จะเลือกพื้นที่ เวิร์กโฟลว์เร็วขึ้นสำหรับงานภาพ"
+        "autoScreenshotFullScreen-desc": "จับภาพหน้าจอทั้งหมดโดยอัตโนมัติแทนที่จะเลือกพื้นที่ เวิร์กโฟลว์เร็วขึ้นสำหรับงานภาพ",
+        "ttsVoice-label": "เสียงอ่านข้อความ",
+        "ttsVoice-desc": "เลือกเสียงสำหรับการตอบกลับด้วยเสียง"
     },
     "cs": {
         "settings-title": "Nastavení",
@@ -5788,7 +5836,9 @@ const translations = {
         "defaultPrompt-desc": "Není nastavena žádná výchozí výzva.",
         "screenshotSettings": "Nastavení snímku obrazovky",
         "autoScreenshotFullScreen-label": "Automatický snímek celé obrazovky",
-        "autoScreenshotFullScreen-desc": "Automaticky zachytit celou obrazovku místo výběru oblasti. Rychlejší pracovní postup pro vizuální úkoly."
+        "autoScreenshotFullScreen-desc": "Automaticky zachytit celou obrazovku místo výběru oblasti. Rychlejší pracovní postup pro vizuální úkoly.",
+        "ttsVoice-label": "Hlas převodu textu na řeč",
+        "ttsVoice-desc": "Vyberte hlas pro mluvené odpovědi."
     }
 };
 
