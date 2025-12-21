@@ -49,6 +49,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y libarchive-tools
       - run: npm install
       - run: npm run build -- --linux deb AppImage rpm pacman --x64 --arm64 --publish never
       

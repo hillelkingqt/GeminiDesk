@@ -177,10 +177,27 @@ Want to try the latest fixes and features before they're officially released? Ou
 
 These builds include the latest fixes and improvements that haven't been released yet. They're automatically built and uploaded by GitHub Actions, just like our official releases, so they're safe to use.
 
-*   **Windows:** [GeminiDesk-Setup.exe](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk-Setup.exe)
-*   **macOS:** [GeminiDesk.dmg](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk.dmg)
-*   **Linux AppImage:** [GeminiDesk.AppImage](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk.AppImage)
-*   **Linux DEB:** [GeminiDesk.deb](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk.deb)
+### Windows
+*   **x64 Setup:** [GeminiDesk-Setup.exe](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk-Setup.exe)
+*   **x64 Zip:** [GeminiDesk-win.zip](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk-win.zip)
+*   **ARM64 Setup:** [GeminiDesk-Setup-arm64.exe](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk-Setup-arm64.exe)
+*   **ARM64 Zip:** [GeminiDesk-win-arm64.zip](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk-win-arm64.zip)
+*   **IA32 Setup:** [GeminiDesk-Setup-ia32.exe](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk-Setup-ia32.exe)
+*   **IA32 Zip:** [GeminiDesk-win-ia32.zip](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk-win-ia32.zip)
+
+### macOS
+*   **Apple Silicon (ARM64):** [GeminiDesk-arm64.dmg](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk-arm64.dmg)
+*   **Intel:** [GeminiDesk-intel.dmg](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk-intel.dmg)
+
+### Linux
+*   **AppImage x64:** [GeminiDesk.AppImage](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk.AppImage)
+*   **AppImage ARM64:** [GeminiDesk-arm64.AppImage](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk-arm64.AppImage)
+*   **DEB x64:** [GeminiDesk.deb](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk.deb)
+*   **DEB ARM64:** [GeminiDesk-arm64.deb](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk-arm64.deb)
+*   **RPM x64:** [GeminiDesk.rpm](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk.rpm)
+*   **RPM ARM64:** [GeminiDesk-arm64.rpm](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk-arm64.rpm)
+*   **Pacman x64:** [GeminiDesk.pacman](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk.pacman)
+*   **Pacman ARM64:** [GeminiDesk-arm64.pacman](https://pub-02c49d30ff9643508be85d3ff1fe365e.r2.dev/GeminiDesk-arm64.pacman)
 
 > **Note:** These links always point to the latest build from the main branch. Perfect for early adopters who want the newest features!
 
