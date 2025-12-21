@@ -847,6 +847,16 @@
                         class="slider"></span></label>
             </div>
             <div class="setting-item">
+                <div class="setting-label">
+                    <strong data-i18n="preserveWindowSize-label">Preserve Window Size</strong>
+                    <span data-i18n="preserveWindowSize-desc">Save and restore window dimensions.</span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="setting-preserveWindowSize">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
                 <div class="setting-label"><strong data-i18n="draggableButtons-label">Draggable Buttons</strong><span
                         data-i18n="draggableButtons-desc">Allow reordering of toolbar buttons.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -1852,6 +1862,7 @@
                             window._toggleListenersAttached = true;
                         }
                         document.getElementById('setting-restoreWindows').checked = settings.restoreWindows || false;
+                        document.getElementById('setting-preserveWindowSize').checked = settings.preserveWindowSize || false;
                         document.getElementById('setting-showCloseButton').checked = settings.showCloseButton || false;
                         document.getElementById('setting-draggableButtonsEnabled').checked = settings.draggableButtonsEnabled !== false;
                         document.getElementById('setting-showExportButton').checked = settings.showExportButton || false;
@@ -2130,6 +2141,10 @@
 
                 document.getElementById('setting-restoreWindows').addEventListener('change', (e) => {
                     electronAPI.updateSetting('restoreWindows', e.target.checked);
+                });
+
+                document.getElementById('setting-preserveWindowSize').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('preserveWindowSize', e.target.checked);
                 });
 
                 document.getElementById('setting-showCloseButton').addEventListener('change', (e) => {

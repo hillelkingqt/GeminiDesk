@@ -2387,7 +2387,7 @@ function reloadFocusedView() {
 // ================================================================= //
 
 function createWindow(state = null) {
-    const newWin = new BrowserWindow({
+    const windowOptions = {
         width: originalSize.width,
         height: originalSize.height,
         skipTaskbar: !settings.showInTaskbar,
@@ -2403,7 +2403,19 @@ function createWindow(state = null) {
             contextIsolation: true,
             partition: SESSION_PARTITION
         }
-    });
+    };
+
+    if (settings.preserveWindowSize && settings.windowBounds) {
+        windowOptions.width = settings.windowBounds.width || originalSize.width;
+        windowOptions.height = settings.windowBounds.height || originalSize.height;
+        // Only set x/y if they are valid numbers to avoid window appearing off-screen
+        if (typeof settings.windowBounds.x === 'number' && typeof settings.windowBounds.y === 'number') {
+            windowOptions.x = settings.windowBounds.x;
+            windowOptions.y = settings.windowBounds.y;
+        }
+    }
+
+    const newWin = new BrowserWindow(windowOptions);
 
     const initialAccountIndex = state && typeof state.accountIndex === 'number'
         ? state.accountIndex
@@ -2577,10 +2589,18 @@ function createWindow(state = null) {
     // Handle resized event (fires after resize completes - crucial for Windows snap with Win+Arrow keys)
     newWin.on('resized', () => {
         updateViewBounds(false, true);
+        if (settings.preserveWindowSize && newWin && !newWin.isDestroyed()) {
+            settings.windowBounds = newWin.getBounds();
+            debouncedSaveSettings(settings);
+        }
     });
 
     // Handle moved event (fires after window position changes - may accompany snap operations)
     newWin.on('moved', () => {
+        if (settings.preserveWindowSize && newWin && !newWin.isDestroyed()) {
+            settings.windowBounds = newWin.getBounds();
+            debouncedSaveSettings(settings);
+        }
         const view = newWin.getBrowserView();
         if (view && view.webContents && !view.webContents.isDestroyed()) {
             const contentBounds = newWin.getContentBounds();

@@ -36,6 +36,8 @@ const defaultSettings = {
     draggableButtonsEnabled: true,
     buttonOrder: ['minimize-button', 'new-window-button', 'fullscreen-button', 'export-chat-button', 'settings-button'],
     restoreWindows: false,
+    preserveWindowSize: false,
+    windowBounds: { width: 550, height: 770, x: null, y: null },
     savedWindows: [],
     accounts: [],
     currentAccountIndex: 0,
