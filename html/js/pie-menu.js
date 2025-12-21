@@ -44,25 +44,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // Dynamic Rendering
     const container = document.getElementById('dynamic-segments-container');
 
-    const standardItems = [
-        { name: 'Flash', action: 'new-window-flash', type: 'standard' },
-        { name: 'Thinking', action: 'new-window-thinking', type: 'standard' },
-        { name: 'Pro', action: 'new-window-pro', type: 'standard' }
-    ];
-
-    function renderSegments(customPrompts = []) {
+    function renderSegments(data = {}) {
         if (!container) return;
         container.innerHTML = '';
 
-        // Merge items: Standard items + Custom Prompts
-        const allItems = [...standardItems];
+        const actions = data.actions || [];
+        const customPrompts = data.prompts || [];
+
+        // Merge items: Configured Actions + Custom Prompts
+        const allItems = [];
+
+        actions.forEach(a => {
+             allItems.push({
+                 name: a.label,
+                 action: a.action,
+                 type: 'standard',
+                 icon: a.icon, // icon name for google fonts or similar
+                 color: a.color
+             });
+        });
+
         if (customPrompts && customPrompts.length > 0) {
             customPrompts.forEach(p => {
                 allItems.push({
                     name: p.name,
                     content: p.content,
                     type: 'custom',
-                    action: { type: 'custom-prompt', content: p.content }
+                    action: { type: 'custom-prompt', content: p.content },
+                    icon: 'chat',
+                    color: '#4285F4'
                 });
             });
         }
@@ -97,12 +107,27 @@ document.addEventListener('DOMContentLoaded', () => {
             // Content bubble sits inside wrapper, centered
             const content = document.createElement('div');
             content.className = item.type === 'standard' ? 'segment-bubble standard' : 'segment-bubble custom';
-            content.textContent = item.name.length > 15 ? item.name.substring(0, 12) + '...' : item.name;
+
+            // Icon
+            if (item.icon) {
+                const icon = document.createElement('span');
+                icon.className = 'material-symbols-rounded';
+                icon.style.fontSize = '24px';
+                icon.style.display = 'block';
+                icon.style.marginBottom = '4px';
+                icon.textContent = item.icon;
+                content.appendChild(icon);
+            }
+
+            const textSpan = document.createElement('span');
+            textSpan.textContent = item.name.length > 15 ? item.name.substring(0, 12) + '...' : item.name;
+            content.appendChild(textSpan);
+
             if (item.content) content.title = item.content;
 
-            if (item.name === 'Flash') content.classList.add('bubble-flash');
-            if (item.name === 'Thinking') content.classList.add('bubble-thinking');
-            if (item.name === 'Pro') content.classList.add('bubble-pro');
+            if (item.color) {
+                content.style.borderBottom = `3px solid ${item.color}`;
+            }
 
             // CSS will handle transform: translate(-50%, -50%) for the bubble to center it on the wrapper
             // And CSS :hover will handle scale.
@@ -120,11 +145,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.electronAPI.onPieMenuData) {
         window.electronAPI.onPieMenuData((data) => {
             console.log('Received Pie Menu Data:', data);
-            const prompts = data.prompts || [];
-            renderSegments(prompts);
+            renderSegments(data);
         });
     } else {
         // Initial render without custom data (fallback)
-        renderSegments([]);
+        renderSegments({});
     }
 });

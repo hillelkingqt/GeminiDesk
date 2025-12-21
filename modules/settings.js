@@ -59,6 +59,18 @@ const defaultSettings = {
         voiceAssistant: isMac ? 'Command+Shift+A' : 'Alt+Shift+A',
         pieMenu: 'Alt+M'
     },
+  pieMenu: {
+    actions: [
+      { id: 'flash', action: 'new-window-flash', label: 'Flash', enabled: true, icon: 'bolt', color: '#81c995' },
+      { id: 'thinking', action: 'new-window-thinking', label: 'Thinking', enabled: true, icon: 'psychology', color: '#fdd663' },
+      { id: 'pro', action: 'new-window-pro', label: 'Pro', enabled: true, icon: 'diamond', color: '#f28b82' },
+      { id: 'newChat', action: 'new-chat', label: 'New Chat', enabled: false, icon: 'add_comment', color: '#8ab4f8' },
+      { id: 'newWindow', action: 'new-window', label: 'New Window', enabled: false, icon: 'open_in_new', color: '#c58af9' },
+      { id: 'screenshot', action: 'screenshot', label: 'Screenshot', enabled: true, icon: 'screenshot_region', color: '#e8eaed' },
+      { id: 'settings', action: 'open-settings', label: 'Settings', enabled: true, icon: 'settings', color: '#5f6368' },
+      { id: 'voice', action: 'voice-assistant', label: 'Voice Mode', enabled: false, icon: 'mic', color: '#fa7b17' }
+    ]
+  },
     lastUpdateCheck: 0,
     microphoneGranted: null,
     theme: 'system',
@@ -89,6 +101,7 @@ function getSettings() {
                     ...defaultSettings,
                     ...savedSettings,
                     shortcuts: { ...defaultSettings.shortcuts, ...savedSettings.shortcuts },
+          pieMenu: { ...defaultSettings.pieMenu, ...(savedSettings.pieMenu || {}) },
                     showInTaskbar: savedSettings.showInTaskbar === undefined ? false : savedSettings.showInTaskbar,
                     // CRITICAL: Force loadUnpackedExtension to false unless explicitly set to true by user
                     loadUnpackedExtension: savedSettings.loadUnpackedExtension === true ? true : false,

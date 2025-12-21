@@ -7674,7 +7674,8 @@ function togglePieMenu() {
 function sendPieMenuData() {
     if (pieMenuWin && !pieMenuWin.isDestroyed()) {
         const prompts = settings.customPrompts ? settings.customPrompts.filter(p => p.showInPieMenu) : [];
-        pieMenuWin.webContents.send('pie-menu-data', { prompts });
+        const actions = settings.pieMenu && settings.pieMenu.actions ? settings.pieMenu.actions.filter(a => a.enabled) : [];
+        pieMenuWin.webContents.send('pie-menu-data', { prompts, actions });
     }
 }
 
