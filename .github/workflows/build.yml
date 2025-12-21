@@ -50,7 +50,7 @@ jobs:
         with:
           node-version: 20
       - run: npm install
-      - run: npm run build -- --linux deb AppImage --publish never
+      - run: npm run build -- --linux deb AppImage rpm pacman --x64 --arm64 --publish never
       
       - name: Upload to release
         uses: softprops/action-gh-release@v2
@@ -60,6 +60,8 @@ jobs:
           files: |
             dist/*.AppImage
             dist/*.deb
+            dist/*.rpm
+            dist/*.pacman
             dist/*.yml
             dist/*.yaml
             dist/*.blockmap
@@ -73,10 +75,28 @@ jobs:
           R2_ENDPOINT: ${{ secrets.CF_R2_ENDPOINT }}
           R2_BUCKET: ${{ secrets.CF_R2_BUCKET }}
         run: |
-          find dist -name "*.AppImage" -exec mv {} GeminiDesk.AppImage \;
-          find dist -name "*.deb" -exec mv {} GeminiDesk.deb \;
-          aws s3 cp GeminiDesk.AppImage s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT
-          aws s3 cp GeminiDesk.deb s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT
+          # x64
+          find dist -name "*-x64.AppImage" -exec mv {} GeminiDesk.AppImage \; || true
+          find dist -name "*-x64.deb" -exec mv {} GeminiDesk.deb \; || true
+          find dist -name "*-x64.rpm" -exec mv {} GeminiDesk.rpm \; || true
+          find dist -name "*-x64.pacman" -exec mv {} GeminiDesk.pacman \; || true
+
+          # arm64
+          find dist -name "*-arm64.AppImage" -exec mv {} GeminiDesk-arm64.AppImage \; || true
+          find dist -name "*-arm64.deb" -exec mv {} GeminiDesk-arm64.deb \; || true
+          find dist -name "*-arm64.rpm" -exec mv {} GeminiDesk-arm64.rpm \; || true
+          find dist -name "*-arm64.pacman" -exec mv {} GeminiDesk-arm64.pacman \; || true
+
+          # Upload
+          aws s3 cp GeminiDesk.AppImage s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT || true
+          aws s3 cp GeminiDesk.deb s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT || true
+          aws s3 cp GeminiDesk.rpm s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT || true
+          aws s3 cp GeminiDesk.pacman s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT || true
+
+          aws s3 cp GeminiDesk-arm64.AppImage s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT || true
+          aws s3 cp GeminiDesk-arm64.deb s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT || true
+          aws s3 cp GeminiDesk-arm64.rpm s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT || true
+          aws s3 cp GeminiDesk-arm64.pacman s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT || true
 
   build-win:
     needs: create-release
@@ -89,7 +109,7 @@ jobs:
         with:
           node-version: 20
       - run: npm install
-      - run: npm run build -- --win --publish never
+      - run: npm run build -- --win --x64 --ia32 --arm64 --publish never
       
       - name: Upload to release
         uses: softprops/action-gh-release@v2
@@ -98,6 +118,7 @@ jobs:
           draft: true
           files: |
             dist/*.exe
+            dist/*.zip
             dist/*.yml
             dist/*.yaml
             dist/*.blockmap
@@ -112,8 +133,27 @@ jobs:
           R2_ENDPOINT: ${{ secrets.CF_R2_ENDPOINT }}
           R2_BUCKET: ${{ secrets.CF_R2_BUCKET }}
         run: |
-          find dist -name "*.exe" -exec mv {} GeminiDesk-Setup.exe \;
-          aws s3 cp GeminiDesk-Setup.exe s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT
+          # x64
+          find dist -name "*-x64.exe" -exec mv {} GeminiDesk-Setup.exe \; || true
+          find dist -name "*-x64.zip" -exec mv {} GeminiDesk-win.zip \; || true
+
+          # arm64
+          find dist -name "*-arm64.exe" -exec mv {} GeminiDesk-Setup-arm64.exe \; || true
+          find dist -name "*-arm64.zip" -exec mv {} GeminiDesk-win-arm64.zip \; || true
+
+          # ia32
+          find dist -name "*-ia32.exe" -exec mv {} GeminiDesk-Setup-ia32.exe \; || true
+          find dist -name "*-ia32.zip" -exec mv {} GeminiDesk-win-ia32.zip \; || true
+
+          # Upload
+          aws s3 cp GeminiDesk-Setup.exe s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT || true
+          aws s3 cp GeminiDesk-win.zip s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT || true
+
+          aws s3 cp GeminiDesk-Setup-arm64.exe s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT || true
+          aws s3 cp GeminiDesk-win-arm64.zip s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT || true
+
+          aws s3 cp GeminiDesk-Setup-ia32.exe s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT || true
+          aws s3 cp GeminiDesk-win-ia32.zip s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT || true
 
   build-mac-arm64:
     needs: create-release
@@ -203,19 +243,21 @@ jobs:
           🚀 <b>New Build Uploaded to R2!</b>
           
           📦 <b>Windows:</b>
-          BASE_URL_PLACEHOLDER/GeminiDesk-Setup.exe
+          x64: BASE_URL_PLACEHOLDER/GeminiDesk-Setup.exe
+          ARM64: BASE_URL_PLACEHOLDER/GeminiDesk-Setup-arm64.exe
+          x86: BASE_URL_PLACEHOLDER/GeminiDesk-Setup-ia32.exe
           
-          🍎 <b>macOS ARM64:</b>
-          BASE_URL_PLACEHOLDER/GeminiDesk-arm64.dmg
-
-          🍎 <b>macOS Intel:</b>
-          BASE_URL_PLACEHOLDER/GeminiDesk-intel.dmg
+          🍎 <b>macOS:</b>
+          ARM64 (Apple Silicon): BASE_URL_PLACEHOLDER/GeminiDesk-arm64.dmg
+          Intel: BASE_URL_PLACEHOLDER/GeminiDesk-intel.dmg
           
-          🐧 <b>Linux AppImage:</b>
-          BASE_URL_PLACEHOLDER/GeminiDesk.AppImage
-          
-          🐧 <b>Linux DEB:</b>
-          BASE_URL_PLACEHOLDER/GeminiDesk.deb
+          🐧 <b>Linux:</b>
+          AppImage (x64): BASE_URL_PLACEHOLDER/GeminiDesk.AppImage
+          AppImage (ARM64): BASE_URL_PLACEHOLDER/GeminiDesk-arm64.AppImage
+          DEB (x64): BASE_URL_PLACEHOLDER/GeminiDesk.deb
+          DEB (ARM64): BASE_URL_PLACEHOLDER/GeminiDesk-arm64.deb
+          RPM (x64): BASE_URL_PLACEHOLDER/GeminiDesk.rpm
+          RPM (ARM64): BASE_URL_PLACEHOLDER/GeminiDesk-arm64.rpm
           
           <i>(Build: ${{ needs.create-release.outputs.tag_name }})</i>
           END_MESSAGE
