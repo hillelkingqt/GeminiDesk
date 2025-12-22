@@ -1258,6 +1258,58 @@ const shortcutActions = {
             });
         }
     },
+    newTemporaryChat: () => {
+        const focusedWindow = BrowserWindow.getFocusedWindow();
+        if (!focusedWindow || focusedWindow.appMode !== 'gemini') return;
+        const view = focusedWindow.getBrowserView();
+        if (!view) return;
+
+        const script = `
+            (async function() {
+                console.log('GeminiDesk: Executing New Temporary Chat command');
+
+                const waitForElement = (selector, timeout = 3000) => {
+                    return new Promise((resolve, reject) => {
+                        const interval = setInterval(() => {
+                            const el = document.querySelector(selector);
+                            if (el && !el.disabled && el.offsetParent !== null) {
+                                clearInterval(interval);
+                                resolve(el);
+                            }
+                        }, 100);
+                        setTimeout(() => {
+                            clearInterval(interval);
+                            reject(new Error('Element not found or not visible: ' + selector));
+                        }, timeout);
+                    });
+                };
+
+                const simulateClick = (element) => {
+                    ['mousedown', 'mouseup', 'click'].forEach(type => {
+                        element.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: window }));
+                    });
+                };
+
+                try {
+                    const menuButton = document.querySelector('button[aria-label="Main menu"], button[aria-label="Expand menu"]');
+                    if (menuButton) {
+                        simulateClick(menuButton);
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                    }
+
+                    const tempChatButton = await waitForElement('button[aria-label="Temporary chat"]');
+                    console.log('GeminiDesk: Found Temporary Chat button.');
+                    simulateClick(tempChatButton);
+
+                } catch (err) {
+                    console.error('Failed to execute new temporary chat script:', err);
+                }
+            })();
+        `;
+        view.webContents.executeJavaScript(script).catch(err => {
+            console.error('Failed to inject temporary chat script:', err);
+        });
+    },
     changeModelPro: () => {
         const focusedWindow = BrowserWindow.getFocusedWindow();
         if (!focusedWindow || !focusedWindow.appMode) return;

@@ -59,6 +59,7 @@ const defaultSettings = {
         findInPage: isMac ? 'Command+F' : 'Control+F',
         closeWindow: isMac ? 'Command+W' : 'Alt+Q',
         voiceAssistant: isMac ? 'Command+Shift+A' : 'Alt+Shift+A',
+        newTemporaryChat: isMac ? 'Command+Shift+I' : 'Alt+Shift+I',
         pieMenu: 'Alt+M'
     },
   pieMenu: {
