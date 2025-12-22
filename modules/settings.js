@@ -37,6 +37,7 @@ const defaultSettings = {
     buttonOrder: ['minimize-button', 'new-window-button', 'fullscreen-button', 'export-chat-button', 'settings-button'],
     restoreWindows: false,
     preserveWindowSize: false,
+    hideOnBlur: false, // Automatically hide window when focus is lost
     windowBounds: { width: 550, height: 770, x: null, y: null },
     savedWindows: [],
     accounts: [],

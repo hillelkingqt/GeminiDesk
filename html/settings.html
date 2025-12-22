@@ -46,6 +46,11 @@
             --button-bg: #282a2c;
             --button-hover-bg: #3c4043;
             --search-input-bg: #282a2c;
+
+            /* Glassmorphism Variables (Dark) */
+            --glass-bg-header: rgba(19, 19, 20, 0.6);
+            --glass-bg-category: rgba(30, 31, 32, 0.75);
+            --glass-backdrop-opacity: 0.85;
         }
 
         html.light-mode {
@@ -72,6 +77,11 @@
             --button-bg: #f1f3f4;
             --button-hover-bg: #e8eaed;
             --search-input-bg: #f1f3f4;
+
+            /* Glassmorphism Variables (Light) */
+            --glass-bg-header: rgba(255, 255, 255, 0.6);
+            --glass-bg-category: rgba(248, 249, 250, 0.75);
+            --glass-backdrop-opacity: 0.85;
         }
 
         html.light-mode body::before {
@@ -86,15 +96,24 @@
             height: 100%;
             overflow: hidden;
             font-family: 'Google Sans', 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-root);
+            background: transparent;
             color: var(--text-primary);
             user-select: none;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Background Effects - Subtle */
+        /* Glassmorphism Background */
         body::before {
-            display: none;
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-root);
+            opacity: var(--glass-backdrop-opacity);
+            backdrop-filter: blur(20px);
+            z-index: -1;
         }
 
         body::after {
@@ -107,7 +126,7 @@
             width: 100%;
             height: 48px;
             -webkit-app-region: drag;
-            background: var(--bg-root);
+            background: var(--glass-bg-header);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -191,7 +210,7 @@
         .setting-category {
             position: relative;
             margin: 0;
-            background: var(--glass-surface);
+            background: var(--glass-bg-category);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius-lg);
             padding: 16px;
@@ -960,6 +979,11 @@
                 <div class="setting-label"><strong data-i18n="showInTaskbar-label">Show in Taskbar</strong><span
                         data-i18n="showInTaskbar-desc">Let the app icon appear in the taskbar.</span></div>
                 <label class="toggle-switch"><input type="checkbox" id="setting-showInTaskbar"><span
+                        class="slider"></span></label>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong>Hide Window on Blur</strong><span>Automatically hide the window when it loses focus.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-hideOnBlur"><span
                         class="slider"></span></label>
             </div>
             <div class="setting-item">
@@ -1797,6 +1821,7 @@
                         document.getElementById('setting-autoStart').checked = settings.autoStart || false;
                         document.getElementById('setting-showInTaskbar').checked = settings.showInTaskbar || false;
                         document.getElementById('setting-alwaysOnTop').checked = settings.alwaysOnTop || false;
+                        document.getElementById('setting-hideOnBlur').checked = settings.hideOnBlur || false;
                         document.getElementById('setting-autoCheckNotifications').checked = settings.autoCheckNotifications || false;
                         document.getElementById('setting-disableAutoUpdateCheck').checked = settings.disableAutoUpdateCheck || false;
                         document.getElementById('setting-autoInstallUpdates').checked = settings.autoInstallUpdates !== false;
@@ -2054,6 +2079,10 @@
 
                 document.getElementById('setting-alwaysOnTop').addEventListener('change', (e) => {
                     electronAPI.updateSetting('alwaysOnTop', e.target.checked);
+                });
+
+                document.getElementById('setting-hideOnBlur').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('hideOnBlur', e.target.checked);
                 });
 
                 document.getElementById('setting-showInTaskbar').addEventListener('change', (e) => {

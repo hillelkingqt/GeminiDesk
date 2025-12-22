@@ -2509,6 +2509,22 @@ function createWindow(state = null) {
         if (findShortcut) {
             globalShortcut.unregister(findShortcut);
         }
+
+        // Auto-hide window on blur if enabled
+        if (settings.hideOnBlur && !isQuitting && !newWin.isDestroyed() && newWin.isVisible() && !newWin.webContents.isDevToolsOpened()) {
+             // Small delay to ensure it wasn't just a focus switch to a child window (like dialogs)
+             setTimeout(() => {
+                 if (newWin && !newWin.isDestroyed() && !newWin.isFocused()) {
+                     // Check if any child window is focused (e.g., settings, pie menu)
+                     const allWindows = BrowserWindow.getAllWindows();
+                     const isChildFocused = allWindows.some(w => w !== newWin && w.getParentWindow() === newWin && w.isFocused());
+
+                     if (!isChildFocused && !pieMenuWin?.isFocused()) {
+                         newWin.hide();
+                     }
+                 }
+             }, 100);
+        }
     });
 
     newWin.on('closed', () => {
@@ -7480,6 +7496,9 @@ ipcMain.on('open-settings-window', (event) => {
         height: 580,
         resizable: false,
         frame: false,
+        transparent: true,
+        backgroundColor: '#00000000',
+        vibrancy: 'fullscreen-ui', // macOS glass effect
         parent: parentWindow, // Use the correct parent window
         show: false,
         webPreferences: {
@@ -7750,6 +7769,9 @@ ipcMain.on('pie-menu-action', (event, action) => {
                     height: 580,
                     resizable: false,
                     frame: false,
+                    transparent: true,
+                    backgroundColor: '#00000000',
+                    vibrancy: 'fullscreen-ui', // macOS glass effect
                     parent: parentWindow,
                     show: false,
                     webPreferences: {
