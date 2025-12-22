@@ -23,6 +23,54 @@ const { autoUpdater } = require('electron-updater');
 const AutoLaunch = require('auto-launch');
 const translations = require('./translations.js');
 
+const AUTOMATION_HELPERS_SCRIPT = `
+    window.__GeminiDeskAutomation = {
+        waitForElement: (selector, timeout = 15000) => {
+            return new Promise((resolve, reject) => {
+                const timer = setInterval(() => {
+                    const element = document.querySelector(selector);
+                    if (element && !element.disabled && element.offsetParent !== null) {
+                        clearInterval(timer);
+                        resolve(element);
+                    }
+                }, 100);
+                setTimeout(() => {
+                    clearInterval(timer);
+                    reject(new Error('Element not found: ' + selector));
+                }, timeout);
+            });
+        },
+        simulateClick: (element) => {
+            if (!element) return;
+            ['mousedown', 'mouseup', 'click'].forEach(type => {
+                const event = new MouseEvent(type, { bubbles: true, cancelable: true, view: window });
+                element.dispatchEvent(event);
+            });
+        },
+        insertTextSafely: (element, text) => {
+            if (!element) return false;
+            try {
+                element.focus();
+                document.execCommand('selectAll', false, null);
+                document.execCommand('delete', false, null);
+                document.execCommand('insertText', false, text);
+                return true;
+            } catch (e) {
+                try {
+                    element.focus();
+                    element.textContent = text;
+                    element.dispatchEvent(new InputEvent('input', {
+                        data: text, inputType: 'insertText', bubbles: true, cancelable: true
+                    }));
+                    return true;
+                } catch (e2) {
+                    return false;
+                }
+            }
+        }
+    };
+`;
+
 // Path to unpacked extension root (must point to folder that contains manifest.json)
 // In production (packaged app), use process.resourcesPath which points to resources/
 // In dev, use __dirname which is the project root
@@ -628,58 +676,12 @@ async function executeDefaultPrompt(view, promptContent, mode) {
         return;
     }
 
-    const script = `
+    const script = AUTOMATION_HELPERS_SCRIPT + `
     (async function() {
         console.log('Prompt Manager: Starting auto-prompt insertion');
         
-        const waitForElement = (selector, timeout = 15000) => {
-            return new Promise((resolve, reject) => {
-                const timer = setInterval(() => {
-                    const element = document.querySelector(selector);
-                    if (element && !element.disabled && element.offsetParent !== null) {
-                        clearInterval(timer);
-                        resolve(element);
-                    }
-                }, 100);
-                setTimeout(() => {
-                    clearInterval(timer);
-                    reject(new Error('Element not found: ' + selector));
-                }, timeout);
-            });
-        };
-
-        const simulateClick = (element) => {
-            ['mousedown', 'mouseup', 'click'].forEach(type => {
-                const event = new MouseEvent(type, { bubbles: true, cancelable: true, view: window });
-                element.dispatchEvent(event);
-            });
-        };
-
-        const insertTextSafely = (element, text) => {
-            try {
-                element.focus();
-                document.execCommand('selectAll', false, null);
-                document.execCommand('delete', false, null);
-                document.execCommand('insertText', false, text);
-                console.log('Prompt Manager: Text inserted using execCommand');
-                return true;
-            } catch (e) {
-                console.log('Prompt Manager: execCommand failed, trying alternative');
-            }
-
-            try {
-                element.focus();
-                element.textContent = text;
-                element.dispatchEvent(new InputEvent('input', {
-                    data: text, inputType: 'insertText', bubbles: true, cancelable: true
-                }));
-                console.log('Prompt Manager: Text inserted using textContent');
-                return true;
-            } catch (e) {
-                console.log('Prompt Manager: All text insertion methods failed');
-                return false;
-            }
-        };
+        const { waitForElement, simulateClick, insertTextSafely } = window.__GeminiDeskAutomation || {};
+        if (!waitForElement) throw new Error('Automation helpers not loaded');
 
         try {
             console.log('Prompt Manager: Looking for input area');
@@ -990,33 +992,13 @@ function setupSessionFilters(sess) {
 
 // Helper function to click microphone button
 async function clickMicrophoneButton(targetWin, view) {
-    const script = `
+    const script = AUTOMATION_HELPERS_SCRIPT + `
         (async function() {
             console.log('Voice Assistant: Looking for microphone button...');
             
-            const waitForElement = (selector, timeout = 5000) => {
-                return new Promise((resolve, reject) => {
-                    const timer = setInterval(() => {
-                        const element = document.querySelector(selector);
-                        if (element && !element.disabled && element.offsetParent !== null) {
-                            clearInterval(timer);
-                            resolve(element);
-                        }
-                    }, 100);
-                    setTimeout(() => {
-                        clearInterval(timer);
-                        reject(new Error('Element not found: ' + selector));
-                    }, timeout);
-                });
-            };
-            
-            const simulateClick = (element) => {
-                ['mousedown', 'mouseup', 'click'].forEach(type => {
-                    const event = new MouseEvent(type, { bubbles: true, cancelable: true, view: window });
-                    element.dispatchEvent(event);
-                });
-            };
-            
+            const { waitForElement, simulateClick } = window.__GeminiDeskAutomation || {};
+            if (!waitForElement) throw new Error('Automation helpers not loaded');
+
             try {
                 // Find the microphone button using multiple selectors
                 const micSelectors = [
@@ -1181,30 +1163,15 @@ const shortcutActions = {
             view.webContents.loadURL('https://aistudio.google.com/prompts/new_chat');
         } else {
             // Open new chat - Robust Version with Navigation Fallback
-            const script = `
+            const script = AUTOMATION_HELPERS_SCRIPT + `
                 (async function() {
                     console.log('GeminiDesk: Executing New Chat command');
                     
-                    const waitForElement = (selector, timeout = 1000) => {
-                        return new Promise((resolve) => {
-                            const interval = setInterval(() => {
-                                const el = document.querySelector(selector);
-                                if (el && !el.disabled && el.offsetParent !== null) { 
-                                    clearInterval(interval);
-                                    resolve(el);
-                                }
-                            }, 100);
-                            setTimeout(() => {
-                                clearInterval(interval);
-                                resolve(null);
-                            }, timeout);
-                        });
-                    };
+                    const { waitForElement, simulateClick } = window.__GeminiDeskAutomation || {};
+                    if (!waitForElement) return;
 
-                    const simulateClick = (element) => {
-                        ['mousedown', 'mouseup', 'click'].forEach(type => {
-                            element.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: window }));
-                        });
+                    const safeWaitForElement = (selector, timeout = 1000) => {
+                         return waitForElement(selector, timeout).catch(() => null);
                     };
 
                     // Selectors for the New Chat button
@@ -1236,7 +1203,7 @@ const shortcutActions = {
                         simulateClick(menuButton);
                         // Wait for menu animation
                         for (const sel of selectors) {
-                            const newChatButton = await waitForElement(sel, 1000);
+                            const newChatButton = await safeWaitForElement(sel, 1000);
                             if (newChatButton) {
                                 console.log('GeminiDesk: Found button after menu toggle:', sel);
                                 simulateClick(newChatButton);
@@ -2213,38 +2180,12 @@ function createNewChatWithModel(modelType) {
         : modelType.toLowerCase() === 'thinking' ? 1
             : 2;
 
-    const script = `
+    const script = AUTOMATION_HELPERS_SCRIPT + `
     (async function() {
       console.log('--- GeminiDesk: Starting script v7 ---');
       
-      const waitForElement = (selector, timeout = 3000) => {
-        console.log(\`Waiting for an active element: \${selector}\`);
-        return new Promise((resolve, reject) => {
-          const timer = setInterval(() => {
-            const element = document.querySelector(selector);
-            if (element && !element.disabled) {
-              clearInterval(timer);
-              console.log(\`Found active element: \${selector}\`);
-              resolve(element);
-            }
-          }, 100);
-          setTimeout(() => {
-            clearInterval(timer);
-            console.warn('GeminiDesk Warn: Timeout. Could not find an active element for:', selector);
-            reject(new Error('Element not found or disabled: ' + selector));
-          }, timeout);
-        });
-      };
-
-      const simulateClick = (element) => {
-        console.log('Simulating a click on:', element);
-        const mousedownEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window });
-        const mouseupEvent = new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window });
-        const clickEvent = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
-        element.dispatchEvent(mousedownEvent);
-        element.dispatchEvent(mouseupEvent);
-        element.dispatchEvent(clickEvent);
-      };
+      const { waitForElement, simulateClick } = window.__GeminiDeskAutomation || {};
+      if (!waitForElement) throw new Error('Automation helpers not loaded');
 
       try {
         let modelSwitcher;
@@ -2303,43 +2244,12 @@ function triggerSearch() {
     if (focusedWindow.isMinimized()) focusedWindow.restore();
     focusedWindow.focus();
 
-    const script = `
+    const script = AUTOMATION_HELPERS_SCRIPT + `
     (async function() {
       console.log('--- GeminiDesk: Triggering Search ---');
 
-      const waitForElement = (selector, timeout = 3000) => {
-        console.log(\`Waiting for element: \${selector}\`);
-        return new Promise((resolve, reject) => {
-          let timeoutHandle = null;
-          const interval = setInterval(() => {
-            const element = document.querySelector(selector);
-            if (element) {
-              if (timeoutHandle) clearTimeout(timeoutHandle);
-              clearInterval(interval);
-              console.log(\`Found element: \${selector}\`);
-              resolve(element);
-            }
-          }, 100);
-          timeoutHandle = setTimeout(() => {
-            clearInterval(interval);
-            console.error(\`GeminiDesk Error: Timeout waiting for \${selector}\`);
-            reject(new Error('Timeout for selector: ' + selector));
-          }, timeout);
-        });
-      };
-      
-      const simulateClick = (element) => {
-        if (!element) {
-            console.error('SimulateClick called on a null element.');
-            return;
-        }
-        console.log('Simulating click on:', element);
-        const events = ['mousedown', 'mouseup', 'click'];
-        events.forEach(type => {
-            const event = new MouseEvent(type, { bubbles: true, cancelable: true, view: window });
-            element.dispatchEvent(event);
-        });
-      };
+      const { waitForElement, simulateClick } = window.__GeminiDeskAutomation || {};
+      if (!waitForElement) throw new Error('Automation helpers not loaded');
 
       try {
         const menuButton = document.querySelector('button[aria-label="Main menu"]');
@@ -3026,11 +2936,11 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
 
     // Try to ensure the unpacked extension is loaded into this view's session (only if enabled)
     try {
-        if (settings && settings.loadUnpackedExtension && fs.existsSync(EXT_PATH)) {
+        if (settings && settings.loadUnpackedExtension && fs.existsSync(MCP_EXT_PATH)) {
             const viewSession = newView.webContents.session;
             if (viewSession && typeof viewSession.loadExtension === 'function') {
                 try {
-                    await viewSession.loadExtension(EXT_PATH, { allowFileAccess: true });
+                    await viewSession.loadExtension(MCP_EXT_PATH, { allowFileAccess: true });
                     console.log(`Loaded extension into view session for partition: ${partitionName}`);
                 } catch (err) {
                     // If already loaded or unsupported, warn but continue
@@ -7848,39 +7758,10 @@ ipcMain.on('pie-menu-action', (event, action) => {
                     // But executeDefaultPrompt is hardcoded to click send.
                     // Let's copy the injection part.
                     const promptContent = action.content;
-                    const script = `
+                    const script = AUTOMATION_HELPERS_SCRIPT + `
                         (async function() {
-                            const waitForElement = (selector, timeout = 15000) => {
-                                return new Promise((resolve, reject) => {
-                                    const timer = setInterval(() => {
-                                        const element = document.querySelector(selector);
-                                        if (element && !element.disabled) {
-                                            clearInterval(timer);
-                                            resolve(element);
-                                        }
-                                    }, 100);
-                                    setTimeout(() => {
-                                        clearInterval(timer);
-                                        reject(new Error('Element not found'));
-                                    }, timeout);
-                                });
-                            };
-
-                            const insertTextSafely = (element, text) => {
-                                try {
-                                    element.focus();
-                                    document.execCommand('selectAll', false, null);
-                                    document.execCommand('delete', false, null);
-                                    document.execCommand('insertText', false, text);
-                                    return true;
-                                } catch (e) {
-                                    try {
-                                        element.textContent = text;
-                                        element.dispatchEvent(new InputEvent('input', { data: text, inputType: 'insertText', bubbles: true }));
-                                        return true;
-                                    } catch(e2) { return false; }
-                                }
-                            };
+                            const { waitForElement, insertTextSafely } = window.__GeminiDeskAutomation || {};
+                            if (!waitForElement) return;
 
                             try {
                                 const inputArea = await waitForElement('.ql-editor[contenteditable="true"], rich-textarea .ql-editor, [data-placeholder*="Ask"]');
