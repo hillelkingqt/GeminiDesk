@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>GeminiDesk Settings</title>
+    <link rel="stylesheet" href="styles/settings-search.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
 
@@ -817,6 +818,17 @@
         <button id="close-button" title="Close">&times;</button>
     </div>
     <div class="content">
+        <!-- Main Settings Search -->
+        <div class="settings-search-container">
+            <div class="settings-search-input-wrapper">
+                <input type="text" id="settings-search-input" class="settings-search-input" placeholder="Search settings...">
+                <svg class="settings-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </div>
+        </div>
+
         <div class="setting-category">
             <h3 class="setting-category-title">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -1609,6 +1621,71 @@
         <script src="../translations.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', () => {
+                // --- Settings Search Logic ---
+                const settingsSearchInput = document.getElementById('settings-search-input');
+
+                if (settingsSearchInput) {
+                    settingsSearchInput.addEventListener('input', (e) => {
+                        const query = e.target.value.toLowerCase().trim();
+                        console.log(`[Search] Query: "${query}"`);
+                        const categories = document.querySelectorAll('.setting-category');
+                        let hasVisibleItems = false;
+
+                        categories.forEach(category => {
+                            const items = category.querySelectorAll('.setting-item');
+                            let categoryHasVisibleItems = false;
+
+                            items.forEach(item => {
+                                // Skip items that are programmatically hidden (like English-only features in other languages)
+                                if (item.classList.contains('english-only-feature') && item.style.display === 'none') {
+                                    return;
+                                }
+
+                                const text = item.textContent.toLowerCase();
+                                const matches = text.includes(query);
+
+                                if (matches) {
+                                    item.style.display = '';
+                                    categoryHasVisibleItems = true;
+                                    hasVisibleItems = true;
+                                } else {
+                                    item.style.display = 'none';
+                                }
+                            });
+
+                            // Also check category title
+                            const titleEl = category.querySelector('.setting-category-title');
+                            const title = titleEl ? titleEl.textContent.toLowerCase() : '';
+
+                            if (title.includes(query)) {
+                                // If title matches, show all items in this category (unless they are hidden for other reasons)
+                                items.forEach(item => {
+                                    if (!(item.classList.contains('english-only-feature') && item.style.display === 'none')) {
+                                        item.style.display = '';
+                                        categoryHasVisibleItems = true;
+                                        hasVisibleItems = true;
+                                    }
+                                });
+                            }
+
+                            // If title matched, categoryHasVisibleItems should be true (because we just showed all items)
+                            if (title.includes(query)) {
+                                 categoryHasVisibleItems = true;
+                            }
+
+                            if (categoryHasVisibleItems) {
+                                category.style.display = '';
+                                // Reset animation for filtered items to make it look responsive
+                                category.style.animation = 'none';
+                                category.offsetHeight; /* trigger reflow */
+                                category.style.animation = null;
+                            } else {
+                                category.style.display = 'none';
+                            }
+                        });
+                    });
+                }
+
                 // Check if electronAPI exists (for Electron environment)
                 if (!window.electronAPI) {
                     console.warn('electronAPI not available - running in browser mode');
