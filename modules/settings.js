@@ -107,8 +107,11 @@ defaultSettings.aiStudioRtlEnabled = false; // Enable RTL mode for AI Studio (He
 // In-memory cache for settings to avoid frequent disk reads
 let cachedSettings = null;
 
-function getSettings() {
+function getSettings(shouldClone = true) {
     if (cachedSettings) {
+        if (!shouldClone) {
+            return cachedSettings;
+        }
         // Return a deep copy to prevent mutation of the cache by consumers
         return JSON.parse(JSON.stringify(cachedSettings));
     }
@@ -134,6 +137,9 @@ function getSettings() {
                     showModeToggleButton: savedSettings.hasOwnProperty('showModeToggleButton') ? savedSettings.showModeToggleButton : true
                 };
                 cachedSettings = combinedSettings;
+                if (!shouldClone) {
+                    return cachedSettings;
+                }
                 // Return a deep copy
                 return JSON.parse(JSON.stringify(combinedSettings));
             }
@@ -142,6 +148,9 @@ function getSettings() {
         console.error("Couldn't read settings from file, falling back to default.", e);
     }
     cachedSettings = { ...defaultSettings };
+    if (!shouldClone) {
+        return cachedSettings;
+    }
     // Return a deep copy
     return JSON.parse(JSON.stringify(cachedSettings));
 }
