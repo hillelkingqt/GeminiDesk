@@ -104,7 +104,14 @@ defaultSettings.autoInstallUpdates = true; // Automatically download and install
 defaultSettings.updateInstallReminderTime = null; // Timestamp for "remind me in 1 hour"
 defaultSettings.aiStudioRtlEnabled = false; // Enable RTL mode for AI Studio (Hebrew, Arabic, etc.)
 
+// In-memory cache for settings to avoid frequent disk reads
+let cachedSettings = null;
+
 function getSettings() {
+    if (cachedSettings) {
+        // Return a deep copy to prevent mutation of the cache by consumers
+        return JSON.parse(JSON.stringify(cachedSettings));
+    }
     try {
         if (fs.existsSync(settingsPath)) {
             const rawData = fs.readFileSync(settingsPath, 'utf8');
@@ -126,18 +133,24 @@ function getSettings() {
                     // Respect saved preference for showing the mode toggle; default true
                     showModeToggleButton: savedSettings.hasOwnProperty('showModeToggleButton') ? savedSettings.showModeToggleButton : true
                 };
-                return combinedSettings;
+                cachedSettings = combinedSettings;
+                // Return a deep copy
+                return JSON.parse(JSON.stringify(combinedSettings));
             }
         }
     } catch (e) {
         console.error("Couldn't read settings from file, falling back to default.", e);
     }
-    return { ...defaultSettings };
+    cachedSettings = { ...defaultSettings };
+    // Return a deep copy
+    return JSON.parse(JSON.stringify(cachedSettings));
 }
 
 function saveSettings(settings) {
     try {
         fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
+        // Update cache with a deep copy to ensure isolation, ONLY after successful write
+        cachedSettings = JSON.parse(JSON.stringify(settings));
     } catch (e) {
         console.error("Failed to save settings to file.", e);
     }
