@@ -58,6 +58,13 @@
 
 .setting-category {
     animation: slideUpFade 0.4s cubic-bezier(0.2, 0.0, 0, 1.0) backwards;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.setting-category:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 /* Stagger delays for first 10 items */

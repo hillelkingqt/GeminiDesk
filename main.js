@@ -7832,6 +7832,87 @@ ipcMain.on('pie-menu-action', (event, action) => {
         shortcutActions.newChatWithFlash();
     } else if (action === 'new-chat-with-thinking') {
         shortcutActions.newChatWithThinking();
+    } else if (action === 'summarize-clipboard') {
+        // Read clipboard content
+        const text = clipboard.readText();
+        if (!text || text.trim().length === 0) {
+            console.warn('Clipboard is empty, cannot summarize.');
+            return;
+        }
+
+        // Open new chat with Flash model (fastest for summaries)
+        createNewChatWithModel('flash');
+
+        // Wait for window to be ready and inject the summary prompt
+        setTimeout(() => {
+            const focusedWindow = BrowserWindow.getFocusedWindow();
+            if (focusedWindow && focusedWindow !== pieMenuWin) {
+                const view = focusedWindow.getBrowserView();
+                if (view && !view.webContents.isDestroyed()) {
+                    const promptContent = `Please summarize the following text:\n\n${text}`;
+
+                    // Use the existing logic to inject AND SEND the prompt
+                    // We can reuse the logic from custom-prompt but add the send click
+                    const script = `
+                        (async function() {
+                            const waitForElement = (selector, timeout = 15000) => {
+                                return new Promise((resolve, reject) => {
+                                    const timer = setInterval(() => {
+                                        const element = document.querySelector(selector);
+                                        if (element && !element.disabled && element.offsetParent !== null) {
+                                            clearInterval(timer);
+                                            resolve(element);
+                                        }
+                                    }, 100);
+                                    setTimeout(() => {
+                                        clearInterval(timer);
+                                        reject(new Error('Element not found: ' + selector));
+                                    }, timeout);
+                                });
+                            };
+
+                            const simulateClick = (element) => {
+                                ['mousedown', 'mouseup', 'click'].forEach(type => {
+                                    const event = new MouseEvent(type, { bubbles: true, cancelable: true, view: window });
+                                    element.dispatchEvent(event);
+                                });
+                            };
+
+                            const insertTextSafely = (element, text) => {
+                                try {
+                                    element.focus();
+                                    document.execCommand('selectAll', false, null);
+                                    document.execCommand('delete', false, null);
+                                    document.execCommand('insertText', false, text);
+                                    return true;
+                                } catch (e) {
+                                    try {
+                                        element.textContent = text;
+                                        element.dispatchEvent(new InputEvent('input', { data: text, inputType: 'insertText', bubbles: true }));
+                                        return true;
+                                    } catch(e2) { return false; }
+                                }
+                            };
+
+                            try {
+                                const inputArea = await waitForElement('.ql-editor[contenteditable="true"], rich-textarea .ql-editor, [data-placeholder*="Ask"]');
+                                const promptText = \`${promptContent.replace(/`/g, '\\`').replace(/\\/g, '\\\\').replace(/\${/g, '\\${')}\`;
+
+                                insertTextSafely(inputArea, promptText);
+
+                                // Wait briefly then click send
+                                await new Promise(r => setTimeout(r, 800));
+                                const sendButton = await waitForElement('button.send-button[jslog*="173899"], button[aria-label="Send message"], button.send-button.submit, button[data-test-id="send-button"]');
+                                simulateClick(sendButton);
+
+                            } catch(e) { console.error('Summarize Clipboard injection failed', e); }
+                        })();
+                    `;
+                    view.webContents.executeJavaScript(script).catch(() => { });
+                }
+            }
+        }, 1500);
+
     } else if (typeof action === 'object' && action.type === 'custom-prompt') {
         // Handle Custom Prompt Action
         // 1. Create/Focus Window (Standard Gemini for now, effectively "Flash" or last used)

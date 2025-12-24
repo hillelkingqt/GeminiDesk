@@ -82,7 +82,8 @@ const defaultSettings = {
 
       { id: 'switchPro', action: 'change-model-pro', label: 'Switch to Pro', enabled: false, icon: 'diamond', color: '#f28b82' },
       { id: 'switchFlash', action: 'change-model-flash', label: 'Switch to Flash', enabled: false, icon: 'bolt', color: '#81c995' },
-      { id: 'switchThinking', action: 'change-model-thinking', label: 'Switch to Thinking', enabled: false, icon: 'psychology', color: '#fdd663' }
+      { id: 'switchThinking', action: 'change-model-thinking', label: 'Switch to Thinking', enabled: false, icon: 'psychology', color: '#fdd663' },
+      { id: 'summarizeClipboard', action: 'summarize-clipboard', label: 'Summarize Clipboard', enabled: false, icon: 'summarize', color: '#8ab4f8' }
     ]
   },
     lastUpdateCheck: 0,

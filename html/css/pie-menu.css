@@ -27,22 +27,33 @@ body {
     transform: translate(-50%, -50%);
     width: 80px;
     height: 80px;
-    background: rgba(40, 40, 40, 0.9);
+    background: rgba(40, 40, 40, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-radius: 50%;
     z-index: 10;
     cursor: pointer;
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: all 0.2s ease;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+    animation: pulse 3s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.1); }
+    50% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
 }
 
 .center-btn:hover {
     background: rgba(60, 60, 60, 0.95);
     transform: translate(-50%, -50%) scale(1.1);
-    border-color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+    animation: none;
 }
 
 .icon-min-max {
@@ -67,28 +78,38 @@ body {
     align-items: center;
     text-align: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); /* Elastic ease */
     color: white;
     font-weight: 600;
     font-size: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 5;
     overflow: hidden;
+    opacity: 0; /* Start hidden for animation */
+    animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 
     /* Default Background */
-    background: rgba(30, 30, 30, 0.95);
-    backdrop-filter: blur(10px);
+    background: rgba(30, 30, 30, 0.85); /* Slightly more transparent */
+    backdrop-filter: blur(16px); /* Stronger blur */
+    -webkit-backdrop-filter: blur(16px);
 
     /* Center on wrapper */
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%) scale(0.5); /* Start scaled down */
+}
+
+@keyframes popIn {
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
 }
 
 .segment-bubble:hover {
     transform: translate(-50%, -50%) scale(1.15);
-    background: rgba(50, 50, 50, 1);
-    border-color: rgba(255, 255, 255, 0.5);
-    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+    background: rgba(60, 60, 60, 0.9);
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 20px rgba(138, 180, 248, 0.6);
     z-index: 20;
 }
 
