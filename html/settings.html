@@ -10,69 +10,69 @@
 
         :root {
             /* Gemini Dark Palette (Default) */
-            --bg-root: #131314;
-            --glass-surface: #1e1f20;
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-highlight: rgba(255, 255, 255, 0.03);
+            --bg-root: #0e0e0f;
+            --glass-surface: #1e1f21;
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --glass-highlight: rgba(255, 255, 255, 0.04);
 
-            --text-primary: #e3e3e3;
+            --text-primary: #e8eaed;
             --text-secondary: #9aa0a6;
             --text-tertiary: #5f6368;
 
-            --accent-primary: #8ab4f8;
-            --accent-glow: rgba(138, 180, 248, 0.3);
-            --accent-gradient: linear-gradient(135deg, #8ab4f8 0%, #c58af9 100%);
+            --accent-primary: #a8c7fa;
+            --accent-glow: rgba(168, 199, 250, 0.25);
+            --accent-gradient: linear-gradient(135deg, #a8c7fa 0%, #d7aefb 100%);
 
-            --input-bg: #282a2c;
-            --input-border: rgba(255, 255, 255, 0.1);
+            --input-bg: #28292c;
+            --input-border: rgba(255, 255, 255, 0.08);
 
             --danger-color: #f28b82;
             --success-color: #81c995;
 
             --radius-xl: 28px;
-            --radius-lg: 20px;
+            --radius-lg: 16px;
             --radius-md: 12px;
             --radius-sm: 8px;
 
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-            --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.4);
-            --shadow-glow: 0 0 16px rgba(138, 180, 248, 0.2);
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+            --shadow-glow: 0 0 20px rgba(168, 199, 250, 0.15);
 
             --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
             --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 
             /* Component Variables */
-            --item-bg: #282a2c;
-            --item-hover-bg: #353739;
-            --button-bg: #282a2c;
-            --button-hover-bg: #3c4043;
-            --search-input-bg: #282a2c;
+            --item-bg: rgba(255, 255, 255, 0.03);
+            --item-hover-bg: rgba(255, 255, 255, 0.08);
+            --button-bg: rgba(255, 255, 255, 0.05);
+            --button-hover-bg: rgba(255, 255, 255, 0.1);
+            --search-input-bg: #1e1f21;
         }
 
         html.light-mode {
-            --bg-root: #ffffff;
-            --glass-surface: #f8f9fa;
-            --glass-border: rgba(0, 0, 0, 0.08);
-            --glass-highlight: rgba(255, 255, 255, 0.8);
+            --bg-root: #fdfbff;
+            --glass-surface: #f2f6fc;
+            --glass-border: rgba(0, 0, 0, 0.06);
+            --glass-highlight: rgba(255, 255, 255, 0.6);
 
-            --text-primary: #202124;
-            --text-secondary: #5f6368;
-            --text-tertiary: #9aa0a6;
+            --text-primary: #1f1f1f;
+            --text-secondary: #444746;
+            --text-tertiary: #747775;
 
-            --accent-primary: #1a73e8;
-            --accent-glow: rgba(26, 115, 232, 0.2);
-            --accent-gradient: linear-gradient(135deg, #1a73e8 0%, #8430ce 100%);
+            --accent-primary: #0b57d0;
+            --accent-glow: rgba(11, 87, 208, 0.15);
+            --accent-gradient: linear-gradient(135deg, #0b57d0 0%, #8430ce 100%);
 
-            --input-bg: #f1f3f4;
-            --input-border: rgba(0, 0, 0, 0.1);
+            --input-bg: #e1e3e1;
+            --input-border: rgba(0, 0, 0, 0.06);
 
-            --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.05);
 
-            --item-bg: #f1f3f4;
-            --item-hover-bg: #e8eaed;
-            --button-bg: #f1f3f4;
-            --button-hover-bg: #e8eaed;
-            --search-input-bg: #f1f3f4;
+            --item-bg: rgba(0, 0, 0, 0.03);
+            --item-hover-bg: rgba(0, 0, 0, 0.06);
+            --button-bg: rgba(0, 0, 0, 0.04);
+            --button-hover-bg: rgba(0, 0, 0, 0.08);
+            --search-input-bg: #eef1f6;
         }
 
         html.light-mode body::before {
@@ -106,23 +106,22 @@
             position: relative;
             z-index: 10;
             width: 100%;
-            height: 48px;
+            height: 56px; /* Slightly taller */
             -webkit-app-region: drag;
             background: var(--bg-root);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 16px;
+            padding: 0 24px; /* More padding */
             box-sizing: border-box;
-            border-bottom: 1px solid var(--glass-border);
         }
 
         .drag-bar h2 {
-            font-size: 16px;
+            font-size: 18px; /* Larger title */
             margin: 0;
             font-weight: 500;
             color: var(--text-primary);
-            letter-spacing: 0;
+            letter-spacing: -0.5px;
             -webkit-app-region: drag;
         }
 
@@ -195,9 +194,16 @@
             background: var(--glass-surface);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius-lg);
-            padding: 16px;
+            padding: 24px; /* More padding */
             display: flex;
             flex-direction: column;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        /* Subtle hover effect for categories */
+        .setting-category:hover {
+            box-shadow: var(--shadow-lg);
         }
 
         .setting-category::before {
@@ -206,12 +212,12 @@
 
         .setting-category-title {
             font-weight: 500;
-            font-size: 14px;
+            font-size: 16px; /* Larger title */
             text-transform: none;
-            letter-spacing: 0;
-            color: var(--text-primary);
-            margin-bottom: 16px;
-            padding-bottom: 12px;
+            letter-spacing: -0.2px;
+            color: var(--accent-primary); /* Accent color for titles */
+            margin-bottom: 20px;
+            padding-bottom: 16px;
             border-bottom: 1px solid var(--glass-border);
             display: flex;
             align-items: center;
@@ -227,21 +233,19 @@
         .setting-item {
             background: transparent;
             border-radius: var(--radius-md);
-            padding: 12px 16px;
+            padding: 16px; /* Comfortable padding */
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 4px;
-            border: none;
-            transition: background 0.15s ease;
+            margin-bottom: 8px; /* Spacing between items */
+            border: 1px solid transparent;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             flex-shrink: 0;
         }
 
         .setting-item:hover {
-            background: var(--item-bg);
-            border-color: transparent;
-            box-shadow: none;
-            transform: none;
+            background: var(--item-hover-bg);
+            border-color: var(--glass-border);
         }
 
         .setting-item:last-child {
@@ -251,19 +255,20 @@
         .setting-label {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 4px; /* More gap */
+            padding-right: 16px; /* Space between text and control */
         }
 
         .setting-label strong {
-            font-weight: 400;
+            font-weight: 500; /* Slightly bolder */
             font-size: 14px;
             color: var(--text-primary);
         }
 
         .setting-label span {
-            font-size: 12px;
+            font-size: 13px; /* Larger description */
             color: var(--text-secondary);
-            line-height: 1.4;
+            line-height: 1.5;
         }
 
         .toggle-switch {
@@ -821,11 +826,14 @@
         <!-- Main Settings Search -->
         <div class="settings-search-container">
             <div class="settings-search-input-wrapper">
-                <input type="text" id="settings-search-input" class="settings-search-input" placeholder="Search settings...">
                 <svg class="settings-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
+                <input type="text" id="settings-search-input" class="settings-search-input" placeholder="Search settings...">
+                <button id="settings-search-clear" class="settings-search-clear" title="Clear search">
+                    &times;
+                </button>
             </div>
         </div>
 
@@ -1635,11 +1643,19 @@
             document.addEventListener('DOMContentLoaded', () => {
                 // --- Settings Search Logic ---
                 const settingsSearchInput = document.getElementById('settings-search-input');
+                const settingsSearchClear = document.getElementById('settings-search-clear');
 
                 if (settingsSearchInput) {
-                    settingsSearchInput.addEventListener('input', (e) => {
-                        const query = e.target.value.toLowerCase().trim();
-                        console.log(`[Search] Query: "${query}"`);
+                    const performSearch = () => {
+                        const query = settingsSearchInput.value.toLowerCase().trim();
+
+                        // Toggle clear button visibility
+                        if (query.length > 0) {
+                            settingsSearchClear.classList.add('visible');
+                        } else {
+                            settingsSearchClear.classList.remove('visible');
+                        }
+
                         const categories = document.querySelectorAll('.setting-category');
                         let hasVisibleItems = false;
 
@@ -1648,7 +1664,7 @@
                             let categoryHasVisibleItems = false;
 
                             items.forEach(item => {
-                                // Skip items that are programmatically hidden (like English-only features in other languages)
+                                // Skip items that are programmatically hidden
                                 if (item.classList.contains('english-only-feature') && item.style.display === 'none') {
                                     return;
                                 }
@@ -1670,7 +1686,6 @@
                             const title = titleEl ? titleEl.textContent.toLowerCase() : '';
 
                             if (title.includes(query)) {
-                                // If title matches, show all items in this category (unless they are hidden for other reasons)
                                 items.forEach(item => {
                                     if (!(item.classList.contains('english-only-feature') && item.style.display === 'none')) {
                                         item.style.display = '';
@@ -1678,24 +1693,30 @@
                                         hasVisibleItems = true;
                                     }
                                 });
-                            }
-
-                            // If title matched, categoryHasVisibleItems should be true (because we just showed all items)
-                            if (title.includes(query)) {
-                                 categoryHasVisibleItems = true;
+                                categoryHasVisibleItems = true;
                             }
 
                             if (categoryHasVisibleItems) {
                                 category.style.display = '';
-                                // Reset animation for filtered items to make it look responsive
+                                // Reset animation
                                 category.style.animation = 'none';
-                                category.offsetHeight; /* trigger reflow */
+                                category.offsetHeight;
                                 category.style.animation = null;
                             } else {
                                 category.style.display = 'none';
                             }
                         });
-                    });
+                    };
+
+                    settingsSearchInput.addEventListener('input', performSearch);
+
+                    if (settingsSearchClear) {
+                        settingsSearchClear.addEventListener('click', () => {
+                            settingsSearchInput.value = '';
+                            settingsSearchInput.focus();
+                            performSearch();
+                        });
+                    }
                 }
 
                 // Check if electronAPI exists (for Electron environment)

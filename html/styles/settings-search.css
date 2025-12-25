@@ -3,45 +3,102 @@
     position: sticky;
     top: 0;
     z-index: 20;
-    background: var(--bg-root);
-    padding: 16px 16px 8px 16px;
-    margin: 0 -16px 16px -16px;
+    background: rgba(19, 19, 20, 0.8); /* Slightly more transparent for better blur */
+    padding: 20px 24px;
+    margin: 0 -16px 24px -16px;
     border-bottom: 1px solid var(--glass-border);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+html.light-mode .settings-search-container {
+    background: rgba(255, 255, 255, 0.8);
 }
 
 .settings-search-input-wrapper {
     position: relative;
     width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 .settings-search-input {
     width: 100%;
-    padding: 12px 44px 12px 16px;
-    background: var(--input-bg);
+    padding: 14px 48px 14px 52px; /* Left padding for icon, right for clear button */
+    background: var(--glass-surface);
     border: 1px solid var(--glass-border);
-    border-radius: var(--radius-xl);
+    border-radius: 999px; /* Pill shape */
     color: var(--text-primary);
     font-size: 16px;
     font-family: 'Google Sans', 'Segoe UI', Roboto, sans-serif;
     outline: none;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     box-sizing: border-box;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.settings-search-input:hover {
+    background: var(--item-hover-bg);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+html.light-mode .settings-search-input:hover {
+    border-color: rgba(0, 0, 0, 0.1);
 }
 
 .settings-search-input:focus {
-    background: var(--item-bg);
+    background: var(--input-bg);
     border-color: var(--accent-primary);
-    box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.2);
+    box-shadow: 0 0 0 4px var(--accent-glow);
 }
 
 .settings-search-icon {
     position: absolute;
-    right: 16px;
+    left: 20px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-secondary);
     pointer-events: none;
+    transition: color 0.2s ease;
+}
+
+.settings-search-input:focus ~ .settings-search-icon {
+    color: var(--accent-primary);
+}
+
+/* Clear Button */
+.settings-search-clear {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(128, 128, 128, 0.2);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    font-size: 16px;
+    line-height: 1;
+    padding: 0;
+}
+
+.settings-search-clear:hover {
+    background: rgba(128, 128, 128, 0.4);
+    color: var(--text-primary);
+}
+
+.settings-search-clear.visible {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 /* Animations */
@@ -57,7 +114,7 @@
 }
 
 .setting-category {
-    animation: slideUpFade 0.4s cubic-bezier(0.2, 0.0, 0, 1.0) backwards;
+    animation: slideUpFade 0.5s cubic-bezier(0.2, 0.0, 0, 1.0) backwards;
 }
 
 /* Stagger delays for first 10 items */
@@ -74,10 +131,15 @@
 
 /* RTL Support for search */
 html[dir="rtl"] .settings-search-input {
-    padding: 12px 16px 12px 44px;
+    padding: 14px 52px 14px 48px;
 }
 
 html[dir="rtl"] .settings-search-icon {
+    left: auto;
+    right: 20px;
+}
+
+html[dir="rtl"] .settings-search-clear {
     right: auto;
     left: 16px;
 }
