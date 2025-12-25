@@ -386,6 +386,12 @@
     </span>
   </li>
   <li class="shortcut-item">
+    <span class="shortcut-desc">Temporary Chat</span>
+    <span class="shortcut-key shortcut" data-win="Alt+T" data-mac="⌘+T">
+      <span class="key"></span>
+    </span>
+  </li>
+  <li class="shortcut-item">
     <span class="shortcut-desc">See Instructions Again</span>
     <span class="shortcut-key shortcut" data-win="Alt+I" data-mac="⌘+I">
       <span class="key"></span>
@@ -419,6 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'shortcut-key-screenshot': 'Ctrl+Shift+S',
             'shortcut-key-newChatPro': 'Ctrl+P',
             'shortcut-key-newChatFlash': 'Ctrl+F',
+            'shortcut-key-temporaryChat': 'Ctrl+T',
             'shortcut-key-newWindow': 'Ctrl+N',
             'shortcut-key-search': 'Alt+S'
         };
@@ -452,6 +459,7 @@ const syncShortcuts = (settings) => {
         { id: 'shortcut-key-screenshot', key: 'screenshot' },
         { id: 'shortcut-key-newChatPro', key: 'newChatPro' },
         { id: 'shortcut-key-newChatFlash', key: 'newChatFlash' },
+        { id: 'shortcut-key-temporaryChat', key: 'temporaryChat' },
         { id: 'shortcut-key-newWindow', key: 'newWindow' },
         { id: 'shortcut-key-search', key: 'search' } 
     ];

@@ -162,6 +162,13 @@
                 <path d="M12 4V20M4 12H20" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </button>
+        <button id="temporary-chat-button" class="icon-button" data-tooltip="Temporary Chat">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7 14c0-2 2.5-3 5-3s5 1 5 3" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M5 9c0-2.5 3-4 7-4s7 1.5 7 4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M8 16v3M16 16v3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
 <button id="fullscreen-button" class="icon-button" data-tooltip="Fullscreen">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path class="enter-fullscreen" d="M16 3h5v5M8 3H3v5M16 21h5v-5M8 21H3v-5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -184,6 +191,9 @@
     if (window.electronAPI) {
         document.getElementById('settings-button').addEventListener('click', () => {
             window.electronAPI.openSettingsWindow();
+        });
+        document.getElementById('temporary-chat-button').addEventListener('click', () => {
+            window.electronAPI.openTemporaryChat();
         });
     }
   

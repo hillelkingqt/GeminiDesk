@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updateSetting: (key, value) => ipcRenderer.send('update-setting', key, value),
   openSettingsWindow: () => ipcRenderer.send('open-settings-window'),
   openNewWindow: () => ipcRenderer.send('open-new-window'),
+  openTemporaryChat: () => ipcRenderer.send('open-temporary-chat'),
   resetSettings: () => ipcRenderer.send('reset-settings'),
   showConfirmReset: () => ipcRenderer.send('show-confirm-reset'),
   confirmReset: () => ipcRenderer.send('confirm-reset-action'),

@@ -46,6 +46,7 @@ const defaultSettings = {
     screenshot: 'Control+Alt+S',
     newChatPro: 'Alt+P',
     newChatFlash: 'Alt+F',
+    temporaryChat: 'Alt+T',
     newWindow: 'Alt+N',
     search: 'Alt+S',
     refresh: 'Alt+R'
@@ -268,6 +269,94 @@ function triggerSearch() {
   targetView.webContents.executeJavaScript(script).catch(console.error);
 }
 
+function openTemporaryChat() {
+  const focusedWindow = BrowserWindow.getFocusedWindow();
+  if (!focusedWindow) return;
+  const targetView = focusedWindow.getBrowserView();
+  if (!targetView) return;
+
+  if (!focusedWindow.isVisible()) focusedWindow.show();
+  if (focusedWindow.isMinimized()) focusedWindow.restore();
+  focusedWindow.focus();
+
+  const script = `
+    (async function() {
+      console.log('--- GeminiDesk: Triggering Temporary Chat ---');
+
+      const waitForElement = (selector, timeout = 4000) => {
+        console.log(\`Waiting for element: \${selector}\`);
+        return new Promise((resolve, reject) => {
+          let timeoutHandle = null;
+          const interval = setInterval(() => {
+            const element = document.querySelector(selector);
+            if (element) {
+              if (timeoutHandle) clearTimeout(timeoutHandle);
+              clearInterval(interval);
+              console.log(\`Found element: \${selector}\`);
+              resolve(element);
+            }
+          }, 100);
+          timeoutHandle = setTimeout(() => {
+            clearInterval(interval);
+            console.error(\`GeminiDesk Error: Timeout waiting for \${selector}\`);
+            reject(new Error('Timeout for selector: ' + selector));
+          }, timeout);
+        });
+      };
+
+      const simulateClick = (element) => {
+        if (!element) {
+          console.error('SimulateClick called on a null element.');
+          return;
+        }
+        console.log('Simulating click on:', element);
+        const events = ['mousedown', 'mouseup', 'click'];
+        events.forEach(type => {
+          const event = new MouseEvent(type, { bubbles: true, cancelable: true, view: window });
+          element.dispatchEvent(event);
+        });
+      };
+
+      const host = window.location.hostname;
+      const isGemini = host.includes('gemini.google.com') || host.includes('bard.google.com');
+      const isAiStudio = host.includes('aistudio.google.com') || host.includes('ai.google.com');
+
+      try {
+        if (isGemini) {
+          const menuButton = document.querySelector('button[aria-label="Main menu"]');
+          if (menuButton) {
+            console.log('GeminiDesk: Opening main menu for Temporary Chat.');
+            simulateClick(menuButton);
+            await new Promise(resolve => setTimeout(resolve, 300));
+          } else {
+            console.log('GeminiDesk: Main menu button not found. Assuming sidebar is open.');
+          }
+
+          const tempChatButton = await waitForElement('[data-test-id="temp-chat-button"], button[aria-label="Temporary chat"]', 5000);
+          simulateClick(tempChatButton);
+          console.log('--- GeminiDesk: Temporary Chat opened (Gemini). ---');
+          return;
+        }
+
+        if (isAiStudio) {
+          const tempChatToggle = await waitForElement('ms-incognito-mode-toggle button[aria-label="Temporary chat toggle"], button[data-test-id="temp-chat-button"]', 5000);
+          simulateClick(tempChatToggle);
+          console.log('--- GeminiDesk: Temporary Chat opened (AI Studio). ---');
+          return;
+        }
+
+        const fallbackButton = await waitForElement('[data-test-id="temp-chat-button"], button[aria-label*="Temporary chat"], ms-incognito-mode-toggle button[aria-label="Temporary chat toggle"]', 5000);
+        simulateClick(fallbackButton);
+        console.log('--- GeminiDesk: Temporary Chat opened (fallback). ---');
+      } catch (error) {
+        console.error('GeminiDesk Error during Temporary Chat sequence:', error.message);
+      }
+    })();
+  `;
+
+  targetView.webContents.executeJavaScript(script).catch(console.error);
+}
+
 
 function getSettings() {
   try {
@@ -452,6 +541,7 @@ const hotkeys = {
   screenshot:    isMac ? 'Command+Shift+5'      : cfg.screenshot,
   newChatPro:    isMac ? 'Command+P'            : cfg.newChatPro,
   newChatFlash:  isMac ? 'Command+F'            : cfg.newChatFlash,
+  temporaryChat: isMac ? 'Command+T'            : cfg.temporaryChat,
   newWindow:     isMac ? 'Command+N'            : cfg.newWindow,
   search:        isMac ? 'Command+S'            : cfg.search,
 };
@@ -503,6 +593,10 @@ if (shortcuts.showHide) {
 
     if (shortcuts.newChatFlash) {
         globalShortcut.register(shortcuts.newChatFlash, () => createNewChatWithModel('Flash'));
+    }
+
+    if (shortcuts.temporaryChat) {
+        globalShortcut.register(shortcuts.temporaryChat, () => openTemporaryChat());
     }
 
     if (shortcuts.quit) {
@@ -1302,6 +1396,9 @@ ipcMain.on('install-update-now', () => {
 });
 ipcMain.on('open-new-window', () => {
   createWindow();
+});
+ipcMain.on('open-temporary-chat', () => {
+  openTemporaryChat();
 });
 ipcMain.on('onboarding-complete', (event) => {
   settings.onboardingShown = true;
