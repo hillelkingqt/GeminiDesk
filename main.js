@@ -418,58 +418,12 @@ app.whenReady().then(async () => {
     }
 });
 
-<<<<<<< HEAD
 // Always load the AI Studio RTL extension (it self-disables based on GeminiDesk settings via cookie/messages).
 app.whenReady().then(async () => {
     try {
         await loadAiStudioRtlExtensionToAllSessions();
     } catch (e) {
         console.warn('Failed loading AI Studio RTL extension at startup:', e && e.message ? e.message : e);
-=======
-
-// ================================================================= //
-// Settings Management
-// ================================================================= //
-const settingsPath = path.join(app.getPath('userData'), 'settings.json');
-let settingsWin = null;
-const defaultSettings = {
-  onboardingShown: false,
-  autoStart: false,
-  alwaysOnTop: true,
-  lastShownNotificationId: null, 
-  lastMessageData: null,
-  autoCheckNotifications: true,
-  enableCanvasResizing: true,
-  shortcuts: {
-    showHide: 'Alt+G',
-    quit: 'Alt+Q',
-    showInstructions: 'Alt+I',
-    screenshot: 'Control+Alt+S',
-    newChatPro: 'Alt+P',
-    newChatFlash: 'Alt+F',
-    newWindow: 'Alt+N',
-    search: 'Alt+S',
-    refresh: 'Alt+R'
-  },
-lastUpdateCheck: 0,
-microphoneGranted: null,
-  theme: 'dark'
-};
-function scheduleDailyUpdateCheck() {
-  const checkForUpdates = () => {
-    const now = new Date().getTime();
-    const oneDay = 24 * 60 * 60 * 1000; // Milliseconds in a day
-    // Check if more than a day has passed since the last check
-    if (!settings.lastUpdateCheck || (now - settings.lastUpdateCheck > oneDay)) {
-      console.log('Checking for updates...');
-      autoUpdater.checkForUpdates();
-      
-      // Update the last check time and save it
-      settings.lastUpdateCheck = now;
-      saveSettings(settings);
-    } else {
-      console.log('Update check skipped, less than 24 hours since last check.');
->>>>>>> c86f7870bfe3f313498273245a7a083b2a4d03a6
     }
 });
 
@@ -536,7 +490,6 @@ function getAvatarStorageDir() {
     avatarDirectoryPath = dir;
     return dir;
 }
-<<<<<<< HEAD
 
 async function downloadAccountAvatar(sourceUrl, accountIndex) {
     if (!sourceUrl) return '';
@@ -2346,18 +2299,6 @@ function checkAndSendDefaultPrompt(view, url, mode) {
 }
 
 // ...existing code...
-=======
-function reloadFocusedView() {
-    const focusedWindow = BrowserWindow.getFocusedWindow();
-    if (focusedWindow && !focusedWindow.isDestroyed()) {
-        const view = focusedWindow.getBrowserView();
-        if (view && view.webContents && !view.webContents.isDestroyed()) {
-            console.log(`Reloading view for window ID: ${focusedWindow.id}`);
-            view.webContents.reload();
-        }
-    }
-}
->>>>>>> c86f7870bfe3f313498273245a7a083b2a4d03a6
 function createNewChatWithModel(modelType) {
     let focusedWindow = BrowserWindow.getFocusedWindow();
 
@@ -2558,7 +2499,6 @@ function triggerSearch() {
     targetView.webContents.executeJavaScript(script).catch(console.error);
 }
 
-<<<<<<< HEAD
 function reloadFocusedView() {
     const focusedWindow = BrowserWindow.getFocusedWindow();
     if (focusedWindow && !focusedWindow.isDestroyed()) {
@@ -2592,136 +2532,6 @@ function createWindow(state = null) {
             partition: SESSION_PARTITION
         }
     };
-=======
-
-function getSettings() {
-  try {
-    if (fs.existsSync(settingsPath)) {
-      const savedSettings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
-      return { ...defaultSettings, ...savedSettings, shortcuts: { ...defaultSettings.shortcuts, ...savedSettings.shortcuts } };
-    }
-  } catch (e) {
-    console.error("Couldn't read settings, falling back to default.", e);
-  }
-  return defaultSettings;
-}
-function createNotificationWindow() {
-  if (notificationWin) {
-    notificationWin.focus();
-    return;
-  }
-
-  notificationWin = new BrowserWindow({
-    width: 550, 
-    height: 450,
-    frame: false,
-    alwaysOnTop: true,
-    show: false,
-    transparent: true,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-    }
-  });
-
-  notificationWin.loadFile('notification.html');
-
-  notificationWin.once('ready-to-show', () => {
-    notificationWin.show();
-  });
-
-  notificationWin.on('closed', () => {
-    notificationWin = null;
-  });
-}
-function sendToNotificationWindow(data) {
-  if (!notificationWin || notificationWin.isDestroyed()) return;
-  const wc = notificationWin.webContents;
-  const send = () => wc.send('notification-data', data);
-  if (wc.isLoadingMainFrame()) {
-    wc.once('did-finish-load', send);
-  } else {
-    send();
-  }
-}
-
-async function checkForNotifications(isManualCheck = false) {
-  // If this is a manual check (button click), make sure the window exists.
-  if (isManualCheck) {
-    createNotificationWindow();
-    if (!notificationWin) return;
-  }
-
-  // Ensure we only send to the renderer AFTER the notification window is ready.
-  const sendToNotificationWindow = (data) => {
-    if (!notificationWin || notificationWin.isDestroyed()) return;
-    const wc = notificationWin.webContents;
-    const send = () => wc.send('notification-data', data);
-    if (wc.isLoadingMainFrame()) {
-      wc.once('did-finish-load', send);
-    } else {
-      send();
-    }
-  };
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-  try {
-    // Avoid cached responses so "no new message" vs. "new message" is always fresh.
-    const response = await fetch('https://latex-r70v.onrender.com/latest-message', {
-      cache: 'no-cache',
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
-
-    // Treat 404 as "no messages on server", anything else non-OK as an error.
-    if (!response.ok && response.status !== 404) {
-      throw new Error(`Server error: ${response.status}`);
-    }
-
-    const messageData = response.status === 404 ? {} : await response.json();
-
-    // If the server returned a message with an id
-    if (messageData && messageData.id) {
-      if (messageData.id !== settings.lastShownNotificationId) {
-        // --- New notification found ---
-        console.log(`New notification found: ID ${messageData.id}`);
-        settings.lastShownNotificationId = messageData.id;
-        settings.lastMessageData = messageData;
-        saveSettings(settings);
-
-        if (!notificationWin) createNotificationWindow();
-        sendToNotificationWindow({ status: 'found', content: messageData });
-      } else if (isManualCheck) {
-        // --- Same message as last time; no new notifications ---
-        sendToNotificationWindow({ status: 'no-new-message' });
-      }
-    } else {
-      // --- No message exists on the server (deleted/none) ---
-      console.log('No message found on server. Clearing local cache.');
-      settings.lastShownNotificationId = null;
-      settings.lastMessageData = null;
-      saveSettings(settings);
-
-      if (isManualCheck) {
-        sendToNotificationWindow({ status: 'no-messages-ever' });
-      }
-    }
-  } catch (error) {
-    clearTimeout(timeoutId);
-    console.error('Failed to check for notifications:', error.message);
-    if (isManualCheck && notificationWin) {
-      const errorMessage = (error.name === 'AbortError')
-        ? 'The request timed out.'
-        : error.message;
-      sendToNotificationWindow({ status: 'error', message: errorMessage });
-    }
-  }
-}
-
-let notificationIntervalId = null;
->>>>>>> c86f7870bfe3f313498273245a7a083b2a4d03a6
 
     if (settings.preserveWindowSize && settings.windowBounds) {
         windowOptions.width = settings.windowBounds.width || originalSize.width;
@@ -2891,7 +2701,6 @@ let notificationIntervalId = null;
                 }, 100);
             }
         }
-<<<<<<< HEAD
     };
 
     // Handle resize event (fires during resize)
@@ -2904,42 +2713,6 @@ let notificationIntervalId = null;
             updateViewBounds(true, true, true);
         }
     });
-=======
-    }, 500);
-}
-}
-// Add shortcut for search
-    if (shortcuts.search) {
-        globalShortcut.register(shortcuts.search, () => {
-            triggerSearch();
-        });
-    }
-    if (shortcuts.refresh) {
-        globalShortcut.register(shortcuts.refresh, () => {
-            reloadFocusedView();
-        });
-    }
-    if (shortcuts.newWindow) {
-        globalShortcut.register(shortcuts.newWindow, () => {
-            createWindow();
-        });
-    }
-}
-function createWindow() {
-  const newWin = new BrowserWindow({
-    width: originalSize.width,
-    height: originalSize.height,
-    frame: false,
-    alwaysOnTop: settings.alwaysOnTop,
-    icon: path.join(__dirname, 'icon.ico'),
-    show: true,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-      partition: 'persist:gemini-session'
-    }
-  });
->>>>>>> c86f7870bfe3f313498273245a7a083b2a4d03a6
 
     // Handle resized event (fires after resize completes - crucial for Windows snap with Win+Arrow keys)
     newWin.on('resized', () => {
@@ -4221,7 +3994,6 @@ ipcMain.on('start-find-in-page', (event, searchText, findNext = true) => {
     }
 });
 
-<<<<<<< HEAD
 ipcMain.on('stop-find-in-page', (event, action) => {
     const focusedWindow = BrowserWindow.getFocusedWindow();
     if (focusedWindow) {
@@ -4585,68 +4357,15 @@ ipcMain.on('stop-recording-shortcut', () => {
     }
 });
 
-=======
-/**
- * Sends an error report to the server.
- * @param {Error} error The error object to report.
- */
-async function reportErrorToServer(error) {
-    if (!error) return;
-    console.error('Reporting error to server:', error);
-    try {
-        await fetch('https://latex-r70v.onrender.com/error', { // ודא שזו כתובת ה-worker שלך
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                version: app.getVersion(),
-                error: error.message,
-                stack: error.stack,
-                platform: process.platform
-            })
-        });
-    } catch (fetchError) {
-        console.error('Could not send error report:', fetchError.message);
-    }
-}
->>>>>>> c86f7870bfe3f313498273245a7a083b2a4d03a6
 // ================================================================= //
 // App Lifecycle
 // ================================================================= //
 
 app.whenReady().then(() => {
-<<<<<<< HEAD
     syncThemeWithWebsite(settings.theme);
 
     // Apply proxy settings on startup if configured
     applyProxySettings();
-=======
-  createWindow();
-const sendPing = async () => {
-    try {
-        await fetch('https://latex-r70v.onrender.com/ping-stats', { // ודא שזו כתובת ה-worker שלך
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ version: app.getVersion() })
-        });
-        console.log('Analytics ping sent successfully.');
-    } catch (error) {
-        console.error('Failed to send analytics ping:', error.message);
-    }
-};
-sendPing(); 
-  // --- 1. טיפול בבקשות הרשאה (כמו מיקרופון) ---
-  const ses = session.defaultSession;
-  ses.setPermissionRequestHandler((webContents, permission, callback) => {
-    // בדוק אם הבקשה היא עבור 'media' (כולל מיקרופון)
-    if (permission === 'media') {
-      // אשר את ההרשאה אוטומטית בכל פעם
-      callback(true);
-    } else {
-      // סרב לכל בקשת הרשאה אחרת מטעמי אבטחה
-      callback(false);
-    }
-  });
->>>>>>> c86f7870bfe3f313498273245a7a083b2a4d03a6
 
     // Initialize modules with dependencies
     deepResearchModule.initialize({
@@ -4918,14 +4637,9 @@ app.on('before-quit', async () => {
 ipcMain.on('check-for-updates', () => {
     openUpdateWindowAndCheck();
 });
-<<<<<<< HEAD
 
 ipcMain.on('manual-check-for-notifications', () => {
     checkForNotifications(true); // true = isManualCheck
-=======
-ipcMain.on('manual-check-for-notifications', () => {
-  checkForNotifications(true); // true = isManualCheck
->>>>>>> c86f7870bfe3f313498273245a7a083b2a4d03a6
 });
 
 ipcMain.on('open-release-notes', (event, version) => {
@@ -5235,7 +4949,6 @@ ipcMain.on('close-download-window', () => {
         downloadWin.close();
     }
 });
-<<<<<<< HEAD
 
 // Generic close window handler
 ipcMain.on('close-window', (event) => {
@@ -5278,43 +4991,6 @@ ipcMain.on('request-last-notification', async (event) => {
     }
 });
 
-=======
-ipcMain.on('request-last-notification', async (event) => {
-  const senderWebContents = event.sender;
-  if (!senderWebContents || senderWebContents.isDestroyed()) return;
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-  try {
-    const response = await fetch('https://latex-r70v.onrender.com/latest-message', {
-      cache: 'no-cache', // <-- הוספנו את זה
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
-    
-    //... (שאר הקוד נשאר זהה)
-    if (!response.ok && response.status !== 404) throw new Error(`Server error: ${response.status}`);
-    const messageData = response.status === 404 ? {} : await response.json();
-    
-    if (messageData && messageData.id) {
-      settings.lastShownNotificationId = messageData.id; 
-      settings.lastMessageData = messageData;
-      saveSettings(settings);
-      senderWebContents.send('notification-data', { status: 'found', content: messageData });
-    } else {
-      senderWebContents.send('notification-data', { status: 'no-messages-ever' });
-    }
-  } catch (error) {
-    clearTimeout(timeoutId);
-    console.error('Failed to fetch last notification:', error.message);
-    let errorMessage = error.name === 'AbortError' ? 'The request timed out.' : error.message;
-    if (!senderWebContents.isDestroyed()) {
-      senderWebContents.send('notification-data', { status: 'error', message: errorMessage });
-    }
-  }
-});
->>>>>>> c86f7870bfe3f313498273245a7a083b2a4d03a6
 ipcMain.on('install-update-now', () => {
     // Save current window state before updating
     try {

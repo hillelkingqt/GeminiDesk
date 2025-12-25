@@ -1,11 +1,6 @@
 {
-<<<<<<< HEAD
   "name": "gemini-desk",
   "version": "8.2.0",
-=======
-  "name": "gemini-app",
-  "version": "4.9.0",
->>>>>>> c86f7870bfe3f313498273245a7a083b2a4d03a6
   "description": "Gemini Desktop Wrapper",
   "author": {
     "name": "Hillel BH",
@@ -59,23 +54,6 @@
     ],
     "asar": true,
     "compression": "maximum",
-<<<<<<< HEAD
-=======
-    "files": [
-      "main.js",
-      "onboarding.html",
-      "preload.js",
-      "drag.html",
-      "settings.html",
-      "confirm-reset.html",
-      "update-available.html",
-      "download-progress.html",
-      "icon1.png",
-      "notification.html",
-      "node_modules/auto-launch",
-      "package.json"
-    ],
->>>>>>> c86f7870bfe3f313498273245a7a083b2a4d03a6
     "publish": [
       {
         "provider": "github",

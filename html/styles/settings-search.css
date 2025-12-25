@@ -1,6 +1,7 @@
 /* Search Bar Styling */
 .settings-search-container {
-    position: relative;
+    position: sticky;
+    top: 0;
     z-index: 20;
     background: rgba(19, 19, 20, 0.8); /* Slightly more transparent for better blur */
     padding: 20px 24px;
