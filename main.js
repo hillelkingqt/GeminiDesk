@@ -7091,7 +7091,7 @@ ipcMain.on('confirm-reset-action', () => {
 });
 
 ipcMain.handle('get-settings', async () => {
-    return getSettings();
+    return getSettings(false);
 });
 
 ipcMain.handle('get-app-version', () => {
