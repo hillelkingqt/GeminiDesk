@@ -373,6 +373,17 @@
             box-shadow: none;
         }
 
+        /* Danger Zone Styling */
+        .setting-category.danger-zone {
+            border: 1px solid rgba(242, 139, 130, 0.3);
+            background: rgba(242, 139, 130, 0.05);
+        }
+
+        .setting-category.danger-zone .setting-category-title {
+            color: var(--danger-color);
+            border-bottom-color: rgba(242, 139, 130, 0.2);
+        }
+
         #notification-status-text {
             font-size: 12px;
             color: var(--text-secondary);
@@ -1003,6 +1014,14 @@
                 <label class="toggle-switch"><input type="checkbox" id="setting-disableSpellcheck"><span
                         class="slider"></span></label>
             </div>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <strong data-i18n="autoCopyResponse-label">Auto-copy AI Response</strong>
+                    <span data-i18n="autoCopyResponse-desc">Automatically copy the AI response to clipboard when complete.</span>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-autoCopyResponse"><span
+                        class="slider"></span></label>
+            </div>
             <!-- English-only: Load MCP SuperAssistant unpacked extension -->
             <div class="setting-item english-only-feature">
                 <div class="setting-label"><strong>Load MCP SuperAssistant Extension</strong><span>When enabled, the
@@ -1621,8 +1640,8 @@
                 </div>
             </div>
 
-            <div class="setting-category">
-                <h3 class="setting-category-title" style="color: var(--danger-color);">
+            <div class="setting-category danger-zone">
+                <h3 class="setting-category-title">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                         <path
                             d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z">
@@ -1912,6 +1931,7 @@
                         document.getElementById('setting-autoInstallUpdates').checked = settings.autoInstallUpdates !== false;
                         document.getElementById('setting-enableCanvasResizing').checked = settings.enableCanvasResizing || false;
                         document.getElementById('setting-disableSpellcheck').checked = settings.disableSpellcheck || false;
+                document.getElementById('setting-autoCopyResponse').checked = settings.autoCopyResponse || false;
                         document.getElementById('setting-invisibilityMode').checked = settings.invisibilityMode || false;
 
                         // Gray out "Show in Taskbar" when invisibility mode is enabled
@@ -2188,6 +2208,10 @@
 
                 document.getElementById('setting-disableSpellcheck').addEventListener('change', (e) => {
                     electronAPI.updateSetting('disableSpellcheck', e.target.checked);
+                });
+
+                document.getElementById('setting-autoCopyResponse').addEventListener('change', (e) => {
+                    electronAPI.updateSetting('autoCopyResponse', e.target.checked);
                 });
 
                 document.getElementById('setting-invisibilityMode').addEventListener('change', (e) => {

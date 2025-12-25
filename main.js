@@ -4010,9 +4010,59 @@ ipcMain.on('execute-shortcut', (event, action) => {
     }
 });
 
-ipcMain.on('ai-response-completed', () => {
+ipcMain.on('ai-response-completed', async (event) => {
     console.log('🔊 Main process received ai-response-completed event, playing sound...');
     playAiCompletionSound();
+
+    if (settings.autoCopyResponse) {
+        console.log('📋 Auto-copying response enabled, attempting to copy...');
+        const senderWebContents = event.sender;
+        if (!senderWebContents || senderWebContents.isDestroyed()) return;
+
+        try {
+            const textToCopy = await senderWebContents.executeJavaScript(`
+                (() => {
+                    try {
+                        const isAiStudio = window.location.hostname.includes('aistudio.google.com');
+
+                        if (isAiStudio) {
+                            const turns = document.querySelectorAll('ms-chat-turn');
+                            // Find last model turn
+                            for (let i = turns.length - 1; i >= 0; i--) {
+                                const turn = turns[i];
+                                const roleContainer = turn.querySelector('.virtual-scroll-container');
+                                const roleAttr = roleContainer?.getAttribute('data-turn-role') || '';
+                                const isModel = /model/i.test(roleAttr) || turn.querySelector('.model-prompt-container') !== null;
+
+                                if (isModel) {
+                                    const contentEl = turn.querySelector('.turn-content');
+                                    return contentEl ? contentEl.innerText.trim() : '';
+                                }
+                            }
+                        } else {
+                            // Gemini
+                            const containers = document.querySelectorAll('.conversation-container');
+                            const lastContainer = containers[containers.length - 1];
+                            if (lastContainer) {
+                                const modelResponse = lastContainer.querySelector('model-response .markdown');
+                                return modelResponse ? modelResponse.innerText.trim() : '';
+                            }
+                        }
+                        return '';
+                    } catch (e) {
+                        return '';
+                    }
+                })();
+            `);
+
+            if (textToCopy && textToCopy.length > 0) {
+                clipboard.writeText(textToCopy);
+                console.log('📋 Copied response to clipboard (length:', textToCopy.length, ')');
+            }
+        } catch (error) {
+            console.error('📋 Failed to auto-copy response:', error);
+        }
+    }
 });
 
 ipcMain.on('select-app-mode', (event, mode) => {
