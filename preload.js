@@ -275,6 +275,7 @@ window.addEventListener('load', () => {
     checkForPanelAndNotify();
 });
 
+<<<<<<< HEAD
 // ================================================================
 // Find in Page Functionality
 // ================================================================
@@ -748,3 +749,10 @@ window.addEventListener('load', () => {
         initializeAiResponseDetection();
     }, 1000);
 });
+=======
+contextBridge.exposeInMainWorld('notificationAPI', {
+    closeWindow: () => ipcRenderer.send('close-notification-window'),
+    requestLastNotification: () => ipcRenderer.send('request-last-notification'),      // ← ADD THIS
+    onReceiveNotification: (callback) => ipcRenderer.on('notification-data', (event, ...args) => callback(...args)),
+});
+>>>>>>> c86f7870bfe3f313498273245a7a083b2a4d03a6

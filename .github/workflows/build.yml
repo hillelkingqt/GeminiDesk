@@ -116,7 +116,42 @@ jobs:
       - name: Upload to release
         uses: softprops/action-gh-release@v2
         with:
+<<<<<<< HEAD
           tag_name: ${{ needs.create-release.outputs.tag_name }}
+=======
+          name: GeminiDesk-win-exe
+          path: dist/*.exe
+
+  release:
+    needs: [build-mac, build-win]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+    steps:
+      - name: Download macOS DMG artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: GeminiDesk-mac-dmg
+          path: artifacts/macos
+
+      - name: Download macOS ZIP artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: GeminiDesk-mac-zip
+          path: artifacts/macos
+
+      - name: Download Windows EXE artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: GeminiDesk-win-exe
+          path: artifacts/windows
+
+      - name: Create GitHub Release (draft)
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+>>>>>>> c86f7870bfe3f313498273245a7a083b2a4d03a6
           draft: true
           files: |
             dist/*.exe
