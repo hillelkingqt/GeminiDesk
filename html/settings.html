@@ -154,7 +154,7 @@
         .content {
             position: relative;
             z-index: 1;
-            padding: 16px;
+            padding: 0 16px;
             padding-bottom: 80px;
             overflow-y: auto;
             height: calc(100vh - 48px);
@@ -330,6 +330,39 @@
             box-shadow: none;
         }
 
+        .button-group {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            overflow: hidden;
+            background: transparent;
+        }
+
+        .button-group .record-button {
+            border: none;
+            border-right: 1px solid var(--glass-border);
+            border-radius: 0;
+            border-top-left-radius: 20px;
+            border-bottom-left-radius: 20px;
+        }
+
+        .button-group .clear-shortcut-button {
+            border: none;
+            border-radius: 0;
+            border-top-right-radius: 16px;
+            border-bottom-right-radius: 16px;
+            padding: 6px 12px;
+        }
+
+        .button-group .record-button:hover {
+            background: rgba(138, 180, 248, 0.1);
+        }
+
+        .button-group .clear-shortcut-button:hover {
+            background: rgba(242, 139, 130, 0.1);
+        }
+
         .record-button:hover,
         .action-button:hover {
             background: rgba(138, 180, 248, 0.1);
@@ -346,6 +379,38 @@
             font-weight: 500;
             cursor: default;
             box-shadow: none;
+        }
+
+        .clear-shortcut-button {
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            padding: 6px 14px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-family: 'Google Sans', 'Segoe UI', Roboto, sans-serif;
+            font-size: 18px;
+            font-weight: 400;
+            height: 32px;
+            min-width: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            box-shadow: none;
+            line-height: 1;
+            vertical-align: middle;
+        }
+
+        .clear-shortcut-button:hover {
+            background: rgba(242, 139, 130, 0.1);
+            border-color: var(--danger-color);
+            color: var(--danger-color);
+            transform: translateY(-1px);
+        }
+
+        .clear-shortcut-button:active {
+            transform: translateY(0);
         }
 
         #reset-button {
@@ -1152,8 +1217,11 @@
                 <div class="setting-label"><strong data-i18n="showHide-label">Show / Hide Window</strong><span
                         data-i18n="showHide-desc">Toggle window visibility.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="record-button" data-key="showHide" data-i18n="recordButton-default">Click to
-                        record</button>
+                    <div class="button-group">
+                        <button class="record-button" data-key="showHide" data-i18n="recordButton-default">Click to
+                            record</button>
+                        <button class="clear-shortcut-button" data-key="showHide" title="Clear shortcut" style="display: none;">×</button>
+                    </div>
                     <label class="toggle-switch shortcut-global-toggle" data-key="showHide" style="display: none;">
                         <input type="checkbox" class="shortcut-global-checkbox">
                         <span class="slider"></span>
@@ -1164,8 +1232,11 @@
                 <div class="setting-label"><strong data-i18n="openNewWindow-label">Open New Window</strong><span
                         data-i18n="openNewWindow-desc">Creates a new, separate window.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="record-button" data-key="newWindow" data-i18n="recordButton-default">Click to
-                        record</button>
+                    <div class="button-group">
+                        <button class="record-button" data-key="newWindow" data-i18n="recordButton-default">Click to
+                            record</button>
+                        <button class="clear-shortcut-button" data-key="newWindow" title="Clear shortcut" style="display: none;">×</button>
+                    </div>
                     <label class="toggle-switch shortcut-global-toggle" data-key="newWindow" style="display: none;">
                         <input type="checkbox" class="shortcut-global-checkbox">
                         <span class="slider"></span>
@@ -1176,8 +1247,11 @@
                 <div class="setting-label"><strong data-i18n="quitApplication-label">Quit Application</strong><span
                         data-i18n="quitApplication-desc">Close the application.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="record-button" data-key="quit" data-i18n="recordButton-default">Click to
-                        record</button>
+                    <div class="button-group">
+                        <button class="record-button" data-key="quit" data-i18n="recordButton-default">Click to
+                            record</button>
+                        <button class="clear-shortcut-button" data-key="quit" title="Clear shortcut" style="display: none;">×</button>
+                    </div>
                     <label class="toggle-switch shortcut-global-toggle" data-key="quit" style="display: none;">
                         <input type="checkbox" class="shortcut-global-checkbox">
                         <span class="slider"></span>
@@ -1188,8 +1262,11 @@
                 <div class="setting-label"><strong data-i18n="closeWindow-label">Close Window</strong><span
                         data-i18n="closeWindow-desc">Closes the current window.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="record-button" data-key="closeWindow" data-i18n="recordButton-default">Click to
-                        record</button>
+                    <div class="button-group">
+                        <button class="record-button" data-key="closeWindow" data-i18n="recordButton-default">Click to
+                            record</button>
+                        <button class="clear-shortcut-button" data-key="closeWindow" title="Clear shortcut" style="display: none;">×</button>
+                    </div>
                     <label class="toggle-switch shortcut-global-toggle" data-key="closeWindow" style="display: none;">
                         <input type="checkbox" class="shortcut-global-checkbox">
                         <span class="slider"></span>
@@ -1200,8 +1277,11 @@
                 <div class="setting-label"><strong data-i18n="showInstructions-label">Show Instructions</strong><span
                         data-i18n="showInstructions-desc">See the welcome screen.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="record-button" data-key="showInstructions" data-i18n="recordButton-default">Click to
-                        record</button>
+                    <div class="button-group">
+                        <button class="record-button" data-key="showInstructions" data-i18n="recordButton-default">Click to
+                            record</button>
+                        <button class="clear-shortcut-button" data-key="showInstructions" title="Clear shortcut" style="display: none;">×</button>
+                    </div>
                     <label class="toggle-switch shortcut-global-toggle" data-key="showInstructions"
                         style="display: none;">
                         <input type="checkbox" class="shortcut-global-checkbox">
@@ -1213,8 +1293,11 @@
                 <div class="setting-label"><strong data-i18n="refreshWindow-label">Refresh Window</strong><span
                         data-i18n="refreshWindow-desc">Reloads the current page content.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="record-button" data-key="refresh" data-i18n="recordButton-default">Click to
-                        record</button>
+                    <div class="button-group">
+                        <button class="record-button" data-key="refresh" data-i18n="recordButton-default">Click to
+                            record</button>
+                        <button class="clear-shortcut-button" data-key="refresh" title="Clear shortcut" style="display: none;">×</button>
+                    </div>
                     <label class="toggle-switch shortcut-global-toggle" data-key="refresh" style="display: none;">
                         <input type="checkbox" class="shortcut-global-checkbox">
                         <span class="slider"></span>
@@ -1225,8 +1308,11 @@
                 <div class="setting-label"><strong data-i18n="searchChats-label">Search Chats</strong><span
                         data-i18n="searchChats-desc">Focus the chat search bar.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="record-button" data-key="search" data-i18n="recordButton-default">Click to
-                        record</button>
+                    <div class="button-group">
+                        <button class="record-button" data-key="search" data-i18n="recordButton-default">Click to
+                            record</button>
+                        <button class="clear-shortcut-button" data-key="search" title="Clear shortcut" style="display: none;">×</button>
+                    </div>
                     <label class="toggle-switch shortcut-global-toggle" data-key="search" style="display: none;">
                         <input type="checkbox" class="shortcut-global-checkbox">
                         <span class="slider"></span>
@@ -1237,8 +1323,11 @@
                 <div class="setting-label"><strong data-i18n="findInPage-label">Find in Page</strong><span
                         data-i18n="findInPage-desc">Opens the find bar.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="record-button" data-key="findInPage" data-i18n="recordButton-default">Click to
-                        record</button>
+                    <div class="button-group">
+                        <button class="record-button" data-key="findInPage" data-i18n="recordButton-default">Click to
+                            record</button>
+                        <button class="clear-shortcut-button" data-key="findInPage" title="Clear shortcut" style="display: none;">×</button>
+                    </div>
                     <label class="toggle-switch shortcut-global-toggle" data-key="findInPage" style="display: none;">
                         <input type="checkbox" class="shortcut-global-checkbox">
                         <span class="slider"></span>
@@ -1249,8 +1338,11 @@
                 <div class="setting-label"><strong data-i18n="screenshot-label">Take Screenshot & Paste</strong><span
                         data-i18n="screenshot-desc">Copies screen area to clipboard and pastes it.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="record-button" data-key="screenshot" data-i18n="recordButton-default">Click to
-                        record</button>
+                    <div class="button-group">
+                        <button class="record-button" data-key="screenshot" data-i18n="recordButton-default">Click to
+                            record</button>
+                        <button class="clear-shortcut-button" data-key="screenshot" title="Clear shortcut" style="display: none;">×</button>
+                    </div>
                     <label class="toggle-switch shortcut-global-toggle" data-key="screenshot" style="display: none;">
                         <input type="checkbox" class="shortcut-global-checkbox">
                         <span class="slider"></span>
@@ -1261,8 +1353,11 @@
                 <div class="setting-label"><strong data-i18n="newChat-label">New Chat</strong><span
                         data-i18n="newChat-desc">Opens a new chat window.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="record-button" data-key="newChat" data-i18n="recordButton-default">Click to
-                        record</button>
+                    <div class="button-group">
+                        <button class="record-button" data-key="newChat" data-i18n="recordButton-default">Click to
+                            record</button>
+                        <button class="clear-shortcut-button" data-key="newChat" title="Clear shortcut" style="display: none;">×</button>
+                    </div>
                     <label class="toggle-switch shortcut-global-toggle" data-key="newChat" style="display: none;">
                         <input type="checkbox" class="shortcut-global-checkbox">
                         <span class="slider"></span>
@@ -1273,8 +1368,11 @@
                 <div class="setting-label"><strong data-i18n="changeModelPro-label">Change Model (Pro)</strong><span
                         data-i18n="changeModelPro-desc">Changes the current chat to Pro model.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="record-button" data-key="changeModelPro" data-i18n="recordButton-default">Click to
-                        record</button>
+                    <div class="button-group">
+                        <button class="record-button" data-key="changeModelPro" data-i18n="recordButton-default">Click to
+                            record</button>
+                        <button class="clear-shortcut-button" data-key="changeModelPro" title="Clear shortcut" style="display: none;">×</button>
+                    </div>
                     <label class="toggle-switch shortcut-global-toggle" data-key="changeModelPro"
                         style="display: none;">
                         <input type="checkbox" class="shortcut-global-checkbox">
@@ -1286,8 +1384,11 @@
                 <div class="setting-label"><strong data-i18n="changeModelFlash-label">Change Model (Flash)</strong><span
                         data-i18n="changeModelFlash-desc">Changes the current chat to Flash model.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="record-button" data-key="changeModelFlash" data-i18n="recordButton-default">Click to
-                        record</button>
+                    <div class="button-group">
+                        <button class="record-button" data-key="changeModelFlash" data-i18n="recordButton-default">Click to
+                            record</button>
+                        <button class="clear-shortcut-button" data-key="changeModelFlash" title="Clear shortcut" style="display: none;">×</button>
+                    </div>
                     <label class="toggle-switch shortcut-global-toggle" data-key="changeModelFlash"
                         style="display: none;">
                         <input type="checkbox" class="shortcut-global-checkbox">
@@ -1300,9 +1401,12 @@
                         (Thinking)</strong><span data-i18n="changeModelThinking-desc">Changes the current chat to
                         Thinking model.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="record-button" data-key="changeModelThinking" data-i18n="recordButton-default">Click
-                        to
-                        record</button>
+                    <div class="button-group">
+                        <button class="record-button" data-key="changeModelThinking" data-i18n="recordButton-default">Click
+                            to
+                            record</button>
+                        <button class="clear-shortcut-button" data-key="changeModelThinking" title="Clear shortcut" style="display: none;">×</button>
+                    </div>
                     <label class="toggle-switch shortcut-global-toggle" data-key="changeModelThinking"
                         style="display: none;">
                         <input type="checkbox" class="shortcut-global-checkbox">
@@ -1314,8 +1418,11 @@
                 <div class="setting-label"><strong data-i18n="newChatWithPro-label">New Chat with Pro</strong><span
                         data-i18n="newChatWithPro-desc">Opens a new chat and selects the Pro model.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="record-button" data-key="newChatWithPro" data-i18n="recordButton-default">Click to
-                        record</button>
+                    <div class="button-group">
+                        <button class="record-button" data-key="newChatWithPro" data-i18n="recordButton-default">Click to
+                            record</button>
+                        <button class="clear-shortcut-button" data-key="newChatWithPro" title="Clear shortcut" style="display: none;">×</button>
+                    </div>
                     <label class="toggle-switch shortcut-global-toggle" data-key="newChatWithPro"
                         style="display: none;">
                         <input type="checkbox" class="shortcut-global-checkbox">
@@ -1327,8 +1434,11 @@
                 <div class="setting-label"><strong data-i18n="newChatWithFlash-label">New Chat with Flash</strong><span
                         data-i18n="newChatWithFlash-desc">Opens a new chat and selects the Flash model.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="record-button" data-key="newChatWithFlash" data-i18n="recordButton-default">Click to
-                        record</button>
+                    <div class="button-group">
+                        <button class="record-button" data-key="newChatWithFlash" data-i18n="recordButton-default">Click to
+                            record</button>
+                        <button class="clear-shortcut-button" data-key="newChatWithFlash" title="Clear shortcut" style="display: none;">×</button>
+                    </div>
                     <label class="toggle-switch shortcut-global-toggle" data-key="newChatWithFlash"
                         style="display: none;">
                         <input type="checkbox" class="shortcut-global-checkbox">
@@ -1341,9 +1451,12 @@
                         Thinking</strong><span data-i18n="newChatWithThinking-desc">Opens a new chat and selects the
                         Thinking model.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="record-button" data-key="newChatWithThinking" data-i18n="recordButton-default">Click
-                        to
-                        record</button>
+                    <div class="button-group">
+                        <button class="record-button" data-key="newChatWithThinking" data-i18n="recordButton-default">Click
+                            to
+                            record</button>
+                        <button class="clear-shortcut-button" data-key="newChatWithThinking" title="Clear shortcut" style="display: none;">×</button>
+                    </div>
                     <label class="toggle-switch shortcut-global-toggle" data-key="newChatWithThinking"
                         style="display: none;">
                         <input type="checkbox" class="shortcut-global-checkbox">
@@ -1355,8 +1468,11 @@
                 <div class="setting-label"><strong data-i18n="voiceAssistant-label">Voice Assistant</strong><span
                         data-i18n="voiceAssistant-desc">Shows app and activates microphone for voice input.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="record-button" data-key="voiceAssistant" data-i18n="recordButton-default">Click to
-                        record</button>
+                    <div class="button-group">
+                        <button class="record-button" data-key="voiceAssistant" data-i18n="recordButton-default">Click to
+                            record</button>
+                        <button class="clear-shortcut-button" data-key="voiceAssistant" title="Clear shortcut" style="display: none;">×</button>
+                    </div>
                     <label class="toggle-switch shortcut-global-toggle" data-key="voiceAssistant"
                         style="display: none;">
                         <input type="checkbox" class="shortcut-global-checkbox">
@@ -1371,7 +1487,10 @@
                 </div>
                 <!-- Controls wrapper to match other shortcuts -->
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="record-button" data-key="pieMenu">Alt+M</button>
+                    <div class="button-group">
+                        <button class="record-button" data-key="pieMenu">Alt+M</button>
+                        <button class="clear-shortcut-button" data-key="pieMenu" title="Clear shortcut" style="display: none;">×</button>
+                    </div>
                     <label class="toggle-switch shortcut-global-toggle" data-key="pieMenu" title="Toggle Global/Local"
                         style="display: none;">
                         <input type="checkbox" class="shortcut-global-checkbox">
@@ -2042,10 +2161,15 @@
                         applyTranslations(settings.language || 'en');
                         document.querySelectorAll('.record-button').forEach(button => {
                             const key = button.dataset.key;
+                            const clearButton = document.querySelector(`.clear-shortcut-button[data-key="${key}"]`);
                             if (settings.shortcuts && settings.shortcuts[key]) {
                                 button.textContent = settings.shortcuts[key];
+                                // Show clear button if shortcut is assigned
+                                if (clearButton) clearButton.style.display = 'inline-block';
                             } else {
-                                button.textContent = (translations[currentLanguage] || translations.en)['recordButton-default'];
+                                button.textContent = (translations[currentLanguage] || translations.en)['shortcutNotAssigned-placeholder'] || (translations[currentLanguage] || translations.en)['recordButton-default'];
+                                // Hide clear button if shortcut is not assigned
+                                if (clearButton) clearButton.style.display = 'none';
                             }
                         });
                     } catch (error) {
@@ -2473,6 +2597,26 @@
 
                 document.querySelectorAll('.record-button').forEach(button => {
                     button.addEventListener('click', () => startRecording(button));
+                });
+
+                // --- Clear Shortcut Button Logic ---
+                document.querySelectorAll('.clear-shortcut-button').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const key = button.dataset.key;
+                        if (key) {
+                            // Update setting to empty string to clear the shortcut
+                            electronAPI.updateSetting(`shortcuts.${key}`, '');
+                            
+                            // Update UI immediately
+                            const recordButton = document.querySelector(`.record-button[data-key="${key}"]`);
+                            if (recordButton) {
+                                recordButton.textContent = (translations[currentLanguage] || translations.en)['shortcutNotAssigned-placeholder'] || (translations[currentLanguage] || translations.en)['recordButton-default'];
+                            }
+                            
+                            // Hide the clear button
+                            button.style.display = 'none';
+                        }
+                    });
                 });
 
                 // Initialize toggle listeners

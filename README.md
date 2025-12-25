@@ -32,6 +32,73 @@
 
 ---
 
+## 🎯 Fork Purpose & Philosophy
+
+### Vision: Transparent, Secure, and Community-Driven AI Desktop Experience
+
+This fork represents a **fundamental commitment to transparency, privacy, and modern software architecture**. Unlike proprietary AI wrappers with opaque compiled code, this project delivers:
+
+**🔓 100% Transparent Source Code**
+- **Zero compiled components** - every line of code is human-readable JavaScript
+- **No hidden telemetry** - you control what data leaves your machine
+- **Open security model** - audit the entire codebase yourself
+- **No binary blobs** - all functionality is in plain text source files
+
+**🏗️ Modern Modular Architecture**
+- **Component-based design** with clear separation of concerns
+- **Pluggable feature system** - easy to extend without touching core
+- **Clean dependency injection** patterns throughout
+- **Modern ES6+ JavaScript** with async/await and proper error handling
+
+**🔐 Privacy & Security First**
+- **Local-first design** - your conversations stay on your machine
+- **Optional proxy support** for network privacy
+- **Invisibility mode** to prevent screen-sharing leaks
+- **No mandatory cloud services** - works offline for local features
+- **Transparent extension system** - see exactly what browser extensions do
+
+**🚀 Developer-Friendly Innovation Lab**
+- **Rapid iteration cycle** for testing new features
+- **Comprehensive API surface** for custom integrations
+- **Extensible plugin architecture** via Electron's extension APIs
+- **Clean build system** with reproducible builds
+
+### Why This Fork Exists
+
+**🧪 Experimental Ground for Advanced Features**
+- Model Context Protocol (MCP) integration for local tool execution
+- Advanced scheduling and automation capabilities
+- Multi-account management with isolated sessions
+- Custom prompt injection and workflow automation
+
+**🌍 Global Accessibility**
+- **25+ languages** with full UI translation coverage
+- **RTL language support** (Hebrew, Arabic, Urdu, etc.)
+- **Accessibility features** for screen readers and keyboard navigation
+- **Cross-platform parity** across Windows, macOS, and Linux
+
+**⚡ Performance & Code Quality**
+- **Aggressive refactoring** of legacy patterns
+- **Memory optimization** for long-running sessions
+- **Reduced bundle size** through dependency cleanup
+- **Modern build tooling** with electron-builder
+
+### Relationship with Upstream
+
+This fork maintains synchronization with the [original GeminiDesk repository](https://github.com/hillelkingqt/GeminiDesk) while serving as:
+- **Testing ground** for experimental features
+- **Innovation laboratory** for architectural improvements
+- **Contribution pipeline** - successful features may be upstreamed
+- **Community hub** for advanced users and developers
+
+**Key Differences:**
+- More aggressive deprecation of legacy code
+- Experimental features enabled for user testing
+- Enhanced code documentation and architecture guides
+- Focus on maintainability and extensibility over backward compatibility
+
+---
+
 ## ✨ Why Settle for a Tab When You Can Have a Throne? ✨
 
 <table>
@@ -94,7 +161,12 @@ GeminiDesk is more than a wrapper. It's a command center, loaded with powerful, 
 ### 🎨 Customization & Accessibility
 
 *   **🔊 Smart Audio Feedback:** Know the second your AI has finished its thought. GeminiDesk plays a subtle, satisfying sound upon completion. Choose from multiple sound options in settings.
-*   **🌍 Full Internationalization:** The entire app interface is localized into over 20 languages, with RTL support built into the core.
+*   **🌍 Full Internationalization:** The entire app interface is localized into **25+ languages** (including new additions: Swahili, Tamil, and Czech), with RTL support built into the core. Supported languages include:
+    - English, French, Spanish, German, Italian, Portuguese, Dutch, Polish, Turkish
+    - Russian, Ukrainian, Hebrew, Arabic
+    - Simplified Chinese, Traditional Chinese, Japanese, Korean
+    - Hindi, Bengali, Urdu, Indonesian, Vietnamese, Thai
+    - Swahili, Tamil, Czech
 *   **📐 RTL Layout Support for AI Studio:** Dedicated setting to force Right-to-Left (RTL) layout on AI Studio, fixing interface alignment issues for Hebrew and Arabic speakers (and other RTL languages), ensuring the UI renders correctly.
 *   **⚡️ Instant Model Switching:** Use hotkeys (`Alt+F`, `Alt+T`, `Alt+P`) to instantly fire up a new chat with the **Flash**, **Thinking**, or **Pro** model.
 *   **🎤 Voice Assistant:** Activate the microphone instantly with a shortcut to talk to Gemini hands-free.
@@ -203,37 +275,247 @@ These builds include the latest fixes and improvements that haven't been release
 
 ---
 
-## 🛠️ For Developers: Building From the Ashes
+## 🏗️ Architecture & Design
 
-Want to peek under the hood or forge your own version? We admire your courage.
+### Modern Modular Architecture
+
+GeminiDesk is built on a **clean, modular architecture** that separates concerns and promotes maintainability:
+
+```
+📦 GeminiDesk/
+├── 🎯 main.js                    # Electron main process entry point
+├── 🔧 preload.js                 # Secure IPC bridge (context isolation)
+├── 📝 translations.js            # i18n translation registry
+│
+├── 📁 modules/                   # Modular feature components
+│   ├── settings.js               # Settings persistence & defaults
+│   ├── constants.js              # App-wide constants
+│   ├── utils.js                  # Shared utility functions
+│   ├── accounts.js               # Multi-account session management
+│   ├── deep-research.js          # Research automation engine
+│   ├── tray.js                   # System tray integration
+│   ├── ProfileManager.js         # User profile handling
+│   │
+│   ├── 📁 window/                # Window management layer
+│   │   ├── window-factory.js     # Window creation & lifecycle
+│   │   └── browser-view.js       # BrowserView abstraction
+│   │
+│   └── 📁 features/              # Feature-specific modules
+│       ├── auth/
+│       │   └── auth-server.js    # OAuth authentication server
+│       ├── export/
+│       │   └── export-manager.js # PDF/Markdown export engine
+│       └── shortcuts/
+│           └── shortcuts-registry.js # Global hotkey management
+│
+├── 📁 html/                      # Renderer process UIs
+│   ├── settings.html             # Settings interface
+│   ├── onboarding.html           # First-run experience
+│   ├── prompt-manager.html       # Prompt library UI
+│   ├── pie-menu.html             # Quick action menu
+│   └── [20+ specialized dialogs]
+│
+├── 📁 0.5.8_0/                   # MCP SuperAssistant Extension
+│   ├── manifest.json             # Extension manifest
+│   ├── background.js             # Service worker
+│   └── [extension components]
+│
+└── 📁 Ai-studio/                 # AI Studio RTL Extension
+    ├── manifest.json
+    └── content.js                # Content script for RTL layout
+```
+
+### Core Design Principles
+
+**1. Separation of Concerns**
+- **Main Process** (`main.js`): Application lifecycle, window management, native APIs
+- **Renderer Processes** (`html/*`): UI rendering, user interaction
+- **Preload Scripts** (`preload.js`): Secure IPC bridge with context isolation
+- **Modules** (`modules/*`): Business logic, data persistence, external integrations
+
+**2. Security by Design**
+- ✅ **Context Isolation** enabled on all windows
+- ✅ **Node Integration** disabled in renderer processes
+- ✅ **Secure IPC** channels with explicit whitelisting
+- ✅ **CSP (Content Security Policy)** on all HTML pages
+- ✅ **Sandboxed BrowserViews** for loading untrusted web content
+
+**3. Privacy-First Architecture**
+- 🔒 **Local data storage** via `electron-store` (JSON on disk)
+- 🔒 **No analytics or tracking** - zero telemetry by default
+- 🔒 **Isolated sessions** per account via Electron partitions
+- 🔒 **Optional proxy** routing for network anonymity
+- 🔒 **Invisibility mode** prevents window capture in screenshots/recordings
+
+**4. Extension System**
+GeminiDesk ships with **two transparent browser extensions**:
+
+- **MCP SuperAssistant** (`0.5.8_0/`): Enables Model Context Protocol for local tool execution
+  - Pure JavaScript, no compiled code
+  - Inspectable via Chrome DevTools
+  - User opt-in required (disabled by default)
+
+- **AI Studio RTL** (`Ai-studio/`): Fixes layout issues for right-to-left languages
+  - Minimal CSS injection for layout correction
+  - Auto-loads when RTL languages are selected
+
+### Technology Stack
+
+**Core Framework:**
+- **Electron 35.7+** - Cross-platform desktop framework
+- **Node.js 16+** - JavaScript runtime
+- **Modern ES6+** - Async/await, destructuring, modules
+
+**Key Dependencies:**
+- `electron-store` - Persistent settings storage
+- `electron-updater` - Auto-update mechanism
+- `pdfkit` - PDF generation for exports
+- `katex` - LaTeX math rendering
+- `marked` - Markdown parsing
+- `auto-launch` - OS startup integration
+- `jsdom` - HTML manipulation
+
+**Build Tools:**
+- `electron-builder` - Multi-platform packaging
+- `asar` - Application archive format
+- GitHub Actions - CI/CD pipeline
+
+---
+
+## 🛠️ For Developers: Building From Source
 
 ### Prerequisites
-* [Node.js](https://nodejs.org/) (v16 or higher is a good life choice)
-* [Git](https://git-scm.com/)
+* **Node.js** v16 or higher ([Download](https://nodejs.org/))
+* **Git** ([Download](https://git-scm.com/))
+* **Platform-specific tools:**
+  - macOS: Xcode Command Line Tools
+  - Windows: Visual Studio Build Tools (for native modules)
+  - Linux: `build-essential` package
 
-### Get Started
+### Quick Start
 
-1.  **Clone the legend:**
-    ```sh
+1.  **Clone the repository:**
+    ```bash
     git clone https://github.com/hillelkingqt/GeminiDesk.git
     cd GeminiDesk
     ```
 
-2.  **Install the ancient runes (dependencies):**
-    ```sh
+2.  **Install dependencies:**
+    ```bash
     npm install
     ```
 
-3.  **Unleash the beast (run in dev mode):**
-    ```sh
+3.  **Run in development mode:**
+    ```bash
     npm start
     ```
+    This launches Electron with hot reload enabled and DevTools open.
 
-4.  **Package it for the masses (build the installer):**
-    The final artifact will be forged in the `dist/` directory.
-    ```sh
+4.  **Build distributable packages:**
+    ```bash
     npm run build
     ```
+    Output files will be in the `dist/` directory.
+
+### Development Commands
+
+```bash
+# Start app in development mode
+npm start
+
+# Build for all platforms
+npm run build
+
+# Build for macOS (Intel)
+npm run build:mac-intel
+
+# Reset app data (macOS/Linux)
+npm run reset
+
+# Run tests
+npm test
+```
+
+### Project Structure Guidelines
+
+**Adding New Features:**
+1. Create a new module in `modules/features/your-feature/`
+2. Export a clean API from your module
+3. Import and initialize in `main.js`
+4. Add IPC handlers in `preload.js` if needed
+5. Create UI in `html/your-feature.html`
+
+**Code Style:**
+- 2-space indentation
+- Modern ES6+ syntax
+- Async/await over callbacks
+- Clear variable names
+- Comments for complex logic
+
+**Security Checklist:**
+- [ ] Never disable `contextIsolation`
+- [ ] Never enable `nodeIntegration` in renderers
+- [ ] Validate all IPC inputs
+- [ ] Sanitize user-generated content
+- [ ] Use `safeStorage` for sensitive data
+
+### Debugging
+
+**Main Process:**
+```bash
+# Enable verbose logging
+DEBUG=* npm start
+```
+
+**Renderer Process:**
+Press `F12` or `Cmd+Option+I` to open DevTools.
+
+**Extensions:**
+Navigate to `chrome://extensions` in a BrowserView and inspect loaded extensions.
+
+### Contributing Code
+
+See the [Contributing](#-lets-build-a-dynasty) section below.
+
+---
+
+## 📝 Recent Updates
+
+### Latest Changes (December 2025)
+
+**Commit c0322a6d** - Core Architecture Cleanup & Refactoring:
+- **Deprecated feature removal**:
+  - Cleaned up legacy notification system (`lastShownNotificationId`, `autoCheckNotifications`)
+  - Removed complex auto-update state management (`disableAutoUpdateCheck`, `autoInstallUpdates`, `updateInstallReminderTime`)
+  - Simplified settings schema for better maintainability
+- **Code modernization**:
+  - Refactored `settings.js` module with consistent 2-space indentation
+  - Improved function structure and readability in `main.js`
+  - Enhanced window lifecycle management (prevents duplicate settings windows)
+  - Added proper parent-child window relationships for modal dialogs
+- **Security improvements**:
+  - Better isolation of settings window from main application
+  - Proper cleanup of deprecated configuration keys
+
+**Current Unstaged Changes** - Global Accessibility Enhancement:
+- **Expanded language coverage** (now 25+ languages):
+  - **New additions**: Swahili (sw), Tamil (ta), Czech (cs)
+  - **Complete translation sets** for all UI components
+- **Comprehensive i18n updates**:
+  - Auto-update dialogs and installation progress screens
+  - Voice assistant activation prompts
+  - Export format selection (PDF/Markdown/Ask)
+  - Prompt manager library interface
+  - Screenshot capture settings
+  - Deep Research automation scheduler
+- **Translation infrastructure improvements**:
+  - Consistent translation key naming across modules
+  - Fixed missing translation fallbacks
+  - Enhanced RTL language support for new UI elements
+- **User experience refinements**:
+  - Improved onboarding flow with localized instructions
+  - Better settings page organization and grouping
+  - Context-aware help text in user's language
 
 ---
 

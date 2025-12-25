@@ -11,6 +11,7 @@
     "start": "electron .",
     "build": "electron-builder",
     "build:mac-intel": "electron-builder --mac --x64",
+    "reset": "rm -rf \"$HOME/Library/Application Support/gemini-desk\" \"$HOME/.config/gemini-desk\" 2>/dev/null; echo 'App data cleared!'",
     "test": "jest"
   },
   "devDependencies": {

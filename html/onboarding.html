@@ -134,7 +134,7 @@
 
         /* --- Onboarding Content Styles (from onboarding.html) --- */
         .content { 
-            padding: 30px; overflow-y: auto; height: 100%;
+            padding: 16px 20px; overflow-y: auto; height: 100%;
             text-align: center; display: flex; flex-direction: column;
             justify-content: center;
         }
@@ -144,49 +144,50 @@
         .content::-webkit-scrollbar-thumb { background-color: var(--accent-secondary); border-radius: 4px; }
 
         .title {
-            font-size: 2.5em; font-weight: 600; color: var(--text-primary);
-            margin-bottom: 10px;
+            font-size: 1.5em; font-weight: 600; color: var(--text-primary);
+            margin-bottom: 6px;
         }
 
         .subtitle {
-            font-size: 1.2em; font-weight: 300; color: var(--text-secondary);
-            margin-bottom: 35px; max-width: 450px; margin-left: auto; margin-right: auto;
+            font-size: 0.85em; font-weight: 300; color: var(--text-secondary);
+            margin-bottom: 14px; max-width: 420px; margin-left: auto; margin-right: auto;
+            line-height: 1.35;
         }
 
         .shortcuts-list {
-            list-style-type: none; padding: 0; margin: 0 auto 35px auto;
-            width: 100%; max-width: 500px; background-color: var(--background-secondary);
-            border: 1px solid var(--border-color); border-radius: 8px;
+            list-style-type: none; padding: 0; margin: 0 auto 14px auto;
+            width: 100%; max-width: 460px; background-color: var(--background-secondary);
+            border: 1px solid var(--border-color); border-radius: 6px;
         }
 
         .shortcut-item {
-            padding: 12px 20px; display: flex; align-items: center;
+            padding: 7px 14px; display: flex; align-items: center;
             justify-content: space-between; border-bottom: 1px solid var(--border-color);
             transition: background-color .2s ease;
         }
         .shortcut-item:last-child { border-bottom: none; }
         .shortcut-item:hover { background-color: var(--bg-tertiary); }
 
-        .shortcut-desc { font-size: 14px; font-weight: 400; text-align: left; }
+        .shortcut-desc { font-size: 12px; font-weight: 400; text-align: left; }
 
         .shortcut-key {
             font-weight: 500; background-color: var(--bg-tertiary);
-            padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border-color);
-            font-size: 13px; min-width: 50px; text-align: center;
-            margin-left: 15px; color: var(--text-primary);
+            padding: 3px 7px; border-radius: 4px; border: 1px solid var(--border-color);
+            font-size: 11px; min-width: 40px; text-align: center;
+            margin-left: 10px; color: var(--text-primary);
         }
 
         .launch-button {
             background-color: var(--success-color); border: none; color: #fff;
-            padding: 12px 25px; border-radius: 6px; cursor: pointer;
-            font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 500;
+            padding: 8px 18px; border-radius: 5px; cursor: pointer;
+            font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 500;
             text-align: center; transition: all .2s ease;
             margin: 0 auto; display: block;
         }
         .launch-button:hover { opacity: 0.85; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
 
         html[dir="rtl"] .shortcut-desc { text-align: right; }
-        html[dir="rtl"] .shortcut-key { margin-left: 0; margin-right: 15px; }
+        html[dir="rtl"] .shortcut-key { margin-left: 0; margin-right: 10px; }
     </style>
 </head>
 <body>

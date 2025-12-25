@@ -25,10 +25,12 @@
       "matches": [ "*://*.x.com/*", "*://*.twitter.com/*", "*://*.x.com/i/grok*", "*://*.twitter.com/i/grok*" ],
       "run_at": "document_idle"
    }, {
+      "css": [ "content/index.css" ],
       "js": [ "content/index.iife.js" ],
       "matches": [ "*://*.gemini.google.com/*" ],
       "run_at": "document_idle"
    }, {
+      "css": [ "content/index.css" ],
       "js": [ "content/index.iife.js" ],
       "matches": [ "*://*.aistudio.google.com/*" ],
       "run_at": "document_idle"
