@@ -1592,6 +1592,134 @@ const shortcutActions = {
             }).catch(console.error);
         }
     },
+    tempChat: () => {
+        const focusedWindow = BrowserWindow.getFocusedWindow();
+        if (!focusedWindow || !focusedWindow.appMode) return;
+        const view = focusedWindow.getBrowserView();
+        if (!view) return;
+
+        if (focusedWindow.appMode === 'aistudio') {
+            // For AI Studio - click the incognito button
+            const script = `
+                (async function() {
+                    console.log('AI Studio: Toggling Temporary Chat (Incognito)');
+
+                    const waitForElement = (selector, timeout = 3000) => {
+                        return new Promise((resolve, reject) => {
+                            const timer = setInterval(() => {
+                                const element = document.querySelector(selector);
+                                if (element && !element.disabled) {
+                                    clearInterval(timer);
+                                    resolve(element);
+                                }
+                            }, 100);
+                            setTimeout(() => {
+                                clearInterval(timer);
+                                resolve(null); // Resolve null instead of reject to handle multiple attempts
+                            }, timeout);
+                        });
+                    };
+
+                    const simulateClick = (element) => {
+                        if (!element) return;
+                        ['mousedown', 'mouseup', 'click'].forEach(type => {
+                            const event = new MouseEvent(type, { bubbles: true, cancelable: true, view: window });
+                            element.dispatchEvent(event);
+                        });
+                    };
+
+                    try {
+                        // Selectors for AI Studio incognito button
+                        const selectors = [
+                            'button[aria-label="Temporary chat toggle"]',
+                            'button[iconname="incognito"]',
+                            'ms-incognito-mode-toggle button'
+                        ];
+
+                        for (const sel of selectors) {
+                            const btn = await waitForElement(sel, 1000);
+                            if (btn) {
+                                console.log('AI Studio: Found incognito button:', sel);
+                                simulateClick(btn);
+                                return;
+                            }
+                        }
+                        console.warn('AI Studio: Could not find incognito button');
+                    } catch (error) {
+                        console.error('AI Studio: Failed to toggle temporary chat:', error);
+                    }
+                })();
+            `;
+            view.webContents.executeJavaScript(script).catch(console.error);
+        } else {
+            // For Gemini - open nav bar (if needed) and click temporary chat button
+            const script = `
+                (async function() {
+                    console.log('Gemini: Starting Temporary Chat sequence');
+
+                    const waitForElement = (selector, timeout = 3000) => {
+                        return new Promise((resolve) => {
+                            const interval = setInterval(() => {
+                                const el = document.querySelector(selector);
+                                if (el && !el.disabled && el.offsetParent !== null) {
+                                    clearInterval(interval);
+                                    resolve(el);
+                                }
+                            }, 100);
+                            setTimeout(() => {
+                                clearInterval(interval);
+                                resolve(null);
+                            }, timeout);
+                        });
+                    };
+
+                    const simulateClick = (element) => {
+                        if (!element) return;
+                        ['mousedown', 'mouseup', 'click'].forEach(type => {
+                            element.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: window }));
+                        });
+                    };
+
+                    const tempChatSelectors = [
+                        '[data-test-id="temp-chat-button"]',
+                        'button[aria-label="Temporary chat"]',
+                        'button[mattooltip="Temporary chat"]'
+                    ];
+
+                    // 1. Try to find the button directly (if nav bar is open)
+                    for (const sel of tempChatSelectors) {
+                        const el = document.querySelector(sel);
+                        if (el && !el.disabled && el.offsetParent !== null) {
+                            console.log('Gemini: Found Temp Chat button directly:', sel);
+                            simulateClick(el);
+                            return;
+                        }
+                    }
+
+                    // 2. If not found, try to open the main menu
+                    console.log('Gemini: Temp Chat button not visible, trying menu toggle...');
+                    const menuButton = document.querySelector('button[aria-label="Main menu"]') ||
+                                       document.querySelector('button[aria-label="Expand menu"]');
+
+                    if (menuButton) {
+                        simulateClick(menuButton);
+                        // Wait for menu animation
+                        for (const sel of tempChatSelectors) {
+                            const tempChatButton = await waitForElement(sel, 2000);
+                            if (tempChatButton) {
+                                console.log('Gemini: Found Temp Chat button after menu toggle:', sel);
+                                simulateClick(tempChatButton);
+                                return;
+                            }
+                        }
+                    }
+
+                    console.warn('Gemini: Could not find Temporary Chat button');
+                })();
+            `;
+            view.webContents.executeJavaScript(script).catch(console.error);
+        }
+    },
     search: () => {
         const focusedWindow = BrowserWindow.getFocusedWindow();
         if (!focusedWindow || !focusedWindow.appMode) return;
@@ -7832,6 +7960,8 @@ ipcMain.on('pie-menu-action', (event, action) => {
         shortcutActions.newChatWithFlash();
     } else if (action === 'new-chat-with-thinking') {
         shortcutActions.newChatWithThinking();
+    } else if (action === 'temp-chat') {
+        shortcutActions.tempChat();
     } else if (typeof action === 'object' && action.type === 'custom-prompt') {
         // Handle Custom Prompt Action
         // 1. Create/Focus Window (Standard Gemini for now, effectively "Flash" or last used)

@@ -2,28 +2,34 @@ from playwright.sync_api import sync_playwright
 import os
 
 def run():
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
+    try:
+        with sync_playwright() as p:
+            print("Launching browser...")
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
 
-        # Load the settings page directly from file
-        cwd = os.getcwd()
-        settings_path = f"file://{cwd}/html/settings.html"
-        page.goto(settings_path)
+            # Navigate to the local settings.html file
+            cwd = os.getcwd()
+            settings_path = os.path.join(cwd, 'html', 'settings.html')
+            url = f'file://{settings_path}'
+            print(f"Navigating to {url}")
+            page.goto(url)
 
-        # Take a screenshot of the initial state
-        page.screenshot(path="verification/settings_initial.png")
+            # Wait for the page to load
+            print("Waiting for selector...")
+            page.wait_for_selector('.setting-item')
 
-        # Type in the search bar
-        page.fill('#settings-search-input', 'theme')
+            # Scroll to the bottom to see the new shortcut
+            print("Scrolling...")
+            page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
 
-        # Wait for filtering to happen (it's instant but let's wait a bit)
-        page.wait_for_timeout(500)
-
-        # Take a screenshot of the filtered state
-        page.screenshot(path="verification/settings_filtered.png")
-
-        browser.close()
+            screenshot_path = os.path.join(cwd, 'verification', 'settings_screenshot.png')
+            print(f"Taking screenshot to {screenshot_path}")
+            page.screenshot(path=screenshot_path, full_page=True)
+            print("Screenshot saved.")
+            browser.close()
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 if __name__ == "__main__":
     run()
