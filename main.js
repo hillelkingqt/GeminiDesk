@@ -69,7 +69,7 @@ async function loadAiStudioRtlExtensionToAllSessions() {
         }
 
         // per-account partitions
-        const s = getSettings();
+        const s = getSettings(false);
         if (s && Array.isArray(s.accounts) && s.accounts.length > 0) {
             for (let i = 0; i < s.accounts.length; i++) {
                 try {
@@ -100,7 +100,7 @@ async function loadExtensionToAllSessions() {
         }
 
         // per-account partitions
-        const s = getSettings();
+        const s = getSettings(false);
         if (s && Array.isArray(s.accounts) && s.accounts.length > 0) {
             for (let i = 0; i < s.accounts.length; i++) {
                 try {
@@ -259,7 +259,7 @@ async function createAndManageLoginWindowForPartition(loginUrl, targetPartition,
         // In that specific case we should attempt the transfer/close so the
         // add-account flow completes instead of leaving the popup stuck.
         if (!sessionCookieFound) {
-            const currentSettings = (typeof getSettings === 'function') ? getSettings() : null;
+            const currentSettings = (typeof getSettings === 'function') ? getSettings(false) : null;
             const hasExistingAccounts = currentSettings && Array.isArray(currentSettings.accounts) && currentSettings.accounts.length > 0;
             if (!hasExistingAccounts) {
                 console.log('Partitioned login: no critical session cookie found; keeping login window open to allow user to finish sign-in');
@@ -407,7 +407,7 @@ async function createAndManageLoginWindowForPartition(loginUrl, targetPartition,
 app.whenReady().then(async () => {
     // Conditionally load unpacked extension if user enabled it in settings
     try {
-        const localSettings = settingsModule.getSettings();
+        const localSettings = settingsModule.getSettings(false);
         if (!localSettings || !localSettings.loadUnpackedExtension) {
             console.log('loadUnpackedExtension is disabled in settings - skipping automatic extension load at startup');
             return;
@@ -5568,7 +5568,8 @@ ipcMain.on('select-export-format', async (event, format) => {
 async function exportToMarkdown(win, title, chatHTML) {
     try {
         // Get user's language for labels
-        const userLang = settings.language || 'en';
+        const currentSettings = getSettings(false);
+        const userLang = currentSettings.language || 'en';
         const t = translations[userLang] || translations.en;
         const userLabel = t['pdf-user-label'] || 'You:';
         const modelLabel = t['pdf-model-label'] || 'Gemini:';
@@ -5885,7 +5886,7 @@ ipcMain.on('select-pdf-direction', async (event, direction) => {
         const katexAuto = fs.readFileSync(katexAutoPath, 'utf8');
 
         // Get user's language for labels
-        const currentSettings = getSettings();
+        const currentSettings = getSettings(false);
         const userLang = currentSettings.language || 'en';
         console.log('PDF Export - User language:', userLang);
         console.log('PDF Export - Available translations:', Object.keys(translations));
@@ -7102,7 +7103,7 @@ ipcMain.handle('add-google-account', async () => {
     try {
         // Pre-check current account count and inform user if limit reached
         try {
-            const currentSettings = getSettings();
+            const currentSettings = getSettings(false);
             const allAccounts = (currentSettings && Array.isArray(currentSettings.accounts)) ? currentSettings.accounts : [];
             // Count only real signed-in accounts (have email or an image) to avoid counting placeholders.
             // Support multiple possible field names used by different account module versions.
