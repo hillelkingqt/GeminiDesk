@@ -748,3 +748,137 @@ window.addEventListener('load', () => {
         initializeAiResponseDetection();
     }, 1000);
 });
+
+// ================================================================
+// Prompt Prefix Logic (Overlay handled by Main Process)
+// ================================================================
+
+let activePromptPrefix = null;
+
+// Listen for set-active-prompt from main process
+ipcRenderer.on('set-active-prompt', (event, content) => {
+    console.log('GeminiDesk: Setting active prompt prefix state:', content);
+    activePromptPrefix = content;
+});
+
+async function handleSendWithPrefix(e) {
+    if (!activePromptPrefix) return;
+
+    // We intercept the click/submit
+    console.log('GeminiDesk: Intercepting send to inject prefix...');
+
+    // 1. Find input area
+    const inputArea = document.querySelector('.ql-editor[contenteditable="true"], rich-textarea .ql-editor, [data-placeholder*="Ask"], textarea');
+    if (!inputArea) {
+        console.warn('GeminiDesk: Could not find input area to inject prefix.');
+        return;
+    }
+
+    // 2. Get current user input
+    let currentInput = '';
+    if (inputArea.tagName === 'TEXTAREA') {
+        currentInput = inputArea.value;
+    } else {
+        currentInput = inputArea.innerText; // innerText handles newlines better than textContent for contenteditable
+    }
+
+    // 3. Construct new content
+    const fullContent = `${activePromptPrefix}\n\n${currentInput}`;
+
+    // 4. Inject
+    inputArea.focus();
+
+    // Safe replace method
+    const setText = (el, text) => {
+        try {
+            document.execCommand('selectAll', false, null);
+            document.execCommand('insertText', false, text);
+        } catch (err) {
+            // Fallback
+            el.textContent = text;
+            el.dispatchEvent(new InputEvent('input', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+                data: text,
+                inputType: 'insertText'
+            }));
+        }
+    };
+
+    setText(inputArea, fullContent);
+
+    // 5. Notify Main to close overlay
+    ipcRenderer.send('prompt-used');
+
+    // Clear local state immediately to prevent loop
+    activePromptPrefix = null;
+
+    // 6. Re-trigger the send cleanly
+    e.stopImmediatePropagation(); // Stop this specific click/key event
+    e.preventDefault();
+
+    // Wait a tick for listeners to update model
+    await new Promise(r => setTimeout(r, 50));
+
+    // Re-trigger action
+    if (e.type === 'click') {
+        const btn = e.target.closest('button');
+        if (btn) {
+            const newClick = new MouseEvent('click', {
+                bubbles: true,
+                cancelable: true,
+                view: window
+            });
+            btn.dispatchEvent(newClick);
+        }
+    } else if (e.type === 'keydown' && e.key === 'Enter') {
+        // Re-dispatch Enter
+        const newEvent = new KeyboardEvent('keydown', {
+            key: 'Enter',
+            code: 'Enter',
+            bubbles: true,
+            cancelable: true,
+            view: window,
+            shiftKey: false
+        });
+        e.target.dispatchEvent(newEvent);
+    }
+}
+
+// Capture Phase Listener on Document to catch Send clicks
+window.addEventListener('click', (e) => {
+    if (!activePromptPrefix) return;
+
+    // Check if target is send button
+    const btn = e.target.closest('button');
+    if (!btn) return;
+
+    const ariaLabel = btn.getAttribute('aria-label') || '';
+    const isSendBtn = ariaLabel.toLowerCase().includes('send') ||
+        btn.classList.contains('send-button') ||
+        btn.querySelector('.send-button-icon');
+
+    // CAUTION: 'Stop' button shares same space often.
+    if (ariaLabel.toLowerCase().includes('stop')) return;
+
+    if (isSendBtn) {
+        handleSendWithPrefix(e);
+    }
+}, true); // Capture phase!
+
+// Also listen for Enter key in input area
+window.addEventListener('keydown', (e) => {
+    if (!activePromptPrefix) return;
+    if (e.key === 'Enter' && !e.shiftKey) {
+        // Check if focused element is the input
+        const el = document.activeElement;
+        const isInput = el.classList.contains('ql-editor') ||
+            el.getAttribute('contenteditable') === 'true' ||
+            el.tagName === 'TEXTAREA';
+
+        if (isInput) {
+            handleSendWithPrefix(e);
+        }
+    }
+}, true);

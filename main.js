@@ -7827,6 +7827,120 @@ function sendPieMenuData() {
     }
 }
 
+// ================================================================= //
+// Native Prompt Overlay Logic
+// ================================================================= //
+let promptOverlayWin = null;
+let currentOverlayParent = null;
+
+function updateOverlayPosition() {
+    if (promptOverlayWin && !promptOverlayWin.isDestroyed() && currentOverlayParent && !currentOverlayParent.isDestroyed()) {
+        const bounds = currentOverlayParent.getBounds();
+        const overlayBounds = promptOverlayWin.getBounds();
+
+        const overlayWidth = 500; // Fixed width
+        const x = Math.round(bounds.x + (bounds.width - overlayWidth) / 2);
+        const y = Math.round(bounds.y + 80);
+
+        promptOverlayWin.setPosition(x, y);
+    }
+}
+
+function showPromptOverlay(text, targetWindow) {
+    if (!targetWindow || targetWindow.isDestroyed()) return;
+
+    if (!promptOverlayWin || promptOverlayWin.isDestroyed()) {
+        promptOverlayWin = new BrowserWindow({
+            width: 500,
+            height: 60,
+            frame: false,
+            transparent: true,
+            resizable: false,
+            alwaysOnTop: true,
+            skipTaskbar: true,
+            focusable: false, // Don't steal focus from chat
+            show: false,
+            parent: targetWindow, // Attach to parent so it minimizes with it (on some OS)
+            webPreferences: {
+                nodeIntegration: true, // Needed for simple IPC in overlay
+                contextIsolation: false
+            }
+        });
+        promptOverlayWin.__internal = true;
+        promptOverlayWin.loadFile('html/prompt-overlay.html');
+        promptOverlayWin.setIgnoreMouseEvents(false); // Make selectable
+    }
+
+    // Update Parent Tracking for Move/Resize Sync
+    if (currentOverlayParent !== targetWindow) {
+        if (currentOverlayParent && !currentOverlayParent.isDestroyed()) {
+            currentOverlayParent.removeListener('move', updateOverlayPosition);
+            currentOverlayParent.removeListener('resize', updateOverlayPosition);
+        }
+        currentOverlayParent = targetWindow;
+        currentOverlayParent.on('move', updateOverlayPosition);
+        currentOverlayParent.on('resize', updateOverlayPosition);
+
+        // Also clean up listener if parent closes
+        currentOverlayParent.once('closed', () => {
+            if (currentOverlayParent === targetWindow) {
+                currentOverlayParent = null;
+                hidePromptOverlay();
+            }
+        });
+    }
+
+    // Initial Position
+    const bounds = targetWindow.getBounds();
+    const overlayWidth = 500;
+    const overlayHeight = 60;
+
+    const x = Math.round(bounds.x + (bounds.width - overlayWidth) / 2);
+    // Top Y (with some padding form top edge, usually titlebar is ~30-40px)
+    const y = Math.round(bounds.y + 80);
+
+    promptOverlayWin.setBounds({ x, y, width: overlayWidth, height: overlayHeight });
+
+    // Ensure on top
+    promptOverlayWin.setAlwaysOnTop(true, 'screen-saver');
+
+    promptOverlayWin.showInactive(); // Show without taking focus
+
+    // Send text to overlay
+    promptOverlayWin.webContents.once('did-finish-load', () => {
+        promptOverlayWin.webContents.send('update-prompt-text', text);
+    });
+    // Or if already loaded
+    promptOverlayWin.webContents.send('update-prompt-text', text);
+}
+
+function hidePromptOverlay() {
+    if (promptOverlayWin && !promptOverlayWin.isDestroyed()) {
+        promptOverlayWin.hide();
+    }
+}
+
+// IPC to clear from Overlay 'X' button
+ipcMain.on('clear-active-prompt', () => {
+    hidePromptOverlay();
+    // Notify all windows to clear their state
+    const allWindows = BrowserWindow.getAllWindows();
+    allWindows.forEach(w => {
+        if (!w.isDestroyed() && !w.__internal) {
+            w.webContents.send('set-active-prompt', null);
+            const view = w.getBrowserView();
+            if (view && !view.webContents.isDestroyed()) {
+                view.webContents.send('set-active-prompt', null);
+            }
+        }
+    });
+});
+
+// IPC from Preload when prompt signals it was used (sent)
+ipcMain.on('prompt-used', () => {
+    hidePromptOverlay();
+});
+
 ipcMain.on('pie-menu-action', (event, action) => {
     if (pieMenuWin && !pieMenuWin.isDestroyed()) {
         pieMenuWin.hide();
@@ -7922,12 +8036,12 @@ ipcMain.on('pie-menu-action', (event, action) => {
                     win.hide();
                 }
             });
-             if (shouldShow) {
+            if (shouldShow) {
                 const focused = userWindows.find(w => w.isFocused());
                 lastFocusedWindow = (focused && !focused.isDestroyed())
                     ? focused
                     : (userWindows[0] || null);
-                 if (lastFocusedWindow && !lastFocusedWindow.isDestroyed()) {
+                if (lastFocusedWindow && !lastFocusedWindow.isDestroyed()) {
                     setTimeout(() => {
                         forceOnTop(lastFocusedWindow);
                         const view = lastFocusedWindow.getBrowserView();
@@ -7963,65 +8077,33 @@ ipcMain.on('pie-menu-action', (event, action) => {
     } else if (action === 'temp-chat') {
         shortcutActions.tempChat();
     } else if (typeof action === 'object' && action.type === 'custom-prompt') {
-        // Handle Custom Prompt Action
-        // 1. Create/Focus Window (Standard Gemini for now, effectively "Flash" or last used)
-        createNewChatWithModel('flash');
+        const win = lastFocusedWindow || BrowserWindow.getFocusedWindow();
+        if (win && !win.isDestroyed() && !win.__internal) {
+            win.focus();
 
-        // 2. Wait for window and inject text
-        setTimeout(() => {
-            const focusedWindow = BrowserWindow.getFocusedWindow();
-            if (focusedWindow && focusedWindow !== pieMenuWin) {
-                const view = focusedWindow.getBrowserView();
-                if (view && !view.webContents.isDestroyed()) {
-                    // We use the same prompt injection logic but WITHOUT clicking send
-                    // Re-using executeDefaultPrompt but modifying it to NOT click send would be ideal.
-                    // But executeDefaultPrompt is hardcoded to click send.
-                    // Let's copy the injection part.
-                    const promptContent = action.content;
-                    const script = `
-                        (async function() {
-                            const waitForElement = (selector, timeout = 15000) => {
-                                return new Promise((resolve, reject) => {
-                                    const timer = setInterval(() => {
-                                        const element = document.querySelector(selector);
-                                        if (element && !element.disabled) {
-                                            clearInterval(timer);
-                                            resolve(element);
-                                        }
-                                    }, 100);
-                                    setTimeout(() => {
-                                        clearInterval(timer);
-                                        reject(new Error('Element not found'));
-                                    }, timeout);
-                                });
-                            };
+            // 1. Show Visual Overlay
+            const displayName = action.name || action.content;
+            showPromptOverlay(displayName, win);
 
-                            const insertTextSafely = (element, text) => {
-                                try {
-                                    element.focus();
-                                    document.execCommand('selectAll', false, null);
-                                    document.execCommand('delete', false, null);
-                                    document.execCommand('insertText', false, text);
-                                    return true;
-                                } catch (e) {
-                                    try {
-                                        element.textContent = text;
-                                        element.dispatchEvent(new InputEvent('input', { data: text, inputType: 'insertText', bubbles: true }));
-                                        return true;
-                                    } catch(e2) { return false; }
-                                }
-                            };
-
-                            try {
-                                const inputArea = await waitForElement('.ql-editor[contenteditable="true"], rich-textarea .ql-editor, [data-placeholder*="Ask"]');
-                                const promptText = \`${promptContent.replace(/`/g, '\\`').replace(/\\/g, '\\\\').replace(/\${/g, '\\${')}\`;
-                                insertTextSafely(inputArea, promptText);
-                            } catch(e) { console.error('Prompt injection failed', e); }
-                        })();
-                     `;
-                    view.webContents.executeJavaScript(script).catch(() => { });
-                }
+            // 2. Set State in Renderer
+            const view = win.getBrowserView();
+            if (view && !view.webContents.isDestroyed()) {
+                view.webContents.send('set-active-prompt', action.content);
+            } else {
+                win.webContents.send('set-active-prompt', action.content);
             }
-        }, 1500); // Wait for window creation/focus
+        } else {
+            // Fallback
+            createNewChatWithModel('flash');
+            setTimeout(() => {
+                const newWin = BrowserWindow.getFocusedWindow();
+                if (newWin) {
+                    const displayName = action.name || action.content;
+                    showPromptOverlay(displayName, newWin);
+                    const view = newWin.getBrowserView();
+                    if (view) view.webContents.send('set-active-prompt', action.content);
+                }
+            }, 1500);
+        }
     }
 });
