@@ -618,27 +618,6 @@ function maybeCaptureAccountProfile(view, accountIndex, forceAttempt = false) {
     captureAccountProfile(view, accountIndex, forceAttempt);
 }
 
-function processPromptVariables(text) {
-    if (!text) return '';
-    let processed = text;
-    const date = new Date();
-
-    // {clipboard}
-    if (processed.includes('{clipboard}')) {
-        const clipText = clipboard.readText();
-        // Use callback function to prevent special replacement patterns (like $&) in clipText from being interpreted
-        processed = processed.replace(/{clipboard}/g, () => clipText);
-    }
-
-    // {date}
-    processed = processed.replace(/{date}/g, date.toLocaleDateString());
-
-    // {time}
-    processed = processed.replace(/{time}/g, date.toLocaleTimeString());
-
-    return processed;
-}
-
 /**
  * Execute default prompt in a new chat - inserts text and clicks send button
  * Uses the same approach as deep-research.js for reliable text insertion
@@ -648,9 +627,6 @@ async function executeDefaultPrompt(view, promptContent, mode) {
         console.log('Prompt Manager: View not available, skipping auto-prompt');
         return;
     }
-
-    // Process variables like {clipboard}, {date}, {time}
-    promptContent = processPromptVariables(promptContent);
 
     const script = `
     (async function() {
@@ -8001,7 +7977,7 @@ ipcMain.on('pie-menu-action', (event, action) => {
                     // Re-using executeDefaultPrompt but modifying it to NOT click send would be ideal.
                     // But executeDefaultPrompt is hardcoded to click send.
                     // Let's copy the injection part.
-                    const promptContent = processPromptVariables(action.content);
+                    const promptContent = action.content;
                     const script = `
                         (async function() {
                             const waitForElement = (selector, timeout = 15000) => {
