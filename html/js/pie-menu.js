@@ -55,13 +55,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const allItems = [];
 
         actions.forEach(a => {
-             allItems.push({
-                 name: a.label,
-                 action: a.action,
-                 type: 'standard',
-                 icon: a.icon, // icon name for google fonts or similar
-                 color: a.color
-             });
+            allItems.push({
+                name: a.label,
+                action: a.action,
+                type: 'standard',
+                icon: a.icon, // icon name for google fonts or similar
+                color: a.color
+            });
         });
 
         if (customPrompts && customPrompts.length > 0) {
@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     name: p.name,
                     content: p.content,
                     type: 'custom',
-                    action: { type: 'custom-prompt', content: p.content },
+                    action: { type: 'custom-prompt', content: p.content, name: p.name },
                     icon: 'chat',
                     color: '#4285F4'
                 });
