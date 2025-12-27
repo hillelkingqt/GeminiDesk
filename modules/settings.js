@@ -121,6 +121,11 @@ if (defaultSettings.shortcuts && typeof defaultSettings.shortcuts === 'object') 
     }
 }
 
+/**
+ * Retrieves the application settings.
+ * @param {boolean} shouldClone - If true (default), returns a deep copy. If false, returns the live reference (read-only).
+ * @returns {Object} The settings object.
+ */
 function getSettings(shouldClone = true) {
     if (cachedSettings) {
         // Return a deep copy to prevent mutation of the cache by consumers
