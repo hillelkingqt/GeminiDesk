@@ -7682,34 +7682,135 @@ ipcMain.on('perform-screenshot-and-send', async (event) => {
         if (view && !view.webContents.isDestroyed()) {
             view.webContents.focus();
 
-            // 4. Paste
-            // Wait a bit for focus
-            await new Promise(resolve => setTimeout(resolve, 300));
+            // Helper: poll the renderer for the send button state
+            const waitForSendClickable = async (maxMs) => {
+                const start = Date.now();
+                const checkScript = `
+                    (function() {
+                        try {
+                            const sel = 'button.send-button, button[aria-label*="Send"], button[data-test-id="send-button"], .send-button-container button, button.submit';
+                            const btn = document.querySelector(sel);
+                            if (!btn) return { exists: false, clickable: false };
+                            const ariaDisabled = btn.getAttribute('aria-disabled');
+                            const disabled = btn.disabled === true || ariaDisabled === 'true';
+                            const container = btn.closest('.send-button-container');
+                            const visible = container ? container.classList.contains('visible') : true;
+                            const clickable = !disabled && visible;
+                            return { exists: true, clickable };
+                        } catch (e) {
+                            return { exists: false, clickable: false };
+                        }
+                    })();
+                `;
+
+                while (Date.now() - start < maxMs) {
+                    try {
+                        const res = await view.webContents.executeJavaScript(checkScript, true);
+                        if (res && res.exists && res.clickable) return true;
+                    } catch (e) {
+                        // ignore transient errors while page is loading
+                    }
+                    // poll interval
+                    await new Promise(r => setTimeout(r, 250));
+                }
+                return false;
+            };
+
+            // 4. Wait until send button is available/clickable before pasting (handles reloads/slow pages)
+            const clickableBefore = await waitForSendClickable(8000);
+            if (!clickableBefore) console.warn('Send button not clickable before paste (continuing)');
+
+            // Paste
+            await new Promise(resolve => setTimeout(resolve, 150)); // small focus settle
             view.webContents.paste();
-            console.log('Pasted screenshot into input');
+            console.log('Issued paste to renderer');
 
-            // 5. Click Send
-            // Wait longer for image to be processed/uploaded by the web app
-            // 1.5 seconds is safer than 800ms
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            // 5. Wait until send button becomes clickable and attachment appears after paste
+            // We poll the renderer for both: an <img> (or attachment element) inside the editor
+            // AND that the send button is clickable. This avoids clicking while upload is still pending.
+            const waitForAttachmentAndClickable = async (maxMs) => {
+                const start = Date.now();
+                let consecutiveClickable = 0;
+                const needConsecutive = 3; // require a few stable polls if no attachment detected
 
-            // Execute script to click send button
-            // We use a specialized script that finds the send button and clicks it
-            const script = `
+                const checkScript = `
+                    (function() {
+                        try {
+                            // Find editor area (prefer contenteditable/ql-editor/textarea)
+                            const editor = document.querySelector('[contenteditable="true"], .ql-editor, textarea, .composer, .editor');
+                            const scope = editor || document.body;
+
+                            // Detect images or attachments inside editor
+                            const hasImg = !!scope.querySelector('img[src]:not([src=""])');
+                            const hasAttachment = !!scope.querySelector('.attachment, .uploaded-file, .uploader, .attachment-thumbnail');
+
+                            // Detect send button clickable state
+                            const sel = 'button.send-button, button[aria-label*="Send"], button[data-test-id="send-button"], .send-button-container button, button.submit';
+                            const btn = document.querySelector(sel);
+                            let clickable = false;
+                            if (btn) {
+                                const ariaDisabled = btn.getAttribute('aria-disabled');
+                                const disabled = btn.disabled === true || ariaDisabled === 'true';
+                                const container = btn.closest('.send-button-container');
+                                const visible = container ? container.classList.contains('visible') : true;
+                                clickable = !disabled && visible;
+                            }
+
+                            return { hasImg, hasAttachment, clickable };
+                        } catch (e) {
+                            return { hasImg: false, hasAttachment: false, clickable: false };
+                        }
+                    })();
+                `;
+
+                while (Date.now() - start < maxMs) {
+                    try {
+                        const res = await view.webContents.executeJavaScript(checkScript, true);
+                        if (!res) {
+                            await new Promise(r => setTimeout(r, 250));
+                            continue;
+                        }
+
+                        const { hasImg, hasAttachment, clickable } = res;
+
+                        // If we have an attachment/image and the send button is clickable -> done
+                        if ((hasImg || hasAttachment) && clickable) return true;
+
+                        // If we have no attachment but the send button is clickable repeatedly,
+                        // assume the site enabled send (maybe it inlines the image immediately) -> allow after a few stable polls
+                        if (clickable) {
+                            consecutiveClickable += 1;
+                            if (consecutiveClickable >= needConsecutive) return true;
+                        } else {
+                            consecutiveClickable = 0;
+                        }
+                    } catch (e) {
+                        // ignore transient errors
+                    }
+                    await new Promise(r => setTimeout(r, 250));
+                }
+                return false;
+            };
+
+            const ready = await waitForAttachmentAndClickable(15000);
+            if (!ready) console.warn('Attachment not detected and send button not stable/clickable within timeout; attempting click anyway');
+
+            // Click Send via renderer script (only clicks if button exists)
+            const clickScript = `
                 (function() {
-                    const sendButton = document.querySelector('button.send-button, button[aria-label*="Send"], button[data-test-id="send-button"]');
-                    if (sendButton) {
-                        // Dispatch click event
-                        ['mousedown', 'mouseup', 'click'].forEach(type => {
-                            const event = new MouseEvent(type, { bubbles: true, cancelable: true, view: window });
-                            sendButton.dispatchEvent(event);
+                    const sel = 'button.send-button, button[aria-label*="Send"], button[data-test-id="send-button"], .send-button-container button, button.submit';
+                    const btn = document.querySelector(sel);
+                    if (!btn) return false;
+                    try {
+                        ['mousedown','mouseup','click'].forEach(type => {
+                            const ev = new MouseEvent(type, { bubbles: true, cancelable: true, view: window });
+                            btn.dispatchEvent(ev);
                         });
                         return true;
-                    }
-                    return false;
+                    } catch (e) { return false; }
                 })();
             `;
-            view.webContents.executeJavaScript(script).then(result => {
+            view.webContents.executeJavaScript(clickScript).then(result => {
                 if (result) console.log('Send button clicked programmatically');
                 else console.warn('Could not find send button to click');
             }).catch(e => console.error('Failed to click send:', e));
