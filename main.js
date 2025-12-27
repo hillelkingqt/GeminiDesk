@@ -2831,9 +2831,21 @@ function createWindow(state = null) {
         }
     });
 
+    // Initialize animation timeouts array
+    newWin.animationTimeouts = [];
+
+    // Helper to clear pending timeouts
+    const clearAnimationTimeouts = () => {
+        if (newWin.animationTimeouts) {
+            newWin.animationTimeouts.forEach(id => clearTimeout(id));
+            newWin.animationTimeouts = [];
+        }
+    };
+
     // Handle maximize/unmaximize to ensure BrowserView bounds are correct
     newWin.on('maximize', () => {
-        setTimeout(() => {
+        clearAnimationTimeouts();
+        const id = setTimeout(() => {
             if (newWin && !newWin.isDestroyed()) {
                 const view = newWin.getBrowserView();
                 if (view) {
@@ -2850,11 +2862,18 @@ function createWindow(state = null) {
                     console.log('Maximize: Updated BrowserView bounds to', contentBounds.width, 'x', contentBounds.height - 30);
                 }
             }
+            // Cleanup self
+            if (newWin && newWin.animationTimeouts) {
+                const idx = newWin.animationTimeouts.indexOf(id);
+                if (idx > -1) newWin.animationTimeouts.splice(idx, 1);
+            }
         }, 50);
+        newWin.animationTimeouts.push(id);
     });
 
     newWin.on('unmaximize', () => {
-        setTimeout(() => {
+        clearAnimationTimeouts();
+        const id = setTimeout(() => {
             if (newWin && !newWin.isDestroyed()) {
                 const view = newWin.getBrowserView();
                 if (view) {
@@ -2871,7 +2890,13 @@ function createWindow(state = null) {
                     console.log('Unmaximize: Updated BrowserView bounds to', contentBounds.width, 'x', contentBounds.height - 30);
                 }
             }
+            // Cleanup self
+            if (newWin && newWin.animationTimeouts) {
+                const idx = newWin.animationTimeouts.indexOf(id);
+                if (idx > -1) newWin.animationTimeouts.splice(idx, 1);
+            }
         }, 50);
+        newWin.animationTimeouts.push(id);
     });
 
     // Handle focus event to ensure BrowserView bounds are correct after snap operations

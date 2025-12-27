@@ -4,79 +4,26 @@
 <head>
     <meta charset="UTF-8">
     <title>GeminiDesk Settings</title>
+    <link rel="stylesheet" href="styles/glass-theme.css">
     <link rel="stylesheet" href="styles/settings-search.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
 
         :root {
-            /* Gemini Dark Palette (Default) */
-            --bg-root: #0e0e0f;
-            --glass-surface: #1e1f21;
-            --glass-border: rgba(255, 255, 255, 0.06);
-            --glass-highlight: rgba(255, 255, 255, 0.04);
-
-            --text-primary: #e8eaed;
-            --text-secondary: #9aa0a6;
-            --text-tertiary: #5f6368;
-
-            --accent-primary: #a8c7fa;
-            --accent-glow: rgba(168, 199, 250, 0.25);
-            --accent-gradient: linear-gradient(135deg, #a8c7fa 0%, #d7aefb 100%);
-
-            --input-bg: #28292c;
-            --input-border: rgba(255, 255, 255, 0.08);
-
-            --danger-color: #f28b82;
-            --success-color: #81c995;
-
-            --radius-xl: 28px;
-            --radius-lg: 16px;
-            --radius-md: 12px;
-            --radius-sm: 8px;
-
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
-            --shadow-glow: 0 0 20px rgba(168, 199, 250, 0.15);
-
-            --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
-            --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-
-            /* Component Variables */
+            /* Additional variables not in glass-theme.css */
+            --search-input-bg: #1e1f21;
             --item-bg: rgba(255, 255, 255, 0.03);
             --item-hover-bg: rgba(255, 255, 255, 0.08);
-            --button-bg: rgba(255, 255, 255, 0.05);
-            --button-hover-bg: rgba(255, 255, 255, 0.1);
-            --search-input-bg: #1e1f21;
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+            --danger-color: var(--danger);
+            --success-color: var(--success);
         }
 
         html.light-mode {
-            --bg-root: #fdfbff;
-            --glass-surface: #f2f6fc;
-            --glass-border: rgba(0, 0, 0, 0.06);
-            --glass-highlight: rgba(255, 255, 255, 0.6);
-
-            --text-primary: #1f1f1f;
-            --text-secondary: #444746;
-            --text-tertiary: #747775;
-
-            --accent-primary: #0b57d0;
-            --accent-glow: rgba(11, 87, 208, 0.15);
-            --accent-gradient: linear-gradient(135deg, #0b57d0 0%, #8430ce 100%);
-
-            --input-bg: #e1e3e1;
-            --input-border: rgba(0, 0, 0, 0.06);
-
-            --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.05);
-
+            --search-input-bg: #eef1f6;
             --item-bg: rgba(0, 0, 0, 0.03);
             --item-hover-bg: rgba(0, 0, 0, 0.06);
-            --button-bg: rgba(0, 0, 0, 0.04);
-            --button-hover-bg: rgba(0, 0, 0, 0.08);
-            --search-input-bg: #eef1f6;
-        }
-
-        html.light-mode body::before {
-            display: none;
+            --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
 
         html,
@@ -86,8 +33,8 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            font-family: 'Google Sans', 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-root);
+            font-family: 'Outfit', 'Google Sans', sans-serif;
+            background: var(--bg-root) !important;
             color: var(--text-primary);
             user-select: none;
             -webkit-font-smoothing: antialiased;
