@@ -888,6 +888,63 @@ window.addEventListener('keydown', (e) => {
 }, true);
 
 // ================================================================
+// Clipboard Magic: Paste Files and Images Directly
+// ================================================================
+document.addEventListener('paste', (event) => {
+    const activeElement = document.activeElement;
+    const isEditorFocused = activeElement && (activeElement.classList.contains('ql-editor') || activeElement.closest('.ql-editor'));
+
+    if (!isEditorFocused) {
+        return; // Only handle pastes when the editor is focused
+    }
+
+    const items = (event.clipboardData || window.clipboardData).items;
+    let files = [];
+
+    for (let index in items) {
+        const item = items[index];
+        if (item.kind === 'file') {
+            const file = item.getAsFile();
+            if (file) {
+                // To handle screenshots, we'll give them a generic but unique name
+                if (!file.name || file.name.trim() === '') {
+                     const newName = `screenshot-${Date.now()}.${file.type.split('/')[1] || 'png'}`;
+                     files.push(new File([file], newName, { type: file.type }));
+                } else {
+                    files.push(file);
+                }
+            }
+        }
+    }
+
+    if (files.length > 0) {
+        event.preventDefault();
+        console.log('GeminiDesk Clipboard Magic: Pasted', files.length, 'file(s).', files.map(f => f.name));
+
+        // Find the drop zone. This selector targets the area that becomes visible
+        // when you drag a file over the Gemini chat window.
+        const dropZone = document.querySelector('body');
+
+        if (dropZone) {
+            // Simulate the drop event
+            const dataTransfer = new DataTransfer();
+            files.forEach(file => dataTransfer.items.add(file));
+
+            const dropEvent = new DragEvent('drop', {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer: dataTransfer,
+            });
+
+            dropZone.dispatchEvent(dropEvent);
+            console.log('GeminiDesk Clipboard Magic: Dispatched drop event.');
+        } else {
+            console.warn('GeminiDesk Clipboard Magic: Could not find a drop zone.');
+        }
+    }
+});
+
+// ================================================================
 // Screenshot-on-Send Logic
 // ================================================================
 
