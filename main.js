@@ -36,6 +36,10 @@ const AISTUDIO_RTL_EXT_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'Ai-studio')
     : path.join(__dirname, 'Ai-studio');
 
+const GEMINIMARK_EXT_PATH = app.isPackaged
+    ? path.join(process.resourcesPath, 'geminimark')
+    : path.join(__dirname, 'geminimark');
+
 // Track loaded extension IDs per label so we can attempt removal later
 const loadedExtensions = new Map(); // label -> extensionId
 
@@ -53,6 +57,7 @@ async function loadExtensionToSession(sess, label, extensionPath) {
         console.warn(`Failed to load extension into session (${label}):`, err && err.message ? err.message : err);
         return null;
     }
+    
 }
 
 async function loadAiStudioRtlExtensionToAllSessions() {
@@ -83,6 +88,37 @@ async function loadAiStudioRtlExtensionToAllSessions() {
         }
     } catch (e) {
         console.warn('Error while loading AI Studio RTL extension into all sessions:', e && e.message ? e.message : e);
+    }
+}
+
+async function loadGeminimarkExtensionToAllSessions() {
+    try {
+        if (!fs.existsSync(GEMINIMARK_EXT_PATH)) return;
+
+        // default
+        await loadExtensionToSession(session.defaultSession, 'geminimark:default', GEMINIMARK_EXT_PATH);
+
+        // main app partition
+        if (typeof constants !== 'undefined' && constants && constants.SESSION_PARTITION) {
+            const mainPart = session.fromPartition(constants.SESSION_PARTITION, { cache: true });
+            await loadExtensionToSession(mainPart, `geminimark:${constants.SESSION_PARTITION}`, GEMINIMARK_EXT_PATH);
+        }
+
+        // per-account partitions
+        const s = getSettings();
+        if (s && Array.isArray(s.accounts) && s.accounts.length > 0) {
+            for (let i = 0; i < s.accounts.length; i++) {
+                try {
+                    const partName = accountsModule.getAccountPartition(i);
+                    const accSess = session.fromPartition(partName, { cache: true });
+                    await loadExtensionToSession(accSess, `geminimark:${partName}`, GEMINIMARK_EXT_PATH);
+                } catch (e) {
+                    console.warn('Error loading geminimark extension into account partition', e && e.message ? e.message : e);
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('Error while loading geminimark extension into all sessions:', e && e.message ? e.message : e);
     }
 }
 
@@ -424,6 +460,15 @@ app.whenReady().then(async () => {
         await loadAiStudioRtlExtensionToAllSessions();
     } catch (e) {
         console.warn('Failed loading AI Studio RTL extension at startup:', e && e.message ? e.message : e);
+    }
+});
+
+// Always load the geminimark renderer extension so its content script is available in Gemini pages.
+app.whenReady().then(async () => {
+    try {
+        await loadGeminimarkExtensionToAllSessions();
+    } catch (e) {
+        console.warn('Failed loading geminimark extension at startup:', e && e.message ? e.message : e);
     }
 });
 
@@ -1871,13 +1916,17 @@ const shortcutActions = {
                 const scaleFactor = primaryDisplay.scaleFactor;
 
                 // Hide the target window temporarily for cleaner screenshot
+                // If invisibilityMode is enabled, the window is already protected
+                // from capture (no need to hide -> avoids visible flicker).
                 const wasVisible = screenshotTargetWindow.isVisible();
-                if (wasVisible) {
+                let hidePerformed = false;
+                if (!settings.invisibilityMode && wasVisible) {
                     screenshotTargetWindow.hide();
+                    hidePerformed = true;
                 }
 
-                // Wait a bit for window to hide
-                await new Promise(resolve => setTimeout(resolve, 100));
+                // Wait a bit for window to hide (only useful when we actually hid it)
+                if (hidePerformed) await new Promise(resolve => setTimeout(resolve, 100));
 
                 // Get screen sources
                 const sources = await desktopCapturer.getSources({
@@ -1902,10 +1951,10 @@ const shortcutActions = {
                         console.error('Failed to copy image to clipboard!');
                     }
 
-                    // Show and focus the target window
+                    // Show and focus the target window (only if we hid it earlier)
                     if (screenshotTargetWindow && !screenshotTargetWindow.isDestroyed()) {
                         if (screenshotTargetWindow.isMinimized()) screenshotTargetWindow.restore();
-                        screenshotTargetWindow.show();
+                        if (hidePerformed) screenshotTargetWindow.show();
                         screenshotTargetWindow.setAlwaysOnTop(true);
                         screenshotTargetWindow.focus();
 
@@ -2133,7 +2182,11 @@ function registerShortcuts() {
     globalShortcut.unregisterAll();
     const shortcuts = settings.shortcuts;
 
-    if (shortcuts.showHide) {
+    // helper to check whether shortcut is enabled (default: enabled)
+    const isShortcutEnabled = (action) => {
+        return !(settings.shortcutsEnabled && settings.shortcutsEnabled[action] === false);
+    };
+    if (shortcuts.showHide && isShortcutEnabled('showHide')) {
         globalShortcut.register(shortcuts.showHide, () => {
             const allWindows = BrowserWindow.getAllWindows();
             const userWindows = allWindows.filter(w => !w.__internal);
@@ -2178,7 +2231,7 @@ function registerShortcuts() {
         });
     }
 
-    if (shortcuts.pieMenu) {
+    if (shortcuts.pieMenu && isShortcutEnabled('pieMenu')) {
         globalShortcut.register(shortcuts.pieMenu, () => {
             togglePieMenu();
         });
@@ -2191,6 +2244,8 @@ function registerShortcuts() {
 
     // Separate shortcuts based on global/local setting
     for (const action in localShortcuts) {
+        // Skip disabled shortcuts
+        if (!isShortcutEnabled(action)) continue;
         if (action === 'findInPage') continue;
 
         // Check per-key setting first, then fall back to global setting
@@ -4431,6 +4486,40 @@ app.whenReady().then(() => {
             } catch (e) { }
         } catch (e) {
             console.warn('Failed to apply AI Studio RTL cookie at startup:', e && e.message ? e.message : e);
+        }
+        // Ensure geminimark cookie matches saved setting at startup so the
+        // geminimark content script sees the correct default when pages load.
+        try {
+            const gmBool = (settings && typeof settings.geminimarkEnabled !== 'undefined') ? !!settings.geminimarkEnabled : true;
+            const setGmCookieForSession = async (sess) => {
+                try {
+                    if (!sess || !sess.cookies || typeof sess.cookies.set !== 'function') return;
+                    await sess.cookies.set({
+                        url: 'https://gemini.google.com',
+                        name: 'geminidesk_geminimark',
+                        value: gmBool ? '1' : '0',
+                        path: '/',
+                        secure: true,
+                        httpOnly: false,
+                        expirationDate: Math.floor(Date.now() / 1000) + (365 * 24 * 60 * 60)
+                    });
+                } catch (e) { }
+            };
+
+            try { await setGmCookieForSession(session.defaultSession); } catch (e) { }
+            try { if (constants && constants.SESSION_PARTITION) await setGmCookieForSession(session.fromPartition(constants.SESSION_PARTITION, { cache: true })); } catch (e) { }
+            try {
+                if (settings && Array.isArray(settings.accounts)) {
+                    for (let i = 0; i < settings.accounts.length; i++) {
+                        try {
+                            const partName = accountsModule.getAccountPartition(i);
+                            await setGmCookieForSession(session.fromPartition(partName, { cache: true }));
+                        } catch (e) { }
+                    }
+                }
+            } catch (e) { }
+        } catch (e) {
+            console.warn('Failed to apply geminimark cookie at startup:', e && e.message ? e.message : e);
         }
     })();
 
@@ -7360,6 +7449,15 @@ ipcMain.on('update-setting', (event, key, value) => {
     debouncedSaveSettings(settings); // Save the updated global object
     console.log(`Setting ${key} saved successfully`);
 
+    // If shortcut-related settings changed, re-register shortcuts immediately
+    if (key === 'shortcutsEnabled' || key === 'shortcuts' || key === 'shortcutsGlobal' || key === 'shortcutsGlobalPerKey') {
+        try {
+            registerShortcuts();
+        } catch (e) {
+            console.error('Failed to re-register shortcuts after settings change:', e);
+        }
+    }
+
     // Apply settings immediately
     if (key === 'alwaysOnTop') {
         // Handle dock visibility on macOS
@@ -7605,6 +7703,71 @@ ipcMain.on('update-setting', (event, key, value) => {
         })();
     }
 
+    if (key === 'geminimarkEnabled') {
+        const boolVal = !!value;
+        console.log('Geminimark renderer toggled to:', boolVal);
+
+        const setGmCookieForSession = async (sess) => {
+            try {
+                if (!sess || !sess.cookies || typeof sess.cookies.set !== 'function') return;
+                await sess.cookies.set({
+                    url: 'https://gemini.google.com',
+                    name: 'geminidesk_geminimark',
+                    value: boolVal ? '1' : '0',
+                    path: '/',
+                    secure: true,
+                    httpOnly: false,
+                    expirationDate: Math.floor(Date.now() / 1000) + (365 * 24 * 60 * 60)
+                });
+                console.log('Set geminidesk_geminimark cookie for session');
+            } catch (e) {
+                console.warn('Failed to set geminidesk_geminimark cookie', e && e.message ? e.message : e);
+            }
+        };
+
+        (async () => {
+            try {
+                // Default session
+                try { await setGmCookieForSession(session.defaultSession); } catch (e) { }
+
+                // Main app partition
+                try { if (constants && constants.SESSION_PARTITION) await setGmCookieForSession(session.fromPartition(constants.SESSION_PARTITION, { cache: true })); } catch (e) { }
+
+                // Per-account partitions
+                try {
+                    const s = settings;
+                    if (s && Array.isArray(s.accounts)) {
+                        for (let i = 0; i < s.accounts.length; i++) {
+                            try {
+                                const partName = accountsModule.getAccountPartition(i);
+                                await setGmCookieForSession(session.fromPartition(partName, { cache: true }));
+                            } catch (e) { }
+                        }
+                    }
+                } catch (e) { }
+
+                // Notify any existing Gemini views so they toggle immediately
+                BrowserWindow.getAllWindows().forEach(w => {
+                    try {
+                        const view = w.getBrowserView();
+                        if (view && view.webContents && !view.webContents.isDestroyed()) {
+                            const url = view.webContents.getURL() || '';
+                            if (url.includes('gemini.google.com')) {
+                                view.webContents.executeJavaScript(
+                                    `try{window.postMessage({type:'GeminiDesk:geminimarkEnabled', state: ${boolVal ? 'true' : 'false'}}, '*'); document.dispatchEvent(new CustomEvent('GeminiDeskGeminimarkEnabled', {detail:{state:${boolVal ? 'true' : 'false'}}})); }catch(e){} `, true).catch(() => { });
+                                console.log('Posted geminimark message to view for window', w.id);
+                            }
+                        }
+                    } catch (e) {}
+                });
+
+                console.log('Geminimark state updated to:', boolVal);
+            } catch (e) {
+                console.warn('Failed applying geminimark change:', e && e.message ? e.message : e);
+            }
+        })();
+    }
+
     // Broadcast the updated settings to all web contents (windows and views)
     broadcastToAllWebContents('settings-updated', settings);
 });
@@ -7642,9 +7805,13 @@ ipcMain.on('perform-screenshot-and-send', async (event) => {
         console.log('Performing screenshot-and-send sequence...');
 
         // 1. Hide window
+        // If invisibilityMode is enabled, the window is already protected
+        // from capture so we don't need to hide it (prevents visible flicker).
         const wasVisible = win.isVisible();
-        if (wasVisible) {
+        let hidePerformed = false;
+        if (!settings.invisibilityMode && wasVisible) {
             win.hide();
+            hidePerformed = true;
             // Wait for hide
             await new Promise(resolve => setTimeout(resolve, 150));
         }
@@ -7670,8 +7837,8 @@ ipcMain.on('perform-screenshot-and-send', async (event) => {
             console.error('No sources found for screenshot');
         }
 
-        // 3. Show window
-        if (wasVisible) {
+        // 3. Show window (only if we actually hid it earlier)
+        if (wasVisible && hidePerformed) {
             if (win.isMinimized()) win.restore();
             win.show();
             win.setAlwaysOnTop(true);

@@ -1031,6 +1031,12 @@
                         class="slider"></span></label>
             </div>
 
+            <!-- Gemini Markdown/LaTeX Renderer Setting -->
+            <div class="setting-item">
+                <div class="setting-label"><strong data-i18n="geminimarkEnabled-label">Enable Gemini Markdown Renderer</strong><span data-i18n="geminimarkEnabled-desc">Enable the Markdown &amp; LaTeX renderer inside Gemini (renders Markdown and LaTeX within user queries).</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-geminimarkEnabled"><span class="slider"></span></label>
+            </div>
+
             <div class="setting-item">
                 <div class="setting-label"><strong data-i18n="restoreWindows-label">Restore Windows on
                         Launch</strong><span data-i18n="restoreWindows-desc">Reopen previous windows at startup.</span>
@@ -1906,6 +1912,69 @@
                     console.log('✅ [SETTINGS] Toggle listeners attached successfully');
                 };
 
+                // Helper to attach delegated listener so clicking the shortcut's setting block toggles it on/off
+                // Clicking the record button itself still triggers recording and will NOT toggle.
+                const attachEnabledListeners = () => {
+                    if (window._enabledDelegationAttached) return;
+
+                    // Initialize visuals for existing buttons
+                    const initVisuals = () => {
+                        const buttons = document.querySelectorAll('.record-button');
+                        buttons.forEach(button => {
+                            const key = button.dataset.key;
+                            if (!key) return;
+                            const isEnabled = (currentSettings.shortcutsEnabled && typeof currentSettings.shortcutsEnabled[key] !== 'undefined')
+                                ? currentSettings.shortcutsEnabled[key]
+                                : true;
+                            button.disabled = !isEnabled;
+                            button.style.opacity = isEnabled ? '1' : '0.45';
+                            const container = button.parentElement;
+                            if (container) {
+                                container.style.opacity = isEnabled ? '1' : '0.45';
+                            }
+                        });
+                    };
+
+                    // Delegated click handler on document
+                    const delegateHandler = (e) => {
+                        // Find the enclosing setting item block
+                        const item = e.target.closest('.setting-item');
+                        if (!item) return;
+
+                        // Find the record button inside this block
+                        const btn = item.querySelector('.record-button');
+                        if (!btn) return;
+
+                        // Ignore clicks originating from the record button itself
+                        if (e.target.closest && e.target.closest('.record-button')) return;
+                        // Ignore clicks on the per-key global toggle
+                        if (e.target.closest && e.target.closest('.shortcut-global-toggle')) return;
+
+                        const key = btn.dataset.key;
+                        if (!key) return;
+
+                        const currentlyEnabled = (currentSettings.shortcutsEnabled && typeof currentSettings.shortcutsEnabled[key] !== 'undefined')
+                            ? currentSettings.shortcutsEnabled[key]
+                            : true;
+                        const newEnabled = !currentlyEnabled;
+
+                        if (!currentSettings.shortcutsEnabled) currentSettings.shortcutsEnabled = {};
+                        currentSettings.shortcutsEnabled[key] = newEnabled;
+                        // Persist change
+                        electronAPI.updateSetting('shortcutsEnabled', currentSettings.shortcutsEnabled);
+
+                        // Update visuals
+                        btn.disabled = !newEnabled;
+                        btn.style.opacity = newEnabled ? '1' : '0.45';
+                        item.style.opacity = newEnabled ? '1' : '0.45';
+                    };
+
+                    document.addEventListener('click', delegateHandler);
+                    window._enabledDelegationAttached = true;
+                    // run initial visuals
+                    initVisuals();
+                };
+
                 const syncUi = (settings) => {
                     try {
                         currentSettings = settings;
@@ -1935,6 +2004,9 @@
                         // AI Studio RTL setting
                         const aiStudioRtlEl = document.getElementById('setting-aiStudioRtlEnabled');
                         if (aiStudioRtlEl) aiStudioRtlEl.checked = !!settings.aiStudioRtlEnabled;
+                        // Geminimark renderer setting
+                        const geminimarkEl = document.getElementById('setting-geminimarkEnabled');
+                        if (geminimarkEl) geminimarkEl.checked = !!settings.geminimarkEnabled;
 
                         document.getElementById('setting-shortcutsGlobal').checked = settings.shortcutsGlobal !== false;
                         document.getElementById('setting-showAdvancedShortcutOptions').checked = settings.showAdvancedShortcutOptions || false;
@@ -1972,9 +2044,27 @@
                             }
                         });
 
+                        // Update per-shortcut ENABLE/DISABLE visuals (container-click toggles)
+                        const recordButtons = document.querySelectorAll('.record-button');
+                        recordButtons.forEach(btn => {
+                            const key = btn.dataset.key;
+                            if (!key) return;
+                            const isEnabled = settings.shortcutsEnabled && typeof settings.shortcutsEnabled[key] !== 'undefined'
+                                ? settings.shortcutsEnabled[key]
+                                : true;
+                            const container = btn.parentElement;
+                            btn.disabled = !isEnabled;
+                            btn.style.opacity = isEnabled ? '1' : '0.45';
+                            if (container) {
+                                if (!container._applyVis) container._applyVis = (v) => { container.style.opacity = v ? '1' : '0.45'; };
+                                container._applyVis(isEnabled);
+                            }
+                        });
+
                         // Attach listeners only once during first initialization
                         if (!window._toggleListenersAttached) {
                             attachToggleListeners();
+                            attachEnabledListeners();
                             window._toggleListenersAttached = true;
                         }
                         document.getElementById('setting-restoreWindows').checked = settings.restoreWindows || false;
@@ -2232,6 +2322,14 @@
                 if (aiStudioRtlCheckbox) {
                     aiStudioRtlCheckbox.addEventListener('change', (e) => {
                         electronAPI.updateSetting('aiStudioRtlEnabled', e.target.checked);
+                    });
+                }
+
+                // Geminimark toggle
+                const geminimarkCheckbox = document.getElementById('setting-geminimarkEnabled');
+                if (geminimarkCheckbox) {
+                    geminimarkCheckbox.addEventListener('change', (e) => {
+                        electronAPI.updateSetting('geminimarkEnabled', e.target.checked);
                     });
                 }
 

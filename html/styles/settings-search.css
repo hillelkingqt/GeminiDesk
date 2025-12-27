@@ -24,16 +24,18 @@ html.light-mode .settings-search-container {
 .settings-search-input {
     width: 100%;
     padding: 14px 48px 14px 52px; /* Left padding for icon, right for clear button */
-    background: var(--glass-surface);
-    border: 1px solid var(--glass-border);
+    background: var(--search-input-bg);
+    border: 1px solid var(--input-border);
     border-radius: 999px; /* Pill shape */
     color: var(--text-primary);
     font-size: 16px;
     font-family: 'Google Sans', 'Segoe UI', Roboto, sans-serif;
     outline: none;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Avoid animating background/border to prevent brief invisible states during theme updates */
+    transition: box-shadow 0.12s var(--ease-smooth), transform 0.12s var(--ease-smooth);
     box-sizing: border-box;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+    min-height: 44px;
 }
 
 .settings-search-input:hover {
@@ -50,6 +52,12 @@ html.light-mode .settings-search-input:hover {
     background: var(--input-bg);
     border-color: var(--accent-primary);
     box-shadow: 0 0 0 4px var(--accent-glow);
+}
+
+/* Ensure placeholder text remains visible and doesn't transition away */
+.settings-search-input::placeholder {
+    color: var(--text-tertiary);
+    opacity: 1;
 }
 
 .settings-search-icon {

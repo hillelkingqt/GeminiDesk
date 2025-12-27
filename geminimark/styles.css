@@ -1,0 +1,52 @@
+/* טעינת העיצוב של KaTeX באופן דינמי נעשית ב-JS, אבל נגדיר כאן את הבסיס */
+
+.rendered-markdown-content {
+  display: block;
+  font-family: 'Google Sans', sans-serif;
+  line-height: 1.6;
+  color: inherit;
+  /* תמיכה בטקסט מעורב (עברית/אנגלית) */
+  text-align: start; 
+  direction: inherit;
+}
+
+/* כותרות ועיצוב כללי */
+.rendered-markdown-content h1 { font-size: 1.8em; font-weight: bold; margin-top: 15px; }
+.rendered-markdown-content h2 { font-size: 1.5em; font-weight: bold; margin-top: 12px; }
+.rendered-markdown-content ul, .rendered-markdown-content ol { margin-inline-start: 20px; } /* תומך גם ב-RTL */
+
+/* קוד רגיל */
+.rendered-markdown-content code:not(.katex) {
+  background-color: rgba(135, 131, 120, 0.15);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: monospace;
+  direction: ltr; /* קוד תמיד LTR */
+  unicode-bidi: isolate;
+}
+
+/* === הגדרות לאטך (LaTeX) === */
+
+/* נוסחאות בתוך שורה */
+.math-inline {
+  direction: ltr !important;
+  display: inline-block;
+  unicode-bidi: isolate; /* מבודד את הנוסחה מהטקסט העברי */
+}
+
+/* נוסחאות בלוק (נפרדות) */
+.math-block {
+  display: block;
+  direction: ltr !important;
+  text-align: center; /* או left אם אתה מעדיף */
+  margin: 10px 0;
+  overflow-x: auto;
+  unicode-bidi: isolate;
+}
+
+/* תיקונים ל-KaTeX עצמו */
+.katex {
+  font-size: 1.1em;
+  direction: ltr !important;
+  text-align: left;
+}

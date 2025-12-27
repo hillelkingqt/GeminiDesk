@@ -63,6 +63,8 @@ const defaultSettings = {
         voiceAssistant: isMac ? 'Command+Shift+A' : 'Alt+Shift+A',
         pieMenu: 'Alt+M'
     },
+    // Per-shortcut enabled/disabled state (true = enabled)
+    shortcutsEnabled: {},
   pieMenu: {
     actions: [
       { id: 'flash', action: 'new-window-flash', label: 'New Window (Flash)', enabled: true, icon: 'bolt', color: '#81c995' },
@@ -106,9 +108,18 @@ defaultSettings.disableAutoUpdateCheck = false;
 defaultSettings.autoInstallUpdates = true; // Automatically download and install updates
 defaultSettings.updateInstallReminderTime = null; // Timestamp for "remind me in 1 hour"
 defaultSettings.aiStudioRtlEnabled = false; // Enable RTL mode for AI Studio (Hebrew, Arabic, etc.)
+// Whether the Gemini Markdown & LaTeX renderer (geminimark) is enabled by default
+defaultSettings.geminimarkEnabled = true;
 
 // In-memory cache for settings to avoid frequent disk reads
 let cachedSettings = null;
+
+// Initialize shortcutsEnabled defaults to true for each defined shortcut
+if (defaultSettings.shortcuts && typeof defaultSettings.shortcuts === 'object') {
+    for (const k of Object.keys(defaultSettings.shortcuts)) {
+        defaultSettings.shortcutsEnabled[k] = true;
+    }
+}
 
 function getSettings(shouldClone = true) {
     if (cachedSettings) {
@@ -129,6 +140,8 @@ function getSettings(shouldClone = true) {
                     ...savedSettings,
                     shortcuts: { ...defaultSettings.shortcuts, ...savedSettings.shortcuts },
           pieMenu: { ...defaultSettings.pieMenu, ...(savedSettings.pieMenu || {}) },
+                    // Merge per-shortcut enabled flags
+                    shortcutsEnabled: { ...defaultSettings.shortcutsEnabled, ...(savedSettings.shortcutsEnabled || {}) },
                     showInTaskbar: savedSettings.showInTaskbar === undefined ? false : savedSettings.showInTaskbar,
                     // CRITICAL: Force loadUnpackedExtension to false unless explicitly set to true by user
                     loadUnpackedExtension: savedSettings.loadUnpackedExtension === true ? true : false,
@@ -136,6 +149,8 @@ function getSettings(shouldClone = true) {
                     autoInstallUpdates: savedSettings.autoInstallUpdates === undefined ? true : savedSettings.autoInstallUpdates,
                     updateInstallReminderTime: savedSettings.updateInstallReminderTime || null,
                     aiStudioRtlEnabled: savedSettings.aiStudioRtlEnabled === true ? true : false,
+                    // If user explicitly set geminimarkEnabled to false, respect it. Otherwise default to enabled.
+                    geminimarkEnabled: savedSettings.geminimarkEnabled === false ? false : true,
                     // Respect saved preference for showing the mode toggle; default true
                     showModeToggleButton: savedSettings.hasOwnProperty('showModeToggleButton') ? savedSettings.showModeToggleButton : true,
                     showScreenshotSendButton: savedSettings.showScreenshotSendButton === true ? true : false

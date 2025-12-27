@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Gemini Markdown & LaTeX Renderer",
+  "version": "2.0",
+  "description": "Renders Markdown and LaTeX inside user queries on Gemini.",
+  "content_scripts": [
+    {
+      "matches": ["https://gemini.google.com/*"],
+      "js": ["marked.min.js", "katex.min.js", "content.js"],
+      "css": ["styles.css"]
+    }
+  ]
+}
