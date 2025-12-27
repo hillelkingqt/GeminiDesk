@@ -465,6 +465,9 @@ let agentProcess = null;
 let tray = null;
 let mcpProxyProcess = null; // Background MCP proxy process
 
+// Track active screenshot-on-send mode per window ID
+const screenshotSendModeActive = new Map();
+
 const detachedViews = new Map();
 const PROFILE_CAPTURE_COOLDOWN_MS = 60 * 1000;
 const PROFILE_REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000;
@@ -3304,6 +3307,12 @@ async function loadGemini(mode, targetWin, initialUrl, options = {}) {
     newView.__defaultPromptSent = false;
 
     newView.webContents.on('did-finish-load', () => {
+        // Restore screenshot-on-send mode if active for this window
+        const win = BrowserWindow.fromBrowserView(newView);
+        if (win && screenshotSendModeActive.get(win.id)) {
+            newView.webContents.send('set-screenshot-send-mode', true);
+        }
+
         const viewUrl = newView.webContents.getURL() || '';
         if (viewUrl.startsWith('https://gemini.google.com') || viewUrl.startsWith('https://aistudio.google.com')) {
             maybeCaptureAccountProfile(newView, targetAccountIndex, options.forceProfileCapture);
@@ -7202,6 +7211,12 @@ ipcMain.handle('execute-in-main-view', async (event, code) => {
     }
 });
 
+ipcMain.handle('get-screenshot-send-mode', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (!win) return false;
+    return screenshotSendModeActive.get(win.id) || false;
+});
+
 // ================================================================= //
 // Prompt Manager IPC Handlers
 // ================================================================= //
@@ -7592,6 +7607,126 @@ ipcMain.on('update-setting', (event, key, value) => {
 
     // Broadcast the updated settings to all web contents (windows and views)
     broadcastToAllWebContents('settings-updated', settings);
+});
+
+ipcMain.on('toggle-screenshot-send-mode', (event, isActive) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (!win) return;
+
+    // Update state map
+    screenshotSendModeActive.set(win.id, isActive);
+
+    const view = win.getBrowserView();
+    if (view && !view.webContents.isDestroyed()) {
+        view.webContents.send('set-screenshot-send-mode', isActive);
+        console.log(`Screenshot-on-Send mode ${isActive ? 'enabled' : 'disabled'} for window ${win.id}`);
+    }
+});
+
+ipcMain.on('perform-screenshot-and-send', async (event) => {
+    // This event comes from the renderer (preload) when user clicks send in this mode.
+    // We need to:
+    // 1. Capture full screen (hiding window first).
+    // 2. Paste into the view.
+    // 3. Trigger the send button click again (bypassing the interceptor).
+
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (!win || win.isDestroyed()) return;
+
+    // We reuse the existing screenshot logic structure but adapted for this specific flow.
+    // We use 'shortcutActions.screenshot()' logic but force full screen and handle the post-paste step.
+
+    const { desktopCapturer } = require('electron');
+
+    try {
+        console.log('Performing screenshot-and-send sequence...');
+
+        // 1. Hide window
+        const wasVisible = win.isVisible();
+        if (wasVisible) {
+            win.hide();
+            // Wait for hide
+            await new Promise(resolve => setTimeout(resolve, 150));
+        }
+
+        // 2. Capture
+        const primaryDisplay = screen.getPrimaryDisplay();
+        const { width, height } = primaryDisplay.size;
+        const scaleFactor = primaryDisplay.scaleFactor;
+
+        const sources = await desktopCapturer.getSources({
+            types: ['screen'],
+            thumbnailSize: {
+                width: Math.round(width * scaleFactor),
+                height: Math.round(height * scaleFactor)
+            }
+        });
+
+        if (sources.length > 0) {
+            const primarySource = sources[0];
+            clipboard.writeImage(primarySource.thumbnail);
+            console.log('Screenshot captured to clipboard');
+        } else {
+            console.error('No sources found for screenshot');
+        }
+
+        // 3. Show window
+        if (wasVisible) {
+            if (win.isMinimized()) win.restore();
+            win.show();
+            win.setAlwaysOnTop(true);
+            win.focus();
+        }
+
+        const view = win.getBrowserView();
+        if (view && !view.webContents.isDestroyed()) {
+            view.webContents.focus();
+
+            // 4. Paste
+            // Wait a bit for focus
+            await new Promise(resolve => setTimeout(resolve, 300));
+            view.webContents.paste();
+            console.log('Pasted screenshot into input');
+
+            // 5. Click Send
+            // Wait longer for image to be processed/uploaded by the web app
+            // 1.5 seconds is safer than 800ms
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Execute script to click send button
+            // We use a specialized script that finds the send button and clicks it
+            const script = `
+                (function() {
+                    const sendButton = document.querySelector('button.send-button, button[aria-label*="Send"], button[data-test-id="send-button"]');
+                    if (sendButton) {
+                        // Dispatch click event
+                        ['mousedown', 'mouseup', 'click'].forEach(type => {
+                            const event = new MouseEvent(type, { bubbles: true, cancelable: true, view: window });
+                            sendButton.dispatchEvent(event);
+                        });
+                        return true;
+                    }
+                    return false;
+                })();
+            `;
+            view.webContents.executeJavaScript(script).then(result => {
+                if (result) console.log('Send button clicked programmatically');
+                else console.warn('Could not find send button to click');
+            }).catch(e => console.error('Failed to click send:', e));
+
+            // Restore alwaysOnTop setting
+             setTimeout(() => {
+                if (win && !win.isDestroyed()) {
+                    applyAlwaysOnTopSetting(win, settings.alwaysOnTop);
+                }
+            }, 1000);
+        }
+
+    } catch (err) {
+        console.error('Screenshot-and-send failed:', err);
+        // Ensure window is shown if error
+        if (win && !win.isDestroyed() && !win.isVisible()) win.show();
+    }
 });
 
 ipcMain.on('open-settings-window', (event) => {

@@ -271,6 +271,43 @@
             fill: #1e8e3e;
             filter: drop-shadow(0 0 5px #1e8e3e);
         }
+
+        /* Screenshot Send Button Styles */
+        #screenshot-send-button {
+            position: relative;
+        }
+
+        #screenshot-send-button.active svg {
+            stroke: var(--accent-glow);
+            filter: drop-shadow(0 0 5px var(--accent-glow));
+        }
+
+        /* Pulse animation for active state */
+        @keyframes pulse-glow {
+            0% { filter: drop-shadow(0 0 2px var(--accent-glow)); }
+            50% { filter: drop-shadow(0 0 8px var(--accent-glow)); }
+            100% { filter: drop-shadow(0 0 2px var(--accent-glow)); }
+        }
+
+        #screenshot-send-button.active svg {
+            animation: pulse-glow 2s infinite ease-in-out;
+        }
+
+        #screenshot-send-button .indicator-dot {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            width: 6px;
+            height: 6px;
+            background-color: var(--accent-glow);
+            border-radius: 50%;
+            display: none;
+            box-shadow: 0 0 4px var(--accent-glow);
+        }
+
+        #screenshot-send-button.active .indicator-dot {
+            display: block;
+        }
     </style>
 </head>
 
@@ -284,11 +321,18 @@
                 <svg class="mode-icon gemini-icon active" viewBox="0 0 65 65" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M57.8647 29.0109C52.865 26.8587 48.4905 23.9061 44.7393 20.1567C40.99 16.4074 38.0373 12.031 35.8851 7.03132C35.0589 5.11516 34.395 3.14552 33.886 1.12608C33.72 0.465846 33.128 0.00109863 32.4475 0.00109863C31.7669 0.00109863 31.1749 0.465846 31.009 1.12608C30.4999 3.14552 29.836 5.11332 29.0098 7.03132C26.8576 12.031 23.905 16.4074 20.1556 20.1567C16.4063 23.9061 12.0299 26.8587 7.03022 29.0109C5.11406 29.8371 3.14442 30.501 1.12498 31.0101C0.464747 31.176 0 31.768 0 32.4486C0 33.1291 0.464747 33.7211 1.12498 33.8871C3.14442 34.3961 5.11222 35.06 7.03022 35.8862C12.0299 38.0384 16.4045 40.9911 20.1556 44.7404C23.9068 48.4897 26.8576 52.8661 29.0098 57.8658C29.836 59.782 30.4999 61.7516 31.009 63.771C31.1749 64.4313 31.7669 64.896 32.4475 64.896C33.128 64.896 33.72 64.4313 33.886 63.771C34.395 61.7516 35.0589 59.7838 35.8851 57.8658C38.0373 52.8661 40.99 48.4916 44.7393 44.7404C48.4886 40.9911 52.865 38.0384 57.8647 35.8862C59.7809 35.06 61.7505 34.3961 63.7699 33.8871C64.4302 33.7211 64.8949 33.1291 64.8949 32.4486C64.8949 31.768 64.4302 31.176 63.7699 31.0101C61.7505 30.501 59.7827 29.8371 57.8647 29.0109Z" fill="currentColor"></path>
                 </svg>
-                <!-- AI Studio Icon - shown when in AI Studio mode, click to switch to Gemini -->
+                <!-- AI Studio Icon - shown when in AI Studio mode, click to switch to AI Studio -->
                 <svg class="mode-icon aistudio-icon" aria-label="Google AI Studio logo" viewBox="0 0 299 310" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M125.365 32C120.691 38.5727 116.782 45.7277 113.766 53.334H64C40.4361 53.3342 21.3342 72.4361 21.334 96V245.334C21.3344 268.898 40.4362 288 64 288H213.334C236.898 288 256 268.898 256 245.334V179.93C263.778 175.739 270.945 170.561 277.334 164.563V245.334C277.334 280.68 248.68 309.334 213.334 309.334H64C28.6542 309.334 0.00038177 280.68 0 245.334V96C0.000171479 60.654 28.654 32.0002 64 32H125.365Z" fill="currentColor"></path>
                     <path d="M281.333 71.5244C269.006 66.218 258.221 58.9383 248.972 49.6942C239.728 40.4502 232.448 29.6601 227.142 17.3332C225.105 12.6088 223.468 7.75264 222.213 2.77367C221.804 1.14585 220.344 0 218.666 0C216.988 0 215.529 1.14585 215.12 2.77367C213.865 7.75264 212.228 12.6043 210.191 17.3332C204.884 29.6601 197.605 40.4502 188.36 49.6942C179.116 58.9383 168.326 66.218 155.999 71.5244C151.275 73.5614 146.419 75.1984 141.44 76.4533C139.812 76.8626 138.666 78.3222 138.666 80C138.666 81.6778 139.812 83.1374 141.44 83.5467C146.419 84.8016 151.271 86.4386 155.999 88.4756C168.326 93.782 179.112 101.062 188.36 110.306C197.609 119.55 204.884 130.34 210.191 142.667C212.228 147.391 213.865 152.247 215.12 157.226C215.529 158.854 216.988 160 218.666 160C220.344 160 221.804 158.854 222.213 157.226C223.468 152.247 225.105 147.396 227.142 142.667C232.448 130.34 239.728 119.554 248.972 110.306C258.216 101.062 269.006 93.782 281.333 88.4756C286.057 86.4386 290.914 84.8016 295.893 83.5467C297.52 83.1374 298.666 81.6778 298.666 80C298.666 78.3222 297.52 76.8626 295.893 76.4533C290.914 75.1984 286.062 73.5614 281.333 71.5244Z" fill="currentColor"></path>
                 </svg>
+            </button>
+            <button id="screenshot-send-button" class="icon-button" data-tooltip="Auto-Screenshot on Send" style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="13" r="4"></circle>
+                </svg>
+                <div class="indicator-dot"></div>
             </button>
             <button id="new-window-button" class="icon-button" data-tooltip-i18n="tooltip-new-chat">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -525,6 +569,7 @@
             const fullscreenButton = document.getElementById('fullscreen-button');
             const minimizeButton = document.getElementById('minimize-button');
             const modeToggleButton = document.getElementById('mode-toggle-button');
+            const screenshotSendButton = document.getElementById('screenshot-send-button');
             const titleElement = document.getElementById('chat-title');
             const buttonContainer = document.querySelector('.button-container');
 
@@ -532,7 +577,7 @@
             let latestTitle = '__NEW_CHAT__'; // Use a special key for new chats
             let sortable = null;
             let currentAppMode = 'gemini'; // Track current mode
-            const defaultButtonOrder = ['mode-toggle-button', 'minimize-button', 'new-window-button', 'fullscreen-button', 'export-chat-button', 'settings-button'];
+            const defaultButtonOrder = ['mode-toggle-button', 'screenshot-send-button', 'minimize-button', 'new-window-button', 'fullscreen-button', 'export-chat-button', 'settings-button'];
 
             const newChatTitles = new Set(Object.values(translations).map(t => t['new-chat']));
             
@@ -654,6 +699,10 @@
                 newWindowButton.style.display = settings.showNewWindowButton !== false ? 'flex' : 'none';
                 minimizeButton.style.display = settings.showMinimizeButton !== false ? 'flex' : 'none';
                 modeToggleButton.style.display = settings.showModeToggleButton !== false ? 'flex' : 'none';
+
+                // Screenshot Send Button
+                screenshotSendButton.style.display = settings.showScreenshotSendButton ? 'flex' : 'none';
+
                 showChatTitle = settings.showChatTitle !== false;
                 updateTitleUI();
                 setButtonOrder(settings.buttonOrder);
@@ -714,6 +763,19 @@
             modeToggleButton.addEventListener('click', () => {
                 const newMode = currentAppMode === 'gemini' ? 'aistudio' : 'gemini';
                 window.electronAPI.toggleAppMode(newMode);
+            });
+
+            // Screenshot send button click handler
+            screenshotSendButton.addEventListener('click', () => {
+                const isActive = screenshotSendButton.classList.toggle('active');
+                window.electronAPI.toggleScreenshotSendMode(isActive);
+            });
+
+            // Restore active state if needed
+            window.electronAPI.getScreenshotSendMode().then(isActive => {
+                if (isActive) {
+                    screenshotSendButton.classList.add('active');
+                }
             });
 
             // Get initial app mode

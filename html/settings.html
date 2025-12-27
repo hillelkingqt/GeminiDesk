@@ -1071,6 +1071,12 @@
                 <label class="toggle-switch"><input type="checkbox" id="setting-showModeToggleButton"><span
                         class="slider"></span></label>
             </div>
+            <div class="setting-item">
+                <div class="setting-label"><strong>Show Screenshot-on-Send Button</strong><span>Add a button to the top
+                        bar to toggle screenshot-on-send mode.</span></div>
+                <label class="toggle-switch"><input type="checkbox" id="setting-showScreenshotSendButton"><span
+                        class="slider"></span></label>
+            </div>
             <div class="setting-item" id="export-button-setting">
                 <div class="setting-label"><strong data-i18n="showExportButton-label">Show Export Button</strong><span
                         data-i18n="showExportButton-desc">Add an export chat button to each window.</span></div>
@@ -1982,6 +1988,10 @@
                         // Mode toggle visibility
                         const modeToggleCheckbox = document.getElementById('setting-showModeToggleButton');
                         if (modeToggleCheckbox) modeToggleCheckbox.checked = settings.showModeToggleButton !== false;
+
+                        const screenshotSendCheckbox = document.getElementById('setting-showScreenshotSendButton');
+                        if (screenshotSendCheckbox) screenshotSendCheckbox.checked = settings.showScreenshotSendButton === true;
+
                         document.getElementById('setting-aiCompletionSound').checked = settings.aiCompletionSound !== false;
 
                         // Render Pie Menu Actions
@@ -2286,6 +2296,14 @@
                 if (showModeToggleEl) {
                     showModeToggleEl.addEventListener('change', (e) => {
                         electronAPI.updateSetting('showModeToggleButton', e.target.checked);
+                    });
+                }
+
+                // Show/hide screenshot-on-send button
+                const showScreenshotSendEl = document.getElementById('setting-showScreenshotSendButton');
+                if (showScreenshotSendEl) {
+                    showScreenshotSendEl.addEventListener('change', (e) => {
+                        electronAPI.updateSetting('showScreenshotSendButton', e.target.checked);
                     });
                 }
 
