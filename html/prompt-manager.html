@@ -1,440 +1,215 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
-
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prompt Manager</title>
+    <link rel="stylesheet" href="styles/glass-theme.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
-
-        :root {
-            --bg-root: #131314;
-            --glass-surface: #1e1f20;
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --text-primary: #e3e3e3;
-            --text-secondary: #9aa0a6;
-            --text-tertiary: #5f6368;
-            --accent-primary: #8ab4f8;
-            --accent-glow: rgba(138, 180, 248, 0.3);
-            --input-bg: #282a2c;
-            --input-border: rgba(255, 255, 255, 0.1);
-            --danger-color: #f28b82;
-            --success-color: #81c995;
-            --radius-lg: 20px;
-            --radius-md: 12px;
-            --radius-sm: 8px;
-            --item-bg: #282a2c;
-            --item-hover-bg: #353739;
-        }
-
-        html.light-mode {
-            --bg-root: #ffffff;
-            --glass-surface: #f8f9fa;
-            --glass-border: rgba(0, 0, 0, 0.08);
-            --text-primary: #202124;
-            --text-secondary: #5f6368;
-            --text-tertiary: #9aa0a6;
-            --accent-primary: #1a73e8;
-            --accent-glow: rgba(26, 115, 232, 0.2);
-            --input-bg: #f1f3f4;
-            --input-border: rgba(0, 0, 0, 0.1);
-            --item-bg: #f1f3f4;
-            --item-hover-bg: #e8eaed;
-        }
-
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            font-family: 'Google Sans', 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-root);
-            color: var(--text-primary);
-            user-select: none;
-        }
-
-        .drag-bar {
-            width: 100%;
-            height: 48px;
-            -webkit-app-region: drag;
-            background: var(--bg-root);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 16px;
-            box-sizing: border-box;
-            border-bottom: 1px solid var(--glass-border);
-        }
-
-        .drag-bar h2 {
-            font-size: 16px;
-            margin: 0;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-
-        #close-button {
-            -webkit-app-region: no-drag;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: none;
-            background: transparent;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            font-size: 20px;
-            line-height: 1;
-            padding: 0;
-        }
-
-        #close-button:hover {
-            background: var(--item-hover-bg);
-            color: var(--text-primary);
-        }
-
-        .content {
-            padding: 16px;
-            height: calc(100vh - 48px);
-            overflow-y: auto;
-            box-sizing: border-box;
-        }
-
-        .content::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .content::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .content::-webkit-scrollbar-thumb {
-            background: var(--text-tertiary);
-            border-radius: 10px;
-        }
-
-        .header-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .add-button {
-            background: var(--accent-primary);
-            border: none;
-            color: #131314;
-            padding: 10px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-family: 'Google Sans', sans-serif;
-            font-size: 14px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.15s ease;
-        }
-
-        .add-button:hover {
-            background: #aac8fa;
-            transform: translateY(-1px);
-        }
-
         .prompt-list {
             display: flex;
             flex-direction: column;
             gap: 12px;
+            overflow-y: auto;
+            flex: 1;
+            padding-right: 4px;
         }
-
         .prompt-item {
-            background: var(--glass-surface);
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius-md);
             padding: 16px;
-            transition: all 0.15s ease;
+            transition: all 0.2s ease;
+            position: relative;
         }
-
         .prompt-item:hover {
-            border-color: var(--accent-primary);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
         }
-
-        .prompt-item.is-default {
-            border-color: var(--success-color);
-            box-shadow: 0 0 0 1px var(--success-color);
-        }
-
         .prompt-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 8px;
         }
-
         .prompt-name {
-            font-size: 16px;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--text-primary);
+            font-size: 14px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-
         .default-badge {
-            background: var(--success-color);
-            color: #131314;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 500;
+            font-size: 10px;
+            background: var(--accent-glow);
+            color: var(--accent-primary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-weight: 700;
         }
-
+        .prompt-preview {
+            color: var(--text-secondary);
+            font-size: 13px;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
         .prompt-actions {
             display: flex;
             gap: 8px;
+            opacity: 0;
+            transition: opacity 0.2s;
         }
-
+        .prompt-item:hover .prompt-actions {
+            opacity: 1;
+        }
         .action-btn {
             background: transparent;
-            border: 1px solid var(--glass-border);
-            color: var(--text-secondary);
-            padding: 6px 12px;
-            border-radius: 16px;
+            border: none;
+            color: var(--text-tertiary);
             cursor: pointer;
-            font-family: 'Google Sans', sans-serif;
             font-size: 12px;
-            transition: all 0.15s ease;
+            padding: 4px 8px;
+            border-radius: 4px;
         }
-
         .action-btn:hover {
-            background: var(--item-hover-bg);
             color: var(--text-primary);
+            background: var(--button-bg);
+        }
+        .delete-btn:hover {
+            color: var(--danger);
+            background: rgba(244, 63, 94, 0.1);
         }
 
-        .action-btn.default-btn {
-            border-color: var(--accent-primary);
-            color: var(--accent-primary);
-        }
-
-        .action-btn.default-btn:hover {
-            background: rgba(138, 180, 248, 0.1);
-        }
-
-        .action-btn.delete-btn {
-            border-color: var(--danger-color);
-            color: var(--danger-color);
-        }
-
-        .action-btn.delete-btn:hover {
-            background: rgba(242, 139, 130, 0.1);
-        }
-
-        .prompt-preview {
-            font-size: 13px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-            max-height: 60px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-secondary);
-        }
-
-        .empty-state svg {
-            width: 64px;
-            height: 64px;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-
-        .empty-state h3 {
-            font-size: 18px;
-            font-weight: 500;
-            color: var(--text-primary);
-            margin: 0 0 8px 0;
-        }
-
-        .empty-state p {
-            font-size: 14px;
-            margin: 0;
-        }
-
-        /* Modal styles */
+        /* Modal Styles */
         .modal-overlay {
-            display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            inset: 0;
             background: rgba(0, 0, 0, 0.6);
-            z-index: 1000;
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: flex;
             align-items: center;
             justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
-
         .modal-overlay.show {
-            display: flex;
+            opacity: 1;
+            pointer-events: auto;
         }
-
         .modal {
+            width: 100%;
+            max-width: 420px;
+            background: #1a1a20;
             background: var(--glass-surface);
             border: 1px solid var(--glass-border);
-            border-radius: var(--radius-lg);
+            border-radius: var(--radius-xl);
             padding: 24px;
-            width: 90%;
-            max-width: 500px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal h3 {
-            margin: 0 0 20px 0;
-            font-size: 18px;
-            font-weight: 500;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: var(--text-primary);
-        }
-
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            background: var(--input-bg);
-            border: 1px solid transparent;
-            border-radius: var(--radius-sm);
-            color: var(--text-primary);
-            font-family: 'Google Sans', sans-serif;
-            font-size: 14px;
-            box-sizing: border-box;
-            outline: none;
-            transition: all 0.15s ease;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            border-color: var(--accent-primary);
-        }
-
-        .form-group textarea {
-            min-height: 150px;
-            resize: vertical;
-        }
-
-        .form-group .checkbox-label {
+            transform: scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
+            flex-direction: column;
+            gap: 16px;
         }
-
-        .form-group input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: var(--accent-primary);
+        .modal-overlay.show .modal {
+            transform: scale(1);
         }
-
+        .modal h3 {
+            margin: 0;
+            font-size: 16px;
+            color: var(--text-primary);
+        }
         .modal-actions {
             display: flex;
             justify-content: flex-end;
             gap: 12px;
-            margin-top: 20px;
+            margin-top: 8px;
         }
-
         .modal-btn {
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-family: 'Google Sans', sans-serif;
-            font-size: 14px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.15s ease;
+            border: none;
         }
-
         .modal-btn.cancel {
             background: transparent;
-            border: 1px solid var(--glass-border);
             color: var(--text-secondary);
         }
-
         .modal-btn.cancel:hover {
-            background: var(--item-hover-bg);
+            background: var(--button-bg);
             color: var(--text-primary);
         }
-
         .modal-btn.save {
-            background: var(--accent-primary);
-            border: none;
-            color: #131314;
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: 0 4px 12px var(--accent-glow);
         }
-
-        .modal-btn.save:hover {
-            background: #aac8fa;
-        }
-
-        .description {
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             font-size: 13px;
             color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            color: var(--text-tertiary);
+            margin: auto;
+            display: none;
+        }
+        .empty-icon {
+            width: 48px;
+            height: 48px;
             margin-bottom: 16px;
-            line-height: 1.5;
+            opacity: 0.5;
         }
     </style>
 </head>
-
 <body>
-    <div class="drag-bar">
-        <h2>Prompt Manager</h2>
-        <button id="close-button" title="Close">&times;</button>
-    </div>
+    <div class="card">
+        <div class="orb-canvas"></div>
+        <div class="header">
+             <div class="header-title">
+                  <div class="icon-box">
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                  </div>
+                  <div class="title-text">
+                      <h1>Prompt Manager</h1>
+                      <span id="prompt-count">Loading...</span>
+                  </div>
+             </div>
+             <div class="close-btn" id="close-button">
+                 <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+             </div>
+        </div>
+        <div class="content">
+             <div id="prompt-list" class="prompt-list" style="display: none;"></div>
 
-    <div class="content">
-        <p class="description">
-            Create custom prompts that automatically send when you start a new chat.
-            Set one as default to have it sent automatically every time you open a new conversation.
-        </p>
-
-        <div class="header-actions">
-            <span id="prompt-count"></span>
-            <button class="add-button" id="add-prompt-btn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+             <div id="empty-state" class="empty-state">
+                <svg class="empty-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
                 </svg>
-                Add Prompt
-            </button>
-        </div>
+                <h3>No Prompts Yet</h3>
+                <p>Add your first custom prompt to get started.</p>
+             </div>
 
-        <div id="prompt-list" class="prompt-list">
-            <!-- Prompts will be rendered here -->
-        </div>
-
-        <div id="empty-state" class="empty-state" style="display: none;">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-                <path
-                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
-            </svg>
-            <h3>No Prompts Yet</h3>
-            <p>Add your first custom prompt to get started.</p>
+             <button id="add-prompt-btn" class="submit-btn">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                 Add New Prompt
+             </button>
         </div>
     </div>
 
@@ -443,15 +218,19 @@
         <div class="modal">
             <h3 id="modal-title">Add Prompt</h3>
             <form id="prompt-form">
-                <div class="form-group">
-                    <label for="prompt-name">Prompt Name</label>
-                    <input type="text" id="prompt-name" placeholder="e.g., Interview Prep, Code Review..." required>
+                <div class="input-group">
+                    <label class="label" for="prompt-name">Prompt Name</label>
+                    <div class="input-wrapper">
+                         <input type="text" id="prompt-name" class="input-field" placeholder="e.g., Interview Prep" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="prompt-content">Prompt Content</label>
-                    <textarea id="prompt-content" placeholder="Enter your prompt text here..." required></textarea>
+                <div class="input-group">
+                    <label class="label" for="prompt-content">Prompt Content</label>
+                    <div class="input-wrapper">
+                        <textarea id="prompt-content" class="input-field" placeholder="Enter your prompt..." required></textarea>
+                    </div>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-top: 8px;">
                     <label class="checkbox-label">
                         <input type="checkbox" id="prompt-default">
                         <span>Set as default (auto-send on new chat)</span>
@@ -511,13 +290,13 @@
                 if (prompts.length === 0) {
                     promptList.style.display = 'none';
                     emptyState.style.display = 'block';
-                    promptCount.textContent = '';
+                    promptCount.textContent = '0 Prompts';
                     return;
                 }
 
                 promptList.style.display = 'flex';
                 emptyState.style.display = 'none';
-                promptCount.textContent = `${prompts.length} prompt${prompts.length !== 1 ? 's' : ''}`;
+                promptCount.textContent = `${prompts.length} Prompt${prompts.length !== 1 ? 's' : ''}`;
 
                 promptList.innerHTML = prompts.map(prompt => `
                     <div class="prompt-item ${prompt.isDefault ? 'is-default' : ''}" data-id="${prompt.id}">
@@ -528,7 +307,7 @@
                                 ${prompt.showInPieMenu ? '<span class="default-badge" style="background:#8ab4f8; margin-left:4px;">In Menu</span>' : ''}
                             </div>
                             <div class="prompt-actions">
-                                ${!prompt.isDefault ? `<button class="action-btn default-btn" onclick="setDefault('${prompt.id}')">Set Default</button>` : `<button class="action-btn" onclick="clearDefault()">Clear Default</button>`}
+                                ${!prompt.isDefault ? `<button class="action-btn" onclick="setDefault('${prompt.id}')">Set Default</button>` : `<button class="action-btn" onclick="clearDefault()">Clear Default</button>`}
                                 <button class="action-btn" onclick="editPrompt('${prompt.id}')">Edit</button>
                                 <button class="action-btn delete-btn" onclick="deletePrompt('${prompt.id}')">Delete</button>
                             </div>
@@ -544,7 +323,7 @@
                 return div.innerHTML;
             }
 
-            // Show modal for adding/editing
+            // Show modal
             function showModal(isEdit = false) {
                 if (modalTitle) modalTitle.textContent = isEdit ? 'Edit Prompt' : 'Add Prompt';
                 if (modalOverlay) modalOverlay.classList.add('show');
@@ -556,7 +335,6 @@
                 editingPromptId = null;
             }
 
-            // Add new prompt
             if (addPromptBtn) {
                 addPromptBtn.addEventListener('click', () => {
                     editingPromptId = null;
@@ -565,7 +343,7 @@
                 });
             }
 
-            // Edit prompt
+            // Expose globally for inline onclicks
             window.editPrompt = function (id) {
                 const prompt = prompts.find(p => p.id === id);
                 if (!prompt) return;
@@ -578,7 +356,6 @@
                 showModal(true);
             };
 
-            // Delete prompt
             window.deletePrompt = async function (id) {
                 if (confirm('Are you sure you want to delete this prompt?')) {
                     if (electronAPI) await electronAPI.deleteCustomPrompt(id);
@@ -586,23 +363,19 @@
                 }
             };
 
-            // Set as default
             window.setDefault = async function (id) {
                 if (electronAPI) await electronAPI.setDefaultPrompt(id);
                 await loadPrompts();
             };
 
-            // Clear default
             window.clearDefault = async function () {
                 if (electronAPI) await electronAPI.setDefaultPrompt(null);
                 await loadPrompts();
             };
 
-            // Form submit
             if (promptForm) {
                 promptForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
-
                     const promptData = {
                         name: promptNameInput.value.trim(),
                         content: promptContentInput.value.trim(),
@@ -618,51 +391,31 @@
                             await electronAPI.addCustomPrompt(promptData);
                         }
                     }
-
                     hideModal();
                     await loadPrompts();
                 });
             }
 
-            // Cancel button
-            if (cancelBtn) {
-                cancelBtn.addEventListener('click', hideModal);
-            }
-
-            // Close button
-            if (closeBtn) {
-                closeBtn.addEventListener('click', () => {
-                    window.close();
-                });
-            }
-
-            // Click outside modal to close
+            if (cancelBtn) cancelBtn.addEventListener('click', hideModal);
+            if (closeBtn) closeBtn.addEventListener('click', () => window.close());
             if (modalOverlay) {
                 modalOverlay.addEventListener('click', (e) => {
-                    if (e.target === modalOverlay) {
-                        hideModal();
-                    }
+                    if (e.target === modalOverlay) hideModal();
                 });
             }
 
-            // Theme handling
+            // Theme
             function applyTheme(theme) {
-                if (theme === 'light') {
-                    document.documentElement.classList.add('light-mode');
-                } else {
-                    document.documentElement.classList.remove('light-mode');
-                }
+                if (theme === 'light') document.documentElement.classList.add('light-mode');
+                else document.documentElement.classList.remove('light-mode');
             }
-
             if (electronAPI && electronAPI.theme) {
                 electronAPI.theme.getResolved().then(applyTheme);
                 electronAPI.theme.onUpdate(applyTheme);
             }
 
-            // Initialize
             loadPrompts();
         });
     </script>
 </body>
-
 </html>
