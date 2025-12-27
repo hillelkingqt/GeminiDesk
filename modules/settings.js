@@ -30,6 +30,7 @@ const defaultSettings = {
     showExportButton: true,
     // Whether to show the mode toggle (Gemini / AI Studio) in the drag bar
     showModeToggleButton: true,
+    showScreenshotSendButton: false, // Default to false as requested
     showFullscreenButton: true,
     showNewWindowButton: true,
     showMinimizeButton: true,
@@ -136,7 +137,8 @@ function getSettings(shouldClone = true) {
                     updateInstallReminderTime: savedSettings.updateInstallReminderTime || null,
                     aiStudioRtlEnabled: savedSettings.aiStudioRtlEnabled === true ? true : false,
                     // Respect saved preference for showing the mode toggle; default true
-                    showModeToggleButton: savedSettings.hasOwnProperty('showModeToggleButton') ? savedSettings.showModeToggleButton : true
+                    showModeToggleButton: savedSettings.hasOwnProperty('showModeToggleButton') ? savedSettings.showModeToggleButton : true,
+                    showScreenshotSendButton: savedSettings.showScreenshotSendButton === true ? true : false
                 };
                 cachedSettings = combinedSettings;
                 // Return a deep copy
