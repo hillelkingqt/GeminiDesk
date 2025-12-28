@@ -40,6 +40,10 @@ const GEMINIMARK_EXT_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'geminimark')
     : path.join(__dirname, 'geminimark');
 
+const TAMPERMONKEY_EXT_PATH = app.isPackaged
+    ? path.join(process.resourcesPath, 'Tampermonkey')
+    : path.join(__dirname, 'Tampermonkey');
+
 // Track loaded extension IDs per label so we can attempt removal later
 const loadedExtensions = new Map(); // label -> extensionId
 
@@ -119,6 +123,37 @@ async function loadGeminimarkExtensionToAllSessions() {
         }
     } catch (e) {
         console.warn('Error while loading geminimark extension into all sessions:', e && e.message ? e.message : e);
+    }
+}
+
+async function loadTampermonkeyExtensionToAllSessions() {
+    try {
+        if (!fs.existsSync(TAMPERMONKEY_EXT_PATH)) return;
+
+        // default
+        await loadExtensionToSession(session.defaultSession, 'tampermonkey:default', TAMPERMONKEY_EXT_PATH);
+
+        // main app partition
+        if (typeof constants !== 'undefined' && constants && constants.SESSION_PARTITION) {
+            const mainPart = session.fromPartition(constants.SESSION_PARTITION, { cache: true });
+            await loadExtensionToSession(mainPart, `tampermonkey:${constants.SESSION_PARTITION}`, TAMPERMONKEY_EXT_PATH);
+        }
+
+        // per-account partitions
+        const s = getSettings();
+        if (s && Array.isArray(s.accounts) && s.accounts.length > 0) {
+            for (let i = 0; i < s.accounts.length; i++) {
+                try {
+                    const partName = accountsModule.getAccountPartition(i);
+                    const accSess = session.fromPartition(partName, { cache: true });
+                    await loadExtensionToSession(accSess, `tampermonkey:${partName}`, TAMPERMONKEY_EXT_PATH);
+                } catch (e) {
+                    console.warn('Error loading tampermonkey extension into account partition', e && e.message ? e.message : e);
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('Error while loading tampermonkey extension into all sessions:', e && e.message ? e.message : e);
     }
 }
 
@@ -469,6 +504,15 @@ app.whenReady().then(async () => {
         await loadGeminimarkExtensionToAllSessions();
     } catch (e) {
         console.warn('Failed loading geminimark extension at startup:', e && e.message ? e.message : e);
+    }
+});
+
+// Always load the Tampermonkey (Lyra Loader) extension.
+app.whenReady().then(async () => {
+    try {
+        await loadTampermonkeyExtensionToAllSessions();
+    } catch (e) {
+        console.warn('Failed loading Tampermonkey extension at startup:', e && e.message ? e.message : e);
     }
 });
 
