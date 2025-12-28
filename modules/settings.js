@@ -16,6 +16,7 @@ const defaultSettings = {
     },
     defaultMode: 'ask',
     autoStart: true,
+    startMinimized: false,
     alwaysOnTop: true,
     lastShownNotificationId: null,
     lastMessageData: null,
@@ -65,31 +66,31 @@ const defaultSettings = {
     },
     // Per-shortcut enabled/disabled state (true = enabled)
     shortcutsEnabled: {},
-  pieMenu: {
-    actions: [
-      { id: 'flash', action: 'new-window-flash', label: 'New Window (Flash)', enabled: true, icon: 'bolt', color: '#81c995' },
-      { id: 'thinking', action: 'new-window-thinking', label: 'New Window (Thinking)', enabled: true, icon: 'psychology', color: '#fdd663' },
-      { id: 'pro', action: 'new-window-pro', label: 'New Window (Pro)', enabled: true, icon: 'diamond', color: '#f28b82' },
-      { id: 'newChat', action: 'new-chat', label: 'New Chat', enabled: false, icon: 'add_comment', color: '#8ab4f8' },
-      { id: 'tempChat', action: 'temp-chat', label: 'Temporary Chat', enabled: false, icon: 'visibility_off', color: '#5f6368' },
-      { id: 'newWindow', action: 'new-window', label: 'New Window', enabled: false, icon: 'open_in_new', color: '#c58af9' },
-      { id: 'screenshot', action: 'screenshot', label: 'Screenshot', enabled: true, icon: 'screenshot_region', color: '#e8eaed' },
-      { id: 'settings', action: 'open-settings', label: 'Settings', enabled: true, icon: 'settings', color: '#5f6368' },
-      { id: 'voice', action: 'voice-assistant', label: 'Voice Mode', enabled: false, icon: 'mic', color: '#fa7b17' },
+    pieMenu: {
+        actions: [
+            { id: 'flash', action: 'new-window-flash', label: 'New Window (Flash)', enabled: true, icon: 'bolt', color: '#81c995' },
+            { id: 'thinking', action: 'new-window-thinking', label: 'New Window (Thinking)', enabled: true, icon: 'psychology', color: '#fdd663' },
+            { id: 'pro', action: 'new-window-pro', label: 'New Window (Pro)', enabled: true, icon: 'diamond', color: '#f28b82' },
+            { id: 'newChat', action: 'new-chat', label: 'New Chat', enabled: false, icon: 'add_comment', color: '#8ab4f8' },
+            { id: 'tempChat', action: 'temp-chat', label: 'Temporary Chat', enabled: false, icon: 'visibility_off', color: '#5f6368' },
+            { id: 'newWindow', action: 'new-window', label: 'New Window', enabled: false, icon: 'open_in_new', color: '#c58af9' },
+            { id: 'screenshot', action: 'screenshot', label: 'Screenshot', enabled: true, icon: 'screenshot_region', color: '#e8eaed' },
+            { id: 'settings', action: 'open-settings', label: 'Settings', enabled: true, icon: 'settings', color: '#5f6368' },
+            { id: 'voice', action: 'voice-assistant', label: 'Voice Mode', enabled: false, icon: 'mic', color: '#fa7b17' },
 
-      // Additional Shortcuts
-      { id: 'showHide', action: 'show-hide', label: 'Show/Hide', enabled: false, icon: 'visibility', color: '#ffffff' },
-      { id: 'quit', action: 'quit-app', label: 'Quit App', enabled: false, icon: 'power_settings_new', color: '#d93025' },
-      { id: 'refresh', action: 'refresh-page', label: 'Refresh', enabled: false, icon: 'refresh', color: '#80868b' },
-      { id: 'findInPage', action: 'find-in-page', label: 'Find in Page', enabled: false, icon: 'search', color: '#80868b' },
-      { id: 'searchChats', action: 'search-chats', label: 'Search Chats', enabled: false, icon: 'manage_search', color: '#80868b' },
-      { id: 'closeWindow', action: 'close-current-window', label: 'Close Window', enabled: false, icon: 'close', color: '#e8eaed' },
+            // Additional Shortcuts
+            { id: 'showHide', action: 'show-hide', label: 'Show/Hide', enabled: false, icon: 'visibility', color: '#ffffff' },
+            { id: 'quit', action: 'quit-app', label: 'Quit App', enabled: false, icon: 'power_settings_new', color: '#d93025' },
+            { id: 'refresh', action: 'refresh-page', label: 'Refresh', enabled: false, icon: 'refresh', color: '#80868b' },
+            { id: 'findInPage', action: 'find-in-page', label: 'Find in Page', enabled: false, icon: 'search', color: '#80868b' },
+            { id: 'searchChats', action: 'search-chats', label: 'Search Chats', enabled: false, icon: 'manage_search', color: '#80868b' },
+            { id: 'closeWindow', action: 'close-current-window', label: 'Close Window', enabled: false, icon: 'close', color: '#e8eaed' },
 
-      { id: 'switchPro', action: 'change-model-pro', label: 'Switch to Pro', enabled: false, icon: 'diamond', color: '#f28b82' },
-      { id: 'switchFlash', action: 'change-model-flash', label: 'Switch to Flash', enabled: false, icon: 'bolt', color: '#81c995' },
-      { id: 'switchThinking', action: 'change-model-thinking', label: 'Switch to Thinking', enabled: false, icon: 'psychology', color: '#fdd663' }
-    ]
-  },
+            { id: 'switchPro', action: 'change-model-pro', label: 'Switch to Pro', enabled: false, icon: 'diamond', color: '#f28b82' },
+            { id: 'switchFlash', action: 'change-model-flash', label: 'Switch to Flash', enabled: false, icon: 'bolt', color: '#81c995' },
+            { id: 'switchThinking', action: 'change-model-thinking', label: 'Switch to Thinking', enabled: false, icon: 'psychology', color: '#fdd663' }
+        ]
+    },
     lastUpdateCheck: 0,
     microphoneGranted: null,
     theme: 'system',
@@ -139,7 +140,7 @@ function getSettings(shouldClone = true) {
                     ...defaultSettings,
                     ...savedSettings,
                     shortcuts: { ...defaultSettings.shortcuts, ...savedSettings.shortcuts },
-          pieMenu: { ...defaultSettings.pieMenu, ...(savedSettings.pieMenu || {}) },
+                    pieMenu: { ...defaultSettings.pieMenu, ...(savedSettings.pieMenu || {}) },
                     // Merge per-shortcut enabled flags
                     shortcutsEnabled: { ...defaultSettings.shortcutsEnabled, ...(savedSettings.shortcutsEnabled || {}) },
                     showInTaskbar: savedSettings.showInTaskbar === undefined ? false : savedSettings.showInTaskbar,

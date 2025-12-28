@@ -61,7 +61,7 @@ async function loadExtensionToSession(sess, label, extensionPath) {
         console.warn(`Failed to load extension into session (${label}):`, err && err.message ? err.message : err);
         return null;
     }
-    
+
 }
 
 async function loadAiStudioRtlExtensionToAllSessions() {
@@ -2616,7 +2616,7 @@ function reloadFocusedView() {
 // Window Creation and Management
 // ================================================================= //
 
-function createWindow(state = null) {
+function createWindow(state = null, show = true) {
     const windowOptions = {
         width: originalSize.width,
         height: originalSize.height,
@@ -2627,7 +2627,7 @@ function createWindow(state = null) {
         fullscreenable: false,
         focusable: true,
         icon: getIconPath(),
-        show: true,
+        show: show,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
@@ -4612,10 +4612,11 @@ app.whenReady().then(() => {
 
     if (!hasPreUpdateWindows) {
         // Only create windows from normal restore/new if we're not restoring from update
+        const shouldShow = !settings.startMinimized;
         if (settings.restoreWindows && Array.isArray(settings.savedWindows) && settings.savedWindows.length) {
-            settings.savedWindows.forEach(state => createWindow(state));
+            settings.savedWindows.forEach(state => createWindow(state, shouldShow));
         } else {
-            createWindow();
+            createWindow(null, shouldShow);
         }
     }
 
@@ -7802,7 +7803,7 @@ ipcMain.on('update-setting', (event, key, value) => {
                                 console.log('Posted geminimark message to view for window', w.id);
                             }
                         }
-                    } catch (e) {}
+                    } catch (e) { }
                 });
 
                 console.log('Geminimark state updated to:', boolVal);
@@ -8027,7 +8028,7 @@ ipcMain.on('perform-screenshot-and-send', async (event) => {
             }).catch(e => console.error('Failed to click send:', e));
 
             // Restore alwaysOnTop setting
-             setTimeout(() => {
+            setTimeout(() => {
                 if (win && !win.isDestroyed()) {
                     applyAlwaysOnTopSetting(win, settings.alwaysOnTop);
                 }
