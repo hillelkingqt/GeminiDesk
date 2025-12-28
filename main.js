@@ -7078,6 +7078,145 @@ ipcMain.on('cancel-pdf-export', () => {
     selectedPdfDirection = null;
     selectedExportFormat = null;
 });
+
+ipcMain.on('generate-pdf-from-json', async (event, jsonString, title) => {
+    try {
+        const jsonData = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString;
+        const win = BrowserWindow.fromWebContents(event.sender);
+
+        if (!jsonData || !jsonData.conversation) {
+            console.error('Invalid JSON data for PDF generation');
+            return;
+        }
+
+        // Normalize conversation turns to expected shape: ensure each turn has
+        // `human.text` and `assistant.text` strings. Support variants like
+        // `human.versions` (array) or nested message structures from exporter.
+        try {
+            if (Array.isArray(jsonData.conversation)) {
+                jsonData.conversation = jsonData.conversation.map(turn => {
+                    const newTurn = Object.assign({}, turn);
+
+                    // Normalize human
+                    if (newTurn.human) {
+                        if (typeof newTurn.human.text === 'undefined' || newTurn.human.text === null) {
+                            if (Array.isArray(newTurn.human.versions) && newTurn.human.versions.length > 0) {
+                                newTurn.human.text = newTurn.human.versions.map(v => v?.text || v?.content || '').join('\n\n').trim();
+                            } else if (typeof newTurn.human === 'string') {
+                                newTurn.human = { text: newTurn.human };
+                            } else {
+                                // try other common fields
+                                newTurn.human.text = newTurn.human.text || newTurn.human.message || '';
+                            }
+                        }
+                    }
+
+                    // Normalize assistant
+                    if (newTurn.assistant) {
+                        if (typeof newTurn.assistant.text === 'undefined' || newTurn.assistant.text === null) {
+                            if (Array.isArray(newTurn.assistant.versions) && newTurn.assistant.versions.length > 0) {
+                                newTurn.assistant.text = newTurn.assistant.versions.map(v => v?.text || v?.content || '').join('\n\n').trim();
+                            } else if (typeof newTurn.assistant === 'string') {
+                                newTurn.assistant = { text: newTurn.assistant };
+                            } else {
+                                newTurn.assistant.text = newTurn.assistant.text || newTurn.assistant.message || '';
+                            }
+                        }
+                    }
+
+                    return newTurn;
+                });
+            }
+        } catch (e) {
+            console.warn('Failed to normalize conversation turns for PDF generation:', e);
+        }
+
+        const chatHTML = [];
+        // Load marked dynamically (marked is an ES module) to avoid require() ESM errors
+        const { marked } = await import('marked');
+
+        // Helper to process images
+        const processImages = (images) => {
+            if (!images || !Array.isArray(images) || images.length === 0) return '';
+            let html = '<div class="generated-images" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">';
+            images.forEach(img => {
+                let src = '';
+                if (img.data) {
+                    const format = img.format || 'image/png';
+                    src = `data:${format};base64,${img.data}`;
+                } else if (img.original_src && img.original_src.startsWith('http')) {
+                    src = img.original_src;
+                }
+
+                if (src) {
+                    html += `<div class="generated-image-container"><img src="${src}" style="max-width: 100%; border-radius: 8px;"></div>`;
+                }
+            });
+            html += '</div>';
+            return html;
+        };
+
+        // Convert Lyra conversation format to chatHTML format
+        jsonData.conversation.forEach(turn => {
+            // Handle human message
+            if (turn.human) {
+                let humanHtml = '';
+                if (turn.human.images) {
+                    humanHtml += processImages(turn.human.images);
+                }
+                if (turn.human.text) {
+                    humanHtml += marked.parse(turn.human.text);
+                }
+
+                if (humanHtml) {
+                    chatHTML.push({
+                        type: 'user',
+                        html: humanHtml,
+                        text: turn.human.text || ''
+                    });
+                }
+            }
+
+            // Handle assistant message
+            if (turn.assistant) {
+                let assistantHtml = '';
+                if (turn.assistant.images) {
+                    assistantHtml += processImages(turn.assistant.images);
+                }
+                if (turn.assistant.text) {
+                    assistantHtml += marked.parse(turn.assistant.text);
+                }
+
+                if (assistantHtml) {
+                    chatHTML.push({
+                        type: 'model',
+                        html: assistantHtml,
+                        text: turn.assistant.text || ''
+                    });
+                }
+            }
+        });
+
+        if (chatHTML.length === 0) {
+            // Fallback: if no chat HTML was produced, embed the raw JSON as a single assistant message
+            try {
+                const raw = JSON.stringify(jsonData, null, 2);
+                chatHTML.push({ type: 'model', html: marked.parse(raw), text: raw });
+            } catch (e) {
+                dialog.showErrorBox('Export Failed', 'No conversation content found to export.');
+                return;
+            }
+        }
+
+        // Store pending data and trigger PDF direction selection
+        pendingPdfExportData = { win, title: title || jsonData.title || 'Chat Export', chatHTML };
+        openPdfDirectionWindow(win);
+
+    } catch (err) {
+        console.error('Failed to generate PDF from JSON:', err);
+        dialog.showErrorBox('Export Error', 'Failed to process conversation data for PDF export.');
+    }
+});
 ipcMain.on('onboarding-complete', (event) => {
     settings.onboardingShown = true;
     saveSettings(settings);
