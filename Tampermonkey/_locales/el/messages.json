@@ -1,0 +1,1956 @@
+{
+   "0count0_changes_exported": {
+      "message": "Εξαγωγή $count$ αλλαγής(ών)",
+      "placeholders": {
+         "count": {
+            "content": "$1"
+         }
+      }
+   },
+   "0count0_changes_imported": {
+      "message": "Εισαγωγή $count$ αλλαγής(ών)",
+      "placeholders": {
+         "count": {
+            "content": "$1"
+         }
+      }
+   },
+   "0count0_errors_or_hints_were_found_": {
+      "message": "Βρέθηκαν $count$ σφάλματα ή επισημάνσεις.",
+      "placeholders": {
+         "count": {
+            "content": "$1"
+         }
+      }
+   },
+   "0name0_0version0_is_available__Please_re_start_your_browser_to_update_": {
+      "message": "Η έκδοση $version$ του κώδικα $name$ είναι διαθέσιμη.\nΕπανεκκινήστε τον φυλλομετρητή σας για την εφαρμογή της ενημέρωσης!",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         },
+         "version": {
+            "content": "$2"
+         }
+      }
+   },
+   "1": {
+      "message": "1"
+   },
+   "10": {
+      "message": "10"
+   },
+   "11": {
+      "message": "11"
+   },
+   "15_Seconds": {
+      "message": "15 Δευτερόλεπτα"
+   },
+   "1_Hour": {
+      "message": "1 Ώρα"
+   },
+   "1_Minute": {
+      "message": "1 Λεπτό"
+   },
+   "2": {
+      "message": "2"
+   },
+   "3": {
+      "message": "3"
+   },
+   "30_Seconds": {
+      "message": "30 Δευτερόλεπτα"
+   },
+   "4": {
+      "message": "4"
+   },
+   "5": {
+      "message": "5"
+   },
+   "5_Minutes": {
+      "message": "5 Λεπτά"
+   },
+   "6": {
+      "message": "6"
+   },
+   "7": {
+      "message": "7"
+   },
+   "8": {
+      "message": "8"
+   },
+   "9": {
+      "message": "9"
+   },
+   "A_recheck_of_the_GreaseMonkey_FF_compatibility_options_may_be_required_in_order_to_run_this_script_": {
+      "message": "Ίσως να απαιτείται επανέλεγχος των ρυθμίσεων συμβατότητας του GreaseMonkey/FF για την εκτέλεση αυτού του κώδικα."
+   },
+   "A_reload_is_required": {
+      "message": "Απαιτείται επαναφόρτωση:\nΌλες οι μη αποθηκευμένες αλλαγές θα χαθούν!"
+   },
+   "A_request_to_a_cross_origin_resource_is_nothing_unusual__You_just_have_to_check_whether_this_script_has_a_good_reason_to_access_this_domain__For_example_there_are_only_a_very_few_reasons_for_a_userscript_to_contact_your_bank__Please_note_that_userscript_authors_can_avoid_this_dialog_by_adding_@connect_tags_to_their_scripts__You_can_change_your_opinion_at_any_time_at_the_scripts_settings_tab_": {
+      "message": "Ένα αίτημα σε πηγή διασταυρωμένης προέλευσης δεν είναι κάτι το ασυνήθιστο.\nΑπλώς πρέπει να ελέγξετε αν αυτός ο κώδικας έχει κάποιο καλό λόγο για να αιτείται πρόσβαση στο συγκεκριμένο domain.\nΠαράδειγμα, υπάρχουν πολύ λίγες αιτίες για έναν κώδικα να έχει πρόσβαση στην τράπεζά σας.\n\nΣημειώστε ότι οι δημιουργοί των κωδίκων μπορούν να αποφύγουν αυτό το παράθυρο προσθέτοντας τις [url=$connect$]ετικέτες @connect[/url] στους κώδικές τους.\n\nΌ,τι και αν αποφασίσετε, μπορείτε να αλλάξετε την επιλογή σας οποτεδήποτε στην [url=$settings$]καρτέλα Ρυθμίσεις[/url] του κώδικα.",
+      "placeholders": {
+         "connect": {
+            "content": "$1"
+         },
+         "settings": {
+            "content": "$2"
+         }
+      }
+   },
+   "A_userscript_wants_to_access_a_cross_origin_resource_": {
+      "message": "Ένας κώδικας ζητά πρόσβαση σε πηγή διασταυρωμένης προέλευσης."
+   },
+   "Aborted_by_user": {
+      "message": "Ακυρώθηκε από τον χρήστη"
+   },
+   "Action": {
+      "message": "Ενέργεια"
+   },
+   "Action_Menu": {
+      "message": "Μενού Ενεργειών"
+   },
+   "Action_failed": {
+      "message": "Η ενέργεια απέτυχε"
+   },
+   "Actions": {
+      "message": "Ενέργειες"
+   },
+   "Add": {
+      "message": "Προσθήκη"
+   },
+   "Add_Selection_Above": {
+      "message": "Προσθήκη Επιλογής Επάνω"
+   },
+   "Add_Selection_Below": {
+      "message": "Προσθήκη Επιλογής Κάτω"
+   },
+   "Add_TM_to_CSP": {
+      "message": "Αλλαγή υπαρχόντων κεφαλίδων πολιτικής ασφάλειας περιεχομένου (CSP)"
+   },
+   "Add_Tag": {
+      "message": "Προσθήκη ετικέτας"
+   },
+   "Add_Tag_to_System": {
+      "message": "Προσθήκη ετικέτας στη λίστα του συστήματος"
+   },
+   "Add_Tampermonkey_to_the_site_s_content_csp": {
+      "message": "Προσθήκη του Tampermonkey στο CSP της HTML"
+   },
+   "Add_as_0clude0": {
+      "message": "Προσθήκη ως $clude$",
+      "placeholders": {
+         "clude": {
+            "content": "$1"
+         }
+      }
+   },
+   "Add_new_script___": {
+      "message": "Προσθήκη νέου κώδικα…"
+   },
+   "Add_to_icon_badge_text": {
+      "message": "Προσθήκη στο κείμενο εμβληματικού εικονιδίου"
+   },
+   "Advanced": {
+      "message": "Για προχωρημένους"
+   },
+   "All_but_HttpOnly": {
+      "message": "Όλα εκτός από το HttpOnly"
+   },
+   "All_local_files": {
+      "message": "Όλα τα τοπικά αρχεία"
+   },
+   "All_modifications_are_only_kept_a_few_moments_Reconfigure_the_0name0_option_to_save_them_permanently_": {
+      "message": "Όλες οι ενημερώσεις διατηρούνται μόνο για λίγα δευτερόλεπτα. Επαναδιαμορφώστε την επιλογή $name$ για μόνιμη αποθήκευση.",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         }
+      }
+   },
+   "All_script_settings_will_be_reset_": {
+      "message": "Όλες οι ρυθμίσεις κώδικα θα επανέλθουν!"
+   },
+   "All_tabs": {
+      "message": "Όλες οι καρτέλες"
+   },
+   "Allow_Tampermonkey_to_collect_anonymous_statistics": {
+      "message": "Επιτρέψτε στο Tampermonkey να συλλέγει ανώνυμα στατιστικά στοιχεία μέσω μιας αυτο-φιλοξενούμενης εγκατάστασης Matomo. Αυτό βοηθάει στη βελτίωση του Tampermonkey και στον καθορισμό των κριτηρίων για το που πρέπει να εστιάσει η ανάπτυξη. Απενεργοποιήστε το, αν δε σας αρέσει."
+   },
+   "Allow_communication_with_cooperate_pages": {
+      "message": "Δικαίωμα επικοινωνίας με συνεργαζόμενες σελίδες"
+   },
+   "Allow_headers_to_be_modified_by_scripts": {
+      "message": "Δικαίωμα αλλαγής κεφαλίδων HTTP από τους κώδικες"
+   },
+   "Allow_once": {
+      "message": "Απόδοση δικαιώματος μια φορά"
+   },
+   "Allow_scripts_to_run_scripts_in": {
+      "message": "Προεπιλογή τύπων καρτέλας για εκτέλεση κωδίκων σε"
+   },
+   "Alltime_running_instances": {
+      "message": "Ενεργές Εκτελέσεις"
+   },
+   "Always": {
+      "message": "Πάντα"
+   },
+   "Always_allow": {
+      "message": "Απόδοση δικαιώματος πάντα"
+   },
+   "Always_allow_all_domains": {
+      "message": "Απόδοση δικαιώματος για όλα τα domains"
+   },
+   "Always_allow_domain": {
+      "message": "Απόδοση δικαιώματος για το domain"
+   },
+   "Always_ask": {
+      "message": "Πάντα ερώτηση"
+   },
+   "Always_forbid": {
+      "message": "Πάντα απαγόρευση"
+   },
+   "Always_forbid_domain": {
+      "message": "Πάντα απαγόρευση για το domain"
+   },
+   "An_error_occured_during_import_": {
+      "message": "Παρουσιάστηκε σφάλμα κατά την εισαγωγή."
+   },
+   "An_internal_error_occured_Do_you_want_to_visit_the_forum_": {
+      "message": "Παρουσιάστηκε εσωτερικό σφάλμα. Αν το πρόβλημα παραμείνει και μετά την επανεκκίνηση του φυλλομετρητή, πατήστε Εντάξει και αναφέρετε το θέμα στη Δημόσια Συζήτηση.\n\nΘέλετε να επισκεφτείτε τη Δημόσια Συζήτηση του Tampermonkey;"
+   },
+   "Anonymous_statistics": {
+      "message": "Ανώνυμα στατιστικά"
+   },
+   "Antifeature__0name0__0description0": {
+      "message": "Περιέχει $name$: $description$",
+      "placeholders": {
+         "description": {
+            "content": "$2"
+         },
+         "name": {
+            "content": "$1"
+         }
+      }
+   },
+   "Antifeature_ads": {
+      "message": "Διαφημίσεις"
+   },
+   "Antifeature_miner": {
+      "message": "Εξόρυξη Κρυπτογράφησης"
+   },
+   "Antifeature_no_details": {
+      "message": "Δε δόθηκαν λεπτομέρειες"
+   },
+   "Antifeature_other": {
+      "message": "ένα Αντιχαρακτηριστικό"
+   },
+   "Antifeature_tracking": {
+      "message": "Ιχνηλάτηση"
+   },
+   "Appearance": {
+      "message": "Παρουσίαση"
+   },
+   "Apply_compatibility_options_to_required_script_too": {
+      "message": "Εφαρμογή ρυθμίσεων συμβατότητας και στους κώδικες μέσω του @require"
+   },
+   "Apply_this_action_to_the_selected_scripts": {
+      "message": "Εφαρμογή αυτού για όλους του επιλεγμένους κώδικες"
+   },
+   "Are_you_sure_that_you_don_t_want_to_be_notified_of_updates_": {
+      "message": "Όταν το Tampermonkey ενημερώνετε από τον φυλλομετρητή σας, επανεκκινείται. Δυστυχώς, αυτό μπορεί να προκαλέσει πρόβλημα στους κώδικες που ήδη εκτελούνται!\n\nΓια αυτό ξαναρωτάμε αν, σίγουρα, δε θέλετε να ειδοποιήστε για τις ενημερώσεις;"
+   },
+   "Ask_if_unknown": {
+      "message": "Ερώτηση αν είναι άγνωστο"
+   },
+   "At_least_one_new_connect_statement_was_added_": {
+      "message": "Τουλάχιστον μια νέα δήλωση @connect έχει προστεθεί."
+   },
+   "At_least_one_of_the_include_match_or_exclude_statements_was_changed_": {
+      "message": "Τουλάχιστον μια δήλωση @include, @match ή @exclude έχει αλλάξει."
+   },
+   "At_least_one_part_of_this_page_is_forbidden_by_a_setting_": {
+      "message": "Τουλάχιστον ένα τμήμα αυτής της σελίδας βρίσκεται στη λίστα της ρύθμισης «απαγορευμένων σελίδων»!"
+   },
+   "Attention_Can_not_display_all_excludes_": {
+      "message": "Προσοχή: Η λίστα εξαιρέσεων έχει μικρύνει.\nΕλέγξτε τη χειροκίνητα!"
+   },
+   "Attention_Can_not_display_all_includes_": {
+      "message": "Προσοχή: Η λίστα συμπεριλήψεων έχει μικρύνει.\nΕλέγξτε τη χειροκίνητα!"
+   },
+   "Author": {
+      "message": "Δημιουργός"
+   },
+   "Auto": {
+      "message": "Αυτόματο"
+   },
+   "Auto_Indent_all": {
+      "message": "Αυτόματη εσοχή όλων"
+   },
+   "Auto_reload_on_script_enabled": {
+      "message": "Αυτόματη επαναφόρτωση σελίδων"
+   },
+   "Auto_reload_on_script_enabled_desc": {
+      "message": "Επαναφόρτωση επηρεασμένων σελίδων αν ο κώδικας έχει ενεργοποιηθεί ή όχι"
+   },
+   "Auto_syntax_check_max_length": {
+      "message": "Μέγιστο μέγεθος αυτόματου ελέγχου σύνταξης"
+   },
+   "Auto_syntax_check_on_typing": {
+      "message": "Αυτόματος έλεγχος σύνταξης κατά τη δακτυλογράφηση"
+   },
+   "Automatically_added_user_includes_for_compatibility_reasons_": {
+      "message": "Ορισμένες συμπεριλήψεις χρήστη έχουν προστεθεί αυτόματα για λόγους συμβατότητας!"
+   },
+   "Beginner": {
+      "message": "Αρχάριος"
+   },
+   "BlackCheck": {
+      "message": "Έλεγχος μαύρης λίστας"
+   },
+   "Blacklist": {
+      "message": "Μαύρη λίστα"
+   },
+   "Blacklist_0domain0": {
+      "message": "Να μην εκτελείτει στη καρτέλα $domain$",
+      "placeholders": {
+         "domain": {
+            "content": "$1"
+         }
+      }
+   },
+   "Blacklist_Severity": {
+      "message": "Αποκλεισμός Λόγω Επιπέδου Αυστηρότητας"
+   },
+   "Blacklisted_Pages": {
+      "message": "Σελίδες Μαύρης Λίστας"
+   },
+   "Bookmarks": {
+      "message": "Σελιδοδείκτες"
+   },
+   "Both": {
+      "message": "Και τα δύο"
+   },
+   "Browser_API": {
+      "message": "API Φυλλομετρητή"
+   },
+   "Browser_API_Downloads": {
+      "message": "Λήψεις API Φυλλομετρητή"
+   },
+   "Browser_Sync": {
+      "message": "Συγχρονισμός Φυλλομετρητή"
+   },
+   "CONFLICT__This_script_was_modified_0t0_seconds_ago_": {
+      "message": "ΔΙΕΝΕΞΗ:\nΑυτός ο κώδικας άλλαξε από άλλη καρτέλα $t$ πριν από δευτερόλεπτο(α)!",
+      "placeholders": {
+         "t": {
+            "content": "$1"
+         }
+      }
+   },
+   "Cancel": {
+      "message": "Άκυρο"
+   },
+   "Casual": {
+      "message": "Ανέμελος"
+   },
+   "Center_Cursor": {
+      "message": "Κεντράρισμα Δρομέα"
+   },
+   "Changelog": {
+      "message": "Καταγραφή αλλαγών"
+   },
+   "Changes": {
+      "message": "Αλλαγές"
+   },
+   "Changes_the_number_of_visible_config_options": {
+      "message": "Αλλάζει τον αριθμό των ορατών επιλογών ρυθμίσεων"
+   },
+   "Check_disabled_scripts": {
+      "message": "Ενημέρωση απενεργοποιημένων κωδίκων"
+   },
+   "Check_for_Updates": {
+      "message": "Έλεγχος ενημερώσεων"
+   },
+   "Check_for_userscripts_updates": {
+      "message": "Έλεγχος για ενημερώσεις κωδίκων χρηστών"
+   },
+   "Check_interval": {
+      "message": "Τακτικότητα Ελέγχου"
+   },
+   "Check_only_scripts_up_to_this_size_automatically_": {
+      "message": "Επιλογή μόνο κωδίκων έως αυτό το μέγεθος αυτόματα."
+   },
+   "Classic": {
+      "message": "Κλασικό"
+   },
+   "Clean_after_session": {
+      "message": "Εκκαθάριση μετά τη συνεδρία"
+   },
+   "Clear_All": {
+      "message": "Εκκαθάριση Όλων"
+   },
+   "Click_here_to_allow_TM_to_access_the_following_hosts_0hostlist0": {
+      "message": "Πατήστε Εντάξει ώστε να επιτρέπεται στο Tampermonkey να έχει πρόσβαση στα ακόλουθα:\n\n$hostlist$",
+      "placeholders": {
+         "hostlist": {
+            "content": "$1"
+         }
+      }
+   },
+   "Click_here_to_allow_TM_to_start_downloads": {
+      "message": "Πατήστε Εντάξει ώστε να επιτρέπεται στο Tampermonkey να εκκινεί τις άμεσες λήψεις."
+   },
+   "Click_here_to_install_it_": {
+      "message": "Πατήστε εδώ για να το εγκαταστήσετε."
+   },
+   "Click_here_to_move_this_script": {
+      "message": "Πατήστε εδώ για να μετακινήσετε αυτόν τον κώδικα"
+   },
+   "Click_here_to_see_the_recent_changes": {
+      "message": "Πατήστε εδώ για να δείτε τις πρόσφατες αλλαγές"
+   },
+   "Close": {
+      "message": "Κλείσιμο"
+   },
+   "Closing_Bracket": {
+      "message": "Κλείσιμο Αγκύλης"
+   },
+   "Cloud": {
+      "message": "Σύννεφο"
+   },
+   "Columns": {
+      "message": "Στήλες"
+   },
+   "Comment": {
+      "message": "Σχόλιο"
+   },
+   "Config_Mode": {
+      "message": "Λειτουργία Ρύθμισης"
+   },
+   "Context_Menu": {
+      "message": "Μενού Δεξιού Κλικ"
+   },
+   "Convert_CDATA_sections_into_a_chrome_compatible_format": {
+      "message": "Μετατροπή τομέων CDATA σε συμβατή μορφή για τον φυλλομετρητή"
+   },
+   "Copy": {
+      "message": "Αντιγραφή"
+   },
+   "Cross_Origin_Request_Permission": {
+      "message": "Αδειοδότηση Αιτήματος Διασταυρωμένης Καταγωγής"
+   },
+   "Current_Version": {
+      "message": "Τρέχουσα Έκδοση"
+   },
+   "Cursor": {
+      "message": "Δρομέας"
+   },
+   "Custom_CSS": {
+      "message": "Προσαρμοσμένο Σύνολο Στυλ (CSS)"
+   },
+   "Custom_Linter_Config": {
+      "message": "Προσαρμοσμένη Ρύθμιση Linter"
+   },
+   "Cut": {
+      "message": "Αποκοπή"
+   },
+   "Dashboard": {
+      "message": "Πίνακας Ελέγχου"
+   },
+   "Debug": {
+      "message": "Αποσφαλμάτωση"
+   },
+   "Debug_scripts": {
+      "message": "Αποσφαλμάτωση κωδίκων"
+   },
+   "Decoding": {
+      "message": "Αποκωδικοποίηση..."
+   },
+   "Default": {
+      "message": "Προεπιλογή"
+   },
+   "Default_Dark": {
+      "message": "Προεπιλογή - Σκουρόχρωμο"
+   },
+   "Default_Darker": {
+      "message": "Προεπιλογή - Σκουρότερο"
+   },
+   "Default_Light": {
+      "message": "Προεπιλογή - Ανοιχτόχρωμο"
+   },
+   "Delete": {
+      "message": "Διαγραφή"
+   },
+   "Delete_Line": {
+      "message": "Διαγραφή Γραμμής"
+   },
+   "Delete_Line_Left": {
+      "message": "Διαγραφή Γραμμής Αριστερά"
+   },
+   "Delete_Line_Right": {
+      "message": "Διαγραφή Γραμμής Δεξιά"
+   },
+   "Delete_all": {
+      "message": "Διαγραφή όλων"
+   },
+   "Delete_to_Next_Word_Boundary": {
+      "message": "Διαγραφή στο Επόμενο Όριο Λέξης"
+   },
+   "Delete_to_Previous_Word_Boundary": {
+      "message": "Διαγραφή στο Προηγούμενο Όριο Λέξης"
+   },
+   "Delete_to_Sublime_Mark": {
+      "message": "Διαγραφή έως το Στίγμα"
+   },
+   "Deleted_on": {
+      "message": "Ενεργή Διαγραφή"
+   },
+   "Description": {
+      "message": "Περιγραφή"
+   },
+   "Destination_URL": {
+      "message": "URL προορισμού"
+   },
+   "Destination_domain": {
+      "message": "Domain προορισμού"
+   },
+   "Details": {
+      "message": "Λεπτομέρειες"
+   },
+   "Developer": {
+      "message": "Δημιουργός"
+   },
+   "Disable": {
+      "message": "Απενεργοποίηση"
+   },
+   "Disable_Updates": {
+      "message": "Απενεργοποίηση Ενημερώσεων"
+   },
+   "Disable_all_remaining_scripts_of_this_tag": {
+      "message": "Πατήστε για να απενεργοποιήσετε όλους τους υπόλοιπους κώδικες αυτής της ετικέτας"
+   },
+   "Disable_all_scripts_of_this_tag": {
+      "message": "Πατήστε για να απενεργοποιήσετε όλους τους κώδικες αυτής της ετικέτας"
+   },
+   "Disabled": {
+      "message": "Απενεργοποιημένο"
+   },
+   "Do_you_really_want_to_store_fixed_code_": {
+      "message": "Η Επιλογή «$option$» είναι ενεργοποιημένη!\n\nΘέλετε, πραγματικά, να αποθηκεύσετε τη διορθωμένη προέλευση;",
+      "placeholders": {
+         "option": {
+            "content": "$1"
+         }
+      }
+   },
+   "Document_End": {
+      "message": "Τέλος Εγγράφου"
+   },
+   "Document_Start": {
+      "message": "Αρχή Εγγράφου"
+   },
+   "Does_not_run_in_incognito_tabs": {
+      "message": "Δεν εκτελείται σε ιδιωτικές καρτέλες"
+   },
+   "Does_not_run_in_normal_tabs": {
+      "message": "Δεν εκτελείται σε κανονικές καρτέλες"
+   },
+   "Dont_ask_again": {
+      "message": "Να μην υπάρχει ερώτηση ξανά"
+   },
+   "Dont_ask_me_for_simple_script_updates": {
+      "message": "Να μην υπάρξει ερώτηση για ενημερώσεις απλού κώδικα"
+   },
+   "Downgrade": {
+      "message": "Υποβάθμιση"
+   },
+   "Download_Mode": {
+      "message": "Λειτουργία λήψης"
+   },
+   "Downloaded_from_0url0": {
+      "message": "Ελήφθη από: $url$",
+      "placeholders": {
+         "url": {
+            "content": "$1"
+         }
+      }
+   },
+   "Downloads": {
+      "message": "Λήψεις"
+   },
+   "Dropbox": {
+      "message": "Dropbox"
+   },
+   "DuckDuckGo": {
+      "message": "DuckDuckGo"
+   },
+   "Duplicate_Lines": {
+      "message": "Διπλότυπες Γραμμές"
+   },
+   "Edit": {
+      "message": "Επεξεργασία"
+   },
+   "Editor": {
+      "message": "Επεξεργαστής"
+   },
+   "Editor_reset": {
+      "message": "Επαναφορά Επεξεργαστή"
+   },
+   "Emacs": {
+      "message": "Emacs"
+   },
+   "Enable": {
+      "message": "Ενεργοποίηση"
+   },
+   "Enable_Editor": {
+      "message": "Ενεργοποίηση βελτιωμένου επεξεργαστή"
+   },
+   "Enable_Script_Sync": {
+      "message": "Ενεργοποίηση Συγχρονισμού Κωδίκων Χρήστη"
+   },
+   "Enable_Tags": {
+      "message": "Ενεργοποίηση ετικετών"
+   },
+   "Enable_all_scripts_of_this_tag": {
+      "message": "Πατήστε για να ενεργοποιήσετε όλους τους κώδικες αυτής της ετικέτας"
+   },
+   "Enable_autoSave": {
+      "message": "Αποθήκευση περιεχομένου όταν χάνεται η εστίαση του επεξεργαστή"
+   },
+   "Enable_context_menu": {
+      "message": "Ενεργοποίηση μενού δεξιού κλικ"
+   },
+   "Enable_easySave": {
+      "message": "Απόκρυψη παραθύρου επιβεβαίωσης κατά την αποθήκευση"
+   },
+   "Enable_this_option_to_automatically_check_the_code_on_typing_": {
+      "message": "Ενεργοποιήστε αυτή την επιλογή για αυτόματο έλεγχο του κώδικα κατά την πληκτρολόγηση."
+   },
+   "Enabled": {
+      "message": "Ενεργοποιημένο"
+   },
+   "Enforce": {
+      "message": "Εξαναγκασμός"
+   },
+   "Enter_the_new_rule": {
+      "message": "Εισαγωγή νέου κανόνα"
+   },
+   "Error": {
+      "message": "Σφάλμα"
+   },
+   "Every_12_Hour": {
+      "message": "Κάθε 12 Ώρες"
+   },
+   "Every_6_Hours": {
+      "message": "Κάθε 6 Ώρες"
+   },
+   "Every_Day": {
+      "message": "Κάθε Ημέρα"
+   },
+   "Every_Hour": {
+      "message": "Κάθε Ώρα"
+   },
+   "Every_Month": {
+      "message": "Κάθε Μήνα"
+   },
+   "Every_Week": {
+      "message": "Κάθε Εβδομάδα"
+   },
+   "Exclude_0domain0": {
+      "message": "Εξαίρεση του $domain$",
+      "placeholders": {
+         "domain": {
+            "content": "$1"
+         }
+      }
+   },
+   "Exclude_s__": {
+      "message": "Εξαίρεση(εις)"
+   },
+   "Experimental": {
+      "message": "Πειραματικό"
+   },
+   "Export": {
+      "message": "Εξαγωγή"
+   },
+   "Externals": {
+      "message": "Εξωτερικά"
+   },
+   "Factory_Reset": {
+      "message": "Εργοστασιακή Επαναφορά"
+   },
+   "Fast": {
+      "message": "Γρήγορη"
+   },
+   "Favicon_Service": {
+      "message": "Υπηρεσία Εικονιδίου (Favicon)"
+   },
+   "Features": {
+      "message": "Χαρακτηριστικά"
+   },
+   "File": {
+      "message": "Αρχείο"
+   },
+   "Filter_by": {
+      "message": "Φιλτράρισμα κατά"
+   },
+   "Find": {
+      "message": "Εύρεση"
+   },
+   "Find_All_Under": {
+      "message": "Εύρεση Όλων όπως το Επιλεγμένο"
+   },
+   "Find_Next": {
+      "message": "Εύρεση Επόμενου"
+   },
+   "Find_Previous": {
+      "message": "Εύρεση Προηγούμενου"
+   },
+   "Find_Under": {
+      "message": "Εύρεση Επιλεγμένου"
+   },
+   "Find_Under_Previous": {
+      "message": "Εύρεση Προηγούμενου Επιλεγμένου"
+   },
+   "Fix_wrappedJSObject_property_access": {
+      "message": "Διόρθωση πρόσβασης ιδιότητας wrappedJSObject"
+   },
+   "Focus_tab": {
+      "message": "Εστίαση στην καρτέλα προέλευσης"
+   },
+   "Fold": {
+      "message": "Αναδίπλωση"
+   },
+   "Fold_All": {
+      "message": "Αναδίπλωση Όλων"
+   },
+   "Folding": {
+      "message": "Αναδίπλωση"
+   },
+   "Font_Size": {
+      "message": "Μέγεθος Γραμματοσειράς"
+   },
+   "Forbid_once": {
+      "message": "Απαγόρευση μιας φοράς"
+   },
+   "Found_0count0_available_scripts": {
+      "message": "Βρέθηκαν $count$ διαθέσιμοι κώδικες",
+      "placeholders": {
+         "count": {
+            "content": "$1"
+         }
+      }
+   },
+   "Full_reset": {
+      "message": "Εργοστασιακή επαναφορά"
+   },
+   "GM_compat_options_": {
+      "message": "Επιλογές ρυθμίσεων συμβατότητας GM/FF"
+   },
+   "General": {
+      "message": "Γενικά"
+   },
+   "Get_new_scripts___": {
+      "message": "Εύρεση νέων κωδίκων…"
+   },
+   "Get_some_scripts___": {
+      "message": "Λήψη νέων κωδίκων..."
+   },
+   "Global_Settings": {
+      "message": "Γενικές Ρυθμίσεις"
+   },
+   "Global_settings_import": {
+      "message": "Εισαγωγή Γενικών ρυθμίσεων"
+   },
+   "GoTo": {
+      "message": "Μετάβαση Σε"
+   },
+   "Google": {
+      "message": "Google"
+   },
+   "Google_Drive": {
+      "message": "Google Drive"
+   },
+   "Group_Left": {
+      "message": "Ομάδα Αριστερά"
+   },
+   "Group_Right": {
+      "message": "Ομάδα Δεξιά"
+   },
+   "Help": {
+      "message": "Βοήθεια"
+   },
+   "Hide_disabled_scripts": {
+      "message": "Απόκρυψη απενεργοποιημένων κωδίκων"
+   },
+   "Hide_notification_after": {
+      "message": "Απόκρυψη ειδοποίησης μετά από"
+   },
+   "Highlight_selection_matches": {
+      "message": "Επισήμανση ταιριασμάτων επιλογής"
+   },
+   "Highlight_trailing_whitespace": {
+      "message": "Επισήμανση λευκού διαστήματος που προηγείται"
+   },
+   "Homepage": {
+      "message": "Αρχική σελίδα"
+   },
+   "I_contributed_already": {
+      "message": "Έχω συνεισφέρει ήδη"
+   },
+   "I_dont_want_to_contribute": {
+      "message": "Δεν επιθυμώ να συνεισφέρω"
+   },
+   "Icon_badge_color": {
+      "message": "Χρώμα Εμβληματικού Εικονιδίου"
+   },
+   "Icon_badge_info": {
+      "message": "Πληροφορίες Εμβληματικού Εικονιδίου"
+   },
+   "Icon_badge_text_color": {
+      "message": "Χρώμα κειμένου Εμβληματικού Εικονιδίου"
+   },
+   "Import": {
+      "message": "Εισαγωγή"
+   },
+   "Import_from_URL": {
+      "message": "Εισαγωγή από URL"
+   },
+   "Import_from_file": {
+      "message": "Εισαγωγή από αρχείο"
+   },
+   "Imported": {
+      "message": "Εισήχθη"
+   },
+   "In_order_to_search_for_userscripts__0on_action_menu0__and__0icon_badge_number0__automatically_transfer_the_tab_s_url_to_the_search_website__0on_click0_opens_the_search_page_on_click_Please_click_at_this_icon_to_open_the_privacy_policy_": {
+      "message": "Στη λειτουργία «$icon_badge_number$» η καρτέλα του URL αυτόματα\nμεταφέρεται στη σελίδα αναζήτησης και χρησιμοποιείται ως λήμμα αναζήτησης.\n\nΣτη λειτουργία «$on_action_menu$» μια αναζήτηση με χρήση του URL γίνεται μόνο\nόταν το μενού ενεργειών είναι ανοιχτό.\n\nΤο «$on_click$» ανοίγει μόνο τη σελίδα αναζήτησης με το πάτημα στην αντίστοιχη επιλογή του μενού ενεργειών.\n\nΠατήστε εδώ για να ανοίξετε την πολιτική απορρήτου της σελίδας αναζήτησης.",
+      "placeholders": {
+         "icon_badge_number": {
+            "content": "$1"
+         },
+         "on_action_menu": {
+            "content": "$2"
+         },
+         "on_click": {
+            "content": "$3"
+         }
+      }
+   },
+   "Include_TM_settings": {
+      "message": "Συμπερίληψη ρυθμίσεων του Tampermonkey"
+   },
+   "Include_s__": {
+      "message": "Συμπερίληψη(εις)"
+   },
+   "Include_script_externals": {
+      "message": "Συμπερίληψη εξωτερικών προελεύσεων κώδικα"
+   },
+   "Include_script_storage": {
+      "message": "Συμπερίληψη αποθηκευτικού χώρου κώδικα"
+   },
+   "Includes_Excludes": {
+      "message": "Συμπεριλήψεις / Εξαιρέσεις"
+   },
+   "Incognito_tabs": {
+      "message": "Ιδιωτικές καρτέλες"
+   },
+   "Incremental_Find": {
+      "message": "Εύρεση βήμα-βήμα"
+   },
+   "Indent": {
+      "message": "Εσοχή"
+   },
+   "Indent_Less": {
+      "message": "Μείωση Εσοχής"
+   },
+   "Indent_More": {
+      "message": "Αύξηση Εσοχής"
+   },
+   "Indent_with": {
+      "message": "Εσοχή με"
+   },
+   "Indentation_Width": {
+      "message": "Πλάτος Εσοχής"
+   },
+   "Info": {
+      "message": "Πληροφορίες"
+   },
+   "Inject_Mode": {
+      "message": "Λειτουργία Έκχυσης"
+   },
+   "Insert_Line_After": {
+      "message": "Εισαγωγή Γραμμής Μετά"
+   },
+   "Insert_Line_Before": {
+      "message": "Εισαγωγή Γραμμής Πριν"
+   },
+   "Insert_constructor": {
+      "message": "Εισαγωγή κατασκευαστή (constructor)"
+   },
+   "Install": {
+      "message": "Εγκατάσταση"
+   },
+   "Install_this_script": {
+      "message": "Εγκατάσταση αυτού του κώδικα"
+   },
+   "Installed_Version_": {
+      "message": "Εγκατεστημένη Έκδοση"
+   },
+   "Installed_userscripts": {
+      "message": "Εγκατεστημένοι Κώδικες Χρηστών"
+   },
+   "Instant": {
+      "message": "Άμεσα"
+   },
+   "Invalid_UserScript__Sry_": {
+      "message": "Μη έγκυρος Κώδικας Χρήστη. Συγνώμη!"
+   },
+   "Invalid_UserScript_name__Sry_": {
+      "message": "Μη έγκυρο όνομα Κώδικα Χρήστη. Συγνώμη!"
+   },
+   "Join_Lines": {
+      "message": "Ένωση Γραμμών"
+   },
+   "Jump_to_line": {
+      "message": "Μετάβαση στη γραμμή"
+   },
+   "Just_another_service_provided_by_your_friendly_script_updater_": {
+      "message": "Νέα παρεχόμενη υπηρεσία από το πρόγραμμα ενημέρωσης των φιλικών κωδίκων"
+   },
+   "Key_Mapping": {
+      "message": "Συντομεύσ. Πλήκτρων"
+   },
+   "Language": {
+      "message": "Γλώσσα"
+   },
+   "Last_updated": {
+      "message": "Τελευταία ενημέρωση"
+   },
+   "Layout": {
+      "message": "Διάταξη"
+   },
+   "Learn_more": {
+      "message": "Μάθετε περισσότερα"
+   },
+   "Limited_runtime_host_permissions_might_break_some_Tampermonkey_features_": {
+      "message": "Η περιορισμένη αδειοδότηση εκτέλεσης μπορεί να μην επιτρέπει την απρόσκοπτη λειτουργία ορισμένων χαρακτηριστικών του Tampermonkey όπως την ενημέρωση κώδικα, το GM_xmlhttpRequest και άλλα!"
+   },
+   "Line_Case_Insensitive": {
+      "message": "Χωρίς ταίριασμα πεζών-κεφαλαίων Γραμμής"
+   },
+   "Line_Down": {
+      "message": "Γραμμή Κάτω"
+   },
+   "Line_Up": {
+      "message": "Γραμμή Επάνω"
+   },
+   "Line_break": {
+      "message": "Αναδίπλωση Λέξεων"
+   },
+   "Lines": {
+      "message": "Γραμμές"
+   },
+   "Lines_Menu": {
+      "message": "Γραμμές"
+   },
+   "Loading": {
+      "message": "Φόρτωση..."
+   },
+   "LogLevel": {
+      "message": "Επίπεδο καταγραφής"
+   },
+   "Login": {
+      "message": "Σύνδεση"
+   },
+   "Lower_Case": {
+      "message": "Μικρά Γράμματα"
+   },
+   "MIME_Type": {
+      "message": "Τυπος MIME"
+   },
+   "Malicious_scripts_can_violate_your_privacy_": {
+      "message": "Κακόβουλοι κώδικες μπορούν να παραβιάσουν την ιδιωτικότητά σας και να ενεργήσουν εξ' ονόματός σας!\nΣυνίσταται να εγκαθιστάτε μόνο κώδικες από πηγές που εμπιστεύεστε."
+   },
+   "Manual_Script_Blacklist": {
+      "message": "Χειροκίνητος Κώδικας Χρήστη και Μαύρη Λίστα του @require"
+   },
+   "Matching_URL": {
+      "message": "Ταίριασμα URL"
+   },
+   "Modify": {
+      "message": "Αλλαγή"
+   },
+   "Move_Line_Down": {
+      "message": "Μετακίνηση Γραμμής Κάτω"
+   },
+   "Move_Line_Up": {
+      "message": "Μετακίνηση Γραμμής Επάνω"
+   },
+   "Name": {
+      "message": "Όνομα"
+   },
+   "Native": {
+      "message": "Γηγενές"
+   },
+   "Never": {
+      "message": "Ποτέ"
+   },
+   "New_Tag": {
+      "message": "Νέα ετικέτα"
+   },
+   "New_Version": {
+      "message": "Νέα Έκδοση"
+   },
+   "New_script_template_": {
+      "message": "Νέο πρότυπο Κώδικα Χρήστη"
+   },
+   "New_userscript": {
+      "message": "\u003CΝέος κώδικας χρήστη>"
+   },
+   "Next_Bookmark": {
+      "message": "Επόμενος Σελιδοδείκτης"
+   },
+   "Next_Problem": {
+      "message": "Επόμενο πρόβλημα"
+   },
+   "No": {
+      "message": "Όχι"
+   },
+   "No_available_scripts": {
+      "message": "Κανένας διαθέσιμος κώδικας"
+   },
+   "No_backups_found": {
+      "message": "Δε βρέθηκαν αντίγραφα ασφαλείας"
+   },
+   "No_entry_found": {
+      "message": "Δε βρέθηκε εγγραφή"
+   },
+   "No_frames": {
+      "message": "Εκτέλεση μόνο στο πάνω πλαίσιο"
+   },
+   "No_script_is_installed": {
+      "message": "Κανένας κώδικας δεν εγκαταστάθηκε"
+   },
+   "No_script_is_running": {
+      "message": "Κανένας κώδικας δεν εκτελείται"
+   },
+   "No_syntax_errors_were_found_": {
+      "message": "Δε βρέθηκε κανένα συντακτικό σφάλμα."
+   },
+   "No_text": {
+      "message": "Κανένα Κείμενο"
+   },
+   "No_update_found__sry_": {
+      "message": "Δε βρέθηκε ενημέρωση, συγνώμη!"
+   },
+   "Normal": {
+      "message": "Κανονικό"
+   },
+   "Normal_tabs": {
+      "message": "Κανονικές καρτέλες"
+   },
+   "Note": {
+      "message": "Σημείωση"
+   },
+   "Novice": {
+      "message": "Αρχάριος"
+   },
+   "Off": {
+      "message": "Ανενεργό"
+   },
+   "Ok": {
+      "message": "Εντάξει"
+   },
+   "On": {
+      "message": "Ενεργό"
+   },
+   "On_Action_Menu": {
+      "message": "Στο μενού ενεργειών"
+   },
+   "On_Click": {
+      "message": "Με το πάτημα"
+   },
+   "OneDrive": {
+      "message": "OneDrive"
+   },
+   "One_error_or_hint_was_found_": {
+      "message": "Βρέθηκε ένα σφάλμα ή μια επισήμανση."
+   },
+   "One_or_more_compatibility_options_are_set": {
+      "message": "Μια ή περισσότερες ρυθμίσεις συμβατότητας έχουν οριστεί. Ίσως, θέλετε/πρέπει να τις δείτε."
+   },
+   "Only_Manual": {
+      "message": "Μόνο χειροκίνητα"
+   },
+   "Only_files_with_these_extensions_can_be_saved_to_the_harddisk_Be_careful_to_not_allow_file_extensions_that_represent_executables_at_your_operating_system_": {
+      "message": "Μόνο αρχεία με αυτές τις επεκτάσεις μπορούν να αποθηκευτούν στον σκληρό δίσκο.\nΠροσέξτε να μην επιτρέπεται επεκτάσεις αρχείων που παραπέμπουν σε εκτελέσιμα αρχεία στο λειτουργικό σας σύστημα!"
+   },
+   "Open_changelog": {
+      "message": "Άνοιγμα καταγραφής αλλαγών"
+   },
+   "Operation_completed_successfully": {
+      "message": "Η διαδικασία ολοκληρώθηκε επιτυχώς"
+   },
+   "Original_domain_whitelist": {
+      "message": "Πρωτότυπη λευκή λίστα domain"
+   },
+   "Original_excludes": {
+      "message": "Πρωτότυπες εξαιρέσεις"
+   },
+   "Original_includes": {
+      "message": "Πρωτότυπες συμπεριλήψεις"
+   },
+   "Original_matches": {
+      "message": "Πρωτότυπα ταιριάσματα"
+   },
+   "Page_Filter_Mode": {
+      "message": "Λειτουργία Φιλτραρίσματος Σελίδων"
+   },
+   "Password": {
+      "message": "Κωδικός πρόσβασης"
+   },
+   "Paste": {
+      "message": "Επικόλληση"
+   },
+   "Permanent": {
+      "message": "Μόνιμο"
+   },
+   "Please_check_the_0editor0_documentation_for_more_details_": {
+      "message": "Ελέγξτε την τεκμηρίωση του εκδότη $editor$ για περισσότερες λεπτομέρειες.",
+      "placeholders": {
+         "editor": {
+            "content": "$1"
+         }
+      }
+   },
+   "Please_consider_a_contribution": {
+      "message": "Κάντε μια δωρεά"
+   },
+   "Please_enable_anonymous_statistics_and_help_to_improve_this_extension_": {
+      "message": "Ενεργοποιήστε τα ανώνυμα στατιστικά και βοηθήστε στη βελτίωση αυτής της επέκτασης. Συλλέγονται μόνο τεχνικά δεδομένα και δεδομένα αλληλεπίδρασης με την επέκταση. Κάντε κλικ εδώ για περισσότερες πληροφορίες σχετικά με τα δεδομένα."
+   },
+   "Please_select_a_file": {
+      "message": "Επιλέξτε ένα αρχείο"
+   },
+   "Please_wait___": {
+      "message": "Αναμείνατε..."
+   },
+   "Position_": {
+      "message": "Θέση"
+   },
+   "Press_ctrl_to_toggle_all_checkboxes": {
+      "message": "Πατήστε Ctrl/Cmd για εναλλαγή επιλογής όλων των πλαισίων επιλογής"
+   },
+   "Prev_Bookmark": {
+      "message": "Προηγούμενος Σελιδοδείκτης"
+   },
+   "Prev_Problem": {
+      "message": "Προηγούμενος Πρόβλημα"
+   },
+   "Process_with_Chrome": {
+      "message": "Διαδικασία με τον φυλλομετρητή"
+   },
+   "Really_delete_0name0__": {
+      "message": "Θέλετε να διαγράψετε το «$name$»;",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         }
+      }
+   },
+   "Really_delete_all_userscripts_": {
+      "message": "Θέλετε, σίγουρα, να διαγράψετε όλους του κώδικες χρηστών;"
+   },
+   "Really_delete_the_selected_items_": {
+      "message": "Θέλετε, σίγουρα, να διαγράψετε όλα τα επιλεγμένα αντικείμενα;"
+   },
+   "Really_factory_reset_the_selected_items_": {
+      "message": "Θέλετε, σίγουρα, να επαναφέρετε εργοστασιακά όλα τα επιλεγμένα αντικείμενα;"
+   },
+   "Really_factory_reset_this_script_": {
+      "message": "Θέλετε, σίγουρα, να επαναφέρετε εργοστασιακά αυτόν τον κώδικα;"
+   },
+   "Really_reset_all_changes_": {
+      "message": "Σίγουρα, επαναφορά όλων των αλλαγών;"
+   },
+   "Really_restore_all_userscripts_": {
+      "message": "Θέλετε, σίγουρα, να επαναφέρεται όλους του κώδικες χρηστών;"
+   },
+   "Redo": {
+      "message": "Επανάληψη"
+   },
+   "Reindent_on_typing": {
+      "message": "Επανεφαρμογή εσοχής κατά την πληκτρολόγηση"
+   },
+   "Reinstall": {
+      "message": "Επανεγκατάσταση"
+   },
+   "Reload": {
+      "message": "Επαναφόρτωση"
+   },
+   "Remind_me_later": {
+      "message": "Υπενθύμιση αργότερα"
+   },
+   "Remove": {
+      "message": "Απομάκρυνση"
+   },
+   "Remove_Tag": {
+      "message": "Αφαίρεση ετικέτας"
+   },
+   "Remove__possibly_unsecure_": {
+      "message": "Πλήρης απομάκρυνση (πιθανά ανασφαλής)"
+   },
+   "Replace": {
+      "message": "Αντικατάσταση"
+   },
+   "Replace_": {
+      "message": "Αντικατάσταση;"
+   },
+   "Replace_All": {
+      "message": "Αντικατάσταση Όλων"
+   },
+   "Replace_all_with": {
+      "message": "Αντικατάσταση όλων"
+   },
+   "Replace_for_each_statements": {
+      "message": "Αντικατάσταση δηλώσεων «for each»"
+   },
+   "Replace_with": {
+      "message": "Αντικατάσταση με"
+   },
+   "Report_a_bug": {
+      "message": "Αναφορά σφάλματος"
+   },
+   "Report_an_issue_to_the_script_hoster_": {
+      "message": "Αναφορά κατάχρησης.\n(Ίσως απαιτείται λογαριασμός χρήστη)"
+   },
+   "Requires": {
+      "message": "Απαιτείται"
+   },
+   "Reset_Section": {
+      "message": "Επαναφορά"
+   },
+   "Resources": {
+      "message": "Πηγές"
+   },
+   "Restart_Tampermonkey": {
+      "message": "Επανεκκίνηση Tampermonkey"
+   },
+   "Restore": {
+      "message": "Ανάκτηση"
+   },
+   "Restore_all": {
+      "message": "Ανάκτηση όλων"
+   },
+   "Revoke_Access_Token": {
+      "message": "Ανάκληση Τεκμηρίου Πρόσβασης"
+   },
+   "Run_at": {
+      "message": "Εκτέλεση ως"
+   },
+   "Run_in": {
+      "message": "Εκτέλεση σε"
+   },
+   "Run_syntax_check": {
+      "message": "Εκτέλεση ελέγχου σύνταξης"
+   },
+   "Running_scripts": {
+      "message": "Εκτέλεση πολλαπλών αντιγράφων κώδικα"
+   },
+   "Save": {
+      "message": "Αποθήκευση"
+   },
+   "Save_to_disk": {
+      "message": "Αποθήκευση στο δίσκο"
+   },
+   "Scan_the_QR_code_to_use_Tampermonkey_on_your_phone_or_tablet_": {
+      "message": "Σαρώστε τον κωδικό QR για να χρησιμοποιήσετε το Tampermonkey στο τηλέφωνο ή το tablet σας."
+   },
+   "Script_0name0_is_slowing_down_some_page_loads_": {
+      "message": "Ο κώδικας χρήστη «$name$» καθυστερεί τη φόρτωση των σελίδων σας",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         }
+      }
+   },
+   "Script_Blacklist_Source": {
+      "message": "Πηγή Μαύρης λίστας Κώδικα Χρήστη"
+   },
+   "Script_Sync": {
+      "message": "Συγχρονισμός Κώδικα Χρήστη"
+   },
+   "Script_Tags": {
+      "message": "Ετικέτες script"
+   },
+   "Script_URL_detection": {
+      "message": "Ανίχνευση URL Κώδικα Χρήστη"
+   },
+   "Script_Update": {
+      "message": "Ενημέρωση Κώδικα Χρήστη"
+   },
+   "Script_authors_can_secure_external_resources_by_adding_a_SRI_hash_to_the_URL_": {
+      "message": "Οι δημιουργοί του κώδικα μπορούν να ασφαλίσουν τις εξωτερικές πηγές προσθέτοντας ένα SRI hash στο URL της προέλευσης."
+   },
+   "Script_cookies_access": {
+      "message": "Πρόσβαση στα cookies του κώδικα"
+   },
+   "Script_local_files_access": {
+      "message": "Αδειοδότηση στους κώδικες να έχουν πρόσβαση σε τοπικά αρχεία"
+   },
+   "Script_menu_commands": {
+      "message": "Εντολές μενού Κώδικα Χρήστη"
+   },
+   "Script_name_0name0": {
+      "message": "Όνομα Κώδικα Χρήστη: $name$",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         }
+      }
+   },
+   "Script_order": {
+      "message": "Σειρά Κώδικα Χρήστη"
+   },
+   "Scripts_activated_by_context_menu": {
+      "message": "Μενού δεξιού κλικ για Κώδικες χρήστη που χρησιμοποιούν @run-at"
+   },
+   "Search": {
+      "message": "Αναζήτηση"
+   },
+   "Search_for": {
+      "message": "Αναζήτηση για"
+   },
+   "Search_for_userscripts_for_this_tab": {
+      "message": "Αναζήτηση για Κώδικες Χρήστη για αυτή τη σελίδα"
+   },
+   "Searching_for_userscripts_for_this_tab": {
+      "message": "Αναζήτηση για Κώδικες Χρήστη…"
+   },
+   "Security": {
+      "message": "Ασφάλεια"
+   },
+   "Select_All": {
+      "message": "Επιλογή ΌΛων"
+   },
+   "Select_Bookmarks": {
+      "message": "Επιλογή Σελιδοδεικτών"
+   },
+   "Select_Line": {
+      "message": "Επιλογή Γραμμής"
+   },
+   "Select_Next_Occurrence": {
+      "message": "Επιλογή Επόμενης Εμφάνισης"
+   },
+   "Select_Scope": {
+      "message": "Επιλογή Σκοπού"
+   },
+   "Select_between_Brackets": {
+      "message": "Επιλογή μεταξύ Αγκυλών"
+   },
+   "Select_to_Sublime_Mark": {
+      "message": "Επιλογή έως το Στίγμα"
+   },
+   "Selection": {
+      "message": "Επιλογή"
+   },
+   "Server_And_Manual": {
+      "message": "Απομακρυσμένα + Χειροκίνητα"
+   },
+   "Set_Sublime_Mark": {
+      "message": "Ορισμός Στίγματος"
+   },
+   "Settings": {
+      "message": "Ρυθμίσεις"
+   },
+   "Show_backups": {
+      "message": "Προβολή αντιγράφων ασφαλείας"
+   },
+   "Show_fixed_source": {
+      "message": "Προβολή διορθωμένης πηγής"
+   },
+   "Show_notification": {
+      "message": "Προβολή ειδοποίησης"
+   },
+   "Sites": {
+      "message": "Ιστοσελίδες"
+   },
+   "Size": {
+      "message": "Μέγεθος"
+   },
+   "Skip_timeout__0seconds0_seconds_": {
+      "message": "Διάρκεια αγνόησης ($seconds$ δευτερόλεπτα)",
+      "placeholders": {
+         "seconds": {
+            "content": "$1"
+         }
+      }
+   },
+   "Smart": {
+      "message": "Έξυπνο"
+   },
+   "Some_scripts_might_be_blocked_by_the_javascript_settings_for_this_page_or_a_script_blocker_": {
+      "message": "Ορισμένοι κώδικες μπορεί να αποκλειστούν από τις ρυθμίσεις JavaScript για αυτή τη σελίδα ή έναν αποκλειστή κώδικα!"
+   },
+   "Sort": {
+      "message": "Ταξινόμηση"
+   },
+   "Source": {
+      "message": "Πηγή"
+   },
+   "Source_Code": {
+      "message": "Πηγαίος Κώδικας"
+   },
+   "Spaces": {
+      "message": "Διαστήματα"
+   },
+   "Split_into_Lines": {
+      "message": "Διαχωρισμός σε Γραμμές"
+   },
+   "Start": {
+      "message": "Έναρξη"
+   },
+   "Stop": {
+      "message": "Σταμάτημα"
+   },
+   "Storage": {
+      "message": "Αποθηκευτικός Χώρος"
+   },
+   "Store_data_in_incognito_mode": {
+      "message": "Αποθήκευση δεδομένων σε ιδιωτική λειτουργία"
+   },
+   "Strict": {
+      "message": "Αυστηρός"
+   },
+   "Sublime": {
+      "message": "Κείμενο Στίγματος"
+   },
+   "Sublime_Mark": {
+      "message": "Στίγμα"
+   },
+   "Subresource_Integrity": {
+      "message": "Ακεραιότητα Υποπηγής"
+   },
+   "Swap_with_Sublime_Mark": {
+      "message": "Ανταλλαγή με το Στίγμα"
+   },
+   "Sync_Now": {
+      "message": "Εκτέλεση τώρα"
+   },
+   "Sync_Reset": {
+      "message": "Επαναφορά"
+   },
+   "Sync_Type": {
+      "message": "Τύπος"
+   },
+   "Sync_finished": {
+      "message": "Ο συγχρονισμός ολοκληρώθηκε"
+   },
+   "Sync_is_running": {
+      "message": "Ο συγχρονισμός εκτελείται"
+   },
+   "Synchronize_your_scripts_across_browsers_and_operation_systems": {
+      "message": "Συγχρονίστε τους κώδικές σας μεταξύ φυλλομετρητών και λειτουργικών συστημάτων"
+   },
+   "System_Tags": {
+      "message": "Ετικέτες συστήματος"
+   },
+   "TabMode": {
+      "message": "Λειτουργία καρτελών"
+   },
+   "Tab_Size": {
+      "message": "Μέγεθος Καρτέλας"
+   },
+   "Tab_URL": {
+      "message": "URL Καρτέλας"
+   },
+   "Tabs": {
+      "message": "Στηλοθέτες"
+   },
+   "Tag_Already_Exists": {
+      "message": "Αυτή η ετικέτα υπάρχει ήδη"
+   },
+   "Tags": {
+      "message": "Ετικέτες"
+   },
+   "Tampermonkey_and_script_version": {
+      "message": "Tampermonkey + έκδοση κώδικα"
+   },
+   "Tampermonkey_has_no_access_to_this_page": {
+      "message": "Το Tampermonkey δεν έχει πρόσβαση σε αυτή τη σελίδα"
+   },
+   "Tampermonkey_has_no_file_access_permission_": {
+      "message": "Το Tampermonkey δεν έχει πρόσβαση σε τοπικά αρχεία!"
+   },
+   "Tampermonkey_is_available_on_mobile_platforms": {
+      "message": "Το Tampermonkey είναι διαθέσιμο σε κινητές πλατφόρμες"
+   },
+   "Tampermonkey_might_not_be_able_to_provide_access_to_the_unsafe_context_when_this_is_disabled": {
+      "message": "Το Tampermonkey ίσως να μην μπορεί να παρέχει πρόσβαση σε μη ασφαλές περιεχόμενο (unsafeWindow, συναρτήσεις σελίδας και μεταβλητές) όταν αυτό είναι απενεργοποιημένο."
+   },
+   "Tampermonkey_needs_to_be_restarted_to_make_this_change_apply_Do_you_want_to_continue_": {
+      "message": "Το Tampermonkey πρέπει να επανεκκινηθεί για εφαρμογή αυτής της αλλαγής.\n\nΘέλετε να συνεχίσετε;"
+   },
+   "Tampermonkey_version": {
+      "message": "Μόνο έκδοση του Tampermonkey"
+   },
+   "Tampermonkey_won_t_inject_into_other_tab_types_anymore_": {
+      "message": "Το Tampermonkey δεν θα ενσωματώνεται πλέον σε άλλους τύπους καρτελών!"
+   },
+   "Templates": {
+      "message": "Πρότυπα"
+   },
+   "Temporarily_allow": {
+      "message": "Προσωρινή αδειοδότηση"
+   },
+   "Temporary": {
+      "message": "Προσωρινή"
+   },
+   "Temporary_domain_whitelist": {
+      "message": "Προσωρινή Λευκή λίστα domain"
+   },
+   "Text": {
+      "message": "Κείμενο"
+   },
+   "TextArea": {
+      "message": "Περιοχή κειμένου"
+   },
+   "Thank_you_very_much_": {
+      "message": "Σας ευχαριστούμε πολύ!"
+   },
+   "The_Browser_API_mode_requires_a_special_permission_": {
+      "message": "Η λειτουργία API του Φυλλομετρητή απαιτεί ειδική αδειοδότηση."
+   },
+   "The_diff_for_this_script_is_too_large_to_render": {
+      "message": "Οι διαφορές για αυτόν τον κώδικα είναι πολλές για να αναδειχθούν"
+   },
+   "The_downgraded_script_might_have_problems_to_read_its_stored_data_": {
+      "message": "Ο υποβαθμισμένος κώδικας μπορεί να έχει προβλήματα με την ανάγνωση των αποθηκευμένων δεδομένων!"
+   },
+   "The_origin_of_this_script_cant_be_determined_": {
+      "message": "Προειδοποίηση: Η προέλευση του κώδικα δεν μπορεί να καθοριστεί.\nΉ εγκαταστάθηκε από κακόβουλο λογισμικό τρίτων για υποκλέψει τα προσωπικά σας στοιχεία ή κάποιες βασικές ρυθμίσεις φυλλομετρητή, το λειτουργικό σας σύστημα ή υλικό έχει αλλαχθεί!\n\nΑνοίξτε, δείτε και αποθηκεύστε τον κώδικα για να το ενεργοποιήσετε."
+   },
+   "The_update_url_has_changed_from_0oldurl0_to__0newurl0": {
+      "message": "Το url ενημέρωσης έχει αλλάξει από:\n    «$oldurl$»\n    σε:\n    «$newurl$»\n",
+      "placeholders": {
+         "newurl": {
+            "content": "$2"
+         },
+         "oldurl": {
+            "content": "$1"
+         }
+      }
+   },
+   "Theme": {
+      "message": "Θέμα"
+   },
+   "There_are_unsaved_changed_": {
+      "message": "Υπάρχουν μη αποθηκευμένες αλλαγές.\nΘέλετε, σίγουρα, να κλείσετε τον επεξεργαστή;"
+   },
+   "There_is_an_update_for_0name0_avaiable_": {
+      "message": "Υπάρχει μια ενημέρωση διαθέσιμη για το «$name$». :)",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         }
+      }
+   },
+   "This_external_resource_will_not_auto_update__Please_delete_it_in_order_to_enable_updates_again_": {
+      "message": "Αυτή η εξωτερική πηγή δεν θα ενημερωθεί αυτόματα! Διαγράψτε την ώστε να ενεργοποιηθούν οι ενημερώσεις ξανά."
+   },
+   "This_gives_this_script_the_permission_to_retrieve_and_send_data_from_and_to_every_webpage__This_is_potentially_unsafe__Are_you_sure_you_want_to_continue_": {
+      "message": "Αυτό δίνει στον κώδικα την άδεια να λαμβάνει και να στέλνει δεδομένα από και προς οποιαδήποτε σελίδα. Αυτό είναι δυνητικά μη ασφαλές!\n\nΘέλετε να συνεχίσετε;"
+   },
+   "This_is_a_possibly_foisted_script_and_a_modification_will_enable_it_": {
+      "message": "Η προέλευση αυτού του κώδικα δεν μπορεί να καθοριστεί.\nΕίτε εγκαταστάθηκε από κάποιον τρίτο για να υποκλέψει τα προσωπικά σας δεδομένα ή κάποιες βασικές ρυθμίσεις του φυλλομετρητή΄τη, το λειτουργικό σας σύστημα ή αλλάχτηκε υλικό.\nΑυτή η αλλαγή θα τον ενεργοποιήσει!"
+   },
+   "This_is_a_system_script": {
+      "message": "Αυτός είναι ένας κώδικας συστήματος."
+   },
+   "This_is_a_userscript": {
+      "message": "Αυτός είναι κώδικας χρήστη σε Javascript"
+   },
+   "This_option_allows_the_Tampermonkey_homepage_and_some_script_hosting_pages_to_determine_the_Tampermonkey_version_and_whether_a_script_is_installed_": {
+      "message": "Αυτή η επιλογή επιτρέπει στην ιστοσελίδα του Tampermonkey και κάποιες σελίδες φιλοξενίας κώδικα να καθορίζουν την έκδοση του Tampermonkey και κάποιες βασικές πληροφορίες κώδικα (αν είναι εγκατεστημένος, την έκδοση, αν έχει ενεργοποιηθεί)."
+   },
+   "This_page_is_blacklisted_at_the_security_settings": {
+      "message": "Στη μαύρη λίστα από τις ρυθμίσεις ασφάλειας"
+   },
+   "This_script_does_not_provide_any__include_information_": {
+      "message": "Αυτός ο κώδικας δεν περιέχει καμιά πληροφορία συμπερίληψης (@include)."
+   },
+   "This_script_does_not_require_any_special_powers_": {
+      "message": "Αυτός ο κώδικας δεν απαιτεί κάποιες ειδικές δυνατότητες."
+   },
+   "This_script_has_access_to_https_pages": {
+      "message": "Αυτό το αντικείμενο έχει πρόσβαση σε σελίδες https."
+   },
+   "This_script_has_full_web_access": {
+      "message": "Αυτός ο κώδικας έχει πλήρη πρόσβαση στο διαδίκτυο."
+   },
+   "This_script_is_blacklisted_": {
+      "message": "Αυτός ο κώδικας είναι στη μαύρη λίστα!"
+   },
+   "This_script_stores_data": {
+      "message": "Αυτός ο κώδικας αποθηκεύει δεδομένα στο Tampermonkey."
+   },
+   "This_script_was_deleted": {
+      "message": "Αυτός ο κώδικας διαγράφτηκε"
+   },
+   "This_script_was_deleted_by_the_hoster_": {
+      "message": "Αυτός ο κώδικας έχει διαγραφεί από τον φιλοξενητή"
+   },
+   "This_script_was_executed_0count0_times": {
+      "message": "Αυτός ο κώδικας έχει εκτελεστεί $count$ φορά(ές)",
+      "placeholders": {
+         "count": {
+            "content": "$1"
+         }
+      }
+   },
+   "This_script_was_executed_0count0_times_but_is_not_active_anymore": {
+      "message": "Αυτός ο κώδικας έχει εκτελεστεί $count$ φορά(ές) αλλά δεν είναι ενεργός πλέον",
+      "placeholders": {
+         "count": {
+            "content": "$1"
+         }
+      }
+   },
+   "This_script_was_not_executed": {
+      "message": "Αυτός ο κώδικας δεν εκτελέστηκε"
+   },
+   "This_script_was_not_executed_yet": {
+      "message": "Ο κώδικας δεν έχει εκτελεστεί ακόμα\n\nΠιθανοί λόγοι: Όταν φορτώθηκε η σελίδα...\n1. Το Tampermonkey δεν ήταν έτοιμο.\n2. Ο κώδικας δεν υπήρχε ή ήταν απενεργοποιημένος.\n3. Το URL δεν ταιριάζει (συνηθισμένο σε εφαρμογές μονής σελίδας, που τροποποιούν το URL μέσω JavaScript)\n\nΕνεργοποιήστε και/ή επαναφορτώστε την καρτέλα ή χρησιμοποιήστε ένα πιο γενικό `@match` και ανιχνεύστε τις αλλαγές URL με `window.onurlchange`."
+   },
+   "This_tag_is_not_part_of_the_system_tag_list_": {
+      "message": "Αυτή η ετικέτα δεν είναι μέρος της λίστας ετικετών του συστήματος"
+   },
+   "This_will_overwrite_your_global_settings_": {
+      "message": "Αυτό θα αντικαταστήσει τις γενικές σας ρυθμίσεις!"
+   },
+   "This_will_remove_all_remote_data_from_sync_Ok_": {
+      "message": "Θέλετε, σίγουρα, να απομακρύνετε όλα τα δεδομένα από τον Συγχρονισμό;"
+   },
+   "This_will_remove_all_scripts_and_reset_all_settings_Ok_": {
+      "message": "Θέλετε, σίγουρα, να απομακρύνετε όλους του κώδικες και να επαναφέρετε όλες τις ρυθμίσεις;"
+   },
+   "This_will_restart_Tampermonkey_Ok_": {
+      "message": "Θέλετε, σίγουρα, να επανεκκινήσετε το Tampermonkey;"
+   },
+   "Today": {
+      "message": "Σήμερα"
+   },
+   "Toggle": {
+      "message": "Εναλλαγή"
+   },
+   "Toggle_Block_Comment": {
+      "message": "Εναλλαγή Μπλοκ Σχολίου"
+   },
+   "Toggle_Comment": {
+      "message": "Εναλλαγή Σχολίου"
+   },
+   "Toggle_Comment_Indented": {
+      "message": "Εναλλαγή Σχολίου με εσοχή"
+   },
+   "Toggle_Enable": {
+      "message": "Ενεργοποίηση Εναλλαγής"
+   },
+   "Trace": {
+      "message": "Ίχνος"
+   },
+   "Transpose": {
+      "message": "Μετατόπιση"
+   },
+   "Trash_Mode": {
+      "message": "Λειτουργία Κάδου Ανακύκλωσης"
+   },
+   "Trash_bin": {
+      "message": "Κάδος απορριμμάτων"
+   },
+   "Trigger_Update": {
+      "message": "Έναρξη Ενημέρωσης"
+   },
+   "Trim_trailing_whitespace_from_modified_lines": {
+      "message": "Περικοπή λευκών διαστημάτων από τις αλλαγμένες γραμμές"
+   },
+   "Try_to_install_as_script": {
+      "message": "Δοκιμή΄εγκατάστασης ως κώδικα"
+   },
+   "Type": {
+      "message": "Τύπος"
+   },
+   "URL": {
+      "message": "URL"
+   },
+   "UUID": {
+      "message": "UUID"
+   },
+   "Unable_to_load_script_from_url_0url0": {
+      "message": "Αδύνατη η φόρτωση κώδικα από το url: \n $url$",
+      "placeholders": {
+         "url": {
+            "content": "$1"
+         }
+      }
+   },
+   "Unable_to_parse_0name0": {
+      "message": "Αδύνατη η ανάλυση του $name$",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         }
+      }
+   },
+   "Unable_to_parse_this_": {
+      "message": "Αδύνατη η ανάλυση αυτού! :("
+   },
+   "Undo": {
+      "message": "Αναίρεση"
+   },
+   "Unfold": {
+      "message": "Ξεδίπλωμα"
+   },
+   "Unfold_All": {
+      "message": "Ξεδίπλωμα Όλων"
+   },
+   "Unique_running_scripts": {
+      "message": "Μοναδικά εκτελεσμένοι κώδικες"
+   },
+   "Unknown_method_0name0": {
+      "message": "Άγνωστη μέθοδος $name$",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         }
+      }
+   },
+   "Update": {
+      "message": "Ενημέρωση"
+   },
+   "Update_Notification": {
+      "message": "Προβολή ειδοποίησης ενημέρωσης TM"
+   },
+   "Update_URL_": {
+      "message": "Ενημέρωση URL"
+   },
+   "Update_check_is_disabled": {
+      "message": "Ο έλεγχος ενημέρωσης του κώδικα χρήστη είναι απενεργοποιημένος ή αδύνατος"
+   },
+   "Update_interval": {
+      "message": "Τακτικότητα Ενημέρωσης"
+   },
+   "Updated_to__0version0": {
+      "message": "Ενημέρωση σε: $version$",
+      "placeholders": {
+         "version": {
+            "content": "$1"
+         }
+      }
+   },
+   "Updates": {
+      "message": "Ενημερώσεις"
+   },
+   "Upper_Case": {
+      "message": "Κεφαλαία"
+   },
+   "User_domain_blacklist": {
+      "message": "Μαύρη λίστα domain χρήστη"
+   },
+   "User_domain_whitelist": {
+      "message": "Λευκή λίστα domain χρήστη"
+   },
+   "User_excludes": {
+      "message": "Εξαιρέσεις χρήστη"
+   },
+   "User_includes": {
+      "message": "Συμπεριλήψεις χρήστη"
+   },
+   "User_matches": {
+      "message": "Ταιριάσματα χρήστη"
+   },
+   "User_modified": {
+      "message": "Αλλάχτηκε"
+   },
+   "Userscript_Search": {
+      "message": "Αναζήτηση Κώδικα χρήστη"
+   },
+   "Userscript_search_integration_mode": {
+      "message": "Ενσωμάτωση Αναζήτησης Κώδικα χρήστη"
+   },
+   "Userscripts": {
+      "message": "Κώδικες χρήστη"
+   },
+   "Utilities": {
+      "message": "Εργαλεία"
+   },
+   "Validate_if_given": {
+      "message": "Επικύρωση αν διατίθεται"
+   },
+   "Validate_if_supported": {
+      "message": "Επικύρωση αν είναι δυνατό"
+   },
+   "Verbose": {
+      "message": "Πολύλογος"
+   },
+   "Version": {
+      "message": "Έκδοση"
+   },
+   "View": {
+      "message": "Προβολή"
+   },
+   "Vim": {
+      "message": "Ζωτικότητα"
+   },
+   "Waiting_for_sync_to_finish": {
+      "message": "Αναμονή συγχρονισμού για ολοκλήρωση"
+   },
+   "Warning": {
+      "message": "Προειδοποίηση"
+   },
+   "Warning_unsafe_site_warnings_might_appear_": {
+      "message": "Προειδοποίηση: μη ασφαλείς προειδοποιήσεις σελίδας μπορεί να εμφανιστούν αν ένας κώδικας συμπεριλαμβάνει δυνητικά επιβλαβείς URLs."
+   },
+   "WebDAV": {
+      "message": "WebDAV"
+   },
+   "Whitelist": {
+      "message": "Λευκή λίστα"
+   },
+   "Whitelisted_File_Extensions": {
+      "message": "Λευκή λίστα Επεκτάσεων αρχείων"
+   },
+   "Whitelisted_Pages": {
+      "message": "Λευκή λίστα Σελίδων"
+   },
+   "Windows": {
+      "message": "Windows"
+   },
+   "XHR_Security": {
+      "message": "Ασφάλεια XHR"
+   },
+   "Yandex_Disk": {
+      "message": "Δίσκος Yandex"
+   },
+   "Yank_Sublime_Mark": {
+      "message": "Τράβηγμα Στίγματος"
+   },
+   "Yes": {
+      "message": "Ναι"
+   },
+   "You_are_about_to_downgrade_a_UserScript": {
+      "message": "Προσοχή! Υποβάθμιση Κώδικα χρήστη"
+   },
+   "You_are_about_to_install_a_UserScript_": {
+      "message": "Εγκατάσταση κώδικα χρήστη"
+   },
+   "You_are_about_to_modify_a_UserScript_": {
+      "message": "Αλλαγή κώδικα χρήστη"
+   },
+   "You_are_about_to_reinstall_a_UserScript_": {
+      "message": "Επανεγκατάσταση κώδικα χρήστη"
+   },
+   "You_are_about_to_update_a_UserScript_": {
+      "message": "Ενημέρωση κώδικα χρήστη"
+   },
+   "You_can_add_your_custom_CSS_rules_here_": {
+      "message": "Μπορείτε να προσθέσετε τους δικούς σας κανόνες CSS από το περιβάλλον χρήστη του Tampermonkey εδώ. Στην περίπτωση που αυτό προκαλέσει κάποιο πρόβλημα, μπορείτε να επαναφέρετε την προεπιλεγμένη διάταξη προσθέτοντας το «?layout=reset» στο URL της σελίδας των ρυθμίσεων."
+   },
+   "You_can_add_your_custom_linter_config_here_": {
+      "message": "Μπορείτε να προσθέσετε τη δική σας προσαρμοσμένη ρύθμιση linter εδώ."
+   },
+   "Your_language_is_not_supported__Click_here_to_get_intructions_how_to_translate_TM_": {
+      "message": "Η γλώσσα σας δεν υποστηρίζεται;\nΠατήστε εδώ για να λάβετε οδηγίες πως να μεταφράσετε το Tampermonkey."
+   },
+   "Your_whitelist_seems_to_include_executable_files_This_means_your_userscripts_may_download_malware_or_spyware_to_your_harddisk_": {
+      "message": "Η λευκή σας λίστα φαίνεται να περιλαμβάνει εκτελέσιμα αρχεία!\nΑυτό σημαίνει ότι οι κώδικές χρήστη σας μπορεί να λάβουν κακόβουλο ή κατασκοπευτικό λογισμικό στο σκληρό σας δίσκο!!"
+   },
+   "Zip": {
+      "message": "Zip"
+   },
+   "__Please_choose__": {
+      "message": "-- Επιλέξτε --"
+   },
+   "_not_set_": {
+      "message": "\u003Cμη ορισμένο>"
+   },
+   "connect_mode": {
+      "message": "Έλεγχος @connect"
+   },
+   "extDescription": {
+      "message": "Change the web at will with userscripts"
+   },
+   "extName": {
+      "message": "Tampermonkey"
+   },
+   "extNameBeta": {
+      "message": "Tampermonkey BETA"
+   },
+   "extNameClassic": {
+      "message": "Tampermonkey Classic"
+   },
+   "extNameLegacy": {
+      "message": "Tampermonkey Legacy"
+   },
+   "extShortName": {
+      "message": "Tampermonkey"
+   },
+   "extShortNameBeta": {
+      "message": "TM BETA"
+   },
+   "extShortNameClassic": {
+      "message": "TM Classic"
+   },
+   "extShortNameLegacy": {
+      "message": "TM Legacy"
+   },
+   "fatal_error": {
+      "message": "Ανεπανόρθωτο σφάλμα"
+   },
+   "overwritten_by_user": {
+      "message": "αντικαταστάθηκε από τη ρύθμιση χρήστη"
+   },
+   "require_and_resource": {
+      "message": "Εξωτερικά (@require και @resource)"
+   },
+   "severity_1": {
+      "message": "1 (περισσότερο ασφαλής)"
+   },
+   "severity_10": {
+      "message": "10 (λιγότερο ασφαλής)"
+   },
+   "severity_2": {
+      "message": "2"
+   },
+   "severity_3": {
+      "message": "3"
+   },
+   "severity_4": {
+      "message": "4"
+   },
+   "severity_5": {
+      "message": "5"
+   },
+   "severity_6": {
+      "message": "6"
+   },
+   "severity_7": {
+      "message": "7"
+   },
+   "severity_8": {
+      "message": "8"
+   },
+   "severity_9": {
+      "message": "9"
+   },
+   "some_secs": {
+      "message": "ορισμένα"
+   },
+   "strict_mode": {
+      "message": "αυστηρή λειτουργία"
+   },
+   "top_level_await": {
+      "message": "αναμονή υψηλού επιπέδου"
+   }
+}

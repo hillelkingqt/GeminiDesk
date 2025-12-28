@@ -1,0 +1,2382 @@
+{
+   "0count0_changes_exported": {
+      "message": "$count$ modifiche esportate",
+      "placeholders": {
+         "count": {
+            "content": "$1"
+         }
+      }
+   },
+   "0count0_changes_imported": {
+      "message": "$count$ modifiche importate",
+      "placeholders": {
+         "count": {
+            "content": "$1"
+         }
+      }
+   },
+   "0count0_errors_or_hints_were_found_": {
+      "message": "$count$ errori o hit trovati.",
+      "placeholders": {
+         "count": {
+            "content": "$1"
+         }
+      }
+   },
+   "0name0_0version0_is_available__Please_re_start_your_browser_to_update_": {
+      "message": "È disponibile $name$ $version$.\nPer avviare l'aggiornamento ri-avvia il browser!",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         },
+         "version": {
+            "content": "$2"
+         }
+      }
+   },
+   "0name0_Your_service_bot": {
+      "message": "$name$ - Bot di servizio",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         }
+      }
+   },
+   "0number0_Bytes": {
+      "message": "$number$ B",
+      "placeholders": {
+         "number": {
+            "content": "$1"
+         }
+      }
+   },
+   "0number0_GB": {
+      "message": "$number$ GB",
+      "placeholders": {
+         "number": {
+            "content": "$1"
+         }
+      }
+   },
+   "0number0_KB": {
+      "message": "$number$ KB",
+      "placeholders": {
+         "number": {
+            "content": "$1"
+         }
+      }
+   },
+   "0number0_MB": {
+      "message": "$number$ MB",
+      "placeholders": {
+         "number": {
+            "content": "$1"
+         }
+      }
+   },
+   "0number0_TB": {
+      "message": "$number$ TB",
+      "placeholders": {
+         "number": {
+            "content": "$1"
+         }
+      }
+   },
+   "0number0_days": {
+      "message": "$number$ d",
+      "placeholders": {
+         "number": {
+            "content": "$1"
+         }
+      }
+   },
+   "0number0_hours": {
+      "message": "$number$ h",
+      "placeholders": {
+         "number": {
+            "content": "$1"
+         }
+      }
+   },
+   "0number0_minutes": {
+      "message": "$number$ min",
+      "placeholders": {
+         "number": {
+            "content": "$1"
+         }
+      }
+   },
+   "1": {
+      "message": "1"
+   },
+   "10": {
+      "message": "10"
+   },
+   "11": {
+      "message": "11"
+   },
+   "15_Seconds": {
+      "message": "15 secondi"
+   },
+   "1_Hour": {
+      "message": "1 ora"
+   },
+   "1_Minute": {
+      "message": "1 minuto"
+   },
+   "2": {
+      "message": "2"
+   },
+   "3": {
+      "message": "3"
+   },
+   "30_Seconds": {
+      "message": "30 secondi"
+   },
+   "4": {
+      "message": "4"
+   },
+   "5": {
+      "message": "5"
+   },
+   "5_Minutes": {
+      "message": "5 minuti"
+   },
+   "6": {
+      "message": "6"
+   },
+   "7": {
+      "message": "7"
+   },
+   "8": {
+      "message": "8"
+   },
+   "9": {
+      "message": "9"
+   },
+   "A_recheck_of_the_GreaseMonkey_FF_compatibility_options_may_be_required_in_order_to_run_this_script_": {
+      "message": "Per poter eseguire questo script potrebbe essere necessario controllare le opzioni di compatibilità di GreaseMonkey/FF."
+   },
+   "A_reload_is_required": {
+      "message": "É necessario ricaricare: \ntutte le modifiche non salvate andranno perse!"
+   },
+   "A_request_to_a_cross_origin_resource_is_nothing_unusual__You_just_have_to_check_whether_this_script_has_a_good_reason_to_access_this_domain__For_example_there_are_only_a_very_few_reasons_for_a_userscript_to_contact_your_bank__Please_note_that_userscript_authors_can_avoid_this_dialog_by_adding_@connect_tags_to_their_scripts__You_can_change_your_opinion_at_any_time_at_the_scripts_settings_tab_": {
+      "message": "Una richiesta di accesso ad una risorsa di origini cross non è così inusuale.\nDevi solo verificare se lo script ha un buon moitvo per accedere a questo dominio.\nAd esempio ci sono solo poche ragioni per uno script per contattare la tua banca.\n\nNota che l'autore di uno script può evitare questa finestra aggiungendo [url=$connect$]@connect tags[/url] al suo script.\n\nPuoi decidere quello che credi e puoi cambiare la tua opinione in qualsiasi momento nello script in [url=$settings$]settings tab[/url].",
+      "placeholders": {
+         "connect": {
+            "content": "$1"
+         },
+         "settings": {
+            "content": "$2"
+         }
+      }
+   },
+   "A_userscript_wants_to_access_a_cross_origin_resource_": {
+      "message": "Uno script utente vuole accedere ad una risorsa multiorigine."
+   },
+   "Aborted_by_user": {
+      "message": "Interrotto da utente"
+   },
+   "Action": {
+      "message": "Azione"
+   },
+   "Action_Menu": {
+      "message": "Menu azione"
+   },
+   "Action_failed": {
+      "message": "Azione fallita"
+   },
+   "Actions": {
+      "message": "Azioni"
+   },
+   "Add": {
+      "message": "Aggiungi"
+   },
+   "Add_GM_functions_to_this_or_window": {
+      "message": "Aggiungi funzioni GM a questa o finestra"
+   },
+   "Add_Selection_Above": {
+      "message": "Aggiungi selezione soprastante"
+   },
+   "Add_Selection_Below": {
+      "message": "Aggiungi selezione sottostante"
+   },
+   "Add_TM_to_CSP": {
+      "message": "Modifica intestazioni policy sicurezza contenuto (CSP)"
+   },
+   "Add_Tag": {
+      "message": "Aggiungi tag"
+   },
+   "Add_Tag_to_System": {
+      "message": "Aggiungi tag all'elenco del sistema"
+   },
+   "Add_Tampermonkey_to_the_site_s_content_csp": {
+      "message": "Aggiungi Tampermonkey all'HTML CSP"
+   },
+   "Add_as_0clude0": {
+      "message": "Aggiungi come $clude$",
+      "placeholders": {
+         "clude": {
+            "content": "$1"
+         }
+      }
+   },
+   "Add_cursor_to_next_line": {
+      "message": "Aggiungi cursore alla linea successiva"
+   },
+   "Add_cursor_to_prev_line": {
+      "message": "Aggiungi cirsore alla liena precedente"
+   },
+   "Add_new_script___": {
+      "message": "Aggiungi nuovo script..."
+   },
+   "Add_to_icon_badge_text": {
+      "message": "Aggiungi a testo badge icona"
+   },
+   "Advanced": {
+      "message": "Avanzata"
+   },
+   "All": {
+      "message": "Tutti"
+   },
+   "All_but_HttpOnly": {
+      "message": "Tutti tranne i cookie protetti (HttpOnly)"
+   },
+   "All_local_files": {
+      "message": "Tutti i file locali"
+   },
+   "All_modifications_are_only_kept_a_few_moments_Reconfigure_the_0name0_option_to_save_them_permanently_": {
+      "message": "Tutte le modifiche sono salvate solo per un breve momento. Riconfigura l'opzione '$name$' per salvarle permanentemente.",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         }
+      }
+   },
+   "All_script_settings_will_be_reset_": {
+      "message": "Tutte le impostazioni degli script verranno ripristinate!"
+   },
+   "All_tabs": {
+      "message": "Tutte le schede"
+   },
+   "Allow_Tampermonkey_to_collect_anonymous_statistics": {
+      "message": "Permette a Tampermonkey di collezionare statistiche anonime tramite un'installazione Matomo self-hosted.\nQuesto aiuta l'autore di Tamperminkey a migliorarlo e a determinare su quali criteri concentrare lo sviluppo.\nSe non ti piace, basta disabilitarlo."
+   },
+   "Allow_communication_with_cooperate_pages": {
+      "message": "Permetti comunicazione con pagine cooperative"
+   },
+   "Allow_headers_to_be_modified_by_scripts": {
+      "message": "Permetti agli script di modificare le intestazioni HTTP"
+   },
+   "Allow_once": {
+      "message": "Permetti una volta"
+   },
+   "Allow_scripts_to_run_scripts_in": {
+      "message": "Tipi predefiniti schede in cui eseguire lo script"
+   },
+   "Alltime_running_instances": {
+      "message": "Istanze in esecuzione"
+   },
+   "Always": {
+      "message": "Sempre"
+   },
+   "Always_allow": {
+      "message": "Permetti sempre"
+   },
+   "Always_allow_all_domains": {
+      "message": "Permetti sempre tutti i domini"
+   },
+   "Always_allow_domain": {
+      "message": "Permetti sempre dominio"
+   },
+   "Always_ask": {
+      "message": "Chiedi sempre"
+   },
+   "Always_forbid": {
+      "message": "Vieta sempre"
+   },
+   "Always_forbid_domain": {
+      "message": "Vieta sempre dominio"
+   },
+   "An_error_occured_during_import_": {
+      "message": "Si è verificato un errore durante l'importazione."
+   },
+   "An_internal_error_occured_Do_you_want_to_visit_the_forum_": {
+      "message": "Si è verificato un errore interno.\nSe il problema persiste anche dopo un riavvio dl browser, seleziona OK e segnala questo problema nel forum.\n\nVuoi visitare il forum di Tampermonkey?"
+   },
+   "Anonymous_statistics": {
+      "message": "Statistiche anonime"
+   },
+   "Antifeature__0name0__0description0": {
+      "message": "Contiene $name$: $description$",
+      "placeholders": {
+         "description": {
+            "content": "$2"
+         },
+         "name": {
+            "content": "$1"
+         }
+      }
+   },
+   "Antifeature_ads": {
+      "message": "Pubblicità"
+   },
+   "Antifeature_miner": {
+      "message": "Crypto Mining"
+   },
+   "Antifeature_no_details": {
+      "message": "Nessun dettaglio fornito"
+   },
+   "Antifeature_other": {
+      "message": "una anti-funzione"
+   },
+   "Antifeature_tracking": {
+      "message": "Tracciatura"
+   },
+   "Appearance": {
+      "message": "Aspetto"
+   },
+   "Apply_compatibility_options_to_required_script_too": {
+      "message": "Applica opzioni di compatibilità anche agli script @require"
+   },
+   "Apply_this_action_to_the_selected_scripts": {
+      "message": "Applica questa azione a tutti gli script selezionati"
+   },
+   "Are_you_sure_that_you_don_t_want_to_be_notified_of_updates_": {
+      "message": "Quando Tampermonkey viene aggiornato dal browser, esso viene anche riavviato.\nPurtroppo questo potrebbe danneggiare gli script attualmente in esecuzione!\n\nQuindi, sei sicuro di non voler essere avvisato per gli aggiornamenti?"
+   },
+   "Are_you_unsure_about_what__sandbox_value_to_use_": {
+      "description": "Una domanda posta dal bot di servizio",
+      "message": "Non sei sicuro di quale valore @sandbox usare?"
+   },
+   "Ask_if_unknown": {
+      "message": "Chiedi se sconosciuto"
+   },
+   "At_least_one_new_connect_statement_was_added_": {
+      "message": "È stato aggiunta almeno una istruzione @connect."
+   },
+   "At_least_one_of_the_include_match_or_exclude_statements_was_changed_": {
+      "message": "È stata modificata almeno una delle istruzioni @include, @match o @exclude."
+   },
+   "At_least_one_part_of_this_page_is_forbidden_by_a_setting_": {
+      "message": "Almeno una parte di questa pagina è presente nell'impostazione delle 'pagine vietate'!"
+   },
+   "Attention_Can_not_display_all_excludes_": {
+      "message": "Attenzione: l'elenco di esclusione è stato ridotto.\nControllalo manualmente!"
+   },
+   "Attention_Can_not_display_all_includes_": {
+      "message": "Attenzione: l'elenco di inclusione è stato ridotto.\nControllalo manualmente!"
+   },
+   "Author": {
+      "message": "Autore"
+   },
+   "Auto": {
+      "message": "Auto"
+   },
+   "Auto_Indent_all": {
+      "message": "Rientro automatico tutto"
+   },
+   "Auto_reload_on_script_enabled": {
+      "message": "Ricarica automaticamente pagine"
+   },
+   "Auto_reload_on_script_enabled_desc": {
+      "message": "Ricarica le pagine influenzate se uno script viene abilitato/disabilitato"
+   },
+   "Auto_syntax_check_max_length": {
+      "message": "Dim. max controllo sintassi automatico"
+   },
+   "Auto_syntax_check_on_typing": {
+      "message": "Controllo sintassi automatico durante digitazione"
+   },
+   "Autocomplete": {
+      "message": "Completamento automatico"
+   },
+   "Automatically_added_user_includes_for_compatibility_reasons_": {
+      "message": "Per ragioni di compatibilità alcune inclusioni utente saranno aggiunte automaticamente!"
+   },
+   "Back_or_close": {
+      "message": "Indietro o chiudi"
+   },
+   "Beginner": {
+      "message": "Principiante"
+   },
+   "BlackCheck": {
+      "message": "Controllo elenco vietati"
+   },
+   "Blacklist": {
+      "message": "Elenco vietati"
+   },
+   "Blacklist_0domain0": {
+      "message": "Elenco $domain$ non autorizzati",
+      "placeholders": {
+         "domain": {
+            "content": "$1"
+         }
+      }
+   },
+   "Blacklist_Severity": {
+      "message": "Blocca da livello di severità"
+   },
+   "Blacklisted_Pages": {
+      "message": "Pagine in elenco vietati"
+   },
+   "Bookmarks": {
+      "message": "Segnalibri"
+   },
+   "Both": {
+      "message": "Entrambe"
+   },
+   "Browser_API": {
+      "message": "API browser"
+   },
+   "Browser_API_Downloads": {
+      "message": "Download API browser"
+   },
+   "Browser_Sync": {
+      "message": "Sincronizzazione browser"
+   },
+   "CONFLICT__This_script_was_modified_0t0_seconds_ago_": {
+      "message": "CONFLITTO:\nquesto script è stato modificato in un'altra scheda $t$ secondo/i fa!",
+      "placeholders": {
+         "t": {
+            "content": "$1"
+         }
+      }
+   },
+   "Cancel": {
+      "message": "Annulla"
+   },
+   "Casual": {
+      "message": "Casuale"
+   },
+   "Center_Cursor": {
+      "message": "Centra cursore"
+   },
+   "Changelog": {
+      "message": "Cronologia versioni"
+   },
+   "Changes": {
+      "message": "Modifiche"
+   },
+   "Changes_the_number_of_visible_config_options": {
+      "message": "Modifica numero opzioni configurazione visibili"
+   },
+   "Check_disabled_scripts": {
+      "message": "Aggiorna script disabilitati"
+   },
+   "Check_for_Updates": {
+      "message": "Controlla aggiornamenti"
+   },
+   "Check_for_userscripts_updates": {
+      "message": "Controlla aggiornamenti script"
+   },
+   "Check_interval": {
+      "message": "Intervallo controllo"
+   },
+   "Check_only_scripts_up_to_this_size_automatically_": {
+      "message": "Controlla automaticamente solo script fino a questa dimensione."
+   },
+   "Classic": {
+      "message": "Classica"
+   },
+   "Clean_after_session": {
+      "message": "Pulizia dopo sessione"
+   },
+   "Clear_All": {
+      "message": "Azzera tutto"
+   },
+   "Click_here_to_allow_TM_to_access_the_following_hosts_0hostlist0": {
+      "message": "Seleziona 'OK' per permettere a TamperMonkey di accedere ai seguenti host:\n\n$hostlist$",
+      "placeholders": {
+         "hostlist": {
+            "content": "$1"
+         }
+      }
+   },
+   "Click_here_to_allow_TM_to_start_downloads": {
+      "message": "Seleziona 'OK' per permettere a Tampermonkey di avviare download immediati."
+   },
+   "Click_here_to_install_it_": {
+      "message": "Fai clic qui per installarlo."
+   },
+   "Click_here_to_move_this_script": {
+      "message": "Fai clic qui per spostare questo script"
+   },
+   "Click_here_to_see_the_recent_changes": {
+      "message": "Fai cli qui per visualizzare le modifiche recenti"
+   },
+   "Close": {
+      "message": "Chiudi"
+   },
+   "Closing_Bracket": {
+      "message": "Parentesi di chiusura"
+   },
+   "Cloud": {
+      "message": "Cloud"
+   },
+   "Columns": {
+      "message": "Colonne"
+   },
+   "Comment": {
+      "message": "Commento"
+   },
+   "Config_Mode": {
+      "message": "Modo configurazione"
+   },
+   "Configures_which_sandbox_values_are_valid": {
+      "message": "Configura quali valori @sandbox sono validi"
+   },
+   "Content_Script": {
+      "message": "Script contenuti"
+   },
+   "Content_Script_API": {
+      "message": "API script contenuto"
+   },
+   "Context_Menu": {
+      "message": "Menu contestuale"
+   },
+   "Controls_how_deleted_scripts_are_handled__0enabled0_moves_scripts_to_a_virtual_trash__0disabled0_permanently_deletes_scripts__0cleanAfterSession0_automatically_deletes_all_on_session_end_": {
+      "message": "Controlla come vengono gestiti gli script eliminati.\n'%enabled%' sposta gli script in un cestino virtuale per un'eventuale recupero.\n'%disabled%' elimina definitivamente gli script dopo conferma.\n'%cleanAfterSession%' svuota automaticamente il cestino al termine della sessione del browser.",
+      "placeholders": {
+         "cleanAfterSession": {
+            "content": "$3"
+         },
+         "disabled": {
+            "content": "$2"
+         },
+         "enabled": {
+            "content": "$1"
+         }
+      }
+   },
+   "Convert_CDATA_sections_into_a_chrome_compatible_format": {
+      "message": "Converti sezioni CDATA in un formato compatibile con il browser"
+   },
+   "Copy": {
+      "message": "Copia"
+   },
+   "Cross_Origin_Request_Permission": {
+      "message": "Richiesta permesso origine cross"
+   },
+   "Current_Version": {
+      "message": "Versione installata"
+   },
+   "Cursor": {
+      "message": "Cursore"
+   },
+   "Custom_CSS": {
+      "message": "CSS utente"
+   },
+   "Custom_Linter_Config": {
+      "message": "Configurazione Linter personalizzata"
+   },
+   "Cut": {
+      "message": "Taglia"
+   },
+   "DOM_mode_is_unsecure__Scripts_can_install_new_scripts_": {
+      "message": "Il modo sandbox 'DOM' non è sicuro.\nGli script utente in esecuzione hanno autorizzazioni di estensione quasi complete e possono persino modificare e installare nuovi script utente."
+   },
+   "Dashboard": {
+      "message": "Pannello di controllo"
+   },
+   "Debug": {
+      "message": "Debug"
+   },
+   "Debug_scripts": {
+      "message": "Debug degli script"
+   },
+   "Decoding": {
+      "message": "Decodifica..."
+   },
+   "Default": {
+      "message": "Predefinita"
+   },
+   "Default_Dark": {
+      "message": "Predefinita - Scuro"
+   },
+   "Default_Darker": {
+      "message": "Predefinito - Scuro"
+   },
+   "Default_Light": {
+      "message": "Predefinito - Chiaro"
+   },
+   "Delete": {
+      "message": "Elimina"
+   },
+   "Delete_Line": {
+      "message": "Elimina linea"
+   },
+   "Delete_Line_Left": {
+      "message": "Elimina linea a sinistra"
+   },
+   "Delete_Line_Right": {
+      "message": "Elimina linea a destra"
+   },
+   "Delete_all": {
+      "message": "Elimina tutto"
+   },
+   "Delete_to_Next_Word_Boundary": {
+      "message": "Elimina fino alla prossima parola collegata"
+   },
+   "Delete_to_Previous_Word_Boundary": {
+      "message": "Elimina fino alla precedente parola collegata"
+   },
+   "Delete_to_Sublime_Mark": {
+      "message": "Elimina fino al marcatore evidenziazione"
+   },
+   "Deleted_on": {
+      "message": "Elimina su"
+   },
+   "Description": {
+      "message": "Descrizione"
+   },
+   "Destination_URL": {
+      "message": "URL destinazione"
+   },
+   "Destination_domain": {
+      "message": "Dominio destinazione"
+   },
+   "Details": {
+      "message": "Dettagli"
+   },
+   "Developer": {
+      "message": "Sviluppatore"
+   },
+   "Developer_Mode": {
+      "message": "Modo sviluppatore"
+   },
+   "Disable": {
+      "message": "Disabilita"
+   },
+   "Disable_Updates": {
+      "message": "Disabilita aggiornamenti"
+   },
+   "Disable_all_remaining_scripts_of_this_tag": {
+      "message": "Clicca per disabilitare tutti gli script rimanenti di questo tag"
+   },
+   "Disable_all_scripts_of_this_tag": {
+      "message": "Clicca per disabilitare tutti gli script di questo tag"
+   },
+   "Disabled": {
+      "message": "Disabilitato"
+   },
+   "Do_you_need_help_finding_Tampermonkey_s_console_output_": {
+      "description": "Una domanda posta dal bot di servizio",
+      "message": "Hai bisogno di aiuto per trovare l'output della console di Tampermonkey?"
+   },
+   "Do_you_need_help_installing_new_scripts_to_Tampermonkey_": {
+      "description": "Una domanda posta dal bot di servizio",
+      "message": "Hai bisogno di aiuto per installare nuovi script su Tampermonkey?"
+   },
+   "Do_you_need_help_syncing_all_your_installed_scripts_to_another_browser_": {
+      "description": "Una domanda posta dal bot di servizio",
+      "message": "Hai bisogno di aiuto per sincronizzare tutti gli script installati in un altro browser?"
+   },
+   "Do_you_need_help_viewing_and_editing_values_stored_by_a_userscript_": {
+      "description": "Una domanda posta dal bot di servizio",
+      "message": "Hai bisogno di aiuto per visualizzare e modificare i valori memorizzati da uno script utente?"
+   },
+   "Do_you_need_help_working_with_Tampermonkey_": {
+      "description": "Una domanda posta dal bot di servizio",
+      "message": "Hai bisogno di aiuto per lavorare con Tampermonkey?"
+   },
+   "Do_you_really_want_to_store_fixed_code_": {
+      "message": "L'opzione '$option$' è abilitata!\n\nVuoi davvero salvare il sorgente corretto?",
+      "placeholders": {
+         "option": {
+            "content": "$1"
+         }
+      }
+   },
+   "Do_you_want_to_know_how_to_allow_Tampermonkey_access_to_local_file_URIs_": {
+      "description": "Una domanda posta dal bot di servizio",
+      "message": "Vuoi sapere come consentire a Tampermonkey di accedere agli URI dei file locali?"
+   },
+   "Do_you_want_to_use_an_external_editor_to_edit_your_scripts__nWould_you_like_to_know_how_to_set_this_up_": {
+      "description": "Una domanda posta dal bot di servizio",
+      "message": "Vuoi usre un editor esterno per modificare gli script?\nVuoi sapere come impostarlo?"
+   },
+   "Document_End": {
+      "message": "Fine documento"
+   },
+   "Document_Start": {
+      "message": "Inizio documento"
+   },
+   "Does_not_run_in_incognito_tabs": {
+      "message": "Impossibile eseguire in schede in incognito"
+   },
+   "Does_not_run_in_normal_tabs": {
+      "message": "Impossibile eseguire in schede normali"
+   },
+   "Dont_ask_again": {
+      "message": "Non chiedere nuovamente"
+   },
+   "Dont_ask_me_for_simple_script_updates": {
+      "message": "Non chiedere per aggiornamenti di script semplici"
+   },
+   "Downgrade": {
+      "message": "Downgrade"
+   },
+   "Download_Mode": {
+      "message": "Modalità download"
+   },
+   "Downloaded_from_0url0": {
+      "message": "Scaricato da: $url$",
+      "placeholders": {
+         "url": {
+            "content": "$1"
+         }
+      }
+   },
+   "Downloads": {
+      "message": "Download"
+   },
+   "Dropbox": {
+      "message": "Dropbox"
+   },
+   "DuckDuckGo": {
+      "message": "DuckDuckGo"
+   },
+   "Duplicate_Lines": {
+      "message": "Duplica linee"
+   },
+   "Edit": {
+      "message": "Modifica"
+   },
+   "Editor": {
+      "message": "Editor"
+   },
+   "Editor_reset": {
+      "message": "Ripristino editor"
+   },
+   "Emacs": {
+      "message": "Emacs"
+   },
+   "Enable": {
+      "message": "Abilita"
+   },
+   "Enable_Editor": {
+      "message": "Abilita editor avanzato"
+   },
+   "Enable_Script_Sync": {
+      "message": "Abilita sincronizzazione script"
+   },
+   "Enable_Tags": {
+      "message": "Abilita tag"
+   },
+   "Enable_all_scripts_of_this_tag": {
+      "message": "Clicca per abilitare tutti gli script di questo tag"
+   },
+   "Enable_autoSave": {
+      "message": "Salva i contenuti quando l'editor perde il focus"
+   },
+   "Enable_context_menu": {
+      "message": "Abilita menu contestuale"
+   },
+   "Enable_easySave": {
+      "message": "Quando salvi non visualizzare la finestra di conferma"
+   },
+   "Enable_this_option_to_automatically_check_the_code_on_typing_": {
+      "message": "Abilita questa opzione per controllare automaticamente il codice durante la digitazione."
+   },
+   "Enabled": {
+      "message": "Abilitato"
+   },
+   "Enabling_this_makes_it_easy_for_scripts_to_leak_it_s_granted_powers_to_the_page_Therefore__off__is_the_safest_option_": {
+      "message": "Abilitando questo rende molto facile per gli script utente garantirsi i diritti concessi alla pagina.\nPertanto '$off$' è l'opzione più sicura, ma potrebbe causare problemi di compatibilità.",
+      "placeholders": {
+         "off": {
+            "content": "$1"
+         }
+      }
+   },
+   "Enforce": {
+      "message": "Forza"
+   },
+   "Enter_the_new_rule": {
+      "message": "Inserisci la nuova regola"
+   },
+   "Error": {
+      "message": "Errore"
+   },
+   "Every_12_Hour": {
+      "message": "Ogni 12 ore"
+   },
+   "Every_6_Hours": {
+      "message": "Ogni 6 ore"
+   },
+   "Every_Day": {
+      "message": "Ogni giorno"
+   },
+   "Every_Hour": {
+      "message": "Ogni ora"
+   },
+   "Every_Month": {
+      "message": "Ogni mese"
+   },
+   "Every_Week": {
+      "message": "Ogni settimana"
+   },
+   "Exclude_0domain0": {
+      "message": "Escludi $domain$",
+      "placeholders": {
+         "domain": {
+            "content": "$1"
+         }
+      }
+   },
+   "Exclude_s__": {
+      "message": "Escluso/i"
+   },
+   "Experimental": {
+      "message": "Sperimentale"
+   },
+   "Export": {
+      "message": "Esporta"
+   },
+   "Export_script_0name0_0uuid0": {
+      "message": "Esporta script '$name$' ($uuid$)",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         },
+         "uuid": {
+            "content": "$2"
+         }
+      }
+   },
+   "Export_script_meta_data_of_0name0": {
+      "message": "Esporta meta dati script di '$name$' ($uuid$)",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         },
+         "uuid": {
+            "content": "$2"
+         }
+      }
+   },
+   "Export_script_source_of_0name0": {
+      "message": "Esporta sorgente script di '$name$' ($uuid$)",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         },
+         "uuid": {
+            "content": "$2"
+         }
+      }
+   },
+   "Externals": {
+      "message": "Esterni"
+   },
+   "Factory_Reset": {
+      "message": "Ripristino di fabbrica"
+   },
+   "Fast": {
+      "message": "Veloce"
+   },
+   "Favicon_Service": {
+      "message": "Servizio Favicon"
+   },
+   "Features": {
+      "message": "Funzionalità"
+   },
+   "File": {
+      "message": "File"
+   },
+   "Filter_by": {
+      "message": "Filtra per"
+   },
+   "Find": {
+      "message": "Trova"
+   },
+   "Find_All_Under": {
+      "message": "Trova tutto sotto"
+   },
+   "Find_Next": {
+      "message": "Trova successivo"
+   },
+   "Find_Previous": {
+      "message": "Trova precedente"
+   },
+   "Find_Under": {
+      "message": "Trova sotto"
+   },
+   "Find_Under_Previous": {
+      "message": "Trova sotto precedente"
+   },
+   "Find_incremental": {
+      "message": "Trova incrementale"
+   },
+   "Find_incremental_reverse": {
+      "message": "Trova incrementale inverso"
+   },
+   "Fix_wrappedJSObject_property_access": {
+      "message": "Correggi accesso alla proprietà wrappedJSObject"
+   },
+   "Focus_tab": {
+      "message": "Scheda focus sorgente"
+   },
+   "Fold": {
+      "message": "Comprimi"
+   },
+   "Fold_All": {
+      "message": "Comprimi tutto"
+   },
+   "Folding": {
+      "message": "Compressione/decompressione"
+   },
+   "Font_Size": {
+      "message": "Dimensione font"
+   },
+   "Forbid_once": {
+      "message": "Vieta una volta"
+   },
+   "Force_DOM": {
+      "message": "Forza DOM"
+   },
+   "Force_JavaScript": {
+      "message": "Forza JavaScript"
+   },
+   "Force_Raw": {
+      "message": "Forza Raw"
+   },
+   "Found_0count0_available_scripts": {
+      "message": "Trovati $count$ script disponibili",
+      "placeholders": {
+         "count": {
+            "content": "$1"
+         }
+      }
+   },
+   "Full_reset": {
+      "message": "Ripristino di fabbrica"
+   },
+   "GM_compat_options_": {
+      "message": "Opzioni di compatibilità GM/FF"
+   },
+   "General": {
+      "message": "Generale"
+   },
+   "Get_new_scripts___": {
+      "message": "Trova nuovi script..."
+   },
+   "Get_some_scripts___": {
+      "message": "Ottieni script..."
+   },
+   "Global_Settings": {
+      "message": "Impostazioni globali"
+   },
+   "Global_settings_import": {
+      "message": "Importa impostazioni globali"
+   },
+   "GoTo": {
+      "message": "Vai a"
+   },
+   "Google": {
+      "message": "Google"
+   },
+   "Google_Drive": {
+      "message": "Google Drive"
+   },
+   "Grant_all": {
+      "message": "Concedi tutto"
+   },
+   "Grant_selected": {
+      "message": "Concedi selezionati"
+   },
+   "Group_Left": {
+      "message": "Gruppo a sinistra"
+   },
+   "Group_Right": {
+      "message": "Gruppo a destra"
+   },
+   "Help": {
+      "message": "Aiuto"
+   },
+   "Hide_disabled_scripts": {
+      "message": "Nascondi script disabilitati"
+   },
+   "Hide_notification_after": {
+      "message": "Nascondi notifica dopo"
+   },
+   "Highlight_selection_matches": {
+      "message": "Evidenzia selezioni corrispondenti"
+   },
+   "Highlight_trailing_whitespace": {
+      "message": "Evidenzia spazi inziali/finali"
+   },
+   "Homepage": {
+      "message": "Pagina home"
+   },
+   "Host_permissions_denied_by_user_": {
+      "message": "Autorizzazioni host negate dall'utente:"
+   },
+   "I_contributed_already": {
+      "message": "Ho già contribuito."
+   },
+   "I_dont_want_to_contribute": {
+      "message": "Non voglio effettuare una donazione."
+   },
+   "Icon_badge_color": {
+      "message": "Colore icona badge"
+   },
+   "Icon_badge_info": {
+      "message": "Informazioni icona badge"
+   },
+   "Icon_badge_text_color": {
+      "message": "Colore testo icona badge"
+   },
+   "Import": {
+      "message": "Importa"
+   },
+   "Import_from_URL": {
+      "message": "Installa da URL"
+   },
+   "Import_from_file": {
+      "message": "Importa"
+   },
+   "Import_remote_script_0uuid0": {
+      "message": "Importa script remoto ($uuid$)",
+      "placeholders": {
+         "uuid": {
+            "content": "$1"
+         }
+      }
+   },
+   "Imported": {
+      "message": "Importato"
+   },
+   "In_order_to_search_for_userscripts__0on_action_menu0__and__0icon_badge_number0__automatically_transfer_the_tab_s_url_to_the_search_website__0on_click0_opens_the_search_page_on_click_Please_click_at_this_icon_to_open_the_privacy_policy_": {
+      "message": "Nella modalità '$icon_badge_number$' l'URL della scheda è automaticamente\ntrasferito al sito di ricerca e usato come valore ricerca.\n\nNella modalità '$on_action_menu$' viene effettuata una ricerca usando l'URL solo\nquando il menu azioni è aperto.\n\n'$on_click$' apre solo il sito di ricerca con un clic sull'elemento del menu azioni.\n\nFai clic qui per aprire la policy della privacy per il sito di ricerca.",
+      "placeholders": {
+         "icon_badge_number": {
+            "content": "$1"
+         },
+         "on_action_menu": {
+            "content": "$2"
+         },
+         "on_click": {
+            "content": "$3"
+         }
+      }
+   },
+   "Include_TM_settings": {
+      "message": "Includi impostazioni Tampermonkey"
+   },
+   "Include_s__": {
+      "message": "Incluso/i"
+   },
+   "Include_script_externals": {
+      "message": "Includi risorse script esterno"
+   },
+   "Include_script_storage": {
+      "message": "Includi script storage"
+   },
+   "Includes_Excludes": {
+      "message": "Inclusioni/esclusioni"
+   },
+   "Incognito_tabs": {
+      "message": "Schede in incognito"
+   },
+   "Incremental_Find": {
+      "message": "Ricerca incrementale"
+   },
+   "Indent": {
+      "message": "Rientro"
+   },
+   "Indent_Less": {
+      "message": "Indenta -"
+   },
+   "Indent_More": {
+      "message": "Indenta +"
+   },
+   "Indent_with": {
+      "message": "Rientra con"
+   },
+   "Indentation_Width": {
+      "message": "Larghezza rientri"
+   },
+   "Info": {
+      "message": "Informazione"
+   },
+   "Inject_Mode": {
+      "message": "Modo inserimento"
+   },
+   "Insert_Line_After": {
+      "message": "Inserisci linea dopo"
+   },
+   "Insert_Line_Before": {
+      "message": "Inserisci linea prima"
+   },
+   "Insert_constructor": {
+      "message": "Inserisci costruttore"
+   },
+   "Install": {
+      "message": "Installa"
+   },
+   "Install_this_script": {
+      "message": "Installa questo script"
+   },
+   "Installed_Version_": {
+      "message": "Versione installata"
+   },
+   "Installed_userscripts": {
+      "message": "Script installati"
+   },
+   "Instant": {
+      "message": "Istantaneo"
+   },
+   "Invalid_UserScript__Sry_": {
+      "message": "Script non valido!"
+   },
+   "Invalid_UserScript_name__Sry_": {
+      "message": "Nome script non valido!"
+   },
+   "JavaScript_and_DOM": {
+      "message": "JavaScript+DOM"
+   },
+   "Join_Lines": {
+      "message": "Unisci linee"
+   },
+   "Jump_to_line": {
+      "message": "Vai alla linea"
+   },
+   "Just_another_service_provided_by_your_friendly_script_updater_": {
+      "message": "Solo un altro servizio fornito dal tuo amichevole aggiornatore di script"
+   },
+   "Key_Mapping": {
+      "message": "Mappatura tasti"
+   },
+   "Language": {
+      "message": "Lingua"
+   },
+   "Last_updated": {
+      "message": "Ultimo aggiornamento"
+   },
+   "Layout": {
+      "message": "Disposizione"
+   },
+   "Learn_more": {
+      "message": "Scopri di più"
+   },
+   "Legacy": {
+      "message": "Legacy"
+   },
+   "Limited_runtime_host_permissions_might_break_some_Tampermonkey_features_": {
+      "message": "I permessi limitati di accesso agli host possono non far funzionare alcune funzioni Tampermonkey come aggiornamento script, GM_xmlhttpRequest e altro!"
+   },
+   "Line_Case_Insensitive": {
+      "message": "Linea non sensibile maiuscolo/minuscolo"
+   },
+   "Line_Down": {
+      "message": "Linea sotto"
+   },
+   "Line_Up": {
+      "message": "Linea sopra"
+   },
+   "Line_break": {
+      "message": "Interruzioni linea"
+   },
+   "Lines": {
+      "message": "Linee"
+   },
+   "Lines_Menu": {
+      "message": "Linee"
+   },
+   "Loading": {
+      "message": "Caricamento..."
+   },
+   "LogLevel": {
+      "message": "Livello registrazione eventi"
+   },
+   "Login": {
+      "message": "Accedi"
+   },
+   "Lookup_remote_script_0uuid0": {
+      "message": "Cerca script remoto ($uuid$)",
+      "placeholders": {
+         "uuid": {
+            "content": "$1"
+         }
+      }
+   },
+   "Lookup_remote_script_list": {
+      "message": "Cerca nell'elenco script remoti"
+   },
+   "Lower_Case": {
+      "message": "Minuscolo"
+   },
+   "MIME_Type": {
+      "message": "Tipo MIME"
+   },
+   "Malicious_scripts_can_violate_your_privacy_": {
+      "message": "Gli script malevoli possono violare la tua privacy e agire in tua vece!\nDovresti installare script solo da sorgenti di cui ti fidi."
+   },
+   "Manual_Script_Blacklist": {
+      "message": "Elenco vietati manuale per script e @require"
+   },
+   "Matching_URL": {
+      "message": "URL corrispondenti"
+   },
+   "Modify": {
+      "message": "Modifica"
+   },
+   "Modifying_a_script_will_disable_automatic_script_updates_": {
+      "message": "La modifica di uno script disabiliterà gli aggiornamenti automatici degli script!"
+   },
+   "Move_Line_Down": {
+      "message": "Sposta linea giù"
+   },
+   "Move_Line_Up": {
+      "message": "Sposta linea su"
+   },
+   "Name": {
+      "message": "Nome"
+   },
+   "Native": {
+      "message": "Nativo"
+   },
+   "Never": {
+      "message": "Mai"
+   },
+   "New_Tag": {
+      "message": "Nuovo tag"
+   },
+   "New_Version": {
+      "message": "Nuova versione"
+   },
+   "New_script_template_": {
+      "message": "Nuovo modello script"
+   },
+   "New_userscript": {
+      "message": "\u003CNuovo script>"
+   },
+   "Next_Bookmark": {
+      "message": "Segnalibro successivo"
+   },
+   "Next_Problem": {
+      "message": "Problema successivo"
+   },
+   "Next_tab": {
+      "message": "Scheda successiva"
+   },
+   "Next_theme": {
+      "message": "Tema successivo"
+   },
+   "No": {
+      "message": "No"
+   },
+   "No_available_scripts": {
+      "message": "Nessuno script disponibile"
+   },
+   "No_backups_found": {
+      "message": "Nessun backup trovato"
+   },
+   "No_entry_found": {
+      "message": "Nessun elemento trovato"
+   },
+   "No_frames": {
+      "message": "Esegui solo nel frame principale"
+   },
+   "No_previously_denied_runtime_host_permissions_found": {
+      "message": "Non è stata trovata alcuna autorizzazione host runtime negata in precedenza"
+   },
+   "No_script_is_installed": {
+      "message": "Nessuno script installato"
+   },
+   "No_script_is_running": {
+      "message": "Nessun script in esecuzione"
+   },
+   "No_syntax_errors_were_found_": {
+      "message": "Non sono stati trovati errori di sintassi."
+   },
+   "No_text": {
+      "message": "Nessun testo"
+   },
+   "No_update_found__sry_": {
+      "message": "La versione installata è aggiornata."
+   },
+   "Normal": {
+      "message": "Normale"
+   },
+   "Normal_tabs": {
+      "message": "Schede normali"
+   },
+   "Note": {
+      "message": "Nota"
+   },
+   "Novice": {
+      "message": "Novizio"
+   },
+   "Off": {
+      "message": "OFF"
+   },
+   "Ok": {
+      "message": "OK"
+   },
+   "On": {
+      "message": "ON"
+   },
+   "On_Action_Menu": {
+      "message": "Nel menu azioni"
+   },
+   "On_Click": {
+      "message": "Con un clic"
+   },
+   "OneDrive": {
+      "message": "OneDrive"
+   },
+   "One_error_or_hint_was_found_": {
+      "message": "Uno o più errori o hit trovati."
+   },
+   "One_of_your_scripts_is_blacklisted__Would_you_like_to_know_why_": {
+      "description": "Una domanda posta dal bot di servizio",
+      "message": "Uno degli script è nella lista nera.\nVuoi sapere perché?"
+   },
+   "One_or_more_compatibility_options_are_set": {
+      "message": "Sono attive una o più opzioni di compatibilità.\nPotresti/dovresti controllarle."
+   },
+   "Only_Manual": {
+      "message": "Solo manuale"
+   },
+   "Only_files_with_these_extensions_can_be_saved_to_the_harddisk_Be_careful_to_not_allow_file_extensions_that_represent_executables_at_your_operating_system_": {
+      "message": "Solo i file con queste estensioni possono essere salvati nel disco fisso.\nAssicurati di non inserire estensioni di file che siano eseguibili nel tuo sistema operativo!"
+   },
+   "Open_changelog": {
+      "message": "Apri elenco modifiche"
+   },
+   "Operation_completed_successfully": {
+      "message": "Operazione eseguita correttamente"
+   },
+   "Original_domain_whitelist": {
+      "message": "Elenco originale domini autorizzati"
+   },
+   "Original_excludes": {
+      "message": "Esclusioni originali"
+   },
+   "Original_includes": {
+      "message": "Inclusioni originali"
+   },
+   "Original_matches": {
+      "message": "Corrispondenze originali"
+   },
+   "Overwrite": {
+      "message": "Sovrascrivi"
+   },
+   "Page_Filter_Mode": {
+      "message": "Modo filtro pagina"
+   },
+   "Password": {
+      "message": "Password"
+   },
+   "Paste": {
+      "message": "Incolla"
+   },
+   "Permanent": {
+      "message": "Permanentemente"
+   },
+   "Please_check_the_0editor0_documentation_for_more_details_": {
+      "message": "Per maggiori dettagli controlla la documentazione di $editor$.",
+      "placeholders": {
+         "editor": {
+            "content": "$1"
+         }
+      }
+   },
+   "Please_consider_a_contribution": {
+      "message": "Fai una donazione"
+   },
+   "Please_enable_anonymous_statistics_and_help_to_improve_this_extension_": {
+      "message": "Abilitare le statistiche anonime e aiutare a ottimizzare questa estensione.\nVengono raccolti solo dati tecnici e dati di interazione con l'estensione.\nClic qui per maggiori informazioni sui dati."
+   },
+   "Please_enable_developer_mode_to_allow_userscript_injection_": {
+      "message": "Abilita la modalità sviluppatore per consentire l'inserimento di script utente.\nFai clic qui per ulteriori informazioni su come eseguire questa operazione."
+   },
+   "Please_select_a_file": {
+      "message": "Seleziona un file"
+   },
+   "Please_wait___": {
+      "message": "Attendi..."
+   },
+   "Position": {
+      "description": "Intestazione tabella script",
+      "message": "#"
+   },
+   "Position_": {
+      "message": "Posizione"
+   },
+   "Press_ctrl_to_toggle_all_checkboxes": {
+      "message": "Premi Ctrl/Cmd per attivare/disattivare tutti i box di controllo"
+   },
+   "Prev_Bookmark": {
+      "message": "Segnalibro precedente"
+   },
+   "Prev_Problem": {
+      "message": "Problema precedente"
+   },
+   "Previous_tab": {
+      "message": "Scheda precedente"
+   },
+   "Process_with_Chrome": {
+      "message": "Elabora con il browser"
+   },
+   "Raw_and_JavaScript": {
+      "message": "Raw and JavaScript"
+   },
+   "Really_delete_0name0__": {
+      "message": "Vuoi eliminare '$name$'?",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         }
+      }
+   },
+   "Really_delete_all_userscripts_": {
+      "message": "Vuoi veramente eliminare permanentemente tutti gli script utente?"
+   },
+   "Really_delete_the_selected_items_": {
+      "message": "Vuoi eliminare le voci selezionate?"
+   },
+   "Really_factory_reset_the_selected_items_": {
+      "message": "Vuoi applicare il ripristino di fabbrica agli elementi selezionati?"
+   },
+   "Really_factory_reset_this_script_": {
+      "message": "Vuoi applicare il ripristino di fabbrica a questo script?"
+   },
+   "Really_reset_all_changes_": {
+      "message": "Sei sicuro di voler annullare tutte le modifiche?"
+   },
+   "Really_restore_all_userscripts_": {
+      "message": "Vuoi veramente ripristinare tutti gli script utente?"
+   },
+   "Recent_Sync_Log": {
+      "message": "Registro sincronizzazione recente"
+   },
+   "Redo": {
+      "message": "Riapplica modifica"
+   },
+   "Reindent_on_typing": {
+      "message": "Rientra durante digitazione"
+   },
+   "Reinstall": {
+      "message": "Re-installa"
+   },
+   "Reload": {
+      "message": "Ricarica"
+   },
+   "Remind_me_later": {
+      "message": "Ricordamelo più tardi."
+   },
+   "Remove": {
+      "message": "Rimuovi"
+   },
+   "Remove_Tag": {
+      "message": "Rimuovi tag"
+   },
+   "Remove__possibly_unsecure_": {
+      "message": "Rimuovi interamente (possibile non sicuro)"
+   },
+   "Remove_local_script_0name0_0uuid0": {
+      "message": "Rimuovi script locale '$name$' ($uuid$)",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         },
+         "uuid": {
+            "content": "$2"
+         }
+      }
+   },
+   "Remove_remote_script_0name0_0uuid0": {
+      "message": "Rimuovi script remoto '$name$' ($uuid$)",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         },
+         "uuid": {
+            "content": "$2"
+         }
+      }
+   },
+   "Replace": {
+      "message": "Sostituisci"
+   },
+   "Replace_": {
+      "message": "Vuoi sostituire?"
+   },
+   "Replace_All": {
+      "message": "Sostituisci tutto"
+   },
+   "Replace_all_with": {
+      "message": "Sostituisci tutto"
+   },
+   "Replace_for_each_statements": {
+      "message": "Sostituisci istruzioni 'for each'"
+   },
+   "Replace_with": {
+      "message": "Sostituisci con"
+   },
+   "Report_a_bug": {
+      "message": "Segnala un errore"
+   },
+   "Report_an_issue_to_the_script_hoster_": {
+      "message": "Segnala abuso\n(potrebbe essere necessario un account utente)"
+   },
+   "Requested_Host_Permissions": {
+      "message": "Autorizzazioni host richieste"
+   },
+   "Requires": {
+      "message": "Richieste"
+   },
+   "Reset_Section": {
+      "message": "Ripristina"
+   },
+   "Reset_list": {
+      "message": "Reimposta elenco"
+   },
+   "Resources": {
+      "message": "Risorse"
+   },
+   "Restart_Tampermonkey": {
+      "message": "Riavvia Tampermonkey"
+   },
+   "Restore": {
+      "message": "Ripristina"
+   },
+   "Restore_all": {
+      "message": "Ripristina tutto"
+   },
+   "Revoke_Access_Token": {
+      "message": "Revoca token accesso"
+   },
+   "Run_at": {
+      "message": "Esegui il"
+   },
+   "Run_in": {
+      "message": "Esegui in"
+   },
+   "Run_syntax_check": {
+      "message": "Esegui controllo sintassi"
+   },
+   "Running_scripts": {
+      "message": "Istanze script in esecuzione"
+   },
+   "Runtime_Host_Permissions": {
+      "message": "Autorizzazioni host runtime"
+   },
+   "Sandbox_Mode": {
+      "message": "Modo sandbox"
+   },
+   "Save": {
+      "message": "Salva"
+   },
+   "Save_to_disk": {
+      "message": "Salva su disco"
+   },
+   "Scan_the_QR_code_to_use_Tampermonkey_on_your_phone_or_tablet_": {
+      "message": "Scansiona il codice QR per usare Tampermonkey sul tuo telefono o tablet."
+   },
+   "Script_0name0_is_slowing_down_some_page_loads_": {
+      "message": "Lo script '$name$' sta rallentando il caricamento della pagina",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         }
+      }
+   },
+   "Script_Blacklist_Source": {
+      "message": "Sorgente elenco vietati script"
+   },
+   "Script_Include_Mode": {
+      "message": "Modo script utente @include"
+   },
+   "Script_Sync": {
+      "message": "Sincronizzazione script"
+   },
+   "Script_Tags": {
+      "message": "Tag script"
+   },
+   "Script_URL_detection": {
+      "message": "Rilevamento URL script"
+   },
+   "Script_Update": {
+      "message": "Aggiornamento script"
+   },
+   "Script_authors_can_secure_external_resources_by_adding_a_SRI_hash_to_the_URL_": {
+      "message": "Gli autori di script possono proteggere le risorse esterne aggiungendo un hash SRI all'URL sorgente."
+   },
+   "Script_cookies_access": {
+      "message": "Permetti agli script di accedere ai cookie"
+   },
+   "Script_local_files_access": {
+      "message": "Permetti agli script di accedere ai file locali"
+   },
+   "Script_menu_commands": {
+      "message": "Comandi menu"
+   },
+   "Script_name_0name0": {
+      "message": "Nome script: $name$",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         }
+      }
+   },
+   "Script_order": {
+      "message": "Ordine script"
+   },
+   "Scripts_activated_by_context_menu": {
+      "message": "Script utente che usano menu contestuali @run-at"
+   },
+   "Search": {
+      "message": "Cerca"
+   },
+   "Search_for": {
+      "message": "Cerca"
+   },
+   "Search_for_userscripts_for_this_tab": {
+      "message": "Cerca script utente in questa pagina"
+   },
+   "Searching_for_userscripts_for_this_tab": {
+      "message": "Ricerca script utente..."
+   },
+   "Security": {
+      "message": "Sicurezza"
+   },
+   "Select_All": {
+      "message": "Seleziona tutto"
+   },
+   "Select_All_Occurrences": {
+      "message": "Seleziona tutte le occorrenze"
+   },
+   "Select_Bookmarks": {
+      "message": "Seleziona segnalibri"
+   },
+   "Select_Line": {
+      "message": "Seleziona linea"
+   },
+   "Select_Next_Occurrence": {
+      "message": "Seleziona occorrenza successiva"
+   },
+   "Select_Scope": {
+      "message": "Seleziona scopo"
+   },
+   "Select_between_Brackets": {
+      "message": "Seleziona tra parentesi"
+   },
+   "Select_to_Sublime_Mark": {
+      "message": "Seleziona fino a marcatore evidenziazione"
+   },
+   "Selection": {
+      "message": "Selezione"
+   },
+   "Server_And_Manual": {
+      "message": "Remoto + manuale"
+   },
+   "Set_Sublime_Mark": {
+      "message": "Imposta marcatore evidenziazione"
+   },
+   "Settings": {
+      "message": "Impostazioni"
+   },
+   "Show_backups": {
+      "message": "Visualizza backup"
+   },
+   "Show_fixed_source": {
+      "message": "Visualizza codice sorgente corretto"
+   },
+   "Show_notification": {
+      "message": "Visualizza una notifica"
+   },
+   "Sites": {
+      "message": "Siti"
+   },
+   "Size": {
+      "message": "Dimensione"
+   },
+   "Skip_and_select_next_occurrence": {
+      "message": "Ignora e seleziona occorrenze successive"
+   },
+   "Skip_timeout__0seconds0_seconds_": {
+      "message": "Ignora timeout ($seconds$ secondi)",
+      "placeholders": {
+         "seconds": {
+            "content": "$1"
+         }
+      }
+   },
+   "Smart": {
+      "message": "Intelligente"
+   },
+   "Smart_Backspace": {
+      "message": "Backspace smart"
+   },
+   "Some_scripts_might_be_blocked_by_the_javascript_settings_for_this_page_or_a_script_blocker_": {
+      "message": "Alcuni script potrebbero venire bloccati dalle impostazioni di Javascript per questa pagina o da uno script blocker!"
+   },
+   "Sort": {
+      "message": "Ordina"
+   },
+   "Source": {
+      "message": "Sorgente"
+   },
+   "Source_Code": {
+      "message": "Codice sorgente"
+   },
+   "Spaces": {
+      "message": "Spazi"
+   },
+   "Split_into_Lines": {
+      "message": "Dividi nelle linee"
+   },
+   "Split_selection_by_line": {
+      "message": "Dividi selezione per linea"
+   },
+   "Start": {
+      "message": "Avvia"
+   },
+   "Stop": {
+      "message": "Stop"
+   },
+   "Storage": {
+      "message": "Storage"
+   },
+   "Store_data_in_incognito_mode": {
+      "message": "Memorizza dati in modalità incognito"
+   },
+   "Strict": {
+      "message": "Esatto"
+   },
+   "Sublime": {
+      "message": "Testo evidenziazione"
+   },
+   "Sublime_Mark": {
+      "message": "Marcatore evidenziazione"
+   },
+   "Subresource_Integrity": {
+      "message": "Integrità sotto risorse"
+   },
+   "Swap_with_Sublime_Mark": {
+      "message": "Scambia con marcatore evidenziazione"
+   },
+   "Sync_Now": {
+      "message": "Esegui ora"
+   },
+   "Sync_Reset": {
+      "message": "Ripristino sincronizzazione"
+   },
+   "Sync_Type": {
+      "message": "Tipo"
+   },
+   "Sync_failed": {
+      "message": "Sincronizzazione fallita"
+   },
+   "Sync_finished": {
+      "message": "Sincronizzazione completata"
+   },
+   "Sync_is_running": {
+      "message": "Sincronizzazione in corso"
+   },
+   "Synchronize_your_scripts_across_browsers_and_operation_systems": {
+      "message": "Elenco accessi script esterno Tampermonkey"
+   },
+   "System_Tags": {
+      "message": "Tag di sistema"
+   },
+   "TabMode": {
+      "message": "Modalità tabulazione"
+   },
+   "Tab_Size": {
+      "message": "Dimensione scheda"
+   },
+   "Tab_URL": {
+      "message": "Scheda URL"
+   },
+   "Tabs": {
+      "message": "Tabulazioni"
+   },
+   "Tag_Already_Exists": {
+      "message": "Questo tag esiste già"
+   },
+   "Tags": {
+      "message": "Tag"
+   },
+   "Tam": {
+      "description": "Nome bot di servizio",
+      "message": "Tam"
+   },
+   "Tampermonkey_and_script_version": {
+      "message": "Tampermonkey + versione script"
+   },
+   "Tampermonkey_has_no_access_to_this_page": {
+      "message": "Tampermonkey non ha accesso a questa pagina"
+   },
+   "Tampermonkey_has_no_file_access_permission_": {
+      "message": "Tampermonkey non ha il permesso di accedere ai file locali!"
+   },
+   "Tampermonkey_is_available_on_mobile_platforms": {
+      "message": "Tampermonkey è disponibile anche su piattaforme mobili"
+   },
+   "Tampermonkey_might_not_be_able_to_provide_access_to_the_unsafe_context_when_this_is_disabled": {
+      "message": "Tampermonkey potrebbe non essere in grado di fornire accesso al contesto non sicuro (unsafeWindow, funzioni e variabili della pagina) quando questa è disabilitata."
+   },
+   "Tampermonkey_needs_to_be_restarted_to_make_this_change_apply_Do_you_want_to_continue_": {
+      "message": "Per applicare le modifiche Tampermonkey deve essere riavviato.\n\nVuoi continuare?"
+   },
+   "Tampermonkey_version": {
+      "message": "Solo versione Tampermonkey"
+   },
+   "Tampermonkey_won_t_inject_into_other_tab_types_anymore_": {
+      "message": "Tampermonkey non inietterà più script in altri tipi di schede!"
+   },
+   "Templates": {
+      "message": "Modelli"
+   },
+   "Temporarily_allow": {
+      "message": "Permetti temporaneamente"
+   },
+   "Temporary": {
+      "message": "Temporaneamente"
+   },
+   "Temporary_domain_whitelist": {
+      "message": "Elenco temporaneo domini autorizzati"
+   },
+   "Text": {
+      "message": "Testo"
+   },
+   "TextArea": {
+      "message": "Area di testo"
+   },
+   "Thank_you_very_much_": {
+      "message": "Grazie infinite!"
+   },
+   "The_Browser_API_mode_requires_a_special_permission_": {
+      "message": "La modalità API browser richiede un permesso speciale."
+   },
+   "The_diff_for_this_script_is_too_large_to_render": {
+      "message": "Le differenze per questo script sono troppo grandi da renderizzare"
+   },
+   "The_downgraded_script_might_have_problems_to_read_its_stored_data_": {
+      "message": "L'installazione di uno script di versione precedente potrebbe causare problemi nella lettura dei dati salvati!"
+   },
+   "The_origin_of_this_script_cant_be_determined_": {
+      "message": "Attenzione: l'origine di questo script non può essere determinata.\nPotrebbe essere stato installato da un plugin malevolo di terze parti per catturare i dati privati o alcune impostazioni base del browser.\nIl sistema operativo o l'hardware sono stati modificati.!\n\nApri, verifica e salva lo script per abilitarlo."
+   },
+   "The_script_was_modified_locally_on_0date0__Updating_it_will_overwrite_your_changes_": {
+      "message": "Lo script è stato modificato localmente in data $date$.\nL'aggiornamento sovrascriverà le modifiche!",
+      "placeholders": {
+         "date": {
+            "content": "$1"
+         }
+      }
+   },
+   "The_script_was_successfully_deleted_": {
+      "message": "Lo script è stato correttamente eliminato."
+   },
+   "The_script_was_successfully_moved_to_the_trash_": {
+      "message": "Lo script è stato correttamente spostato nel cestino."
+   },
+   "The_update_url_has_changed_from_0oldurl0_to__0newurl0": {
+      "message": "L'URL per l'aggiornamento è cambiata da:\n    '$oldurl$'\n    a:\n    '$newurl$'\n",
+      "placeholders": {
+         "newurl": {
+            "content": "$2"
+         },
+         "oldurl": {
+            "content": "$1"
+         }
+      }
+   },
+   "Theme": {
+      "message": "Tema"
+   },
+   "There_are_no_active_scripts__Do_you_want_to_search_for_userscripts_": {
+      "description": "Una domanda posta dal bot di servizio",
+      "message": "Non ci sono script attivi.\nVuoi cercare degli userscript?"
+   },
+   "There_are_unsaved_changed_": {
+      "message": "Ci sono modifiche non salvate.\nVuoi davvero chiudere l'editor?"
+   },
+   "There_is_an_update_for_0name0_avaiable_": {
+      "message": "È disponibile un aggiornamento per '$name$':)",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         }
+      }
+   },
+   "This_external_resource_will_not_auto_update__Please_delete_it_in_order_to_enable_updates_again_": {
+      "message": "Questa risorsa esterna non verrà aggiornata automaticamente!\nPer abilitare nuovamente l'aggiornamento prima eliminala."
+   },
+   "This_gives_this_script_the_permission_to_retrieve_and_send_data_from_and_to_every_webpage__This_is_potentially_unsafe__Are_you_sure_you_want_to_continue_": {
+      "message": "Questo darà allo script il permesso di recuperare e inviare dati da e ad ogni pagina web.\nQuesto è potenzialmente rischioso!\n\nVuoi continuare?"
+   },
+   "This_is_a_possibly_foisted_script_and_a_modification_will_enable_it_": {
+      "message": "Non è possibile determinare l'origine di questo script.\nPotrebbe essere stato installato da una terza parte per catturare i dati privati o alcune impostazioni base del browser.\nIl sistema operativo o l'hardware sono stati modificati.\nQuesta modifica lo abiliterà!"
+   },
+   "This_is_a_system_script": {
+      "message": "Questo è uno script di sistema."
+   },
+   "This_is_a_userscript": {
+      "message": "Questo è uno script scritto in Javascript"
+   },
+   "This_option_allows_the_Tampermonkey_homepage_and_some_script_hosting_pages_to_determine_the_Tampermonkey_version_and_whether_a_script_is_installed_": {
+      "message": "Questa opzione consente alla pagina home di Tampermonkey e ad alcune pagine di hosting di script di determinare la versione di Tampermonkey e alcune informazioni di base sullo script (installati, versione, abilitati)."
+   },
+   "This_page_is_blacklisted_at_the_security_settings": {
+      "message": "Inserita nell'elenco vietati dalle impostazioni di sicurezza"
+   },
+   "This_script_does_not_provide_any__include_information_": {
+      "message": "Questo script non contiene nessuna informazione @include o info @match."
+   },
+   "This_script_does_not_require_any_special_powers_": {
+      "message": "Questo script non richiede nessuna opzione speciale."
+   },
+   "This_script_has_access_to_https_pages": {
+      "message": "Questo script ha accesso a pagine https."
+   },
+   "This_script_has_full_web_access": {
+      "message": "Questo script ha pieno accesso a internet."
+   },
+   "This_script_has_local_modifications_and_needs_to_be_updated_manually": {
+      "message": "Questo script ha modifiche locali e deve essere aggiornato manualmente!"
+   },
+   "This_script_is_blacklisted_": {
+      "message": "Questo script è nell'elenco vietati!"
+   },
+   "This_script_stores_data": {
+      "message": "Questo script memorizza dati per Tampermonkey."
+   },
+   "This_script_was_deleted": {
+      "message": "Questo script è stato eliminato"
+   },
+   "This_script_was_deleted_by_the_hoster_": {
+      "message": "Questo script è stato eliminato dall'hoster"
+   },
+   "This_script_was_executed_0count0_times": {
+      "message": "Questo script è stato eseguito $count$ volte",
+      "placeholders": {
+         "count": {
+            "content": "$1"
+         }
+      }
+   },
+   "This_script_was_executed_0count0_times_but_is_not_active_anymore": {
+      "message": "Questo script è stato eseguito $count$ volta/e ma non è più attivo",
+      "placeholders": {
+         "count": {
+            "content": "$1"
+         }
+      }
+   },
+   "This_script_was_not_executed": {
+      "message": "Questo script non è stato eseguito"
+   },
+   "This_script_was_not_executed_yet": {
+      "message": "Questo script non è ancora stato eseguito\n\nPossibili motivi: Quando la pagina è stata caricata... \n1. Tampermonkey non era pronto.\n2. lo script non esisteva o era disabilitato.\n3. l'URL non corrispondeva (comune nelle app a singola pagina, che modificano l'URL tramite JavaScript)\n\nAbilita e/o ricarica la scheda o usa un `@match` più generico e rileva i cambiamenti dell'URL con `window.onurlchange`."
+   },
+   "This_tag_is_not_part_of_the_system_tag_list_": {
+      "message": "Questo tag non fa parte dell'elenco dei tag di sistema"
+   },
+   "This_will_overwrite_your_global_settings_": {
+      "message": "Questo sovrascriverà le impostazioni globali!"
+   },
+   "This_will_remove_all_remote_data_from_sync_Ok_": {
+      "message": "Vuoi rimuovere tutti dati dalla sincronizzazione?"
+   },
+   "This_will_remove_all_scripts_and_reset_all_settings_Ok_": {
+      "message": "Vuoi veramente rimuovere tutti gli script e ripristinare tutte le impostazioni?"
+   },
+   "This_will_restart_Tampermonkey_Ok_": {
+      "message": "Vuoi riavviare Tampermonkey?"
+   },
+   "Today": {
+      "message": "Oggi"
+   },
+   "Toggle": {
+      "message": "Abilita/disabilita"
+   },
+   "Toggle_Block_Comment": {
+      "message": "Abilita/disabilita blocco commento"
+   },
+   "Toggle_Comment": {
+      "message": "Abilita/disabilita commento"
+   },
+   "Toggle_Comment_Indented": {
+      "message": "Abilita/disabilita commento indentato"
+   },
+   "Toggle_Enable": {
+      "message": "Abilita/disabilita"
+   },
+   "Trace": {
+      "message": "Traccia"
+   },
+   "Transpose": {
+      "message": "Trasponi"
+   },
+   "Trash_Mode": {
+      "message": "Modo Cestino"
+   },
+   "Trash_bin": {
+      "message": "Cestino"
+   },
+   "Treat_like__match": {
+      "message": "Tratta come @match"
+   },
+   "Trigger_Update": {
+      "message": "Esegui aggiornamento"
+   },
+   "Trim_trailing_whitespace_from_modified_lines": {
+      "message": "Taglia dalle linee modificate gli spazi iniziali e finali"
+   },
+   "Try_to_install_as_script": {
+      "message": "Prova ad installarlo come script"
+   },
+   "Type": {
+      "message": "Tipo"
+   },
+   "URL": {
+      "message": "URL"
+   },
+   "UUID": {
+      "message": "UUID"
+   },
+   "Unable_to_load_script_from_url_0url0": {
+      "message": "Impossibile caricare lo script dall'URL: \n $url$",
+      "placeholders": {
+         "url": {
+            "content": "$1"
+         }
+      }
+   },
+   "Unable_to_parse_0name0": {
+      "message": "Impossibile analizzare $name$",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         }
+      }
+   },
+   "Unable_to_parse_this_": {
+      "message": "Impossibile analizzare questo! :("
+   },
+   "Undo": {
+      "message": "Annulla modifica"
+   },
+   "Unfold": {
+      "message": "Espandi"
+   },
+   "Unfold_All": {
+      "message": "Espandi tutto"
+   },
+   "Unique_running_scripts": {
+      "message": "Script unici in esecuzione"
+   },
+   "Unknown_method_0name0": {
+      "message": "Metodo $name$ sconosciuto",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         }
+      }
+   },
+   "Unsafe": {
+      "message": "Non sicuro"
+   },
+   "Update": {
+      "message": "Aggiorna"
+   },
+   "Update_Notification": {
+      "message": "Visualizza notifiche aggiornamento per TM"
+   },
+   "Update_URL_": {
+      "message": "URL aggiornamento"
+   },
+   "Update_check_is_disabled": {
+      "message": "Il controllo aggiornamenti di questo script è disabilitato o non possibile"
+   },
+   "Update_interval": {
+      "message": "Intervallo aggiornamento"
+   },
+   "Update_local_script_0name0_0uuid0": {
+      "message": "Aggiorna script locale '$name$' ($uuid$)",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         },
+         "uuid": {
+            "content": "$2"
+         }
+      }
+   },
+   "Updated_to__0version0": {
+      "message": "Aggiornato a: $version$",
+      "placeholders": {
+         "version": {
+            "content": "$1"
+         }
+      }
+   },
+   "Updates": {
+      "message": "Aggiornamenti"
+   },
+   "Upper_Case": {
+      "message": "Maiuscolo"
+   },
+   "UserScripts_API": {
+      "message": "API script utente"
+   },
+   "UserScripts_API_Dynamic": {
+      "message": "API UserScripts dinamica"
+   },
+   "User_domain_blacklist": {
+      "message": "Elenco utente domini vietati"
+   },
+   "User_domain_whitelist": {
+      "message": "Elenco utente domini autorizzati"
+   },
+   "User_excludes": {
+      "message": "Esclusioni utente"
+   },
+   "User_includes": {
+      "message": "Inclusioni utente"
+   },
+   "User_matches": {
+      "message": "Corrispondenze utente"
+   },
+   "User_modified": {
+      "message": "Modificato"
+   },
+   "Userscript_Search": {
+      "message": "Ricerca script utente"
+   },
+   "Userscript_search_integration_mode": {
+      "message": "Integrazione ricerca script utente"
+   },
+   "Userscripts": {
+      "message": "Script"
+   },
+   "Using__include_is_potentially_unsafe_and_may_be_obsolete_soon___0off0_disables__include_completely__0match0__is_safe__but_may_not_compatible_the_script_developers_intention__0unsafe0__mostly_keeps_the_legacy_behavior_0default0__means__0used_default0": {
+      "message": "L'uso di @include è potenzialmente pericoloso e potrebbe essere obsoleto in Manifest v3 all'inizio del 2023.\nQuesta impostazione consente di configurare il modo in cui viene interpretato @include.\n'$off$' disabilita completamente @include, '$match$' è sicuro, ma potrebbe non essere compatibile con le intenzioni degli sviluppatori dello script.\n'$unsafe$' mantiene principalmente il comportamento precedente e '$default$' significa per ora '$used_default$'.",
+      "placeholders": {
+         "default": {
+            "content": "$4"
+         },
+         "match": {
+            "content": "$2"
+         },
+         "off": {
+            "content": "$1"
+         },
+         "unsafe": {
+            "content": "$3"
+         },
+         "used_default": {
+            "content": "$5"
+         }
+      }
+   },
+   "Utilities": {
+      "message": "Utilità"
+   },
+   "VSCode": {
+      "message": "VSCode"
+   },
+   "Validate_if_given": {
+      "message": "Validato se fornito"
+   },
+   "Validate_if_supported": {
+      "message": "Validato se possibile"
+   },
+   "Verbose": {
+      "message": "Dettagliato"
+   },
+   "Version": {
+      "message": "Versione"
+   },
+   "View": {
+      "message": "Visualizza"
+   },
+   "Vim": {
+      "message": "Vim"
+   },
+   "Waiting_for_sync_to_finish": {
+      "message": "In attesa completamento della sincronizzazione"
+   },
+   "Warning": {
+      "message": "Avviso"
+   },
+   "Warning_unsafe_site_warnings_might_appear_": {
+      "message": "Attenzione: se uno script contiene URL potenzialmente pericolose potrebbe apparire un avviso di sito non sicuro."
+   },
+   "WebDAV": {
+      "message": "WebDAV"
+   },
+   "Whitelist": {
+      "message": "Elenco autorizzati"
+   },
+   "Whitelisted_File_Extensions": {
+      "message": "Elenco estensioni file autorizzati"
+   },
+   "Whitelisted_Pages": {
+      "message": "Pagine in elenco autorizzati"
+   },
+   "Windows": {
+      "message": "Finestre"
+   },
+   "Would_you_like_to_know_how_to_overwrite_or_extend_a_script_s_includes_and_or_excludes_": {
+      "description": "Una domanda posta dal bot di servizio",
+      "message": "Vuoi sapere come sovrascrivere o estendere le inclusioni e/o le esclusioni di uno script?"
+   },
+   "Would_you_like_to_learn_how_to_export_and_import_your_scripts_": {
+      "description": "Una domanda posta dal bot di servizio",
+      "message": "Vuoi imparare come esportare e importare glii script?"
+   },
+   "Wrap_lines": {
+      "message": "A capo automatico"
+   },
+   "XHR_Security": {
+      "message": "Sicurezza XHR"
+   },
+   "Yandex_Disk": {
+      "message": "Yandex.Disk"
+   },
+   "Yank_Sublime_Mark": {
+      "message": "Marcatore evidenziazione Yank"
+   },
+   "Yes": {
+      "message": "Sì"
+   },
+   "You_are_about_to_downgrade_a_UserScript": {
+      "message": "Attenzione! Installazione script utente di versione precedente"
+   },
+   "You_are_about_to_install_a_UserScript_": {
+      "message": "Installazione script"
+   },
+   "You_are_about_to_modify_a_UserScript_": {
+      "message": "Modifica script"
+   },
+   "You_are_about_to_reinstall_a_UserScript_": {
+      "message": "Re-installazione script"
+   },
+   "You_are_about_to_update_a_UserScript_": {
+      "message": "Aggiorna script"
+   },
+   "You_can_add_your_custom_CSS_rules_here_": {
+      "message": "Qui puoi aggiungere le tue regole CSS per la UI di Tampermonkey.\nIn caso questo danneggi qualcosa puoi ripristinare la disposizione predefinita aggiungendo ?layout=reset all'URL pagina opzioni."
+   },
+   "You_can_add_your_custom_linter_config_here_": {
+      "message": "Puoi aggiungere qui la configurazione linter personalizzata."
+   },
+   "Your_language_is_not_supported__Click_here_to_get_intructions_how_to_translate_TM_": {
+      "message": "La tua lingua non è supportata?\nFai clic qui per sapere come tradurre Tampermonkey"
+   },
+   "Your_whitelist_seems_to_include_executable_files_This_means_your_userscripts_may_download_malware_or_spyware_to_your_harddisk_": {
+      "message": "Il tuo elenco autorizzati sembra includere file eseguibili!\nCiò significa che gli script utente potrebbero scaricare malware o spyware nel tuo disco fisso!!"
+   },
+   "Zip": {
+      "message": "ZIP"
+   },
+   "__Please_choose__": {
+      "message": "-- Scegli un'opzione --"
+   },
+   "_not_set_": {
+      "message": "\u003Cnon impostato>"
+   },
+   "by_0name0": {
+      "message": "per $name$",
+      "placeholders": {
+         "name": {
+            "content": "$1"
+         }
+      }
+   },
+   "connect_mode": {
+      "message": "Verifica @connect"
+   },
+   "extDescription": {
+      "message": "Cambia il web a piacimento con gli userscript"
+   },
+   "extName": {
+      "message": "Tampermonkey"
+   },
+   "extNameBeta": {
+      "message": "Tampermonkey BETA"
+   },
+   "extNameClassic": {
+      "message": "Tampermonkey Classic"
+   },
+   "extNameLegacy": {
+      "message": "Tampermonkey Legacy"
+   },
+   "extShortName": {
+      "message": "Tampermonkey"
+   },
+   "extShortNameBeta": {
+      "message": "TM BETA"
+   },
+   "extShortNameClassic": {
+      "message": "TM Classic"
+   },
+   "extShortNameLegacy": {
+      "message": "TM Legacy"
+   },
+   "fatal_error": {
+      "message": "errore fatale"
+   },
+   "overwritten_by_user": {
+      "message": "sovrascritta dalle impostazioni utente"
+   },
+   "require_and_resource": {
+      "message": "Esterni (@require e @resource)"
+   },
+   "severity_1": {
+      "message": "1 (più sicuro)"
+   },
+   "severity_10": {
+      "message": "10 (meno sicuro)"
+   },
+   "severity_2": {
+      "message": "2"
+   },
+   "severity_3": {
+      "message": "3"
+   },
+   "severity_4": {
+      "message": "4"
+   },
+   "severity_5": {
+      "message": "5"
+   },
+   "severity_6": {
+      "message": "6"
+   },
+   "severity_7": {
+      "message": "7"
+   },
+   "severity_8": {
+      "message": "8"
+   },
+   "severity_9": {
+      "message": "9"
+   },
+   "some_secs": {
+      "message": "alcuni"
+   },
+   "strict_mode": {
+      "message": "modo esatto"
+   },
+   "top_level_await": {
+      "message": "attesa livello superiore"
+   },
+   "v0version0": {
+      "message": "v. $version$",
+      "placeholders": {
+         "version": {
+            "content": "$1"
+         }
+      }
+   }
+}

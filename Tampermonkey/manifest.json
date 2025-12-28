@@ -1,0 +1,54 @@
+{
+   "action": {
+      "default_icon": {
+         "16": "images/icon_grey16.png",
+         "19": "images/icon_grey19.png",
+         "24": "images/icon_grey24.png",
+         "32": "images/icon_grey32.png",
+         "38": "images/icon_grey38.png"
+      },
+      "default_popup": "action.html",
+      "default_title": "Tampermonkey"
+   },
+   "background": {
+      "service_worker": "background.js"
+   },
+   "commands": {
+      "open-dashboard": {
+         "description": "Open dashboard"
+      },
+      "open-dashboard-with-running-scripts": {
+         "description": "Open dashboard with the current tab's URL used as filter"
+      },
+      "open-new-script": {
+         "description": "Open new script tab"
+      },
+      "toggle-enable": {
+         "description": "Toggle enable state"
+      }
+   },
+   "default_locale": "en",
+   "description": "__MSG_extDescription__",
+   "host_permissions": [ "\u003Call_urls>" ],
+   "icons": {
+      "128": "images/icon128.png",
+      "32": "images/icon.png",
+      "48": "images/icon48.png"
+   },
+   "incognito": "split",
+   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDjiyuc6OWY8gaVTe+b16fH2BBe0PQLMeUpEXSQvyv5a/6OiQ1D8bBLTfLvApD3zT2MZoXWu2KUILdkyg5OC/Tru8m+Js6e3RjHY9Rqbvnh8CJQgTJ+63L5w9aLsTvA2fqdDfhw8Mnl1GMcJd/RI/ZiBEm0stog0ZfyQjD1jpSEXQIDAQAB",
+   "manifest_version": 3,
+   "minimum_chrome_version": "120",
+   "name": "__MSG_extName__",
+   "offline_enabled": true,
+   "optional_permissions": [ "downloads" ],
+   "options_page": "options.html",
+   "options_ui": {
+      "open_in_tab": true,
+      "page": "options.html"
+   },
+   "permissions": [ "notifications", "unlimitedStorage", "tabs", "idle", "webNavigation", "webRequest", "webRequestBlocking", "storage", "contextMenus", "chrome://favicon/", "clipboardWrite", "cookies", "alarms", "declarativeNetRequestWithHostAccess", "scripting", "userScripts", "offscreen" ],
+   "short_name": "__MSG_extShortName__",
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "5.4.1"
+}
