@@ -1,4 +1,23 @@
-(()=>{function e(r){var s=n[r];if(void 0!==s)return s.exports;var i=n[r]={exports:{}};return t[r](i,i.exports,e),i.exports}var t={462:(e,t,n)=>{e.exports=function e(t,n,r){function s(o){if(!n[o]){if(!t[o]){if(i)return i(o,!0);var a=new Error("Cannot find module '"+o+"'");throw a.code="MODULE_NOT_FOUND",a}var c=n[o]={exports:{}};t[o][0].call(c.exports,(function(e){return s(t[o][1][e]||e)}),c,c.exports,e,t,n,r)}return n[o].exports}for(var i=void 0,o=0;o<r.length;o++)s(r[o]);return s}({
+// Minimal background service worker for Lyra Loader extension.
+// Purpose: avoid executing the original Tampermonkey background logic
+// which depends on chrome.i18n and other APIs that may be undefined
+// in the Electron extension environment. This worker does nothing
+// but establish a stable background context so the extension will
+// load without runtime errors.
+
+/* eslint-disable no-console */
+
+self.addEventListener('install', (event) => {
+	event.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener('activate', (event) => {
+	event.waitUntil(self.clients.claim());
+});
+
+// Keep background quiet and non-intrusive
+console.log('Lyra Loader background worker active');
+
 1:[function(e,t,n){"use strict";var r=e("./utils"),s=e("./support"),i="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";n.encode=function(e){for(var t,n,s,o,a,c,l,u=[],d=0,A=e.length,h=A,p="string"!==r.getTypeOf(e);d<e.length;)h=A-d,p?(t=e[d++],n=d<A?e[d++]:0,s=d<A?e[d++]:0):(t=e.charCodeAt(d++),n=d<A?e.charCodeAt(d++):0,s=d<A?e.charCodeAt(d++):0),o=t>>2,a=(3&t)<<4|n>>4,c=h>1?(15&n)<<2|s>>6:64,l=h>2?63&s:64,u.push(i.charAt(o)+i.charAt(a)+i.charAt(c)+i.charAt(l))
 ;return u.join("")},n.decode=function(e){var t,n,r,o,a,c,l=0,u=0;if("data:"===e.substr(0,5))throw new Error("Invalid base64 input, it looks like a data url.");var d,A=3*(e=e.replace(/[^A-Za-z0-9\+\/\=]/g,"")).length/4;if(e.charAt(e.length-1)===i.charAt(64)&&A--,e.charAt(e.length-2)===i.charAt(64)&&A--,A%1!=0)throw new Error("Invalid base64 input, bad content length.");for(d=s.uint8array?new Uint8Array(0|A):new Array(0|A);l<e.length;)t=i.indexOf(e.charAt(l++))<<2|(o=i.indexOf(e.charAt(l++)))>>4,
 n=(15&o)<<4|(a=i.indexOf(e.charAt(l++)))>>2,r=(3&a)<<6|(c=i.indexOf(e.charAt(l++))),d[u++]=t,64!==a&&(d[u++]=n),64!==c&&(d[u++]=r);return d}},{"./support":30,"./utils":32}],2:[function(e,t){"use strict";function n(e,t,n,r,s){this.compressedSize=e,this.uncompressedSize=t,this.crc32=n,this.compression=r,this.compressedContent=s}var r=e("./external"),s=e("./stream/DataWorker"),i=e("./stream/DataLengthProbe"),o=e("./stream/Crc32Probe");i=e("./stream/DataLengthProbe"),n.prototype={
