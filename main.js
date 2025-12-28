@@ -2857,21 +2857,6 @@ function createWindow(state = null) {
         detachedViews.delete(newWin);
     });
 
-    // Save scroll position when window is moved or resized
-    newWin.on('move', async () => {
-        const view = newWin.getBrowserView();
-        if (view && view.webContents && !view.webContents.isDestroyed()) {
-            try {
-                const scrollY = await view.webContents.executeJavaScript(
-                    `(document.scrollingElement || document.documentElement).scrollTop`
-                );
-                newWin.savedScrollPosition = scrollY;
-            } catch (e) {
-                // Ignore errors
-            }
-        }
-    });
-
     // Helper function to update BrowserView bounds
     const updateViewBounds = async (saveScroll = true, restoreScroll = true, updateBounds = true) => {
         const view = newWin.getBrowserView();
