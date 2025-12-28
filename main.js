@@ -7088,6 +7088,48 @@ ipcMain.on('generate-pdf-from-json', async (event, jsonString, title) => {
             return;
         }
 
+        // Normalize conversation turns to expected shape: ensure each turn has
+        // `human.text` and `assistant.text` strings. Support variants like
+        // `human.versions` (array) or nested message structures from exporter.
+        try {
+            if (Array.isArray(jsonData.conversation)) {
+                jsonData.conversation = jsonData.conversation.map(turn => {
+                    const newTurn = Object.assign({}, turn);
+
+                    // Normalize human
+                    if (newTurn.human) {
+                        if (typeof newTurn.human.text === 'undefined' || newTurn.human.text === null) {
+                            if (Array.isArray(newTurn.human.versions) && newTurn.human.versions.length > 0) {
+                                newTurn.human.text = newTurn.human.versions.map(v => v?.text || v?.content || '').join('\n\n').trim();
+                            } else if (typeof newTurn.human === 'string') {
+                                newTurn.human = { text: newTurn.human };
+                            } else {
+                                // try other common fields
+                                newTurn.human.text = newTurn.human.text || newTurn.human.message || '';
+                            }
+                        }
+                    }
+
+                    // Normalize assistant
+                    if (newTurn.assistant) {
+                        if (typeof newTurn.assistant.text === 'undefined' || newTurn.assistant.text === null) {
+                            if (Array.isArray(newTurn.assistant.versions) && newTurn.assistant.versions.length > 0) {
+                                newTurn.assistant.text = newTurn.assistant.versions.map(v => v?.text || v?.content || '').join('\n\n').trim();
+                            } else if (typeof newTurn.assistant === 'string') {
+                                newTurn.assistant = { text: newTurn.assistant };
+                            } else {
+                                newTurn.assistant.text = newTurn.assistant.text || newTurn.assistant.message || '';
+                            }
+                        }
+                    }
+
+                    return newTurn;
+                });
+            }
+        } catch (e) {
+            console.warn('Failed to normalize conversation turns for PDF generation:', e);
+        }
+
         const chatHTML = [];
         // Load marked dynamically (marked is an ES module) to avoid require() ESM errors
         const { marked } = await import('marked');
@@ -7155,8 +7197,14 @@ ipcMain.on('generate-pdf-from-json', async (event, jsonString, title) => {
         });
 
         if (chatHTML.length === 0) {
-            dialog.showErrorBox('Export Failed', 'No conversation content found to export.');
-            return;
+            // Fallback: if no chat HTML was produced, embed the raw JSON as a single assistant message
+            try {
+                const raw = JSON.stringify(jsonData, null, 2);
+                chatHTML.push({ type: 'model', html: marked.parse(raw), text: raw });
+            } catch (e) {
+                dialog.showErrorBox('Export Failed', 'No conversation content found to export.');
+                return;
+            }
         }
 
         // Store pending data and trigger PDF direction selection
