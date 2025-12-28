@@ -561,20 +561,22 @@
         const LyraCommunicator = {
             open: async (jsonData, filename) => {
                 try {
+                    // If running inside the Electron app (GeminiDesk), prefer native PDF generation
+                    if (window.electronAPI && window.electronAPI.generatePdfFromJson) {
+                        try {
+                            window.electronAPI.generatePdfFromJson(jsonData, filename.replace('.json', ''));
+                            return true;
+                        } catch (e) {
+                            console.error('[Lyra] electronAPI.generatePdfFromJson failed:', e);
+                            // Fall through to attempt opening exporter page in browser
+                        }
+                    }
+
+                    // Otherwise, open the online exporter in a new window/tab and postMessage to it
                     const exporterWindow = window.open(Config.EXPORTER_URL, '_blank');
                     if (!exporterWindow) {
                         alert(i18n.t('cannotOpenExporter'));
                         return false;
-                    }
-
-                    // Check if running within GeminiDesk (Electron) and use native PDF generation
-                    if (window.electronAPI && window.electronAPI.generatePdfFromJson) {
-                        try {
-                            exporterWindow.close(); // Close the blank window we just opened
-                        } catch (e) {}
-
-                        window.electronAPI.generatePdfFromJson(jsonData, filename.replace('.json', ''));
-                        return true;
                     }
 
                     const checkInterval = setInterval(() => {

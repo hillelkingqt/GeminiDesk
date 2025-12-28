@@ -590,22 +590,42 @@ try {
         return canvasData;
     }
         const LyraCommunicator = {
+
             open: async (jsonData, filename) => {
                 try {
+                    // Prefer native Electron API when available (avoid opening external exporter)
+                    try {
+                        const parsed = (() => { try { return JSON.parse(jsonData); } catch (e) { return null; } })();
+                        const title = (parsed && (parsed.title || parsed.name)) || filename || `${State.currentPlatform}_export_${new Date().toISOString().slice(0,10)}.json`;
+
+                        if (window.electronAPI) {
+                            if (typeof window.electronAPI.generatePdfFromJson === 'function') {
+                                try {
+                                    await window.electronAPI.generatePdfFromJson(jsonData, title.replace('.json', ''));
+                                    return true;
+                                } catch (e) {
+                                    console.warn('[Lyra] electronAPI.generatePdfFromJson failed, will fall back', e);
+                                }
+                            }
+                            if (typeof window.electronAPI.exportPdf === 'function') {
+                                try {
+                                    const chatHTML = parsed ? Utils.buildChatHTMLFromExportData(parsed) : [{ type: 'model', html: `<pre>${jsonData ? jsonData.substring(0, 1000) : ''}</pre>` }];
+                                    await window.electronAPI.exportPdf({ title, chatHTML });
+                                    return true;
+                                } catch (e) {
+                                    console.warn('[Lyra] electronAPI.exportPdf failed, will fall back', e);
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('[Lyra] Error detecting/calling electronAPI for PDF export:', e);
+                    }
+
+                    // Fall back to opening the online exporter page
                     const exporterWindow = window.open(Config.EXPORTER_URL, '_blank');
                     if (!exporterWindow) {
                         alert(i18n.t('cannotOpenExporter'));
                         return false;
-                    }
-
-                    // Check if running within GeminiDesk (Electron) and use native PDF generation
-                    if (window.electronAPI && window.electronAPI.generatePdfFromJson) {
-                        try {
-                            exporterWindow.close(); // Close the blank window we just opened
-                        } catch (e) {}
-
-                        window.electronAPI.generatePdfFromJson(jsonData, filename.replace('.json', ''));
-                        return true;
                     }
 
                     const checkInterval = setInterval(() => {

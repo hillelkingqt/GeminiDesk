@@ -22,7 +22,6 @@ const fetch = require('node-fetch');
 const { autoUpdater } = require('electron-updater');
 const AutoLaunch = require('auto-launch');
 const translations = require('./translations.js');
-const marked = require('marked');
 
 // Path to unpacked extension root (must point to folder that contains manifest.json)
 // In production (packaged app), use process.resourcesPath which points to resources/
@@ -7090,6 +7089,8 @@ ipcMain.on('generate-pdf-from-json', async (event, jsonString, title) => {
         }
 
         const chatHTML = [];
+        // Load marked dynamically (marked is an ES module) to avoid require() ESM errors
+        const { marked } = await import('marked');
 
         // Helper to process images
         const processImages = (images) => {
