@@ -174,13 +174,31 @@ function getSettings(shouldClone = true) {
     return cachedSettings;
 }
 
-function saveSettings(settings) {
+// ⚡ Bolt Optimization:
+// Converted to async to use non-blocking I/O.
+// Updates cachedSettings immediately (optimistic update) so the UI remains responsive and
+// 'getSettings' always returns the latest data, even while the file write happens in the background.
+// Also reuses the stringified JSON to avoid double serialization overhead.
+async function saveSettings(settings) {
+    // Keep a reference to the previous cache in case we need to revert
+    const previousCache = cachedSettings;
+
     try {
-        fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
-        // Update cache with a deep copy to ensure isolation, ONLY after successful write
-        cachedSettings = JSON.parse(JSON.stringify(settings));
+        const settingsStr = JSON.stringify(settings, null, 2);
+
+        // Update cache immediately with a deep copy to ensure isolation
+        // We parse the string we just created, which is effectively a deep clone
+        cachedSettings = JSON.parse(settingsStr);
+
+        // Asynchronous write to avoid blocking the main thread
+        await fs.promises.writeFile(settingsPath, settingsStr, 'utf8');
     } catch (e) {
         console.error("Failed to save settings to file.", e);
+        // Revert cache if write failed to avoid lying to the user about persistence
+        if (previousCache) {
+            cachedSettings = previousCache;
+            console.warn("Reverted cached settings due to write failure.");
+        }
     }
 }
 
