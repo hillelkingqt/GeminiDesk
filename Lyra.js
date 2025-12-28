@@ -567,6 +567,16 @@
                         return false;
                     }
 
+                    // Check if running within GeminiDesk (Electron) and use native PDF generation
+                    if (window.electronAPI && window.electronAPI.generatePdfFromJson) {
+                        try {
+                            exporterWindow.close(); // Close the blank window we just opened
+                        } catch (e) {}
+
+                        window.electronAPI.generatePdfFromJson(jsonData, filename.replace('.json', ''));
+                        return true;
+                    }
+
                     const checkInterval = setInterval(() => {
                         try {
                             exporterWindow.postMessage({

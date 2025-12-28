@@ -22,6 +22,7 @@ const fetch = require('node-fetch');
 const { autoUpdater } = require('electron-updater');
 const AutoLaunch = require('auto-launch');
 const translations = require('./translations.js');
+const marked = require('marked');
 
 // Path to unpacked extension root (must point to folder that contains manifest.json)
 // In production (packaged app), use process.resourcesPath which points to resources/
@@ -7076,6 +7077,95 @@ ipcMain.on('cancel-pdf-export', () => {
     pendingPdfExportData = null;
     selectedPdfDirection = null;
     selectedExportFormat = null;
+});
+
+ipcMain.on('generate-pdf-from-json', async (event, jsonString, title) => {
+    try {
+        const jsonData = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString;
+        const win = BrowserWindow.fromWebContents(event.sender);
+
+        if (!jsonData || !jsonData.conversation) {
+            console.error('Invalid JSON data for PDF generation');
+            return;
+        }
+
+        const chatHTML = [];
+
+        // Helper to process images
+        const processImages = (images) => {
+            if (!images || !Array.isArray(images) || images.length === 0) return '';
+            let html = '<div class="generated-images" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">';
+            images.forEach(img => {
+                let src = '';
+                if (img.data) {
+                    const format = img.format || 'image/png';
+                    src = `data:${format};base64,${img.data}`;
+                } else if (img.original_src && img.original_src.startsWith('http')) {
+                    src = img.original_src;
+                }
+
+                if (src) {
+                    html += `<div class="generated-image-container"><img src="${src}" style="max-width: 100%; border-radius: 8px;"></div>`;
+                }
+            });
+            html += '</div>';
+            return html;
+        };
+
+        // Convert Lyra conversation format to chatHTML format
+        jsonData.conversation.forEach(turn => {
+            // Handle human message
+            if (turn.human) {
+                let humanHtml = '';
+                if (turn.human.images) {
+                    humanHtml += processImages(turn.human.images);
+                }
+                if (turn.human.text) {
+                    humanHtml += marked.parse(turn.human.text);
+                }
+
+                if (humanHtml) {
+                    chatHTML.push({
+                        type: 'user',
+                        html: humanHtml,
+                        text: turn.human.text || ''
+                    });
+                }
+            }
+
+            // Handle assistant message
+            if (turn.assistant) {
+                let assistantHtml = '';
+                if (turn.assistant.images) {
+                    assistantHtml += processImages(turn.assistant.images);
+                }
+                if (turn.assistant.text) {
+                    assistantHtml += marked.parse(turn.assistant.text);
+                }
+
+                if (assistantHtml) {
+                    chatHTML.push({
+                        type: 'model',
+                        html: assistantHtml,
+                        text: turn.assistant.text || ''
+                    });
+                }
+            }
+        });
+
+        if (chatHTML.length === 0) {
+            dialog.showErrorBox('Export Failed', 'No conversation content found to export.');
+            return;
+        }
+
+        // Store pending data and trigger PDF direction selection
+        pendingPdfExportData = { win, title: title || jsonData.title || 'Chat Export', chatHTML };
+        openPdfDirectionWindow(win);
+
+    } catch (err) {
+        console.error('Failed to generate PDF from JSON:', err);
+        dialog.showErrorBox('Export Error', 'Failed to process conversation data for PDF export.');
+    }
 });
 ipcMain.on('onboarding-complete', (event) => {
     settings.onboardingShown = true;
