@@ -516,6 +516,31 @@ app.whenReady().then(async () => {
     }
 });
 
+// ================================================================= //
+// Main App Lifecycle Events
+// ================================================================= //
+
+app.on('window-all-closed', () => {
+    // On macOS, applications and their menu bar stay active until the user quits
+    // explicitly with Cmd + Q. On other platforms, applications usually quit.
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
+});
+
+app.on('activate', () => {
+    // On macOS it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+    }
+});
+
+app.whenReady().then(() => {
+    const menu = createApplicationMenu();
+    Menu.setApplicationMenu(menu);
+});
+
 const trayModule = require('./modules/tray');
 
 // ================================================================= //
@@ -2221,6 +2246,93 @@ const shortcutActions = {
         }
     }
 };
+
+function createApplicationMenu() {
+    const isMac = process.platform === 'darwin';
+    const newWindowShortcut = settings.shortcuts.newWindow;
+
+    const template = [
+        ...(isMac ? [{
+            label: app.name,
+            submenu: [
+                { role: 'about' },
+                { type: 'separator' },
+                { role: 'services' },
+                { type: 'separator' },
+                { role: 'hide' },
+                { role: 'hideOthers' },
+                { role: 'unhide' },
+                { type: 'separator' },
+                { role: 'quit' }
+            ]
+        }] : []),
+        {
+            label: 'File',
+            submenu: [
+                {
+                    label: 'New Window',
+                    accelerator: newWindowShortcut,
+                    click: shortcutActions.newWindow
+                },
+                { type: 'separator' },
+                isMac ? { role: 'close' } : { role: 'quit' }
+            ]
+        },
+        {
+            label: 'Edit',
+            submenu: [
+                { role: 'undo' },
+                { role: 'redo' },
+                { type: 'separator' },
+                { role: 'cut' },
+                { role: 'copy' },
+                { role: 'paste' },
+                ...(isMac ? [
+                    { role: 'pasteAndMatchStyle' },
+                    { role: 'delete' },
+                    { role: 'selectAll' },
+                    { type: 'separator' },
+                    {
+                        label: 'Speech',
+                        submenu: [
+                            { role: 'startSpeaking' },
+                            { role: 'stopSpeaking' }
+                        ]
+                    }
+                ] : [
+                    { role: 'delete' },
+                    { type: 'separator' },
+                    { role: 'selectAll' }
+                ])
+            ]
+        },
+        {
+            label: 'View',
+            submenu: [
+                { role: 'reload' },
+                { role: 'forceReload' },
+                { role: 'toggleDevTools' },
+                { type: 'separator' },
+                { role: 'resetZoom' },
+                { role: 'zoomIn' },
+                { role: 'zoomOut' },
+                { type: 'separator' },
+                { role: 'togglefullscreen' }
+            ]
+        },
+        ...(isMac ? [{
+            label: 'Window',
+            submenu: [
+                { role: 'minimize' },
+                { role: 'zoom' },
+                { type: 'separator' },
+                { role: 'front' }
+            ]
+        }] : [])
+    ];
+
+    return Menu.buildFromTemplate(template);
+}
 
 function registerShortcuts() {
     globalShortcut.unregisterAll();
@@ -7807,8 +7919,10 @@ ipcMain.on('update-setting', (event, key, value) => {
         }
     }
     if (key.startsWith('shortcuts.') || key === 'shortcutsGlobal' || key === 'shortcutsGlobalPerKey') {
-        console.log('🔑 Shortcuts settings updated, re-registering shortcuts...');
+        console.log('🔑 Shortcuts settings updated, re-registering shortcuts and application menu...');
         registerShortcuts(); // This function will now use the updated settings
+        const menu = createApplicationMenu();
+        Menu.setApplicationMenu(menu);
     }
 
     if (key === 'language') {
