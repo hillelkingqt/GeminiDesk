@@ -441,7 +441,7 @@ async function createAndManageLoginWindowForPartition(loginUrl, targetPartition,
                             choiceWin.setResizable(false);
                             choiceWin.setSize(choiceSize.width, choiceSize.height);
                             choiceWin.center();
-                            choiceWin.setAlwaysOnTop(true, 'screen-saver');
+                            choiceWin.setAlwaysOnTop(true, 'floating');
                             choiceWin.focus();
                             choiceWin.show();
                         } catch (e) {
@@ -843,7 +843,7 @@ function applyInvisibilityMode(win) {
  * 
  * On macOS, this function uses special configuration to ensure the window appears
  * on top of fullscreen applications by calling setVisibleOnAllWorkspaces with
- * visibleOnFullScreen option and setting the alwaysOnTop level to 'screen-saver'.
+ * visibleOnFullScreen option and setting the alwaysOnTop level to 'floating'.
  * 
  * On other platforms (Windows, Linux), it simply calls setAlwaysOnTop with the
  * boolean value.
@@ -858,7 +858,7 @@ function applyAlwaysOnTopSetting(win, shouldBeOnTop) {
             if (shouldBeOnTop) {
                 // macOS-specific configuration for fullscreen window support
                 win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-                win.setAlwaysOnTop(true, 'screen-saver');
+                win.setAlwaysOnTop(true, 'floating');
             } else {
                 // Disable alwaysOnTop and restore normal workspace behavior
                 win.setVisibleOnAllWorkspaces(false);
@@ -8171,7 +8171,7 @@ function openMcpSetupWindow(parent) {
         mcpSetupWin.once('ready-to-show', () => {
             if (mcpSetupWin) {
                 mcpSetupWin.show();
-                mcpSetupWin.setAlwaysOnTop(true, 'screen-saver');
+                mcpSetupWin.setAlwaysOnTop(true, 'floating');
             }
         });
 
@@ -8349,7 +8349,7 @@ function showPromptOverlay(text, targetWindow) {
     promptOverlayWin.setBounds({ x, y, width: overlayWidth, height: overlayHeight });
 
     // Ensure on top
-    promptOverlayWin.setAlwaysOnTop(true, 'screen-saver');
+    promptOverlayWin.setAlwaysOnTop(true, 'floating');
 
     promptOverlayWin.showInactive(); // Show without taking focus
 
