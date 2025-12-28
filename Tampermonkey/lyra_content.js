@@ -53,6 +53,24 @@
         };
     }
 })();
+// Safe prompt wrapper: some environments (embedded WebViews) disallow prompt()
+try {
+    (function() {
+        const _origPrompt = window.prompt;
+        window.prompt = function(message, defaultValue) {
+            try {
+                if (typeof _origPrompt === 'function') return _origPrompt(message, defaultValue);
+            } catch (e) {
+                console.warn('[Lyra] window.prompt() unavailable or blocked:', e && e.message);
+            }
+            // If prompt is unavailable, return the provided default value (or empty string)
+            // This keeps calling code running instead of treating it as a thrown error.
+            return typeof defaultValue !== 'undefined' && defaultValue !== null ? defaultValue : '';
+        };
+    })();
+} catch (e) {
+    console.warn('[Lyra] Failed to install safe prompt override:', e && e.message);
+}
 // ==UserScript==
 // @name         Lyra Exporter Fetch (One-Click AI Chat Backup)
 // @name:zh-CN 支持Claude、ChatGPT、Grok、Gemini、NotebookLM等多平台的全功能AI对话跨分支全局搜索文档PDF长截图导出管理工具

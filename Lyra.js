@@ -52,6 +52,23 @@
         if (window.lyraFetchInitialized) return;
         window.lyraFetchInitialized = true;
 
+        // Wrap global prompt to avoid environments where prompt() is disabled
+        try {
+            const _origPrompt = window.prompt;
+            window.prompt = function(message, defaultValue) {
+                try {
+                    if (typeof _origPrompt === 'function') return _origPrompt(message, defaultValue);
+                } catch (e) {
+                    console.warn('[Lyra] window.prompt() threw an error or is unsupported:', e && e.message);
+                }
+                // If prompt is unavailable, return the provided default value (or empty string)
+                // This preserves execution flow where code expects a string rather than throwing.
+                return typeof defaultValue !== 'undefined' && defaultValue !== null ? defaultValue : '';
+            };
+        } catch (e) {
+            console.warn('[Lyra] Failed to override window.prompt():', e && e.message);
+        }
+
         // Trusted Types support for CSP compatibility
         let trustedPolicy = null;
         if (typeof window.trustedTypes !== 'undefined' && window.trustedTypes.createPolicy) {
@@ -277,9 +294,32 @@
 
             createButton: (innerHTML, onClick, useInlineStyles = false) => {
                 const btn = document.createElement('button');
+                btn.type = 'button';
                 btn.className = 'lyra-button';
                 safeSetInnerHTML(btn, innerHTML);
-                btn.addEventListener('click', () => onClick(btn));
+
+                // Ensure button receives pointer events even if parent has restrictive styles
+                btn.style.pointerEvents = 'auto';
+
+                // Provide visible debug logging and safe handler invocation
+                btn.addEventListener('click', (ev) => {
+                    try {
+                        ev.preventDefault();
+                    } catch (e) {}
+                    try {
+                        console.log('[Lyra] Button clicked:', (btn.textContent || '').trim());
+                    } catch (e) {}
+
+                    try {
+                        const result = onClick(btn);
+                        // If handler returned a promise, attach a catch to report errors
+                        if (result && typeof result.then === 'function' && typeof result.catch === 'function') {
+                            result.catch(err => console.error('[Lyra] Async handler error:', err));
+                        }
+                    } catch (err) {
+                        console.error('[Lyra] Button handler error:', err);
+                    }
+                });
 
                 if (useInlineStyles) {
                     Object.assign(btn.style, {
@@ -301,6 +341,8 @@
                         boxSizing: 'border-box',
                         whiteSpace: 'nowrap'
                     });
+                    // keep pointer-events override when using inline styles
+                    btn.style.pointerEvents = 'auto';
                 }
 
                 return btn;
