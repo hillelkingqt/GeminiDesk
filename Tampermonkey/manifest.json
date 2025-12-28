@@ -1,6 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Lyra Auto Loader",
+  "default_locale": "en",
   "version": "1.0",
   "description": "Automatically loads Lyra.js on supported AI chat platforms.",
   "permissions": ["scripting", "activeTab"],
