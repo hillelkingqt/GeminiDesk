@@ -197,12 +197,17 @@
             background: var(--glass-surface);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius-lg);
-            padding: 24px;
-            /* More padding */
+            padding: 14px 24px;
+            /* Default (collapsed): Compact vertical padding */
             display: flex;
             flex-direction: column;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .setting-category.open {
+            padding: 24px;
+            /* Expanded: Full padding */
         }
 
         /* Subtle hover effect for categories */
@@ -802,6 +807,56 @@
         html[dir="rtl"] .setting-item>div:first-child {
             margin-left: 15px;
             margin-right: 0;
+        }
+
+        /* Accordion Styles */
+        .setting-category-content {
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin 0.3s ease;
+            max-height: 0;
+            opacity: 0;
+            margin-top: 0;
+        }
+
+        .setting-category.open .setting-category-content {
+            max-height: 2000px;
+            /* Large enough to fit content */
+            opacity: 1;
+            margin-top: 16px;
+        }
+
+        .setting-category-title {
+            cursor: pointer;
+            justify-content: space-between;
+            user-select: none;
+            margin-bottom: 0;
+            /* Remove bottom margin when collapsed */
+            border-bottom: none;
+            /* Remove border when collapsed */
+            transition: border-bottom-color 0.2s ease, margin-bottom 0.2s ease;
+        }
+
+        .setting-category.open .setting-category-title {
+            margin-bottom: 20px;
+            border-bottom: none;
+        }
+
+        .accordion-chevron {
+            width: 24px;
+            height: 24px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+
+        .setting-category.open .accordion-chevron {
+            transform: rotate(180deg);
+            color: var(--accent-primary);
+        }
+
+        /* Hover effect for title */
+        .setting-category-title:hover .accordion-chevron {
+            color: var(--text-primary);
         }
 
         html[dir="rtl"] .setting-item>div:first-child {
@@ -1684,6 +1739,75 @@
     <script src="../translations.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Init Accordion Structure ---
+            const initAccordion = () => {
+                const categories = document.querySelectorAll('.setting-category');
+
+                categories.forEach(category => {
+                    const title = category.querySelector('.setting-category-title');
+                    if (!title) return;
+
+                    // prevent double init
+                    if (category.querySelector('.setting-category-content')) return;
+
+                    // Create content wrapper
+                    const contentWrapper = document.createElement('div');
+                    contentWrapper.className = 'setting-category-content';
+
+                    // Move all children after title into wrapper
+                    // We iterate backwards or safely to not mess up indices, 
+                    // but simpler: nextSibling loop
+                    let next = title.nextSibling;
+                    while (next) {
+                        const toMove = next;
+                        next = next.nextSibling;
+                        contentWrapper.appendChild(toMove);
+                    }
+                    category.appendChild(contentWrapper);
+
+                    // Create Chevron
+                    const chevron = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    chevron.classList.add('accordion-chevron');
+                    chevron.setAttribute('viewBox', '0 0 24 24');
+                    chevron.setAttribute('fill', 'none');
+                    chevron.setAttribute('stroke', 'currentColor');
+                    chevron.setAttribute('stroke-width', '2');
+                    chevron.setAttribute('stroke-linecap', 'round');
+                    chevron.setAttribute('stroke-linejoin', 'round');
+
+                    const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+                    polyline.setAttribute('points', '6 9 12 15 18 9');
+                    chevron.appendChild(polyline);
+
+                    title.appendChild(chevron);
+
+                    // Add click listener
+                    title.addEventListener('click', () => {
+                        const isOpen = category.classList.contains('open');
+
+                        // Exclusive open: Close all others
+                        if (!isOpen) {
+                            document.querySelectorAll('.setting-category.open').forEach(opened => {
+                                opened.classList.remove('open');
+                                const openedContent = opened.querySelector('.setting-category-content');
+                                if (openedContent) openedContent.style.maxHeight = null;
+                            });
+                        }
+
+                        // Toggle current
+                        category.classList.toggle('open');
+
+                        if (category.classList.contains('open')) {
+                            contentWrapper.style.maxHeight = contentWrapper.scrollHeight + "px";
+                        } else {
+                            contentWrapper.style.maxHeight = null;
+                        }
+                    });
+                });
+            };
+
+            initAccordion();
+
             // --- Settings Search Logic ---
             const settingsSearchInput = document.getElementById('settings-search-input');
             const settingsSearchClear = document.getElementById('settings-search-clear');
@@ -1699,12 +1823,33 @@
                         settingsSearchClear.classList.remove('visible');
                     }
 
+                    // Accordion Logic
                     const categories = document.querySelectorAll('.setting-category');
                     let hasVisibleItems = false;
+
+                    // If search query is empty, reset to default state (all collapsed)
+                    if (query.length === 0) {
+                        categories.forEach(category => {
+                            category.style.display = '';
+                            // Remove open class to collapse using our accordion logic
+                            category.classList.remove('open');
+                            const content = category.querySelector('.setting-category-content');
+                            if (content) {
+                                content.style.maxHeight = null;
+                            }
+                            // Reset items display
+                            const items = category.querySelectorAll('.setting-item');
+                            items.forEach(item => item.style.display = '');
+                        });
+                        return;
+                    }
 
                     categories.forEach(category => {
                         const items = category.querySelectorAll('.setting-item');
                         let categoryHasVisibleItems = false;
+
+                        // If searching, we need to temporarily show everything to check content
+                        // but we handle visibility based on matches
 
                         items.forEach(item => {
                             // Skip items that are programmatically hidden
@@ -1716,11 +1861,11 @@
                             const matches = text.includes(query);
 
                             if (matches) {
-                                item.style.display = '';
+                                item.style.display = ''; // Show item
                                 categoryHasVisibleItems = true;
                                 hasVisibleItems = true;
                             } else {
-                                item.style.display = 'none';
+                                item.style.display = 'none'; // Hide non-matching item
                             }
                         });
 
@@ -1729,6 +1874,7 @@
                         const title = titleEl ? titleEl.textContent.toLowerCase() : '';
 
                         if (title.includes(query)) {
+                            // If title matches, show all items in this category
                             items.forEach(item => {
                                 if (!(item.classList.contains('english-only-feature') && item.style.display === 'none')) {
                                     item.style.display = '';
@@ -1741,12 +1887,20 @@
 
                         if (categoryHasVisibleItems) {
                             category.style.display = '';
-                            // Reset animation
-                            category.style.animation = 'none';
-                            category.offsetHeight;
-                            category.style.animation = null;
+                            // Expand the category for search results
+                            category.classList.add('open');
+                            const content = category.querySelector('.setting-category-content');
+                            if (content) {
+                                content.style.maxHeight = content.scrollHeight + 'px';
+                            }
                         } else {
                             category.style.display = 'none';
+                            // Collapse hidden categories
+                            category.classList.remove('open');
+                            const content = category.querySelector('.setting-category-content');
+                            if (content) {
+                                content.style.maxHeight = null;
+                            }
                         }
                     });
                 };
