@@ -73,6 +73,7 @@ const defaultSettings = {
       { id: 'newChat', action: 'new-chat', label: 'New Chat', enabled: false, icon: 'add_comment', color: '#8ab4f8' },
       { id: 'tempChat', action: 'temp-chat', label: 'Temporary Chat', enabled: false, icon: 'visibility_off', color: '#5f6368' },
       { id: 'newWindow', action: 'new-window', label: 'New Window', enabled: false, icon: 'open_in_new', color: '#c58af9' },
+      { id: 'summarize', action: 'summarize-clipboard', label: 'Summarize Clipboard', enabled: false, icon: 'summarize', color: '#ffcc80' },
       { id: 'screenshot', action: 'screenshot', label: 'Screenshot', enabled: true, icon: 'screenshot_region', color: '#e8eaed' },
       { id: 'settings', action: 'open-settings', label: 'Settings', enabled: true, icon: 'settings', color: '#5f6368' },
       { id: 'voice', action: 'voice-assistant', label: 'Voice Mode', enabled: false, icon: 'mic', color: '#fa7b17' },

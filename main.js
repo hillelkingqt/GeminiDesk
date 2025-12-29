@@ -1709,6 +1709,81 @@ const shortcutActions = {
             }).catch(console.error);
         }
     },
+    summarizeClipboard: () => {
+        // 1. Get clipboard text
+        const text = clipboard.readText();
+        if (!text || !text.trim()) {
+            // Optional: Show a notification or feedback that clipboard is empty
+            console.log('Summarize Clipboard: Clipboard is empty');
+            return;
+        }
+
+        const promptText = `Summarize the following text:\n\n${text.trim()}`;
+
+        // 2. Open new Flash window (fastest) and insert prompt
+        // We reuse createNewChatWithModel('Flash') but we need to inject the prompt after it loads.
+        // Since createNewChatWithModel doesn't return the window/view easily or support callbacks,
+        // we'll implement a custom flow here.
+
+        console.log('Summarize Clipboard: Starting flow...');
+
+        // Find existing window or create new
+        let targetWin = BrowserWindow.getFocusedWindow();
+        if (!targetWin || targetWin.__internal) {
+             const allWindows = BrowserWindow.getAllWindows();
+             targetWin = allWindows.find(w => !w.__internal && w.isVisible() && !w.isDestroyed());
+        }
+
+        if (!targetWin) {
+            targetWin = createWindow();
+        }
+
+        if (targetWin.isMinimized()) targetWin.restore();
+        targetWin.show();
+        targetWin.focus();
+
+        const view = targetWin.getBrowserView();
+        if (!view) return; // Should not happen
+
+        // 3. Switch to Flash model (for speed) and start new chat
+        // We can reuse the logic from changeModelFlash, but we need to wait for it to be ready.
+
+        // Strategy:
+        // A. Navigate to new chat with Flash model (URL param for AI Studio, script for Gemini)
+        // B. Wait for load
+        // C. Inject prompt
+
+        if (targetWin.appMode === 'aistudio') {
+             view.webContents.loadURL('https://aistudio.google.com/prompts/new_chat?model=gemini-flash-latest');
+             // Wait for load then inject
+             const onDidFinishLoad = () => {
+                 setTimeout(() => executeDefaultPrompt(view, promptText, 'aistudio'), 2000);
+                 view.webContents.removeListener('did-finish-load', onDidFinishLoad);
+             };
+             view.webContents.on('did-finish-load', onDidFinishLoad);
+        } else {
+             // For Gemini, we might need to rely on the "New Chat" logic then switch model, then inject.
+             // Simplification: Just use the current model if we can't easily switch programmatically with guarantee.
+             // BUT user wants "Smarter". Let's try to switch to Flash if possible, or just use current.
+             // Let's use the 'tempChat' or 'flash' logic if we can.
+
+             // Let's just open a new chat (default model) to ensure clean slate, then inject.
+             // Ideally we'd switch to Flash, but the script is async fire-and-forget.
+
+             // Let's try to use the `createNewChatWithModel` logic but we can't chain it easily.
+             // Alternative: Just load the Gemini app URL, and on load, inject.
+             view.webContents.loadURL('https://gemini.google.com/app');
+
+             const onDidFinishLoad = () => {
+                 // Wait a bit for the app to settle
+                 setTimeout(() => {
+                     executeDefaultPrompt(view, promptText, 'gemini');
+                 }, 3000);
+                 view.webContents.removeListener('did-finish-load', onDidFinishLoad);
+             };
+             view.webContents.on('did-finish-load', onDidFinishLoad);
+        }
+    },
     tempChat: () => {
         const focusedWindow = BrowserWindow.getFocusedWindow();
         if (!focusedWindow || !focusedWindow.appMode) return;
@@ -8657,6 +8732,8 @@ ipcMain.on('pie-menu-action', (event, action) => {
         createNewChatWithModel('thinking');
     } else if (action === 'new-window-pro') {
         createNewChatWithModel('pro');
+    } else if (action === 'summarize-clipboard') {
+        shortcutActions.summarizeClipboard();
     } else if (action === 'new-chat') {
         shortcutActions.newChat();
     } else if (action === 'new-window') {

@@ -542,6 +542,31 @@
         const messageDiv = document.getElementById('feedback-message');
         const closeButton = document.getElementById('close-btn');
 
+        // Confetti function
+        function fireConfetti() {
+            const count = 200;
+            const defaults = {
+                origin: { y: 0.7 }
+            };
+
+            function fire(particleRatio, opts) {
+                confetti(Object.assign({}, defaults, opts, {
+                    particleCount: Math.floor(count * particleRatio)
+                }));
+            }
+
+            fire(0.25, { spread: 26, startVelocity: 55 });
+            fire(0.2, { spread: 60 });
+            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+            fire(0.1, { spread: 120, startVelocity: 45 });
+        }
+
+        // Load Confetti Script
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js';
+        document.head.appendChild(script);
+
         // Close Handler
         closeButton.addEventListener('click', () => {
             if (window.electronAPI && window.electronAPI.closeShareIdeasWindow) {
@@ -606,6 +631,7 @@
                     feedbackInput.value = '';
                     contactEmail.value = '';
                     contactTelegram.value = '';
+                    if (window.confetti) fireConfetti();
                 } else {
                     throw new Error(result.message || 'Server error');
                 }
