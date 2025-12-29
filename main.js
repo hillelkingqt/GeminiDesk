@@ -1,15 +1,24 @@
 const { app, BrowserWindow, BrowserView, globalShortcut, ipcMain, dialog, screen, shell, session, nativeTheme, clipboard, nativeImage, Menu, Tray } = require('electron');
 
-// Enable remote debugging port early so Chromium extensions and devtools work reliably
+// Enable remote debugging port only if explicitly requested via flag or in dev mode
+const isDebugMode = process.argv.includes('--debug-mode') || process.argv.includes('--remote-debugging-port');
+if (isDebugMode) {
+    try {
+        if (!process.argv.includes('--remote-debugging-port')) {
+             app.commandLine.appendSwitch('remote-debugging-port', '9222');
+        }
+        console.log('Remote debugging enabled on port 9222');
+    } catch (e) {
+        console.warn('Could not set chromium switches:', e && e.message ? e.message : e);
+    }
+}
+
+// Reduce noisy Chromium/extension logs to avoid console spam
 try {
-    app.commandLine.appendSwitch('remote-debugging-port', '9222');
-    // Reduce noisy Chromium/extension logs to avoid console spam
     app.commandLine.appendSwitch('disable-logging');
     app.commandLine.appendSwitch('v', '0');
     app.commandLine.appendSwitch('log-level', '3'); // Fatal only
-} catch (e) {
-    console.warn('Could not set chromium switches:', e && e.message ? e.message : e);
-}
+} catch (e) { }
 const https = require('https');
 
 const path = require('path');
@@ -578,6 +587,41 @@ let notificationIntervalId = null;
 let agentProcess = null;
 let tray = null;
 let mcpProxyProcess = null; // Background MCP proxy process
+
+// ================================================================= //
+// Security: Content Security Policy (CSP)
+// ================================================================= //
+app.on('web-contents-created', (event, contents) => {
+    // Determine the source of the content to apply appropriate policies
+    contents.on('will-navigate', (event, navigationUrl) => {
+        const parsedUrl = new URL(navigationUrl);
+        // specific validation...
+    });
+    
+    // Prevent new window creation from untrusted sources if not handled separately
+    contents.setWindowOpenHandler(({ url }) => {
+        // ... validation logic is mostly handled in specific window creation checks
+        // but a global safe default is good.
+        if (url.startsWith('https://')) return { action: 'allow' };
+        return { action: 'deny' };
+    });
+});
+
+// Apply CSP headers
+app.whenReady().then(() => {
+    session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+        callback({
+            responseHeaders: {
+                ...details.responseHeaders,
+                'Content-Security-Policy': [
+                    // Relaxed CSP to allow external images/scripts needed by Gemini/AI Studio
+                    // script-src 'self' 'unsafe-eval' 'unsafe-inline' https:; - needed for complex apps like Gemini
+                    "default-src 'self' https: data: blob:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' https: data: blob:;"
+                ]
+            }
+        });
+    });
+});
 
 // Track active screenshot-on-send mode per window ID
 const screenshotSendModeActive = new Map();
