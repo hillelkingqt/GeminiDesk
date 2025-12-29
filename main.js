@@ -844,7 +844,7 @@ async function executeDefaultPrompt(view, promptContent, mode) {
 // Settings Management (Using Module)
 // ================================================================= //
 
-const { getSettings, saveSettings, defaultSettings, settingsPath } = settingsModule;
+const { getSettings, saveSettings, saveSettingsAsync, defaultSettings, settingsPath } = settingsModule;
 let settings = getSettings();
 
 // Helper function to apply invisibility mode (content protection) to a window
@@ -1020,8 +1020,11 @@ const { forceOnTop, broadcastToAllWebContents, broadcastToWindows, reportErrorTo
 
 // Debounced version of saveSettings to prevent race conditions with rapid updates
 const debouncedSaveSettings = debounce((settingsToSave) => {
-    saveSettings(settingsToSave);
-    console.log('Settings saved via debounce');
+    saveSettingsAsync(settingsToSave).then(() => {
+        console.log('Settings saved via debounce (async)');
+    }).catch(err => {
+        console.error('Failed to save settings via debounce:', err);
+    });
 }, 300);
 
 // ================================================================= //
@@ -7615,7 +7618,7 @@ ipcMain.handle('add-custom-prompt', async (event, prompt) => {
     }
 
     settings.customPrompts.push(newPrompt);
-    saveSettings(settings);
+    await saveSettingsAsync(settings);
     broadcastToWindows('settings-updated', settings);
     return newPrompt;
 });
@@ -7636,7 +7639,7 @@ ipcMain.handle('update-custom-prompt', async (event, prompt) => {
     }
 
     settings.customPrompts[index] = { ...settings.customPrompts[index], ...prompt };
-    saveSettings(settings);
+    await saveSettingsAsync(settings);
     broadcastToWindows('settings-updated', settings);
     return settings.customPrompts[index];
 });
@@ -7654,7 +7657,7 @@ ipcMain.handle('delete-custom-prompt', async (event, promptId) => {
     }
 
     settings.customPrompts.splice(index, 1);
-    saveSettings(settings);
+    await saveSettingsAsync(settings);
     broadcastToWindows('settings-updated', settings);
     return true;
 });
@@ -7678,7 +7681,7 @@ ipcMain.handle('set-default-prompt', async (event, promptId) => {
         settings.defaultPromptId = null;
     }
 
-    saveSettings(settings);
+    await saveSettingsAsync(settings);
     broadcastToWindows('settings-updated', settings);
     return true;
 });
