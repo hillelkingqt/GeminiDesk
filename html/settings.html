@@ -1097,7 +1097,8 @@
 
             <!-- Always visible: quick access to MCP Setup window -->
             <div class="setting-item">
-                <div class="setting-label"><strong>MCP Setup</strong><span>Open the MCP SuperAssistant setup window with
+                <div class="setting-label"><strong data-i18n="mcpSetup-label">MCP Setup</strong><span
+                        data-i18n="mcpSetup-desc">Open the MCP SuperAssistant setup window with
                         instructions and auto-setup.</span></div>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <button id="open-mcp-setup-global" class="action-button" title="Open MCP Setup"
@@ -1158,13 +1159,15 @@
                         class="slider"></span></label>
             </div>
             <div class="setting-item">
-                <div class="setting-label"><strong>Show Mode Toggle Button</strong><span>Display the Gemini / AI Studio
+                <div class="setting-label"><strong data-i18n="showModeToggle-label">Show Mode Toggle
+                        Button</strong><span data-i18n="showModeToggle-desc">Display the Gemini / AI Studio
                         mode switch.</span></div>
                 <label class="toggle-switch"><input type="checkbox" id="setting-showModeToggleButton"><span
                         class="slider"></span></label>
             </div>
             <div class="setting-item">
-                <div class="setting-label"><strong>Show Screenshot-on-Send Button</strong><span>Add a button to the top
+                <div class="setting-label"><strong data-i18n="showScreenshotSend-label">Show Screenshot-on-Send
+                        Button</strong><span data-i18n="showScreenshotSend-desc">Add a button to the top
                         bar to toggle screenshot-on-send mode.</span></div>
                 <label class="toggle-switch"><input type="checkbox" id="setting-showScreenshotSendButton"><span
                         class="slider"></span></label>
@@ -2282,7 +2285,11 @@
                             const labelDiv = document.createElement('div');
                             labelDiv.className = 'setting-label';
                             const strong = document.createElement('strong');
-                            strong.textContent = action.label;
+                            const i18nKey = `pie-${action.id}`;
+                            strong.setAttribute('data-i18n', i18nKey);
+                            // Try to get translation, fallback to label
+                            const currentDict = translations[currentLanguage] || translations.en;
+                            strong.textContent = currentDict[i18nKey] || action.label;
                             labelDiv.appendChild(strong);
 
                             const toggleLabel = document.createElement('label');
