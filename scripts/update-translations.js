@@ -8,18 +8,20 @@ const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const MODEL = 'google/gemini-3-flash-preview';
 
 if (!OPENROUTER_API_KEY) {
-    console.warn('WARNUNG: Kein OPENROUTER_API_KEY in .env gefunden. Überspringe automatische Übersetzung.');
+    console.warn('WARNING: No OPENROUTER_API_KEY found in .env. Skipping automatic translation.');
     process.exit(0);
 }
 
-// Funktion zum Senden einer Anfrage an OpenRouter
+// Function to send a request to OpenRouter
 async function translateBatch(sourceTexts, targetLang) {
-    console.log(`Übersetze ${Object.keys(sourceTexts).length} Einträge nach ${targetLang}...`);
+    console.log(`Translating ${Object.keys(sourceTexts).length} entries to ${targetLang}...`);
 
-    const prompt = `Du bist ein professioneller Übersetzer für Software-Interfaces. 
-    Übersetze die Werte des folgenden JSON-Objekts vom Englischen ins ${targetLang === 'de' ? 'Deutsche' : targetLang}. 
-    Behalte die Schlüssel EXAKT bei. 
-    Antworte NUR mit dem validen JSON-Objekt, kein Markdown, kein erklärender Text.
+    const targetLangName = targetLang === 'de' ? 'German' : targetLang;
+
+    const prompt = `You are a professional translator for software interfaces. 
+    Translate the values of the following JSON object from English to ${targetLangName}. 
+    Keep the keys EXACTLY as they are. 
+    Reply ONLY with the valid JSON object, no markdown, no explanatory text.
     
     JSON:
     ${JSON.stringify(sourceTexts, null, 2)}`;
@@ -43,18 +45,18 @@ async function translateBatch(sourceTexts, targetLang) {
         });
 
         if (!response.ok) {
-            throw new Error(`API Fehler: ${response.status} ${response.statusText}`);
+            throw new Error(`API Error: ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
         let content = data.choices[0].message.content;
 
-        // Versuchen, Markdown-Codeblöcke zu entfernen, falls vorhanden
+        // Try to remove Markdown code blocks if present
         content = content.replace(/```json\n?|\n?```/g, '').trim();
 
         return JSON.parse(content);
     } catch (error) {
-        console.error(`Fehler bei der Übersetzung nach ${targetLang}:`, error.message);
+        console.error(`Error translating to ${targetLang}:`, error.message);
         return null;
     }
 }
@@ -63,7 +65,7 @@ async function main() {
     const en = translations['en'];
     let hasChanges = false;
 
-    // Alle Sprachen außer Englisch durchgehen
+    // Iterate through all languages except English
     for (const lang of Object.keys(translations)) {
         if (lang === 'en') continue;
 
@@ -76,11 +78,11 @@ async function main() {
 
         const missingCount = Object.keys(missingKeys).length;
         if (missingCount > 0) {
-            console.log(`Sprache '${lang}': ${missingCount} fehlende Übersetzungen gefunden.`);
+            console.log(`Language '${lang}': ${missingCount} missing translations found.`);
 
-            // Um Limits nicht zu sprengen, könnte man hier batchen.
-            // Wir nehmen erstmal an, dass es in einen Request passt, ansonsten müssten wir chunken.
-            // Einfaches Chunking für Batch-Größe von ca. 50
+            // To avoid hitting limits, we could batch here.
+            // We assume for now it fits in one request, otherwise we would need to chunk.
+            // Simple chunking for batch size of approx. 50
             const keys = Object.keys(missingKeys);
             const CHUNK_SIZE = 50;
 
@@ -92,28 +94,28 @@ async function main() {
                 const translatedChunk = await translateBatch(chunkObj, lang);
 
                 if (translatedChunk) {
-                    // Mischen der neuen Übersetzungen
+                    // Merge new translations
                     translations[lang] = { ...translations[lang], ...translatedChunk };
                     hasChanges = true;
                 } else {
-                    console.error(`Konnte Chunk für ${lang} nicht übersetzen. Überspringe.`);
+                    console.error(`Could not translate chunk for ${lang}. Skipping.`);
                 }
             }
 
         } else {
-            // console.log(`Sprache '${lang}' ist aktuell.`);
+            // console.log(`Language '${lang}' is up to date.`);
         }
     }
 
     if (hasChanges) {
-        console.log('Änderungen erkannt, speichere translations.js ...');
+        console.log('Changes detected, saving translations.js ...');
         const filePath = path.join(__dirname, '..', 'translations.js');
         const fileContent = `const translations = ${JSON.stringify(translations, null, 4)};\n\nmodule.exports = translations;\n`;
 
         fs.writeFileSync(filePath, fileContent, 'utf8');
-        console.log('translations.js erfolgreich aktualisiert.');
+        console.log('translations.js successfully updated.');
     } else {
-        console.log('Keine neuen Übersetzungen erforderlich.');
+        console.log('No new translations required.');
     }
 }
 
