@@ -17,6 +17,7 @@ const defaultSettings = {
     defaultMode: 'ask',
     autoStart: true,
     startMinimized: false,
+    startInBackground: false,
     alwaysOnTop: true,
     lastShownNotificationId: null,
     lastMessageData: null,

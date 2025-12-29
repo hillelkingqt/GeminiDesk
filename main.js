@@ -4709,7 +4709,7 @@ app.whenReady().then(() => {
 
     if (!hasPreUpdateWindows) {
         // Only create windows from normal restore/new if we're not restoring from update
-        const shouldShow = !settings.startMinimized;
+        const shouldShow = !settings.startMinimized && !settings.startInBackground;
         if (settings.restoreWindows && Array.isArray(settings.savedWindows) && settings.savedWindows.length) {
             settings.savedWindows.forEach(state => createWindow(state, shouldShow));
         } else {

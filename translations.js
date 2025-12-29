@@ -35,6 +35,8 @@ const translations = {
         "autoStart-desc": "Start GeminiDesk automatically.",
         "startMinimized-label": "Start Minimized",
         "startMinimized-desc": "Start the app minimized to the tray.",
+        "startInBackground-label": "Start in Background",
+        "startInBackground-desc": "Start the app in the background without opening the window.",
         "alwaysOnTop-label": "Always on Top",
         "alwaysOnTop-desc": "Keep the window above others.",
         "showInTaskbar-label": "Show in Taskbar",
@@ -493,7 +495,9 @@ const translations = {
         "disableSpellcheck-label": "Désactiver le correcteur orthographique",
         "disableSpellcheck-desc": "Désactiver la vérification orthographique pour éviter les soulignements rouges sur les textes non anglais.",
         "geminimarkEnabled-label": "Activer le moteur de rendu Markdown Gemini",
-        "geminimarkEnabled-desc": "Activer le moteur de rendu Markdown et LaTeX dans Gemini (affiche le Markdown et le LaTeX dans les requêtes utilisateur)."
+        "geminimarkEnabled-desc": "Activer le moteur de rendu Markdown et LaTeX dans Gemini (affiche le Markdown et le LaTeX dans les requêtes utilisateur).",
+        "startInBackground-label": "Démarrer en arrière-plan",
+        "startInBackground-desc": "Démarrer l'application en arrière-plan sans ouvrir la fenêtre."
     },
     "he": {
         "settings-title": "הגדרות",
@@ -741,7 +745,9 @@ const translations = {
         "pieMenu-desc": "פתיחת תפריט הגישה המהירה.",
         "appVersion-label": "גרסת אפליקציה",
         "startMinimized-label": "הפעל במצב ממוזער",
-        "startMinimized-desc": "הפעל את האפליקציה כשהיא ממוזערת למגש המערכת."
+        "startMinimized-desc": "הפעל את האפליקציה כשהיא ממוזערת למגש המערכת.",
+        "startInBackground-label": "הפעלה ברקע",
+        "startInBackground-desc": "הפעלת האפליקציה ברקע מבלי לפתוח את החלון."
     },
     "ru": {
         "settings-title": "Настройки",
@@ -989,7 +995,9 @@ const translations = {
         "newChatWithThinking-label": "Новый чат с Thinking",
         "newChatWithThinking-desc": "Открывает новый чат и выбирает модель Thinking.",
         "tempChat-label": "Временный чат",
-        "tempChat-desc": "Открывает временный чат (инкогнито/эфемерный)."
+        "tempChat-desc": "Открывает временный чат (инкогнито/эфемерный).",
+        "startInBackground-label": "Запуск в фоновом режиме",
+        "startInBackground-desc": "Запускать приложение в фоновом режиме без открытия окна."
     },
     "es": {
         "settings-title": "Configuración",
@@ -1237,7 +1245,9 @@ const translations = {
         "tempChat-label": "Chat temporal",
         "tempChat-desc": "Abre un chat temporal (incógnito/efímero).",
         "pieMenu-label": "Menú radial",
-        "pieMenu-desc": "Abre el menú de acceso rápido."
+        "pieMenu-desc": "Abre el menú de acceso rápido.",
+        "startInBackground-label": "Iniciar en segundo plano",
+        "startInBackground-desc": "Inicia la aplicación en segundo plano sin abrir la ventana."
     },
     "de": {
         "settings-title": "Einstellungen",
@@ -1485,7 +1495,9 @@ const translations = {
         "tempChat-label": "Temporärer Chat",
         "tempChat-desc": "Öffnet einen temporären Chat (Inkognito/Ephemer).",
         "pieMenu-label": "Pie-Menü",
-        "pieMenu-desc": "Öffnet das Schnellzugriffsmenü."
+        "pieMenu-desc": "Öffnet das Schnellzugriffsmenü.",
+        "startInBackground-label": "Im Hintergrund starten",
+        "startInBackground-desc": "Die App im Hintergrund starten, ohne das Fenster zu öffnen."
     },
     "it": {
         "settings-title": "Impostazioni",
@@ -1733,7 +1745,9 @@ const translations = {
         "tempChat-label": "Chat temporanea",
         "tempChat-desc": "Apre una chat temporanea (Incognito/Effimera).",
         "pieMenu-label": "Menu a torta",
-        "pieMenu-desc": "Apre il menu di accesso rapido."
+        "pieMenu-desc": "Apre il menu di accesso rapido.",
+        "startInBackground-label": "Avvia in background",
+        "startInBackground-desc": "Avvia l'app in background senza aprire la finestra."
     },
     "pt": {
         "settings-title": "Configurações",
@@ -1981,7 +1995,9 @@ const translations = {
         "tempChat-label": "Chat Temporário",
         "tempChat-desc": "Abre um chat temporário (Incógnito/Efêmero).",
         "pieMenu-label": "Menu de Pizza",
-        "pieMenu-desc": "Abre o menu de acesso rápido."
+        "pieMenu-desc": "Abre o menu de acesso rápido.",
+        "startInBackground-label": "Iniciar em segundo plano",
+        "startInBackground-desc": "Inicia o aplicativo em segundo plano sem abrir a janela."
     },
     "nl": {
         "settings-title": "Instellingen",
@@ -2229,7 +2245,9 @@ const translations = {
         "tempChat-label": "Tijdelijke chat",
         "tempChat-desc": "Opent een tijdelijke chat (Incognito/Efemeraal).",
         "pieMenu-label": "Pie-menu",
-        "pieMenu-desc": "Open het menu voor snelle toegang."
+        "pieMenu-desc": "Open het menu voor snelle toegang.",
+        "startInBackground-label": "Op de achtergrond starten",
+        "startInBackground-desc": "Start de app op de achtergrond zonder het venster te openen."
     },
     "pl": {
         "settings-title": "Ustawienia",
@@ -2477,7 +2495,9 @@ const translations = {
         "tempChat-desc": "Otwiera czat tymczasowy (Incognito/Efemeryczny).",
         "shortcut-temp-chat": "Czat tymczasowy",
         "pieMenu-label": "Menu kołowe",
-        "pieMenu-desc": "Otwiera menu szybkiego dostępu."
+        "pieMenu-desc": "Otwiera menu szybkiego dostępu.",
+        "startInBackground-label": "Uruchom w tle",
+        "startInBackground-desc": "Uruchamia aplikację w tle bez otwierania okna."
     },
     "tr": {
         "settings-title": "Ayarlar",
@@ -2725,7 +2745,9 @@ const translations = {
         "tempChat-desc": "Geçici bir sohbet açar (Gizli/Geçici).",
         "shortcut-temp-chat": "Geçici Sohbet",
         "pieMenu-label": "Pasta Menü",
-        "pieMenu-desc": "Hızlı erişim menüsünü açar."
+        "pieMenu-desc": "Hızlı erişim menüsünü açar.",
+        "startInBackground-label": "Arka Planda Başlat",
+        "startInBackground-desc": "Uygulamayı pencereyi açmadan arka planda başlat."
     },
     "zh": {
         "settings-title": "设置",
@@ -2973,7 +2995,9 @@ const translations = {
         "tempChat-desc": "开启一个临时对话（无痕/即时模式）。",
         "shortcut-temp-chat": "临时对话",
         "pieMenu-label": "轮盘菜单",
-        "pieMenu-desc": "打开快速访问菜单。"
+        "pieMenu-desc": "打开快速访问菜单。",
+        "startInBackground-label": "后台启动",
+        "startInBackground-desc": "在后台启动应用而不打开窗口。"
     },
     "zh-tw": {
         "settings-title": "設定",
@@ -3221,7 +3245,9 @@ const translations = {
         "tempChat-desc": "開啟臨時對話（無痕/即時）。",
         "shortcut-temp-chat": "臨時對話",
         "pieMenu-label": "圓盤選單",
-        "pieMenu-desc": "開啟快速存取選單。"
+        "pieMenu-desc": "開啟快速存取選單。",
+        "startInBackground-label": "在背景啟動",
+        "startInBackground-desc": "在背景啟動應用程式，不開啟視窗。"
     },
     "ja": {
         "settings-title": "設定",
@@ -3469,7 +3495,9 @@ const translations = {
         "lang-zh-tw": "繁體中文",
         "shortcut-temp-chat": "一時的なチャット",
         "pieMenu-label": "パイメニュー",
-        "pieMenu-desc": "クイックアクセスメニューを開きます。"
+        "pieMenu-desc": "クイックアクセスメニューを開きます。",
+        "startInBackground-label": "バックグラウンドで起動",
+        "startInBackground-desc": "ウィンドウを開かずに、アプリをバックグラウンドで起動します。"
     },
     "ko": {
         "settings-title": "설정",
@@ -3717,7 +3745,9 @@ const translations = {
         "lang-zh-tw": "繁體中文",
         "shortcut-temp-chat": "임시 채팅",
         "pieMenu-label": "파이 메뉴",
-        "pieMenu-desc": "빠른 액세스 메뉴를 엽니다."
+        "pieMenu-desc": "빠른 액세스 메뉴를 엽니다.",
+        "startInBackground-label": "백그라운드에서 시작",
+        "startInBackground-desc": "창을 열지 않고 백그라운드에서 앱을 시작합니다."
     },
     "hi": {
         "settings-title": "सेटिंग्स",
@@ -3965,7 +3995,9 @@ const translations = {
         "tempChat-desc": "एक अस्थायी चैट (गुप्त/अल्पकालिक) खोलता है।",
         "shortcut-temp-chat": "अस्थायी चैट",
         "pieMenu-label": "पाई मेनू",
-        "pieMenu-desc": "त्वरित पहुँच मेनू खोलें।"
+        "pieMenu-desc": "त्वरित पहुँच मेनू खोलें।",
+        "startInBackground-label": "पृष्ठभूमि में प्रारंभ करें",
+        "startInBackground-desc": "विंडो खोले बिना ऐप को पृष्ठभूमि में प्रारंभ करें।"
     },
     "ar": {
         "settings-title": "الإعدادات",
@@ -4213,7 +4245,9 @@ const translations = {
         "tempChat-desc": "فتح دردشة مؤقتة (وضع التصفح المتخفي/عابر).",
         "shortcut-temp-chat": "دردشة مؤقتة",
         "pieMenu-label": "القائمة الدائرية",
-        "pieMenu-desc": "فتح قائمة الوصول السريع."
+        "pieMenu-desc": "فتح قائمة الوصول السريع.",
+        "startInBackground-label": "البدء في الخلفية",
+        "startInBackground-desc": "بدء تشغيل التطبيق في الخلفية دون فتح النافذة."
     },
     "bn": {
         "settings-title": "সেটিংস",
@@ -4461,7 +4495,9 @@ const translations = {
         "tempChat-label": "অস্থায়ী চ্যাট",
         "tempChat-desc": "একটি অস্থায়ী চ্যাট খোলে (ইনকগনিটো/ক্ষণস্থায়ী)।",
         "pieMenu-label": "পাই মেনু (Pie Menu)",
-        "pieMenu-desc": "কুইক অ্যাক্সেস মেনু খুলুন।"
+        "pieMenu-desc": "কুইক অ্যাক্সেস মেনু খুলুন।",
+        "startInBackground-label": "ব্যাকগ্রাউন্ডে শুরু করুন",
+        "startInBackground-desc": "উইন্ডো না খুলেই অ্যাপটি ব্যাকগ্রাউন্ডে শুরু করুন।"
     },
     "id": {
         "settings-title": "Pengaturan",
@@ -4709,7 +4745,9 @@ const translations = {
         "tempChat-label": "Obrolan Sementara",
         "tempChat-desc": "Membuka obrolan sementara (Incognito/Efemer).",
         "pieMenu-label": "Menu Pie",
-        "pieMenu-desc": "Buka menu akses cepat."
+        "pieMenu-desc": "Buka menu akses cepat.",
+        "startInBackground-label": "Mulai di Latar Belakang",
+        "startInBackground-desc": "Mulai aplikasi di latar belakang tanpa membuka jendela."
     },
     "ur": {
         "settings-title": "ترتیبات",
@@ -4957,7 +4995,9 @@ const translations = {
         "tempChat-label": "عارضی چیٹ",
         "tempChat-desc": "ایک عارضی چیٹ (Incognito/Ephemeral) کھولیں۔",
         "pieMenu-label": "پائی مینو",
-        "pieMenu-desc": "فوری رسائی کا مینو کھولیں۔"
+        "pieMenu-desc": "فوری رسائی کا مینو کھولیں۔",
+        "startInBackground-label": "پس منظر میں شروع کریں",
+        "startInBackground-desc": "ونڈو کھولے بغیر ایپ کو پس منظر میں شروع کریں۔"
     },
     "sw": {
         "settings-title": "Mipangilio",
@@ -5205,7 +5245,9 @@ const translations = {
         "tempChat-label": "Soga ya Muda",
         "tempChat-desc": "Hufungua soga ya muda (Hali fiche/Muda mfupi).",
         "pieMenu-label": "Menyu ya Pie",
-        "pieMenu-desc": "Fungua menyu ya ufikiaji wa haraka."
+        "pieMenu-desc": "Fungua menyu ya ufikiaji wa haraka.",
+        "startInBackground-label": "Anza katika Mandharinyuma",
+        "startInBackground-desc": "Anzisha programu katika mandharinyuma bila kufungua dirisha."
     },
     "ta": {
         "settings-title": "அமைப்புகள்",
@@ -5453,7 +5495,9 @@ const translations = {
         "tempChat-label": "தற்காலிக அரட்டை",
         "tempChat-desc": "ஒரு தற்காலிக அரட்டையைத் திறக்கும் (மறைநிலை/தற்காலிகமானது).",
         "pieMenu-label": "Pie மெனு",
-        "pieMenu-desc": "விரைவு அணுகல் மெனுவைத் திறக்கவும்."
+        "pieMenu-desc": "விரைவு அணுகல் மெனுவைத் திறக்கவும்.",
+        "startInBackground-label": "பின்னணியில் தொடங்கவும்",
+        "startInBackground-desc": "சாளரத்தைத் திறக்காமல் பயன்பாட்டைப் பின்னணியில் தொடங்கவும்."
     },
     "vi": {
         "settings-title": "Cài đặt",
@@ -5701,7 +5745,9 @@ const translations = {
         "tempChat-label": "Trò chuyện tạm thời",
         "tempChat-desc": "Mở một cuộc trò chuyện tạm thời (Ẩn danh/Ngắn hạn).",
         "pieMenu-label": "Menu tròn (Pie Menu)",
-        "pieMenu-desc": "Mở menu truy cập nhanh."
+        "pieMenu-desc": "Mở menu truy cập nhanh.",
+        "startInBackground-label": "Khởi chạy cùng hệ thống",
+        "startInBackground-desc": "Khởi chạy ứng dụng ở chế độ chạy ngầm mà không mở cửa sổ."
     },
     "th": {
         "settings-title": "การตั้งค่า",
@@ -5949,7 +5995,9 @@ const translations = {
         "tempChat-label": "แชทชั่วคราว",
         "tempChat-desc": "เปิดแชทชั่วคราว (โหมดไม่ระบุตัวตน/ไม่บันทึกข้อมูล)",
         "pieMenu-label": "Pie Menu",
-        "pieMenu-desc": "เปิดเมนูการเข้าถึงด่วน"
+        "pieMenu-desc": "เปิดเมนูการเข้าถึงด่วน",
+        "startInBackground-label": "เริ่มทำงานในพื้นหลัง",
+        "startInBackground-desc": "เริ่มการทำงานของแอปในพื้นหลังโดยไม่ต้องเปิดหน้าต่าง"
     },
     "cs": {
         "settings-title": "Nastavení",
@@ -6197,7 +6245,9 @@ const translations = {
         "tempChat-label": "Dočasný chat",
         "tempChat-desc": "Otevře dočasný chat (inkognito/epizodní).",
         "pieMenu-label": "Kruhové menu",
-        "pieMenu-desc": "Otevřít menu rychlého přístupu."
+        "pieMenu-desc": "Otevřít menu rychlého přístupu.",
+        "startInBackground-label": "Spustit na pozadí",
+        "startInBackground-desc": "Spustit aplikaci na pozadí bez otevření okna."
     }
 };
 
