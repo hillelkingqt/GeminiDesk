@@ -219,6 +219,32 @@
             border-radius: 10px;
         }
 
+        /* --- Textarea (ideas input) custom scrollbar --- */
+        #feedback-input::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #feedback-input::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #feedback-input::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, rgba(129,140,248,0.9), rgba(168,85,247,0.9));
+            border-radius: 8px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+
+        #feedback-input:focus::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, rgba(129,140,248,1), rgba(168,85,247,1));
+            box-shadow: 0 0 6px rgba(129,140,248,0.18);
+        }
+
+        /* Firefox */
+        #feedback-input {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(129,140,248,0.9) transparent;
+        }
         /* Form Elements */
         .input-group {
             display: flex;

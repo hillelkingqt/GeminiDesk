@@ -55,6 +55,10 @@
     <td align="center"><img src="screenshots/deepre.png" alt="Deep Research" width="400"></td>
     <td align="center"><img src="screenshots/direction.png" alt="Direction" width="400"></td>
   </tr>
+    <tr>
+    <td align="center"><img src="screenshots/releasenotes.png" alt="Deep Research" width="400"></td>
+    <td align="center"><img src="screenshots/twowindows.png" alt="Direction" width="400"></td>
+  </tr>
   <tr>
     <td align="center"><img src="screenshots/open.png" alt="Open" width="400"></td>
     <td align="center"><img src="screenshots/update.png" alt="Update" width="400"></td>
