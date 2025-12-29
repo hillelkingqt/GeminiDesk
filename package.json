@@ -9,11 +9,13 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "prebuild": "node scripts/update-translations.js",
     "build": "electron-builder",
     "build:mac-intel": "electron-builder --mac --x64",
     "test": "jest"
   },
   "devDependencies": {
+    "dotenv": "^17.2.3",
     "electron": "^35.7.5",
     "electron-builder": "^26.0.12",
     "jest": "^30.2.0"

@@ -3,3 +3,4 @@ dist/
 installer/
 out/
 *.log
+.env
