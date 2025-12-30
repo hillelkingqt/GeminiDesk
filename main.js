@@ -68,28 +68,34 @@ async function loadAiStudioRtlExtensionToAllSessions() {
     try {
         if (!fs.existsSync(AISTUDIO_RTL_EXT_PATH)) return;
 
+        const promises = [];
+
         // default
-        await loadExtensionToSession(session.defaultSession, 'aistudio-rtl:default', AISTUDIO_RTL_EXT_PATH);
+        promises.push(loadExtensionToSession(session.defaultSession, 'aistudio-rtl:default', AISTUDIO_RTL_EXT_PATH));
 
         // main app partition
         if (typeof constants !== 'undefined' && constants && constants.SESSION_PARTITION) {
             const mainPart = session.fromPartition(constants.SESSION_PARTITION, { cache: true });
-            await loadExtensionToSession(mainPart, `aistudio-rtl:${constants.SESSION_PARTITION}`, AISTUDIO_RTL_EXT_PATH);
+            promises.push(loadExtensionToSession(mainPart, `aistudio-rtl:${constants.SESSION_PARTITION}`, AISTUDIO_RTL_EXT_PATH));
         }
 
         // per-account partitions
         const s = getSettings();
         if (s && Array.isArray(s.accounts) && s.accounts.length > 0) {
             for (let i = 0; i < s.accounts.length; i++) {
-                try {
-                    const partName = accountsModule.getAccountPartition(i);
-                    const accSess = session.fromPartition(partName, { cache: true });
-                    await loadExtensionToSession(accSess, `aistudio-rtl:${partName}`, AISTUDIO_RTL_EXT_PATH);
-                } catch (e) {
-                    console.warn('Error loading AI Studio RTL extension into account partition', e && e.message ? e.message : e);
-                }
+                promises.push((async () => {
+                    try {
+                        const partName = accountsModule.getAccountPartition(i);
+                        const accSess = session.fromPartition(partName, { cache: true });
+                        await loadExtensionToSession(accSess, `aistudio-rtl:${partName}`, AISTUDIO_RTL_EXT_PATH);
+                    } catch (e) {
+                        console.warn('Error loading AI Studio RTL extension into account partition', e && e.message ? e.message : e);
+                    }
+                })());
             }
         }
+
+        await Promise.all(promises);
     } catch (e) {
         console.warn('Error while loading AI Studio RTL extension into all sessions:', e && e.message ? e.message : e);
     }
@@ -99,28 +105,34 @@ async function loadGeminimarkExtensionToAllSessions() {
     try {
         if (!fs.existsSync(GEMINIMARK_EXT_PATH)) return;
 
+        const promises = [];
+
         // default
-        await loadExtensionToSession(session.defaultSession, 'geminimark:default', GEMINIMARK_EXT_PATH);
+        promises.push(loadExtensionToSession(session.defaultSession, 'geminimark:default', GEMINIMARK_EXT_PATH));
 
         // main app partition
         if (typeof constants !== 'undefined' && constants && constants.SESSION_PARTITION) {
             const mainPart = session.fromPartition(constants.SESSION_PARTITION, { cache: true });
-            await loadExtensionToSession(mainPart, `geminimark:${constants.SESSION_PARTITION}`, GEMINIMARK_EXT_PATH);
+            promises.push(loadExtensionToSession(mainPart, `geminimark:${constants.SESSION_PARTITION}`, GEMINIMARK_EXT_PATH));
         }
 
         // per-account partitions
         const s = getSettings();
         if (s && Array.isArray(s.accounts) && s.accounts.length > 0) {
             for (let i = 0; i < s.accounts.length; i++) {
-                try {
-                    const partName = accountsModule.getAccountPartition(i);
-                    const accSess = session.fromPartition(partName, { cache: true });
-                    await loadExtensionToSession(accSess, `geminimark:${partName}`, GEMINIMARK_EXT_PATH);
-                } catch (e) {
-                    console.warn('Error loading geminimark extension into account partition', e && e.message ? e.message : e);
-                }
+                promises.push((async () => {
+                    try {
+                        const partName = accountsModule.getAccountPartition(i);
+                        const accSess = session.fromPartition(partName, { cache: true });
+                        await loadExtensionToSession(accSess, `geminimark:${partName}`, GEMINIMARK_EXT_PATH);
+                    } catch (e) {
+                        console.warn('Error loading geminimark extension into account partition', e && e.message ? e.message : e);
+                    }
+                })());
             }
         }
+
+        await Promise.all(promises);
     } catch (e) {
         console.warn('Error while loading geminimark extension into all sessions:', e && e.message ? e.message : e);
     }
@@ -130,28 +142,34 @@ async function loadTampermonkeyExtensionToAllSessions() {
     try {
         if (!fs.existsSync(TAMPERMONKEY_EXT_PATH)) return;
 
+        const promises = [];
+
         // default
-        await loadExtensionToSession(session.defaultSession, 'tampermonkey:default', TAMPERMONKEY_EXT_PATH);
+        promises.push(loadExtensionToSession(session.defaultSession, 'tampermonkey:default', TAMPERMONKEY_EXT_PATH));
 
         // main app partition
         if (typeof constants !== 'undefined' && constants && constants.SESSION_PARTITION) {
             const mainPart = session.fromPartition(constants.SESSION_PARTITION, { cache: true });
-            await loadExtensionToSession(mainPart, `tampermonkey:${constants.SESSION_PARTITION}`, TAMPERMONKEY_EXT_PATH);
+            promises.push(loadExtensionToSession(mainPart, `tampermonkey:${constants.SESSION_PARTITION}`, TAMPERMONKEY_EXT_PATH));
         }
 
         // per-account partitions
         const s = getSettings();
         if (s && Array.isArray(s.accounts) && s.accounts.length > 0) {
             for (let i = 0; i < s.accounts.length; i++) {
-                try {
-                    const partName = accountsModule.getAccountPartition(i);
-                    const accSess = session.fromPartition(partName, { cache: true });
-                    await loadExtensionToSession(accSess, `tampermonkey:${partName}`, TAMPERMONKEY_EXT_PATH);
-                } catch (e) {
-                    console.warn('Error loading tampermonkey extension into account partition', e && e.message ? e.message : e);
-                }
+                promises.push((async () => {
+                    try {
+                        const partName = accountsModule.getAccountPartition(i);
+                        const accSess = session.fromPartition(partName, { cache: true });
+                        await loadExtensionToSession(accSess, `tampermonkey:${partName}`, TAMPERMONKEY_EXT_PATH);
+                    } catch (e) {
+                        console.warn('Error loading tampermonkey extension into account partition', e && e.message ? e.message : e);
+                    }
+                })());
             }
         }
+
+        await Promise.all(promises);
     } catch (e) {
         console.warn('Error while loading tampermonkey extension into all sessions:', e && e.message ? e.message : e);
     }
@@ -161,26 +179,30 @@ async function loadExtensionToAllSessions() {
     try {
         if (!fs.existsSync(MCP_EXT_PATH)) return;
 
+        const promises = [];
+
         // default
-        await loadExtensionToSession(session.defaultSession, 'default', MCP_EXT_PATH);
+        promises.push(loadExtensionToSession(session.defaultSession, 'default', MCP_EXT_PATH));
 
         // main app partition
         if (typeof constants !== 'undefined' && constants && constants.SESSION_PARTITION) {
             const mainPart = session.fromPartition(constants.SESSION_PARTITION, { cache: true });
-            await loadExtensionToSession(mainPart, constants.SESSION_PARTITION, MCP_EXT_PATH);
+            promises.push(loadExtensionToSession(mainPart, constants.SESSION_PARTITION, MCP_EXT_PATH));
         }
 
         // per-account partitions
         const s = getSettings();
         if (s && Array.isArray(s.accounts) && s.accounts.length > 0) {
             for (let i = 0; i < s.accounts.length; i++) {
-                try {
-                    const partName = accountsModule.getAccountPartition(i);
-                    const accSess = session.fromPartition(partName, { cache: true });
-                    await loadExtensionToSession(accSess, partName, MCP_EXT_PATH);
-                } catch (e) {
-                    console.warn('Error loading extension into account partition', e && e.message ? e.message : e);
-                }
+                promises.push((async () => {
+                    try {
+                        const partName = accountsModule.getAccountPartition(i);
+                        const accSess = session.fromPartition(partName, { cache: true });
+                        await loadExtensionToSession(accSess, partName, MCP_EXT_PATH);
+                    } catch (e) {
+                        console.warn('Error loading extension into account partition', e && e.message ? e.message : e);
+                    }
+                })());
             }
         }
 
