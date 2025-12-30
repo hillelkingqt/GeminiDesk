@@ -77,16 +77,12 @@ const defaultSettings = {
             { id: 'newWindow', action: 'new-window', label: 'New Window', enabled: false, icon: 'open_in_new', color: '#c58af9' },
             { id: 'screenshot', action: 'screenshot', label: 'Screenshot', enabled: true, icon: 'screenshot_region', color: '#e8eaed' },
             { id: 'settings', action: 'open-settings', label: 'Settings', enabled: true, icon: 'settings', color: '#5f6368' },
-
-
-            // Additional Shortcuts
             { id: 'showHide', action: 'show-hide', label: 'Show/Hide', enabled: false, icon: 'visibility', color: '#ffffff' },
             { id: 'quit', action: 'quit-app', label: 'Quit App', enabled: false, icon: 'power_settings_new', color: '#d93025' },
             { id: 'refresh', action: 'refresh-page', label: 'Refresh', enabled: false, icon: 'refresh', color: '#80868b' },
             { id: 'findInPage', action: 'find-in-page', label: 'Find in Page', enabled: false, icon: 'search', color: '#80868b' },
             { id: 'searchChats', action: 'search-chats', label: 'Search Chats', enabled: false, icon: 'manage_search', color: '#80868b' },
             { id: 'closeWindow', action: 'close-current-window', label: 'Close Window', enabled: false, icon: 'close', color: '#e8eaed' },
-
             { id: 'switchPro', action: 'change-model-pro', label: 'Switch to Pro', enabled: false, icon: 'diamond', color: '#f28b82' },
             { id: 'switchFlash', action: 'change-model-flash', label: 'Switch to Flash', enabled: false, icon: 'bolt', color: '#81c995' },
             { id: 'switchThinking', action: 'change-model-thinking', label: 'Switch to Thinking', enabled: false, icon: 'psychology', color: '#fdd663' }

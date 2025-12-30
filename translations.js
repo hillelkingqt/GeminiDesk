@@ -6926,4 +6926,7 @@ const translations = {
     }
 };
 
-module.exports = translations;
+// Make this work both in Node.js (main process) and browser (renderer process)
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = translations;
+}

@@ -887,6 +887,89 @@
                 padding: 8px 10px;
             }
         }
+
+        /* Pie Menu Settings Grid */
+        .pie-menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            padding: 8px 0;
+            width: 100%;
+        }
+
+        .pie-menu-card {
+            background: var(--item-bg);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid var(--glass-border);
+            transition: all 0.2s ease;
+        }
+
+        .pie-menu-card:hover {
+            background: var(--item-hover-bg);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+            border-color: var(--glass-highlight);
+        }
+
+        .pie-menu-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            overflow: hidden;
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* Material Icons Font for Pie Menu */
+        @font-face {
+            font-family: 'Material Icons';
+            font-style: normal;
+            font-weight: 400;
+            src: url(https://fonts.gstatic.com/s/materialicons/v142/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format('woff2');
+        }
+
+        .material-icons {
+            font-family: 'Material Icons';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+            -moz-osx-font-smoothing: grayscale;
+            font-feature-settings: 'liga';
+        }
+
+        .pie-icon-preview {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            flex-shrink: 0;
+            font-size: 18px;
+        }
+
+        .pie-label {
+            font-weight: 500;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-primary);
+        }
     </style>
 </head>
 
@@ -2164,10 +2247,8 @@
                     const btn = item.querySelector('.record-button');
                     if (!btn) return;
 
-                    // Ignore clicks originating from the record button itself
-                    if (e.target.closest && e.target.closest('.record-button')) return;
-                    // Ignore clicks on the per-key global toggle
-                    if (e.target.closest && e.target.closest('.shortcut-global-toggle')) return;
+                    // Ignore clicks originating from the record button itself or the global toggle
+                    if (e.target.closest('.record-button') || e.target.closest('.shortcut-global-toggle')) return;
 
                     const key = btn.dataset.key;
                     if (!key) return;
@@ -2304,27 +2385,61 @@
 
                     document.getElementById('setting-aiCompletionSound').checked = settings.aiCompletionSound !== false;
 
-                    // Render Pie Menu Actions
+                    // Render Pie Menu Actions (Improved UI)
                     const pieMenuContainer = document.getElementById('pie-menu-actions-container');
+                    console.log('🥧 DEBUG: Pie Menu Container found:', pieMenuContainer);
+                    console.log('🥧 DEBUG: settings.pieMenu:', settings.pieMenu);
                     if (pieMenuContainer && settings.pieMenu && settings.pieMenu.actions) {
                         pieMenuContainer.innerHTML = '';
-                        settings.pieMenu.actions.forEach(action => {
-                            const itemDiv = document.createElement('div');
-                            itemDiv.className = 'setting-item';
-                            itemDiv.style.paddingLeft = '32px'; // Indent slightly
 
-                            const labelDiv = document.createElement('div');
-                            labelDiv.className = 'setting-label';
-                            const strong = document.createElement('strong');
+                        // Create Grid Container
+                        const grid = document.createElement('div');
+                        grid.className = 'pie-menu-grid';
+
+                        // Filter out unwanted actions (system actions usually hidden from config)
+                        // const unwantedActions = ['showHide', 'quit', 'refresh', 'findInPage', 'searchChats', 'closeWindow', 'voice'];
+                        // Explicitly showing all actions except 'voice' as requested
+                        const unwantedActions = ['voice'];
+                        const validActions = settings.pieMenu.actions.filter(a => !unwantedActions.includes(a.id));
+
+                        console.log('🥧 DEBUG: Total actions:', settings.pieMenu.actions.length);
+                        console.log('🥧 DEBUG: Valid actions count:', validActions.length);
+                        console.log('🥧 DEBUG: Valid actions:', validActions);
+
+                        validActions.forEach(action => {
+                            const card = document.createElement('div');
+                            card.className = 'pie-menu-card';
+
+                            // Info Section (Icon + Label)
+                            const infoDiv = document.createElement('div');
+                            infoDiv.className = 'pie-menu-info';
+
+                            // Icon Preview
+                            const iconDiv = document.createElement('div');
+                            iconDiv.className = 'pie-icon-preview';
+                            iconDiv.style.backgroundColor = action.color || '#5f6368';
+
+                            const iconSpan = document.createElement('span');
+                            iconSpan.className = 'material-icons';
+                            iconSpan.textContent = action.icon || 'circle';
+                            iconDiv.appendChild(iconSpan);
+
+                            // Label
+                            const labelSpan = document.createElement('span');
+                            labelSpan.className = 'pie-label';
                             const i18nKey = `pie-${action.id}`;
-                            strong.setAttribute('data-i18n', i18nKey);
-                            // Try to get translation, fallback to label
                             const currentDict = translations[currentLanguage] || translations.en;
-                            strong.textContent = currentDict[i18nKey] || action.label;
-                            labelDiv.appendChild(strong);
+                            labelSpan.textContent = currentDict[i18nKey] || action.label;
 
+                            infoDiv.appendChild(iconDiv);
+                            infoDiv.appendChild(labelSpan);
+
+                            // Toggle Switch
                             const toggleLabel = document.createElement('label');
                             toggleLabel.className = 'toggle-switch';
+                            toggleLabel.style.transform = 'scale(0.8)'; // Compact switch
+                            toggleLabel.style.marginRight = '-4px'; // Adjustment
+
                             const input = document.createElement('input');
                             input.type = 'checkbox';
                             input.checked = action.enabled;
@@ -2342,10 +2457,11 @@
                             toggleLabel.appendChild(input);
                             toggleLabel.appendChild(slider);
 
-                            itemDiv.appendChild(labelDiv);
-                            itemDiv.appendChild(toggleLabel);
-                            pieMenuContainer.appendChild(itemDiv);
+                            card.appendChild(infoDiv);
+                            card.appendChild(toggleLabel);
+                            grid.appendChild(card);
                         });
+                        pieMenuContainer.appendChild(grid);
                     }
 
                     // Set sound file radio button
@@ -2644,9 +2760,10 @@
                 electronAPI.updateSetting('aiCompletionSound', e.target.checked);
             });
 
-            document.getElementById('open-voice-assistant').addEventListener('click', () => {
-                electronAPI.openVoiceAssistant();
-            });
+            // Voice Assistant button removed - no longer needed
+            // document.getElementById('open-voice-assistant').addEventListener('click', () => {
+            //     electronAPI.openVoiceAssistant();
+            // });
 
             document.getElementById('open-share-ideas').addEventListener('click', () => {
                 electronAPI.openShareIdeasWindow();
@@ -2806,10 +2923,13 @@
 
                     if (!['Control', 'Alt', 'Shift', 'Meta', 'AltGraph'].includes(e.key) && !ignoredCodes.includes(e.code)) {
                         const keyCode = e.code.replace('Key', '').replace('Digit', '');
+                        console.log('🎹 keydown DEBUG:', { key: e.key, code: e.code, keyCode, willAdd: keyCode && keyCode.length > 0 });
                         if (keyCode && keyCode.length > 0) {
                             pressedKeys.add(keyCode);
                             hasRecordedKeys = true;
                         }
+                    } else {
+                        console.log('🎹 keydown SKIPPED:', { key: e.key, code: e.code, reason: 'modifier or ignored' });
                     }
 
                     // Update button text with current combination
@@ -2827,9 +2947,26 @@
                         return;
                     }
 
-                    // Only save if we have at least one modifier + one key
+                    // Only finalize when a NON-modifier key is released
+                    // This allows Alt+G to work properly - we save when G is released
+                    const isModifierKey = ['Control', 'Alt', 'Shift', 'Meta', 'AltGraph'].includes(e.key);
+
+                    if (isModifierKey) {
+                        // Modifier released - don't finalize yet, just wait
+                        return;
+                    }
+
+                    // Non-modifier key released - now check and save
                     const modifierCount = ['Control', 'Alt', 'Shift', 'Super'].filter(mod => pressedKeys.has(mod)).length;
                     const hasNonModifier = hasRecordedKeys;
+
+                    console.log('🎹 keyup DEBUG:', {
+                        key: e.key,
+                        pressedKeys: Array.from(pressedKeys),
+                        modifierCount,
+                        hasNonModifier,
+                        size: pressedKeys.size
+                    });
 
                     if (modifierCount > 0 && hasNonModifier && pressedKeys.size > 1) {
                         const finalShortcut = Array.from(pressedKeys).join('+');
@@ -2856,7 +2993,10 @@
             };
 
             document.querySelectorAll('.record-button').forEach(button => {
-                button.addEventListener('click', () => startRecording(button));
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent delegation handler from firing
+                    startRecording(button);
+                });
             });
 
             // Initialize toggle listeners
