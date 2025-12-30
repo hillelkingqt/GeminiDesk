@@ -1,89 +1,310 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <title>Downloading Update</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap');
-    :root {
-      --bg-primary: #020010;
-      --text-primary: #e0eaff;
-      --glass-bg: rgba(10, 15, 30, 0.4);
-      --glass-border: rgba(0, 234, 255, 0.15);
-      --glow-primary: #0077ff;
-      --glow-secondary: #00eaff;
-      --success-color: #39ff8d;
-    }
-    html, body {
-      margin: 0; padding: 0;
-      height: 100%; width: 100%;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      font-family: 'Space Grotesk', sans-serif;
-      display: flex; align-items: center; justify-content: center;
-      user-select: none; overflow: hidden;
-    }
-    .window {
-      width: 320px; height: 160px;
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-      backdrop-filter: blur(24px) saturate(150%);
-      -webkit-backdrop-filter: blur(24px) saturate(150%);
-      border-radius: 16px;
-      box-shadow: 0 0 80px rgba(0,0,0,0.5), 0 0 20px rgba(0,234,255,0.25) inset;
-      padding: 25px;
-      text-align: center;
-    }
-    #percent { margin: 10px 0; font-weight: 700; }
-    .progress {
-      width: 100%; height: 12px;
-      border: 1px solid var(--glass-border);
-      border-radius: 6px; overflow: hidden;
-    }
-    .bar {
-      height: 100%; width: 0%;
-      background: linear-gradient(90deg, var(--glow-primary), var(--glow-secondary));
-      transition: width .2s ease;
-    }
-    #complete { display: none; }
-    .button {
-      border: none; padding: 8px 15px; border-radius: 8px;
-      font-size: 14px; font-weight: 700; cursor: pointer;
-      margin: 5px; color: var(--bg-primary);
-      background: var(--success-color);
-    }
-    .button.secondary {
-      background: transparent; color: var(--text-primary);
-      border: 1px solid var(--glass-border);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Downloading Update</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
+
+        :root {
+            /* Gemini Dark Palette (Matching Settings) */
+            --bg-root: #131314;
+            --glass-surface: #1e1f20;
+            --glass-border: rgba(255, 255, 255, 0.08);
+
+            --text-primary: #e3e3e3;
+            --text-secondary: #9aa0a6;
+
+            --accent-primary: #8ab4f8;
+            --accent-gradient: linear-gradient(135deg, #8ab4f8 0%, #c58af9 100%);
+
+            --success-color: #81c995;
+            --error-color: #f28b82;
+
+            --radius-xl: 28px;
+            --radius-lg: 20px;
+
+            --shadow-lg: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        html.light-mode {
+            --bg-root: #ffffff;
+            --glass-surface: #f8f9fa;
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --accent-primary: #1a73e8;
+            --accent-gradient: linear-gradient(135deg, #1a73e8 0%, #8430ce 100%);
+            --shadow-lg: 0 20px 50px rgba(0,0,0,0.15);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+
+        body {
+            font-family: 'Google Sans', sans-serif;
+            background: transparent; /* Transparent for window transparency */
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .window-frame {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-root);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 1px solid var(--glass-border);
+        }
+
+        .drag-region {
+            height: 32px;
+            width: 100%;
+            -webkit-app-region: drag;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        /* Typography & Icons */
+        .icon-box {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(138, 180, 248, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            color: var(--accent-primary);
+            transition: all 0.3s ease;
+        }
+
+        .icon-box svg { width: 40px; height: 40px; }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            max-width: 80%;
+            margin: 0 auto 30px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            max-width: 240px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--accent-gradient);
+            border-radius: 3px;
+            transition: width 0.3s ease-out;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--accent-primary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Actions */
+        .actions {
+            display: none; /* Hidden until complete */
+            gap: 12px;
+            width: 100%;
+            max-width: 280px;
+            margin-top: 10px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .btn {
+            flex: 1;
+            height: 48px;
+            border: none;
+            border-radius: 24px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s, filter 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn:active { transform: scale(0.96); }
+
+        .btn-secondary {
+            background: var(--glass-surface);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.05); }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: #000;
+            font-weight: 600;
+        }
+        html.light-mode .btn-primary { color: #fff; }
+        .btn-primary:hover { filter: brightness(1.1); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Downloading Animation */
+        .pulse { animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(138, 180, 248, 0.4); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(138, 180, 248, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(138, 180, 248, 0); }
+        }
+
+        /* Success State */
+        .success-state .icon-box {
+            background: rgba(129, 201, 149, 0.15);
+            color: var(--success-color);
+        }
+        .success-state .progress-container,
+        .success-state .progress-text {
+            display: none;
+        }
+        .success-state .actions {
+            display: flex;
+        }
+    </style>
 </head>
+
 <body>
-  <div class="window">
-    <h3 id="status">Downloading...</h3>
-    <div class="progress"><div id="bar" class="bar"></div></div>
-    <div id="percent">0%</div>
-    <div id="complete">
-      <p>Download complete. Install now?</p>
-      <button id="install-now" class="button">Install Now</button>
-      <button id="install-later" class="button secondary">Later</button>
+    <div class="window-frame">
+        <div class="drag-region"></div>
+
+        <div class="content-area" id="main-content">
+            <div class="icon-box pulse" id="icon-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+            </div>
+
+            <h1 id="title">Downloading Update</h1>
+            <p id="status-text">Getting the latest version for you...</p>
+
+            <div class="progress-container" id="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="progress-text" id="progress-text">0%</div>
+
+            <div class="actions" id="actions">
+                <button id="install-later" class="btn btn-secondary">Later</button>
+                <button id="install-now" class="btn btn-primary">Install & Restart</button>
+            </div>
+        </div>
     </div>
-  </div>
-<script>
-  const api = window.electronAPI;
-  api.onUpdateStatus((data) => {
-    if (data.status === 'downloading') {
-      document.getElementById('bar').style.width = data.percent + '%';
-      document.getElementById('percent').textContent = data.percent + '%';
-    } else if (data.status === 'downloaded') {
-      document.getElementById('status').textContent = 'Download Complete!';
-      document.getElementById('percent').style.display = 'none';
-      document.querySelector('.progress').style.display = 'none';
-      document.getElementById('complete').style.display = 'block';
-    }
-  });
-  document.getElementById('install-now').addEventListener('click', () => api.installUpdateNow());
-  document.getElementById('install-later').addEventListener('click', () => api.closeDownloadWindow());
-</script>
+
+    <script src="../translations.js"></script>
+    <script>
+        const api = window.electronAPI;
+        const iconBox = document.getElementById('icon-box');
+        const title = document.getElementById('title');
+        const statusText = document.getElementById('status-text');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const mainContent = document.getElementById('main-content');
+
+        // Apply theme and translations
+        if (api) {
+            api.theme.getResolved().then(theme => {
+                if (theme === 'light') document.documentElement.classList.add('light-mode');
+            });
+            api.theme.onUpdate(theme => {
+                if (theme === 'light') document.documentElement.classList.add('light-mode');
+                else document.documentElement.classList.remove('light-mode');
+            });
+        }
+
+        api.onUpdateStatus((data) => {
+            if (data.status === 'downloading') {
+                const percent = Math.round(data.percent || 0);
+                progressBar.style.width = percent + '%';
+                progressText.textContent = percent + '%';
+            } else if (data.status === 'downloaded') {
+                // Success State
+                mainContent.classList.add('success-state');
+                iconBox.classList.remove('pulse');
+
+                // Change Icon to Checkmark
+                iconBox.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                `;
+
+                title.textContent = "Ready to Install";
+                statusText.textContent = "Update downloaded successfully.";
+            } else if (data.status === 'error') {
+                iconBox.style.color = 'var(--error-color)';
+                iconBox.style.background = 'rgba(242, 139, 130, 0.1)';
+                iconBox.classList.remove('pulse');
+                iconBox.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                `;
+                title.textContent = "Download Failed";
+                statusText.textContent = "Something went wrong. Please try again later.";
+                document.getElementById('progress-container').style.display = 'none';
+                document.getElementById('progress-text').style.display = 'none';
+
+                // Show a close button
+                const actions = document.getElementById('actions');
+                actions.style.display = 'flex';
+                actions.innerHTML = '<button id="close-btn" class="btn btn-secondary" style="width:100%">Close</button>';
+                document.getElementById('close-btn').addEventListener('click', () => api.closeDownloadWindow());
+            }
+        });
+
+        document.getElementById('install-now').addEventListener('click', () => api.installUpdateNow());
+        document.getElementById('install-later').addEventListener('click', () => api.closeDownloadWindow());
+    </script>
 </body>
 </html>

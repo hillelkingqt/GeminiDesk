@@ -569,6 +569,7 @@ let assisWin = null;
 let pieMenuWin = null;
 
 let updateWin = null;
+let downloadWin = null;
 let installUpdateWin = null;
 let notificationWin = null;
 let personalMessageWin = null;
@@ -5168,6 +5169,36 @@ ipcMain.on('start-download-update', () => {
         updateWin.close();
     }
     console.log('Starting update download...');
+
+    // Open download progress window
+    if (downloadWin) {
+        downloadWin.focus();
+    } else {
+        downloadWin = new BrowserWindow({
+            width: 400,
+            height: 350,
+            frame: false,
+            resizable: false,
+            show: false,
+            alwaysOnTop: true,
+            webPreferences: {
+                preload: path.join(__dirname, 'preload.js'),
+                contextIsolation: true
+            }
+        });
+
+        applyAlwaysOnTopSetting(downloadWin, true);
+        downloadWin.loadFile('html/download-progress.html');
+
+        downloadWin.once('ready-to-show', () => {
+            downloadWin.show();
+        });
+
+        downloadWin.on('closed', () => {
+            downloadWin = null;
+        });
+    }
+
     autoUpdater.downloadUpdate();
 });
 

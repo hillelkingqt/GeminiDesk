@@ -6,7 +6,7 @@
 // local shortcuts, UI automation, and IPC communication.
 // ================================================================
 
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, clipboard } = require('electron');
 
 // ================================================================
 // Local Shortcut Handling
@@ -768,6 +768,37 @@ ipcRenderer.on('set-active-prompt', (event, content) => {
     activePromptPrefix = content;
 });
 
+function processPromptVariables(content) {
+    if (!content) return '';
+    let processed = content;
+
+    // {clipboard}
+    if (processed.includes('{clipboard}')) {
+        const text = clipboard.readText();
+        processed = processed.replace(/{clipboard}/g, () => text);
+    }
+
+    // {date}
+    if (processed.includes('{date}')) {
+        const date = new Date().toLocaleDateString();
+        processed = processed.replace(/{date}/g, () => date);
+    }
+
+    // {time}
+    if (processed.includes('{time}')) {
+        const time = new Date().toLocaleTimeString();
+        processed = processed.replace(/{time}/g, () => time);
+    }
+
+    // {selection}
+    if (processed.includes('{selection}')) {
+        const selection = window.getSelection().toString();
+        processed = processed.replace(/{selection}/g, () => selection);
+    }
+
+    return processed;
+}
+
 async function handleSendWithPrefix(e) {
     if (!activePromptPrefix) return;
 
@@ -790,7 +821,8 @@ async function handleSendWithPrefix(e) {
     }
 
     // 3. Construct new content
-    const fullContent = `${activePromptPrefix}\n\n${currentInput}`;
+    const processedPrefix = processPromptVariables(activePromptPrefix);
+    const fullContent = `${processedPrefix}\n\n${currentInput}`;
 
     // 4. Inject
     inputArea.focus();
