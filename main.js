@@ -5,7 +5,7 @@ const isDebugMode = process.argv.includes('--debug-mode') || process.argv.includ
 if (isDebugMode) {
     try {
         if (!process.argv.includes('--remote-debugging-port')) {
-             app.commandLine.appendSwitch('remote-debugging-port', '9222');
+            app.commandLine.appendSwitch('remote-debugging-port', '9222');
         }
         console.log('Remote debugging enabled on port 9222');
     } catch (e) {
@@ -597,7 +597,7 @@ app.on('web-contents-created', (event, contents) => {
         const parsedUrl = new URL(navigationUrl);
         // specific validation...
     });
-    
+
     // Prevent new window creation from untrusted sources if not handled separately
     contents.setWindowOpenHandler(({ url }) => {
         // ... validation logic is mostly handled in specific window creation checks
@@ -4713,8 +4713,9 @@ app.whenReady().then(() => {
     accountsModule.setTray(tray);
     trayModule.setUpdateTrayCallback(updateTrayContextMenu);
 
-    // Enable spell checking with multiple languages
-    session.defaultSession.setSpellCheckerEnabled(true);
+    // Enable spell checking with multiple languages (unless disabled)
+    const spellcheckEnabled = !settings.disableSpellcheck;
+    session.defaultSession.setSpellCheckerEnabled(spellcheckEnabled);
     // Support common languages: English, Hebrew, German, French, Spanish, Russian, etc.
     session.defaultSession.setSpellCheckerLanguages(['en-US', 'he-IL', 'de-DE', 'fr-FR', 'es-ES', 'ru-RU', 'it-IT', 'pt-BR', 'nl-NL', 'pl-PL', 'tr-TR']);
 
@@ -4727,7 +4728,7 @@ app.whenReady().then(() => {
 
     // Also enable for Gemini session and set user agent (use current account's partition)
     const gemSession = session.fromPartition(getCurrentAccountPartition());
-    gemSession.setSpellCheckerEnabled(true);
+    gemSession.setSpellCheckerEnabled(spellcheckEnabled);
     gemSession.setSpellCheckerLanguages(['en-US', 'he-IL', 'de-DE', 'fr-FR', 'es-ES', 'ru-RU', 'it-IT', 'pt-BR', 'nl-NL', 'pl-PL', 'tr-TR']);
     gemSession.setUserAgent(REAL_CHROME_UA);
 
@@ -4963,18 +4964,7 @@ ipcMain.on('open-release-notes', (event, version) => {
     });
 });
 
-ipcMain.on('open-voice-assistant', () => {
-    // Open the Voice Assistant GitHub repository in the default browser
-    shell.openExternal('https://github.com/hillelkingqt/Gemini-voice-assistant');
-});
 
-// Handler for the assistant window to request its key upon loading
-ipcMain.on('request-api-key', (event) => {
-    const win = BrowserWindow.fromWebContents(event.sender);
-    if (win && !win.isDestroyed() && settings.geminiApiKey) {
-        win.webContents.send('set-api-key', settings.geminiApiKey);
-    }
-});
 
 
 function openUpdateWindowAndCheck() {
@@ -7767,6 +7757,33 @@ ipcMain.on('update-setting', (event, key, value) => {
         settings.shortcuts[subKey] = value; // Update the global object
     } else {
         settings[key] = value; // Update the global object
+    }
+
+    if (key === 'disableSpellcheck') {
+        const spellCheckInfo = value ? 'disabled' : 'enabled';
+        console.log(`Spellcheck ${spellCheckInfo}`);
+        const enabled = !value;
+
+        session.defaultSession.setSpellCheckerEnabled(enabled);
+
+        // Update main session
+        if (constants && constants.SESSION_PARTITION) {
+            try {
+                const sess = session.fromPartition(constants.SESSION_PARTITION);
+                if (sess) sess.setSpellCheckerEnabled(enabled);
+            } catch (e) { console.error(e); }
+        }
+
+        // Update account sessions
+        if (settings.accounts && Array.isArray(settings.accounts)) {
+            settings.accounts.forEach((acc, i) => {
+                try {
+                    const part = accountsModule.getAccountPartition(i);
+                    const sess = session.fromPartition(part);
+                    if (sess) sess.setSpellCheckerEnabled(enabled);
+                } catch (e) { console.error(e); }
+            });
+        }
     }
     if (key === 'deepResearchEnabled' || key === 'deepResearchSchedule') {
         scheduleDeepResearchCheck(); // Restart schedule monitoring

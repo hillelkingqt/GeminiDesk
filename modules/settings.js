@@ -62,7 +62,7 @@ const defaultSettings = {
         refresh: isMac ? 'Command+R' : 'Alt+R',
         findInPage: isMac ? 'Command+F' : 'Control+F',
         closeWindow: isMac ? 'Command+W' : 'Alt+Q',
-        voiceAssistant: isMac ? 'Command+Shift+A' : 'Alt+Shift+A',
+
         pieMenu: 'Alt+M'
     },
     // Per-shortcut enabled/disabled state (true = enabled)
@@ -77,7 +77,7 @@ const defaultSettings = {
             { id: 'newWindow', action: 'new-window', label: 'New Window', enabled: false, icon: 'open_in_new', color: '#c58af9' },
             { id: 'screenshot', action: 'screenshot', label: 'Screenshot', enabled: true, icon: 'screenshot_region', color: '#e8eaed' },
             { id: 'settings', action: 'open-settings', label: 'Settings', enabled: true, icon: 'settings', color: '#5f6368' },
-            { id: 'voice', action: 'voice-assistant', label: 'Voice Mode', enabled: false, icon: 'mic', color: '#fa7b17' },
+
 
             // Additional Shortcuts
             { id: 'showHide', action: 'show-hide', label: 'Show/Hide', enabled: false, icon: 'visibility', color: '#ffffff' },
@@ -97,7 +97,7 @@ const defaultSettings = {
     theme: 'system',
     showInTaskbar: false,
     aiCompletionSound: true,
-    geminiApiKey: '',
+
     aiCompletionSoundFile: 'new-notification-09-352705.mp3',
     exportFormat: 'ask', // 'pdf', 'md', or 'ask'
     disableSpellcheck: false // When true, disables spellcheck in the BrowserView
