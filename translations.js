@@ -134,6 +134,7 @@ const translations = {
         "shareIdeas-label": "Share Ideas with Creator",
         "shareIdeas-desc": "Suggest new features or improvements for GeminiDesk.",
         "shareIdeasButton": "Share Ideas",
+        "testSchedule": "Test Now",
         "deepResearchSchedule": "Deep Research Schedule",
         "scheduleEnabled-label": "Enable Deep Research Automation",
         "scheduleEnabled-desc": "Automatically run deep research at scheduled times.",

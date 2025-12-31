@@ -4,100 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Deep Research Schedule - GeminiDesk</title>
+    <link rel="stylesheet" href="styles/glass-theme.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
-
-        :root {
-            /* Premium Dark Palette (Default) */
-            --bg-root: #0f0f13;
-            --glass-surface: rgba(20, 20, 25, 0.95);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-highlight: rgba(255, 255, 255, 0.05);
-
-            --text-primary: #ffffff;
-            --text-secondary: #9ca3af;
-            --text-tertiary: #6b7280;
-
-            --accent-primary: #818cf8;
-            --accent-glow: rgba(129, 140, 248, 0.4);
-            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-
-            --input-bg: rgba(255, 255, 255, 0.03);
-            --input-border: rgba(255, 255, 255, 0.08);
-
-            --danger-color: #f43f5e;
-            --success-color: #22c55e;
-
-            --radius-xl: 24px;
-            --radius-lg: 16px;
-            --radius-md: 12px;
-            --radius-sm: 8px;
-
-            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-            --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
-
-            --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
-            --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        html.light-mode {
-            --bg-root: #f8fafc;
-            --glass-surface: rgba(255, 255, 255, 0.90);
-            --glass-border: rgba(0, 0, 0, 0.06);
-            --glass-highlight: rgba(255, 255, 255, 0.4);
-
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --text-tertiary: #94a3b8;
-
-            --accent-primary: #4f46e5;
-            --accent-glow: rgba(79, 70, 229, 0.25);
-            --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-
-            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            font-family: 'Outfit', sans-serif;
-            background: var(--bg-root);
-            color: var(--text-primary);
-            user-select: none;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* Background Effects */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            pointer-events: none;
-            background: radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.12), transparent 60%),
-                radial-gradient(circle at 90% 90%, rgba(168, 85, 247, 0.12), transparent 60%);
-            opacity: 1;
-        }
-
-        body::after {
-            content: '';
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            pointer-events: none;
-            opacity: 0.04;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-        }
-
         .drag-bar {
             position: relative;
             z-index: 10;
@@ -480,29 +388,19 @@
             margin-top: 10px;
         }
 
-        .btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            color: var(--text-primary);
-            padding: 10px 16px;
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            font-family: 'Outfit', sans-serif;
-            font-size: 13px;
-            font-weight: 500;
-            min-width: 130px;
-            text-align: center;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        .btn-test {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+            margin-right: auto;
         }
 
-        .btn:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: var(--accent-primary);
-            color: var(--accent-primary);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(129, 140, 248, 0.2);
+        .btn-test:hover {
+            background: var(--success-color);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(34, 197, 94, 0.3);
         }
+
 
         .btn-primary {
             background: var(--accent-gradient);
@@ -756,6 +654,7 @@
         </div>
 
         <div class="control-buttons">
+            <button id="test-btn" class="btn btn-test" data-i18n="testSchedule">Test Now</button>
             <button id="clear-all-btn" class="btn btn-danger" data-i18n="clearAll">Clear All</button>
             <button id="cancel-btn" class="btn btn-secondary" data-i18n="cancel">Cancel</button>
             <button id="save-btn" class="btn btn-primary" data-i18n="saveSchedule">Save Schedule</button>
@@ -1092,12 +991,34 @@
             }
         }
 
+        function testSchedule() {
+            const format = document.getElementById('global-format-input').value.trim();
+
+            if (!format) {
+                alert('Please enter a Global Format Template first to test.');
+                return;
+            }
+
+            if (confirm('This will immediately start a Deep Research session with your Global Format. Continue?')) {
+                if (window.electronAPI && typeof window.electronAPI.testDeepResearch === 'function') {
+                    window.electronAPI.testDeepResearch(format);
+                } else if (window.electronAPI && typeof window.electronAPI.updateSetting === 'function') {
+                    // Fallback for older preloads
+                    window.electronAPI.updateSetting('testDeepResearch', format);
+                } else {
+                    console.log('Testing deep research with format:', format);
+                    alert('Test started! (Check console for details)');
+                }
+            }
+        }
+
         // Event listeners
         document.addEventListener('DOMContentLoaded', () => {
             initializeSchedule();
             attachTiltOnAll();
 
             document.getElementById('save-btn').addEventListener('click', saveSchedule);
+            document.getElementById('test-btn').addEventListener('click', testSchedule);
             document.getElementById('cancel-btn').addEventListener('click', () => {
                 if (window.close) {
                     window.close();

@@ -7746,6 +7746,11 @@ ipcMain.on('open-prompt-manager-window', (event) => {
     });
 });
 
+ipcMain.on('test-deep-research', (event, format) => {
+    console.log('Testing deep research with format:', format);
+    executeScheduledDeepResearch(format);
+});
+
 ipcMain.on('update-setting', (event, key, value) => {
     // **Fix:** We don't call getSettings() again.
     // We directly modify the global settings object that exists in memory.
@@ -7787,6 +7792,12 @@ ipcMain.on('update-setting', (event, key, value) => {
     }
     if (key === 'deepResearchEnabled' || key === 'deepResearchSchedule') {
         scheduleDeepResearchCheck(); // Restart schedule monitoring
+    }
+
+    // Support testing deep research logic from scheduler UI
+    if (key === 'testDeepResearch') {
+        // value is the format string
+        executeScheduledDeepResearch(value);
     }
     debouncedSaveSettings(settings); // Save the updated global object
     console.log(`Setting ${key} saved successfully`);

@@ -179,7 +179,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getScreenshotSendMode: () => ipcRenderer.invoke('get-screenshot-send-mode'),
 
     // Lyra Integration
-    generatePdfFromJson: (jsonString, title) => ipcRenderer.send('generate-pdf-from-json', jsonString, title)
+    generatePdfFromJson: (jsonString, title) => ipcRenderer.send('generate-pdf-from-json', jsonString, title),
+
+    // Deep Research Test
+    testDeepResearch: (format) => ipcRenderer.send('test-deep-research', format)
 });
 
 // ================================================================
