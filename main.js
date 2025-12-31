@@ -888,7 +888,7 @@ async function executeDefaultPrompt(view, promptContent, mode) {
 // Settings Management (Using Module)
 // ================================================================= //
 
-const { getSettings, saveSettings, defaultSettings, settingsPath } = settingsModule;
+const { getSettings, saveSettings, saveSettingsAsync, defaultSettings, settingsPath } = settingsModule;
 let settings = getSettings();
 
 // Helper function to apply invisibility mode (content protection) to a window
@@ -1064,8 +1064,18 @@ const { forceOnTop, broadcastToAllWebContents, broadcastToWindows, reportErrorTo
 
 // Debounced version of saveSettings to prevent race conditions with rapid updates
 const debouncedSaveSettings = debounce((settingsToSave) => {
-    saveSettings(settingsToSave);
-    console.log('Settings saved via debounce');
+    // Use async save to avoid blocking the main thread
+    if (saveSettingsAsync) {
+        saveSettingsAsync(settingsToSave).then(() => {
+            console.log('Settings saved via debounce (async)');
+        }).catch(err => {
+            console.error('Failed to save settings async:', err);
+        });
+    } else {
+        // Fallback if async is not available (shouldn't happen)
+        saveSettings(settingsToSave);
+        console.log('Settings saved via debounce (sync fallback)');
+    }
 }, 300);
 
 // ================================================================= //

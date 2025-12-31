@@ -182,9 +182,20 @@ function saveSettings(settings) {
     }
 }
 
+async function saveSettingsAsync(settings) {
+    try {
+        await fs.promises.writeFile(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
+        // Update cache with a deep copy to ensure isolation, ONLY after successful write
+        cachedSettings = JSON.parse(JSON.stringify(settings));
+    } catch (e) {
+        console.error("Failed to save settings to file (async).", e);
+    }
+}
+
 module.exports = {
     defaultSettings,
     getSettings,
     saveSettings,
+    saveSettingsAsync,
     settingsPath
 };
