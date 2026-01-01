@@ -944,6 +944,30 @@ function applyAlwaysOnTopSetting(win, shouldBeOnTop) {
 // Initialize utils module with settings
 utils.initialize({ settings });
 
+function sendNotification(title, body) {
+    if (!notificationWin || notificationWin.isDestroyed()) {
+        createNotificationWindow();
+    }
+
+    const msg = {
+        status: 'found',
+        content: [{ type: 'text', content: `**${title}**\n${body}` }]
+    };
+
+    // If window is loading, wait for it
+    if (notificationWin && !notificationWin.isDestroyed()) {
+         if (notificationWin.webContents.isLoading()) {
+             notificationWin.webContents.once('did-finish-load', () => {
+                 notificationWin.webContents.send('notification-data', msg);
+             });
+         } else {
+             notificationWin.webContents.send('notification-data', msg);
+         }
+         notificationWin.show();
+         // Optional: notificationWin.focus();
+    }
+}
+
 // --- Ensure extension is loaded into account partitions (if any) ---
 (async () => {
     try {
@@ -1043,6 +1067,13 @@ async function applyProxySettings() {
 // ================================================================= //
 
 const { scheduleDeepResearchCheck, checkAndExecuteScheduledResearch, executeScheduledDeepResearch } = deepResearchModule;
+deepResearchModule.initialize({
+    settings,
+    createWindow,
+    shortcutActions,
+    playAiCompletionSound: utils.playAiCompletionSound,
+    sendNotification
+});
 
 // ================================================================= //
 // Multi-Account Support (Using Module)
