@@ -182,9 +182,23 @@ function saveSettings(settings) {
     }
 }
 
+async function saveSettingsAsync(settings) {
+    // Update cache with a deep copy immediately (optimistic update)
+    // This ensures subsequent getSettings() calls return the new data
+    // even while the file write is pending.
+    cachedSettings = JSON.parse(JSON.stringify(settings));
+
+    try {
+        await fs.promises.writeFile(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
+    } catch (e) {
+        console.error("Failed to save settings to file asynchronously.", e);
+    }
+}
+
 module.exports = {
     defaultSettings,
     getSettings,
     saveSettings,
+    saveSettingsAsync,
     settingsPath
 };

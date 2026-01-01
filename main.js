@@ -414,7 +414,7 @@ async function createAndManageLoginWindowForPartition(loginUrl, targetPartition,
                 // choice window highlights it. Persist settings immediately.
                 if (typeof settings !== 'undefined') {
                     settings.currentAccountIndex = accountIndex;
-                    try { saveSettings(settings); } catch (e) { console.warn('Failed to save settings after adding account', e); }
+                    try { await saveSettingsAsync(settings); } catch (e) { console.warn('Failed to save settings after adding account', e); }
                 }
 
                 // If the login popup navigated to a Gemini URL (possibly with /u/X/app),
@@ -888,7 +888,7 @@ async function executeDefaultPrompt(view, promptContent, mode) {
 // Settings Management (Using Module)
 // ================================================================= //
 
-const { getSettings, saveSettings, defaultSettings, settingsPath } = settingsModule;
+const { getSettings, saveSettings, saveSettingsAsync, defaultSettings, settingsPath } = settingsModule;
 let settings = getSettings();
 
 // Helper function to apply invisibility mode (content protection) to a window
@@ -1063,8 +1063,8 @@ const { getAccountPartition, getCurrentAccountPartition, getAccounts, addAccount
 const { forceOnTop, broadcastToAllWebContents, broadcastToWindows, reportErrorToServer, playAiCompletionSound, setupContextMenu, debounce } = utils;
 
 // Debounced version of saveSettings to prevent race conditions with rapid updates
-const debouncedSaveSettings = debounce((settingsToSave) => {
-    saveSettings(settingsToSave);
+const debouncedSaveSettings = debounce(async (settingsToSave) => {
+    await saveSettingsAsync(settingsToSave);
     console.log('Settings saved via debounce');
 }, 300);
 
@@ -7348,9 +7348,9 @@ ipcMain.on('generate-pdf-from-json', async (event, jsonString, title) => {
         dialog.showErrorBox('Export Error', 'Failed to process conversation data for PDF export.');
     }
 });
-ipcMain.on('onboarding-complete', (event) => {
+ipcMain.on('onboarding-complete', async (event) => {
     settings.onboardingShown = true;
-    saveSettings(settings);
+    await saveSettingsAsync(settings);
 
     const senderWindow = BrowserWindow.fromWebContents(event.sender);
 
@@ -7650,7 +7650,7 @@ ipcMain.handle('add-custom-prompt', async (event, prompt) => {
     }
 
     settings.customPrompts.push(newPrompt);
-    saveSettings(settings);
+    await saveSettingsAsync(settings);
     broadcastToWindows('settings-updated', settings);
     return newPrompt;
 });
@@ -7671,7 +7671,7 @@ ipcMain.handle('update-custom-prompt', async (event, prompt) => {
     }
 
     settings.customPrompts[index] = { ...settings.customPrompts[index], ...prompt };
-    saveSettings(settings);
+    await saveSettingsAsync(settings);
     broadcastToWindows('settings-updated', settings);
     return settings.customPrompts[index];
 });
@@ -7689,7 +7689,7 @@ ipcMain.handle('delete-custom-prompt', async (event, promptId) => {
     }
 
     settings.customPrompts.splice(index, 1);
-    saveSettings(settings);
+    await saveSettingsAsync(settings);
     broadcastToWindows('settings-updated', settings);
     return true;
 });
@@ -7713,7 +7713,7 @@ ipcMain.handle('set-default-prompt', async (event, promptId) => {
         settings.defaultPromptId = null;
     }
 
-    saveSettings(settings);
+    await saveSettingsAsync(settings);
     broadcastToWindows('settings-updated', settings);
     return true;
 });
