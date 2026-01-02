@@ -6,6 +6,8 @@ let settings = null;
 let createWindow = null;
 let shortcutActions = null;
 let playAiCompletionSound = null;
+let sendNotification = null;
+let translations = null;
 
 // Initialize with dependencies
 function initialize(deps) {
@@ -13,6 +15,8 @@ function initialize(deps) {
     createWindow = deps.createWindow;
     shortcutActions = deps.shortcutActions;
     playAiCompletionSound = deps.playAiCompletionSound;
+    sendNotification = deps.sendNotification;
+    translations = deps.translations;
 }
 
 function scheduleDeepResearchCheck() {
@@ -67,6 +71,10 @@ async function executeScheduledDeepResearch(format) {
     try {
         console.log('Deep Research Schedule: Executing scheduled research with format:', format.substring(0, 50) + '...');
 
+        if (sendNotification) {
+            sendNotification('Deep Research Started', 'Executing scheduled research task...');
+        }
+
         // Create a new window (Alt+N equivalent)
         const targetWin = createWindow();
 
@@ -84,8 +92,8 @@ async function executeScheduledDeepResearch(format) {
         if (currentUrl.includes('html/choice.html')) {
             console.log('Deep Research Schedule: Selecting Gemini mode from choice window');
             targetWin.webContents.executeJavaScript(`
-                const geminiButton = document.querySelector('button[onclick*="gemini"]') || 
-                                   document.querySelector('[data-mode="gemini"]') || 
+                const geminiButton = document.querySelector('button[onclick*="gemini"]') ||
+                                   document.querySelector('[data-mode="gemini"]') ||
                                    document.querySelector('.mode-card[data-mode="gemini"]');
                 if (geminiButton) {
                     geminiButton.click();
@@ -119,7 +127,7 @@ async function executeScheduledDeepResearch(format) {
             await view.webContents.executeJavaScript(`
                 (async function() {
                     console.log('Deep Research Schedule: Starting complete automation sequence');
-                    
+
                     const waitForElement = (selector, timeout = 15000) => {
                         return new Promise((resolve, reject) => {
                             const timer = setInterval(() => {
@@ -185,7 +193,7 @@ async function executeScheduledDeepResearch(format) {
                         try {
                             element.focus();
                             element.textContent = '';
-                            
+
                             for (let i = 0; i < text.length; i++) {
                                 const char = text[i];
                                 const keydownEvent = new KeyboardEvent('keydown', {
@@ -213,7 +221,7 @@ async function executeScheduledDeepResearch(format) {
                             const style = window.getComputedStyle(spinner);
                             return style.opacity === '0' || style.visibility === 'hidden';
                         }
-                        
+
                         const immersivePanel = document.querySelector('deep-research-immersive-panel');
                         return !!immersivePanel;
                     };
@@ -235,23 +243,23 @@ async function executeScheduledDeepResearch(format) {
                     const exportToGoogleDocs = async () => {
                         try {
                             console.log('Deep Research Schedule: Starting export to Google Docs');
-                            
+
                             const shareExportButton = await waitForElement(
-                                'button[data-test-id="export-menu-button"], button:has(.mat-mdc-button-persistent-ripple):has([class*="Export"])', 
+                                'button[data-test-id="export-menu-button"], button:has(.mat-mdc-button-persistent-ripple):has([class*="Export"])',
                                 10000
                             );
                             simulateClick(shareExportButton);
                             console.log('Deep Research Schedule: Share & Export button clicked');
-                            
+
                             await new Promise(resolve => setTimeout(resolve, 1000));
 
                             const exportToDocsButton = await waitForElement(
-                                'button[data-test-id="export-to-docs-button"], button:has([data-test-id="docs-icon"]), button:has([fonticon="docs"])', 
+                                'button[data-test-id="export-to-docs-button"], button:has([data-test-id="docs-icon"]), button:has([fonticon="docs"])',
                                 5000
                             );
                             simulateClick(exportToDocsButton);
                             console.log('Deep Research Schedule: Export to Docs button clicked');
-                            
+
                             return true;
                         } catch (error) {
                             console.error('Deep Research Schedule: Failed to export to Google Docs:', error);
@@ -264,7 +272,7 @@ async function executeScheduledDeepResearch(format) {
                         const toolsButton = await waitForElement('button.toolbox-drawer-button, toolbox-drawer button, [aria-label*="Tools"]');
                         simulateClick(toolsButton);
                         console.log('Deep Research Schedule: Tools button clicked');
-                        
+
                         await new Promise(resolve => setTimeout(resolve, 2000));
 
                         console.log('Deep Research Schedule: Looking for Deep Research option');
@@ -287,67 +295,71 @@ async function executeScheduledDeepResearch(format) {
 
                         simulateClick(deepResearchButton);
                         console.log('Deep Research Schedule: Deep Research option clicked');
-                        
+
                         await new Promise(resolve => setTimeout(resolve, 3000));
 
                         console.log('Deep Research Schedule: Looking for input area');
                         const inputArea = await waitForElement('.ql-editor[contenteditable="true"], rich-textarea .ql-editor, [data-placeholder*="Ask"]');
-                        
+
                         const formatText = \`${format.replace(/`/g, '\\`').replace(/\\/g, '\\\\').replace(/\${/g, '\\${')}\`;
-                        
+
                         console.log('Deep Research Schedule: Attempting to insert text:', formatText.substring(0, 50) + '...');
-                        
+
                         const insertSuccess = insertTextSafely(inputArea, formatText);
-                        
+
                         if (!insertSuccess) {
                             throw new Error('Failed to insert text into input area');
                         }
-                        
+
                         console.log('Deep Research Schedule: Format inserted successfully');
-                        
+
                         await new Promise(resolve => setTimeout(resolve, 1500));
 
                         console.log('Deep Research Schedule: Looking for Send button');
                         const sendButton = await waitForElement('button.send-button[jslog*="173899"], button[aria-label="Send message"], button.send-button.submit');
                         simulateClick(sendButton);
                         console.log('Deep Research Schedule: Send button clicked');
-                        
+
                         await new Promise(resolve => setTimeout(resolve, 3000));
 
                         console.log('Deep Research Schedule: Looking for Start Research button');
-                        
+
                         const startResearchButton = await waitForElement(
                             'button[data-test-id="confirm-button"], button.confirm-button[mat-flat-button], button.mdc-button--unelevated[color="primary"]'
                         );
-                        
+
                         simulateClick(startResearchButton);
                         console.log('Deep Research Schedule: Start Research button clicked');
 
                         console.log('Deep Research Schedule: Waiting for research completion...');
                         await waitForResearchCompletion();
-                        
+
                         await new Promise(resolve => setTimeout(resolve, 5000));
 
                         const exportSuccess = await exportToGoogleDocs();
-                        
+
                         if (exportSuccess) {
                             console.log('Deep Research Schedule: Complete automation sequence finished successfully');
                         } else {
                             console.log('Deep Research Schedule: Research completed but export failed');
                         }
-                        
+
                     } catch (error) {
                         console.error('Deep Research Schedule: Complete automation failed:', error);
                         throw error;
                     }
                 })();
             `);
-            
-            setTimeout(() => {
+
+            if (playAiCompletionSound) {
                 playAiCompletionSound();
                 console.log('Deep Research Schedule: Completion sound played');
-            }, 60000);
-            
+            }
+
+            if (sendNotification) {
+                sendNotification('Deep Research Completed', 'Research task finished successfully.');
+            }
+
         } else {
             throw new Error('No browser view available');
         }
@@ -356,6 +368,10 @@ async function executeScheduledDeepResearch(format) {
 
     } catch (error) {
         console.error('Deep Research Schedule: Failed to execute scheduled research:', error);
+
+        if (sendNotification) {
+            sendNotification('Deep Research Failed', 'An error occurred during the scheduled task.');
+        }
 
         if (targetWin && !targetWin.isDestroyed()) {
             console.log('Deep Research Schedule: Closing Gemini window due to failure');

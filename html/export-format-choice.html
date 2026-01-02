@@ -4,196 +4,249 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Choose Export Format</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            /* Gemini Dark Palette (Default) */
+            --bg-root: #0e0e0f;
+            --glass-surface: #1e1f21;
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --glass-highlight: rgba(255, 255, 255, 0.04);
+            --text-primary: #e8eaed;
+            --text-secondary: #9aa0a6;
+            --accent-primary: #a8c7fa;
+            --accent-glow: rgba(168, 199, 250, 0.15);
+            --item-hover-bg: rgba(255, 255, 255, 0.08);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+
+            --pdf-color: #f28b82;
+            --md-color: #81c995;
+        }
+
+        html.light {
+            --bg-root: #fdfbff;
+            --glass-surface: #f2f6fc;
+            --glass-border: rgba(0, 0, 0, 0.06);
+            --glass-highlight: rgba(255, 255, 255, 0.6);
+            --text-primary: #1f1f1f;
+            --text-secondary: #444746;
+            --accent-primary: #0b57d0;
+            --accent-glow: rgba(11, 87, 208, 0.1);
+            --item-hover-bg: rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.08);
+
+            --pdf-color: #d93025;
+            --md-color: #188038;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: var(--bg-color);
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: transparent;
+            color: var(--text-primary);
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             overflow: hidden;
         }
 
-        /* Light Mode Colors */
-        body.light {
-            --bg-color: #f5f5f5;
-            --container-bg: #ffffff;
-            --text-primary: #212121;
-            --text-secondary: #757575;
-            --border-color: #e0e0e0;
-            --pdf-bg: #e3f2fd;
-            --pdf-border: #1976d2;
-            --pdf-hover: #bbdefb;
-            --md-bg: #e8f5e9;
-            --md-border: #388e3c;
-            --md-hover: #c8e6c9;
-            --close-btn-bg: #f5f5f5;
-            --close-btn-hover: #e0e0e0;
-            --shadow: rgba(0, 0, 0, 0.08);
-        }
-
-        /* Dark Mode Colors */
-        body.dark {
-            --bg-color: #1e1e1e;
-            --container-bg: #2d2d30;
-            --text-primary: #cccccc;
-            --text-secondary: #9e9e9e;
-            --border-color: #3e3e42;
-            --pdf-bg: #1e3a5f;
-            --pdf-border: #1976d2;
-            --pdf-hover: #2a5282;
-            --md-bg: #1e5f2a;
-            --md-border: #388e3c;
-            --md-hover: #2a7a3a;
-            --close-btn-bg: #3e3e42;
-            --close-btn-hover: #4e4e52;
-            --shadow: rgba(0, 0, 0, 0.3);
-        }
-
         .container {
-            background: var(--container-bg);
-            border-radius: 12px;
-            box-shadow: 0 8px 24px var(--shadow);
-            padding: 36px;
+            background: var(--glass-surface);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg);
+            padding: 32px;
+            width: 100%;
+            max-width: 480px;
             text-align: center;
-            max-width: 520px;
-            width: 90%;
             position: relative;
-            border: 1px solid var(--border-color);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .icon {
-            font-size: 56px;
-            margin-bottom: 20px;
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 20px;
+        }
+
+        .close-btn:hover {
+            background: var(--item-hover-bg);
+            color: var(--text-primary);
+        }
+
+        body[dir="rtl"] .close-btn {
+            right: auto;
+            left: 16px;
         }
 
         h1 {
-            color: var(--text-primary);
-            font-size: 22px;
-            margin-bottom: 12px;
+            font-size: 24px;
             font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
         }
 
         p {
             color: var(--text-secondary);
             font-size: 15px;
             margin-bottom: 32px;
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
-        .buttons {
-            display: flex;
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 16px;
-            justify-content: center;
         }
 
-        .choice-btn {
-            flex: 1;
-            padding: 24px 20px;
-            border: 2px solid var(--border-color);
-            border-radius: 10px;
-            background: var(--container-bg);
+        .option-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 24px 16px;
             cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
-            transition: all 0.2s ease;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .choice-icon {
-            font-size: 36px;
-            margin-bottom: 6px;
-        }
-
-        .choice-title {
-            font-weight: 600;
-            font-size: 16px;
-            color: var(--text-primary);
-        }
-
-        .choice-subtitle {
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-
-        .pdf-btn {
-            background: var(--pdf-bg);
-            border-color: var(--pdf-border);
-        }
-
-        .pdf-btn:hover {
-            background: var(--pdf-hover);
-            transform: translateY(-2px);
-        }
-
-        .md-btn {
-            background: var(--md-bg);
-            border-color: var(--md-border);
-        }
-
-        .md-btn:hover {
-            background: var(--md-hover);
-            transform: translateY(-2px);
-        }
-
-        .close-btn {
+        .option-card::before {
+            content: '';
             position: absolute;
-            top: 16px;
-            left: 16px;
-            width: 32px;
-            height: 32px;
-            border: none;
-            background: var(--close-btn-bg);
-            border-radius: 6px;
-            cursor: pointer;
+            inset: 0;
+            background: radial-gradient(circle at center, var(--hover-glow), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .option-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--hover-color);
+            background: var(--item-hover-bg);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .option-card:hover::before {
+            opacity: 0.1;
+        }
+
+        .option-card:active {
+            transform: translateY(-2px);
+        }
+
+        .icon-wrapper {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--text-secondary);
-            font-size: 18px;
-            transition: all 0.2s ease;
+            font-size: 28px;
+            background: var(--icon-bg);
+            color: var(--icon-color);
+            margin-bottom: 4px;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .close-btn:hover {
-            background: var(--close-btn-hover);
+        .option-card:hover .icon-wrapper {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .option-title {
+            font-size: 16px;
+            font-weight: 600;
             color: var(--text-primary);
         }
 
-        body[dir="rtl"] .close-btn {
-            left: auto;
-            right: 16px;
+        .option-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
         }
+
+        /* PDF Style */
+        .pdf-option {
+            --hover-color: var(--pdf-color);
+            --hover-glow: var(--pdf-color);
+            --icon-color: var(--pdf-color);
+            --icon-bg: rgba(242, 139, 130, 0.1);
+        }
+
+        html.light .pdf-option {
+            --icon-bg: rgba(217, 48, 37, 0.1);
+        }
+
+        /* Markdown Style */
+        .md-option {
+            --hover-color: var(--md-color);
+            --hover-glow: var(--md-color);
+            --icon-color: var(--md-color);
+            --icon-bg: rgba(129, 201, 149, 0.1);
+        }
+
+        html.light .md-option {
+            --icon-bg: rgba(24, 128, 56, 0.1);
+        }
+
     </style>
 </head>
 <body class="light">
     <div class="container">
-        <button class="close-btn" onclick="window.electronAPI.cancelPdfExport()">✕</button>
+        <button class="close-btn" onclick="window.electronAPI.cancelPdfExport()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
         
-        <div class="icon">📤</div>
+        <h1>Export Chat</h1>
+        <p>Choose your preferred format</p>
         
-        <h1>Choose Export Format</h1>
-        <p>How would you like to export your chat?</p>
-        
-        <div class="buttons">
-            <button class="choice-btn pdf-btn" onclick="selectFormat('pdf')">
-                <div class="choice-icon">📄</div>
-                <div class="choice-title">PDF</div>
-                <div class="choice-subtitle">Portable Document</div>
-            </button>
+        <div class="options-grid">
+            <div class="option-card pdf-option" onclick="selectFormat('pdf')">
+                <div class="icon-wrapper">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                </div>
+                <span class="option-title">PDF Document</span>
+                <span class="option-desc">Portable & Print Ready</span>
+            </div>
             
-            <button class="choice-btn md-btn" onclick="selectFormat('md')">
-                <div class="choice-icon">📝</div>
-                <div class="choice-title">Markdown</div>
-                <div class="choice-subtitle">Text Format</div>
-            </button>
+            <div class="option-card md-option" onclick="selectFormat('md')">
+                <div class="icon-wrapper">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="7" y1="8" x2="17" y2="8"></line><line x1="7" y1="12" x2="17" y2="12"></line><line x1="7" y1="16" x2="17" y2="16"></line></svg>
+                </div>
+                <span class="option-title">Markdown</span>
+                <span class="option-desc">Raw Text Format</span>
+            </div>
         </div>
     </div>
 
@@ -209,6 +262,7 @@
                     theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                 }
                 
+                document.documentElement.className = theme;
                 document.body.className = theme;
             } catch (error) {
                 console.error('Failed to load settings:', error);

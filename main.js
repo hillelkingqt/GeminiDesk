@@ -1060,7 +1060,7 @@ const { getAccountPartition, getCurrentAccountPartition, getAccounts, addAccount
 // Utility Functions (Using Module)
 // ================================================================= //
 
-const { forceOnTop, broadcastToAllWebContents, broadcastToWindows, reportErrorToServer, playAiCompletionSound, setupContextMenu, debounce } = utils;
+const { forceOnTop, broadcastToAllWebContents, broadcastToWindows, reportErrorToServer, playAiCompletionSound, setupContextMenu, debounce, sendNotification } = utils;
 
 // Debounced version of saveSettings to prevent race conditions with rapid updates
 const debouncedSaveSettings = debounce((settingsToSave) => {
@@ -4621,7 +4621,9 @@ app.whenReady().then(() => {
         settings,
         createWindow,
         shortcutActions,
-        playAiCompletionSound
+    playAiCompletionSound,
+    sendNotification,
+    translations
     });
 
     accountsModule.initialize({
