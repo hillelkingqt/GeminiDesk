@@ -1,6 +1,7 @@
 const { app } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const fsp = fs.promises;
 
 const isMac = process.platform === 'darwin';
 
@@ -172,13 +173,31 @@ function getSettings(shouldClone = true) {
     return cachedSettings;
 }
 
-function saveSettings(settings) {
+/**
+ * Saves settings asynchronously to disk to prevent blocking the main thread.
+ * Updates the in-memory cache synchronously (optimistically) to ensure
+ * the application sees the new state immediately.
+ *
+ * @param {Object} settings - The settings object to save
+ */
+async function saveSettings(settings) {
     try {
-        fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
-        // Update cache with a deep copy to ensure isolation, ONLY after successful write
+        // Update cache with a deep copy to ensure isolation
+        // We do this synchronously/optimistically to ensure the app sees the latest state immediately
         cachedSettings = JSON.parse(JSON.stringify(settings));
     } catch (e) {
+        console.error("Failed to clone settings for cache.", e);
+        // If we can't clone, we probably shouldn't try to save
+        return;
+    }
+
+    try {
+        // Use async write to avoid blocking the event loop
+        await fsp.writeFile(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
+    } catch (e) {
         console.error("Failed to save settings to file.", e);
+        // Note: we don't revert the cache here because we assume the in-memory state
+        // is the source of truth for the current session, even if persistence failed.
     }
 }
 
