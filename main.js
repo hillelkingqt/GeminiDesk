@@ -3783,6 +3783,23 @@ function sendToNotificationWindow(data) {
     }
 }
 
+// Wrapper to create/show notification window with custom message
+function sendNotification(title, message, type = 'text') {
+    if (!notificationWin) createNotificationWindow();
+
+    // Construct a message object compatible with notification.html
+    // notification.html expects { status: 'found', content: [...] }
+    const data = {
+        status: 'found',
+        content: [{
+            type: 'html',
+            content: `<div style="text-align: center;"><strong>${title}</strong><br><br>${message}</div>`
+        }]
+    };
+
+    sendToNotificationWindow(data);
+}
+
 async function checkForNotifications(isManualCheck = false) {
     if (isManualCheck) {
         createNotificationWindow();
@@ -4621,7 +4638,8 @@ app.whenReady().then(() => {
         settings,
         createWindow,
         shortcutActions,
-        playAiCompletionSound
+        playAiCompletionSound,
+        sendNotification
     });
 
     accountsModule.initialize({

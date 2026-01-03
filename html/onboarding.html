@@ -6,281 +6,465 @@
     <title>Welcome to GeminiDesk</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* --- General Setup & Theming (from drag.html, adapted) --- */
         :root {
-            --background-primary: #1e1e1e;
-            --background-secondary: #252526;
-            --text-primary: #cccccc;
-            --text-secondary: #9e9e9e;
-            --accent-glow: #0e98d9;
-            --tooltip-background: #333333;
-            --border-color: #3e3e42;
-            --success-color: #4caf50;
-            --bg-tertiary: #2d2d30;
+            /* Premium Dark Palette */
+            --bg-root: #0f0f13;
+            --glass-surface: rgba(20, 20, 25, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.05);
+
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-tertiary: #71717a;
+
+            --accent-primary: #818cf8;
+            --accent-glow: rgba(129, 140, 248, 0.4);
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+
+            --success-color: #22c55e;
+            --success-glow: rgba(34, 197, 94, 0.4);
+
+            --radius-xl: 24px;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.1);
+
+            --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         html.light-mode {
-            --background-primary: #f5f5f5;
-            --background-secondary: #ffffff;
-            --text-primary: #212121;
-            --text-secondary: #757575;
-            --accent-glow: #007aff;
-            --tooltip-background: #ffffff;
-            --border-color: #dcdcdc;
-            --success-color: #388e3c;
-            --bg-tertiary: #e0e0e0;
+            --bg-root: #f8fafc;
+            --glass-surface: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(0, 0, 0, 0.06);
+            --glass-highlight: rgba(255, 255, 255, 0.4);
+
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-tertiary: #94a3b8;
+
+            --accent-primary: #4f46e5;
+            --accent-glow: rgba(79, 70, 229, 0.25);
+            --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
         * { box-sizing: border-box; }
 
         html, body {
             margin: 0; padding: 0;
-            background: var(--background-primary);
-            font-family: 'Poppins', sans-serif;
+            background: var(--bg-root);
+            font-family: 'Outfit', sans-serif;
             overflow: hidden;
             color: var(--text-primary);
             height: 100vh;
             display: flex;
             flex-direction: column;
-            -webkit-font-smoothing: antialiased;
             user-select: none;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* --- The Main Drag Bar (from drag.html) --- */
+        /* Ambient Background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.15), transparent 70%),
+                        radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.1), transparent 50%);
+            opacity: 0.8;
+        }
+
+        /* Drag Bar */
         .top-bar {
+            position: relative;
+            z-index: 10;
             width: 100%;
-            height: 38px;
+            height: 48px;
             -webkit-app-region: drag;
-            background: var(--background-secondary);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 12px;
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            flex-shrink: 0;
+            padding: 0 20px;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.03), transparent);
+            border-bottom: 1px solid var(--glass-border);
         }
 
-        #chat-title {
+        .app-title {
             font-size: 14px;
-            font-weight: 500;
+            font-weight: 600;
+            letter-spacing: 0.02em;
             color: var(--text-secondary);
-            -webkit-app-region: drag;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
+        .app-title svg {
+            width: 16px;
+            height: 16px;
+            color: var(--accent-primary);
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 8px;
+            -webkit-app-region: no-drag;
+        }
+
+        .control-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+            border-color: var(--glass-border);
+            transform: translateY(-1px);
+        }
+
+        .control-btn svg { width: 18px; height: 18px; }
+
+        /* Main Content */
+        .content {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        /* Custom Scrollbar */
+        .content::-webkit-scrollbar { width: 6px; }
+        .content::-webkit-scrollbar-track { background: transparent; }
+        .content::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        .content::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: slideDown 0.8s var(--ease-elastic);
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-30px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .button-container {
+        .logo-glow {
+            width: 80px;
+            height: 80px;
+            background: var(--accent-gradient);
+            border-radius: 24px;
             display: flex;
             align-items: center;
-            -webkit-app-region: no-drag;
-        }
-
-        .icon-button {
-            -webkit-app-region: no-drag;
-            width: 30px; height: 30px; border: none; background: none;
-            color: var(--text-secondary); cursor: pointer; font-size: 20px;
-            display: flex; align-items: center; justify-content: center;
-            transition: color 0.3s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative; margin-left: 6px;
-        }
-
-        .icon-button svg {
-            width: 22px; height: 22px;
-            transition: stroke 0.3s ease, transform 0.4s ease;
-            stroke: var(--text-secondary);
-            stroke-width: 1.5;
-        }
-
-        .icon-button#settings-button svg {
-             stroke-width: 0; /* Settings icon uses fill */
-             fill: var(--text-secondary);
-        }
-
-        .icon-button::before {
-            content: attr(data-tooltip);
-            position: absolute; bottom: 125%; left: 50%;
-            transform: translateX(-50%) translateY(5px);
-            background: var(--tooltip-background); color: var(--text-primary);
-            padding: 4px 8px; border-radius: 5px; font-size: 12px;
-            font-weight: 500; white-space: nowrap; opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-
-        .icon-button:hover { transform: scale(1.1); }
-
-        .icon-button:hover svg {
-            stroke: var(--accent-glow);
-            fill: var(--accent-glow);
-            filter: drop-shadow(0 0 5px var(--accent-glow));
-        }
-
-        .icon-button:hover::before {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        #new-window-button:hover svg { transform: rotate(90deg); }
-        #settings-button:hover svg { transform: rotate(90deg) scale(1.1); }
-
-        html[dir="rtl"] .top-bar { flex-direction: row-reverse; }
-        html[dir="rtl"] .icon-button { margin-left: 0; margin-right: 6px; }
-
-        /* --- Onboarding Content Styles (from onboarding.html) --- */
-        .content { 
-            padding: 30px; overflow-y: auto; height: 100%;
-            text-align: center; display: flex; flex-direction: column;
             justify-content: center;
+            margin: 0 auto 24px;
+            box-shadow: 0 20px 40px var(--accent-glow);
+            position: relative;
         }
 
-        .content::-webkit-scrollbar { width: 8px; }
-        .content::-webkit-scrollbar-track { background: var(--bg-primary); }
-        .content::-webkit-scrollbar-thumb { background-color: var(--accent-secondary); border-radius: 4px; }
+        .logo-glow::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 26px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), transparent);
+            z-index: -1;
+        }
 
-        .title {
-            font-size: 2.5em; font-weight: 600; color: var(--text-primary);
-            margin-bottom: 10px;
+        .logo-glow svg {
+            width: 40px;
+            height: 40px;
+            color: white;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0 0 12px 0;
+            letter-spacing: -0.02em;
         }
 
         .subtitle {
-            font-size: 1.2em; font-weight: 300; color: var(--text-secondary);
-            margin-bottom: 35px; max-width: 450px; margin-left: auto; margin-right: auto;
+            font-size: 16px;
+            color: var(--text-secondary);
+            max-width: 400px;
+            line-height: 1.6;
+            margin: 0 auto;
         }
 
-        .shortcuts-list {
-            list-style-type: none; padding: 0; margin: 0 auto 35px auto;
-            width: 100%; max-width: 500px; background-color: var(--background-secondary);
-            border: 1px solid var(--border-color); border-radius: 8px;
+        /* Shortcuts Grid */
+        .shortcuts-card {
+            background: var(--glass-surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: var(--shadow-lg);
+            animation: slideUp 0.8s var(--ease-elastic) 0.1s backwards;
         }
 
-        .shortcut-item {
-            padding: 12px 20px; display: flex; align-items: center;
-            justify-content: space-between; border-bottom: 1px solid var(--border-color);
-            transition: background-color .2s ease;
-        }
-        .shortcut-item:last-child { border-bottom: none; }
-        .shortcut-item:hover { background-color: var(--bg-tertiary); }
-
-        .shortcut-desc { font-size: 14px; font-weight: 400; text-align: left; }
-
-        .shortcut-key {
-            font-weight: 500; background-color: var(--bg-tertiary);
-            padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border-color);
-            font-size: 13px; min-width: 50px; text-align: center;
-            margin-left: 15px; color: var(--text-primary);
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .launch-button {
-            background-color: var(--success-color); border: none; color: #fff;
-            padding: 12px 25px; border-radius: 6px; cursor: pointer;
-            font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 500;
-            text-align: center; transition: all .2s ease;
-            margin: 0 auto; display: block;
+        .shortcut-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--glass-border);
         }
-        .launch-button:hover { opacity: 0.85; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
 
-        html[dir="rtl"] .shortcut-desc { text-align: right; }
-        html[dir="rtl"] .shortcut-key { margin-left: 0; margin-right: 15px; }
+        .shortcut-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .shortcut-row:first-child {
+            padding-top: 0;
+        }
+
+        .shortcut-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .keys {
+            display: flex;
+            gap: 4px;
+        }
+
+        kbd {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-width: 24px;
+            text-align: center;
+        }
+
+        /* CTA Button */
+        .launch-btn {
+            margin-top: 40px;
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: var(--radius-lg);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 10px 30px var(--accent-glow);
+            transition: all 0.3s var(--ease-smooth);
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.8s ease 0.4s backwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .launch-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px var(--accent-glow);
+        }
+
+        .launch-btn:active {
+            transform: translateY(0);
+        }
+
+        .launch-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(rgba(255,255,255,0.2), transparent);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .launch-btn:hover::before {
+            opacity: 1;
+        }
+
+        /* Tooltip */
+        [data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-8px);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            white-space: nowrap;
+            pointer-events: none;
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            animation: fadeIn 0.2s ease;
+        }
+
+        /* RTL Support */
+        html[dir="rtl"] .top-bar { flex-direction: row-reverse; }
+        html[dir="rtl"] .shortcut-row { flex-direction: row-reverse; }
+        html[dir="rtl"] .app-title svg { margin-left: 8px; margin-right: 0; }
     </style>
 </head>
 <body>
 
-<div class="top-bar">
-    <span id="chat-title" data-i18n="welcome-title-bar">Welcome to GeminiDesk</span>
-    <div class="button-container">
-        <button id="new-window-button" class="icon-button" data-tooltip-i18n="tooltip-new-chat">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 4V20M4 12H20" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <button id="settings-button" class="icon-button" data-tooltip-i18n="tooltip-settings">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.69-1.62-0.92L14.4,2.28c-0.05-0.24-0.27-0.42-0.51-0.42 h-3.8c-0.24,0-0.46,0.18-0.51,0.42l-0.58,2.52C8.41,5.55,7.88,5.86,7.38,6.24l-2.39-0.96c-0.22-0.08-0.47,0-0.59,0.22 l-1.92,3.32c-0.11,0.2-0.06,0.47,0.12,0.61l2.03,1.58C4.02,11.36,4,11.68,4,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.69,1.62,0.92 l0.58,2.52c0.05,0.24,0.27,0.42,0.51,0.42h3.8c0.24,0,0.46-0.18,0.51,0.42l0.58-2.52c0.6-0.23,1.12-0.54,1.62-0.92l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.11-0.2,0.06-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z" fill="currentColor"/></svg>
-        </button>
+    <div class="top-bar">
+        <div class="app-title">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+            <span data-i18n="welcome-title-bar">GeminiDesk</span>
+        </div>
+        <div class="window-controls">
+            <button class="control-btn" id="new-window-btn" data-tooltip-i18n="tooltip-new-chat" data-tooltip="New Window">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <button class="control-btn" id="settings-btn" data-tooltip-i18n="tooltip-settings" data-tooltip="Settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </button>
+        </div>
     </div>
-</div>
 
-<div class="content">
-    <div>
-        <h1 class="title" data-i18n="welcome-title">Welcome to GeminiDesk</h1>
-        <p class="subtitle" data-i18n="welcome-subtitle">Your AI assistant, supercharged for your desktop. Here are some shortcuts to get you started:</p>
-        <ul class="shortcuts-list">
-          <li class="shortcut-item"><span class="shortcut-desc" data-i18n="shortcut-show-hide">Show / Hide Window</span><span class="shortcut-key shortcut" data-win="Alt+G" data-mac="⌘+G"><span class="key"></span></span></li>
-          <li class="shortcut-item"><span class="shortcut-desc" data-i18n="shortcut-new-window">Open New Window</span><span class="shortcut-key shortcut" data-win="Alt+N" data-mac="⌘+N"><span class="key"></span></span></li>
-          <li class="shortcut-item"><span class="shortcut-desc" data-i18n="shortcut-refresh">Refresh Window</span><span class="shortcut-key shortcut" data-win="Alt+R" data-mac="⌘+R"><span class="key"></span></span></li>
-          <li class="shortcut-item"><span class="shortcut-desc" data-i18n="shortcut-search">Search Chats</span><span class="shortcut-key shortcut" data-win="Alt+S" data-mac="⌘+S"><span class="key"></span></span></li>
-          <li class="shortcut-item"><span class="shortcut-desc" data-i18n="shortcut-screenshot">Screenshot to Chat</span><span class="shortcut-key shortcut" data-win="Alt+Shift+S" data-mac="⌘+Shift+5"><span class="key"></span></span></li>
-          <li class="shortcut-item"><span class="shortcut-desc" data-i18n="shortcut-new-pro">New Chat (Pro Model)</span><span class="shortcut-key shortcut" data-win="Alt+P" data-mac="⌘+P"><span class="key"></span></span></li>
-          <li class="shortcut-item"><span class="shortcut-desc" data-i18n="shortcut-new-flash">New Chat (Flash Model)</span><span class="shortcut-key shortcut" data-win="Alt+F" data-mac="⌘+F"><span class="key"></span></span></li>
-          <li class="shortcut-item"><span class="shortcut-desc" data-i18n="shortcut-instructions">See Instructions Again</span><span class="shortcut-key shortcut" data-win="Alt+I" data-mac="⌘+I"><span class="key"></span></span></li>
-          <li class="shortcut-item"><span class="shortcut-desc" data-i18n="shortcut-quit">Quit Application</span><span class="shortcut-key shortcut" data-win="Alt+Q" data-mac="⌘+Q"><span class="key"></span></span></li>
-          <li class="shortcut-item"><span class="shortcut-desc" data-i18n="shortcut-move">Move Window</span><span class="shortcut-key" data-i18n="shortcut-move-key">Drag Top Bar</span></li>
-        </ul>
-        <button class="launch-button" id="launch-button" data-i18n="launch-button">Got it! Launch GeminiDesk</button>
+    <div class="content">
+        <div class="hero">
+            <div class="logo-glow">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                </svg>
+            </div>
+            <h1 data-i18n="welcome-title">Welcome to GeminiDesk</h1>
+            <p class="subtitle" data-i18n="welcome-subtitle">Your AI assistant, supercharged for your desktop.</p>
+        </div>
+
+        <div class="shortcuts-card">
+            <div class="shortcut-row">
+                <span class="shortcut-desc" data-i18n="shortcut-show-hide">Show / Hide Window</span>
+                <div class="keys shortcut" data-win="Alt+G" data-mac="⌘+G"></div>
+            </div>
+            <div class="shortcut-row">
+                <span class="shortcut-desc" data-i18n="shortcut-new-window">New Window</span>
+                <div class="keys shortcut" data-win="Alt+N" data-mac="⌘+N"></div>
+            </div>
+            <div class="shortcut-row">
+                <span class="shortcut-desc" data-i18n="shortcut-screenshot">Screenshot to Chat</span>
+                <div class="keys shortcut" data-win="Alt+Shift+S" data-mac="⌘+Shift+5"></div>
+            </div>
+            <div class="shortcut-row">
+                <span class="shortcut-desc" data-i18n="shortcut-search">Search Chats</span>
+                <div class="keys shortcut" data-win="Alt+S" data-mac="⌘+S"></div>
+            </div>
+            <div class="shortcut-row">
+                <span class="shortcut-desc" data-i18n="shortcut-new-pro">New Chat (Pro)</span>
+                <div class="keys shortcut" data-win="Alt+P" data-mac="⌘+P"></div>
+            </div>
+            <div class="shortcut-row">
+                <span class="shortcut-desc" data-i18n="shortcut-move">Move Window</span>
+                <div class="keys"><kbd data-i18n="shortcut-move-key">Drag Top Bar</kbd></div>
+            </div>
+        </div>
+
+        <button class="launch-btn" id="launch-button" data-i18n="launch-button">Get Started</button>
     </div>
-</div>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    if (!window.electronAPI) { 
-        console.error("Electron API not found! Running in browser mode.");
-        return; 
-    }
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!window.electronAPI) {
+                console.error("Electron API not found! Running in browser mode.");
+                return;
+            }
 
-    // --- Event Listeners ---
-    document.getElementById('settings-button').addEventListener('click', () => window.electronAPI.openSettingsWindow());
-    document.getElementById('new-window-button').addEventListener('click', () => window.electronAPI.openNewWindow());
-    document.getElementById('launch-button').addEventListener('click', () => window.electronAPI.completeOnboarding());
+            // --- Handlers ---
+            document.getElementById('settings-btn').addEventListener('click', () => window.electronAPI.openSettingsWindow());
+            document.getElementById('new-window-btn').addEventListener('click', () => window.electronAPI.openNewWindow());
+            document.getElementById('launch-button').addEventListener('click', () => window.electronAPI.completeOnboarding());
 
-    // --- Platform-specific shortcuts ---
-    const isMac = navigator.platform.toUpperCase().includes('MAC');
-    document.querySelectorAll('.shortcut').forEach(el => {
-      const keySpan = el.querySelector('.key');
-      if (keySpan) keySpan.textContent = isMac ? el.dataset.mac : el.dataset.win;
-    });
+            // --- Platform Shortcuts ---
+            const isMac = navigator.platform.toUpperCase().includes('MAC');
+            document.querySelectorAll('.shortcut').forEach(el => {
+                const keys = (isMac ? el.dataset.mac : el.dataset.win).split('+');
+                el.innerHTML = keys.map(k => `<kbd>${k.trim()}</kbd>`).join('');
+            });
 
-    // --- Internationalization (i18n) ---
-    let translations = {}; // Will be populated by the main process
+            // --- i18n & Theme ---
+            let translations = {};
 
-    const applyTranslations = (lang) => {
-        const dict = translations[lang] || translations.en;
-        if (!dict) {
-            console.error(`No dictionary found for language: ${lang}`);
-            return;
-        }
-        document.querySelectorAll('[data-i18n]').forEach(el => {
-            const key = el.getAttribute('data-i18n');
-            if (dict[key]) el.textContent = dict[key];
+            const applyTranslations = (lang) => {
+                const dict = translations[lang] || translations.en;
+                if (!dict) return;
+
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    if (dict[key]) el.textContent = dict[key];
+                });
+                document.querySelectorAll('[data-tooltip-i18n]').forEach(el => {
+                    const key = el.getAttribute('data-tooltip-i18n');
+                    if(dict[key]) el.setAttribute('data-tooltip', dict[key]);
+                });
+
+                const dir = ['he', 'ar'].includes(lang) ? 'rtl' : 'ltr';
+                document.documentElement.setAttribute('lang', lang);
+                document.documentElement.setAttribute('dir', dir);
+            };
+
+            const applyTheme = (theme) => {
+                document.documentElement.classList.toggle('light-mode', theme === 'light');
+            };
+
+            const handleSettings = (settings) => {
+                translations = settings?.translations || {};
+                const lang = settings?.language || 'en';
+                applyTranslations(lang);
+
+                const theme = settings?.theme || 'system';
+                window.electronAPI.theme.getResolved(theme).then(applyTheme);
+            };
+
+            window.electronAPI.getSettings().then(handleSettings);
+            window.electronAPI.onSettingsUpdated(handleSettings);
+            window.electronAPI.theme.onUpdate(applyTheme);
         });
-        document.querySelectorAll('[data-tooltip-i18n]').forEach(el => {
-            const key = el.getAttribute('data-tooltip-i18n');
-            if(dict[key]) el.setAttribute('data-tooltip', dict[key]);
-        });
-        document.documentElement.setAttribute('lang', lang);
-        document.documentElement.setAttribute('dir', lang === 'he' ? 'rtl' : 'ltr');
-    };
-
-    const handleSettings = (settings) => {
-        translations = settings?.translations || {};
-        const lang = settings?.language || 'en';
-        applyTranslations(lang);
-        const theme = settings?.theme || 'system';
-        window.electronAPI.theme.getResolved(theme).then(applyTheme);
-    };
-
-    window.electronAPI.getSettings().then(handleSettings);
-    window.electronAPI.onSettingsUpdated(handleSettings);
-    
-    // --- Theme Application ---
-    const applyTheme = (theme) => {
-        document.documentElement.classList.toggle('light-mode', theme === 'light');
-    };
-    window.electronAPI.theme.onUpdate(applyTheme);
-});
-</script>
-
+    </script>
 </body>
 </html>
