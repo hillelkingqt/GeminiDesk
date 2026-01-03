@@ -172,12 +172,19 @@ function getSettings(shouldClone = true) {
     return cachedSettings;
 }
 
-function saveSettings(settings) {
+async function saveSettings(settings) {
+    const previousSettings = cachedSettings;
     try {
-        fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
-        // Update cache with a deep copy to ensure isolation, ONLY after successful write
+        // Optimistic update: Update cache immediately to ensure UI responsiveness
+        // and prevent read-after-write inconsistencies in the main process.
+        // Deep copy to ensure isolation.
         cachedSettings = JSON.parse(JSON.stringify(settings));
+
+        // Use async write to prevent blocking the main thread
+        await fs.promises.writeFile(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
     } catch (e) {
+        // Revert cache if write fails to maintain consistency
+        cachedSettings = previousSettings;
         console.error("Failed to save settings to file.", e);
     }
 }
